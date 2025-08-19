@@ -14,9 +14,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, BookText } from 'lucide-react';
 import { getCourseById, updateCourse } from '@/lib/firebase-service';
 import type { Course } from '@/lib/mock-data';
+import { CourseReviewModal } from '@/components/CourseReviewModal';
+import { GenerateCourseContentOutput } from '@/ai/flows/generate-course-content';
 
 const courseFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -35,6 +37,8 @@ export default function EditCoursePage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [course, setCourse] = useState<Course | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseFormSchema),
@@ -48,15 +52,15 @@ export default function EditCoursePage() {
     },
   });
 
-  useEffect(() => {
-    const fetchCourse = async () => {
+  const fetchCourse = async () => {
       setIsFetching(true);
       try {
-        const course = await getCourseById(params.id);
-        if (!course) {
+        const fetchedCourse = await getCourseById(params.id);
+        if (!fetchedCourse) {
           notFound();
         }
-        form.reset(course);
+        setCourse(fetchedCourse);
+        form.reset(fetchedCourse);
       } catch (error) {
         console.error("Failed to fetch course data:", error);
         toast({
@@ -69,8 +73,10 @@ export default function EditCoursePage() {
         setIsFetching(false);
       }
     };
+
+  useEffect(() => {
     fetchCourse();
-  }, [params.id, form, toast, router]);
+  }, [params.id]);
 
   const onSubmit = async (values: CourseFormValues) => {
     setIsLoading(true);
@@ -92,6 +98,34 @@ export default function EditCoursePage() {
       setIsLoading(false);
     }
   };
+  
+  const handleContentSave = async (editedContent: GenerateCourseContentOutput) => {
+    if (!course) return;
+    setIsLoading(true);
+     try {
+        const courseData = {
+            longDescription: editedContent.longDescription,
+            modules: editedContent.modules,
+            exam: editedContent.exam,
+        }
+        await updateCourse(course.id, courseData);
+        toast({
+            title: 'Content Updated!',
+            description: `The course content for "${course.title}" has been successfully saved.`,
+        });
+        setIsModalOpen(false);
+        fetchCourse(); // Re-fetch course to update state
+     } catch (error) {
+         console.error("Failed to save course content:", error);
+         toast({
+            title: 'Error',
+            description: 'Failed to save the course content. Please try again.',
+            variant: 'destructive',
+        });
+     } finally {
+         setIsLoading(false);
+     }
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -103,8 +137,16 @@ export default function EditCoursePage() {
           </Link>
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl font-headline">Edit Course</CardTitle>
-              <CardDescription>Update the details for this course. Note: Modules and exams cannot be edited here.</CardDescription>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <CardTitle className="text-2xl font-headline">Edit Course</CardTitle>
+                        <CardDescription>Update the details for this course.</CardDescription>
+                    </div>
+                    <Button variant="outline" onClick={() => setIsModalOpen(true)}>
+                        <BookText className="mr-2 h-4 w-4" />
+                        Edit Course Content
+                    </Button>
+                </div>
             </CardHeader>
             <CardContent>
               {isFetching ? (
@@ -207,8 +249,19 @@ export default function EditCoursePage() {
             </CardContent>
           </Card>
         </div>
+
+        {course && (
+             <CourseReviewModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                courseContent={course}
+                onSave={handleContentSave}
+                isSaving={isLoading}
+             />
+           )}
       </main>
       <Footer />
     </div>
   );
 }
+

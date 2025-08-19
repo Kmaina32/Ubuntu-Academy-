@@ -55,18 +55,9 @@ export async function createCourse(courseData: Omit<Course, 'id'>): Promise<stri
     return newCourseRef.key!;
 }
 
-export async function updateCourse(courseId: string, courseData: Partial<Omit<Course, 'id' | 'modules' | 'exam' | 'assignments'>>): Promise<void> {
+export async function updateCourse(courseId: string, courseData: Partial<Course>): Promise<void> {
     const courseRef = ref(db, `courses/${courseId}`);
-    // We only update specific fields, not modules/exam which are more complex
-    const dataToUpdate = {
-        title: courseData.title,
-        instructor: courseData.instructor,
-        price: courseData.price,
-        description: courseData.description,
-        longDescription: courseData.longDescription,
-        imageUrl: courseData.imageUrl,
-    };
-    await update(courseRef, dataToUpdate);
+    await update(courseRef, courseData);
 }
 
 
@@ -148,55 +139,6 @@ export async function saveHeroData(data: HeroData): Promise<void> {
     await set(heroRef, data);
 }
 
-// Assignment Functions
-export async function createAssignment(courseId: string, assignmentData: Omit<Assignment, 'id' | 'courseId'>): Promise<string> {
-    const assignmentsRef = ref(db, `courses/${courseId}/assignments`);
-    const newAssignmentRef = push(assignmentsRef);
-    await set(newAssignmentRef, assignmentData);
-    return newAssignmentRef.key!;
-}
-
-export async function getAssignmentById(courseId: string, assignmentId: string): Promise<Assignment | null> {
-    const assignmentRef = ref(db, `courses/${courseId}/assignments/${assignmentId}`);
-    const snapshot = await get(assignmentRef);
-    if (snapshot.exists()) {
-        return {
-            id: assignmentId,
-            courseId: courseId,
-            ...snapshot.val()
-        };
-    }
-    return null;
-}
-
-export async function getAllAssignments(): Promise<Assignment[]> {
-    const courses = await getAllCourses();
-    let allAssignments: Assignment[] = [];
-    for (const course of courses) {
-        if (course.assignments) {
-            const courseAssignments = Object.keys(course.assignments).map(key => ({
-                ...course.assignments[key],
-                id: key,
-                courseId: course.id,
-                courseTitle: course.title,
-            }));
-            allAssignments = [...allAssignments, ...courseAssignments];
-        }
-    }
-    return allAssignments;
-}
-
-export async function updateAssignment(courseId: string, assignmentId: string, assignmentData: Partial<Omit<Assignment, 'id' | 'courseId' | 'courseTitle'>>): Promise<void> {
-    const assignmentRef = ref(db, `courses/${courseId}/assignments/${assignmentId}`);
-    await update(assignmentRef, assignmentData);
-}
-
-export async function deleteAssignment(courseId: string, assignmentId: string): Promise<void> {
-    const assignmentRef = ref(db, `courses/${courseId}/assignments/${assignmentId}`);
-    await remove(assignmentRef);
-}
-
-
 // Calendar Event Functions
 export async function createCalendarEvent(eventData: Omit<CalendarEvent, 'id'>): Promise<string> {
     const eventsRef = ref(db, 'calendarEvents');
@@ -242,4 +184,28 @@ export async function getSubmissionsByUserId(userId: string): Promise<Submission
         }));
     }
     return [];
+}
+
+export async function getAllSubmissions(): Promise<Submission[]> {
+    const submissionsRef = ref(db, 'submissions');
+    const snapshot = await get(submissionsRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        return Object.keys(data).map(key => ({ id: key, ...data[key] }));
+    }
+    return [];
+}
+
+export async function getSubmissionById(id: string): Promise<Submission | null> {
+    const submissionRef = ref(db, `submissions/${id}`);
+    const snapshot = await get(submissionRef);
+    if (snapshot.exists()) {
+        return { id, ...snapshot.val() };
+    }
+    return null;
+}
+
+export async function updateSubmission(id: string, data: Partial<Submission>): Promise<void> {
+    const submissionRef = ref(db, `submissions/${id}`);
+    await update(submissionRef, data);
 }

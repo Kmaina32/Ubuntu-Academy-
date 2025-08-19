@@ -13,9 +13,8 @@ import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
-import type { Assignment, Course, Submission } from '@/lib/mock-data';
-import { getAllAssignments, getUserCourses, getSubmissionsByUserId, getAllCourses } from '@/lib/firebase-service';
-import { format } from 'date-fns';
+import type { Course, Submission } from '@/lib/mock-data';
+import { getUserCourses, getSubmissionsByUserId, getAllCourses } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 
 type UserAssignment = Course & {
@@ -87,7 +86,7 @@ export default function AssignmentsPage() {
                         <div className="mx-auto bg-secondary p-3 rounded-full w-fit">
                             <ListTodo className="h-8 w-8 text-secondary-foreground" />
                         </div>
-                        <CardTitle className="mt-4 text-2xl font-headline">My Assignments</CardTitle>
+                        <CardTitle className="mt-4 text-2xl font-headline">My Final Exams</CardTitle>
                         <CardDescription>View and complete your course final exams.</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -129,11 +128,16 @@ export default function AssignmentsPage() {
                                   )}
                                    {(assignment.submission && assignment.submission.graded) && (
                                     <Button asChild size="sm" variant="outline">
-                                      <Link href={`/courses/${assignment.id}/exam`}>
+                                      <Link href={`/admin/assignments/grade/${assignment.submission.id}`}>
                                           <Star className="mr-2 h-4 w-4" />
                                           View Results
                                       </Link>
                                     </Button>
+                                  )}
+                                  {(assignment.submission && !assignment.submission.graded) && (
+                                     <Button size="sm" variant="secondary" disabled>
+                                        Pending Grade
+                                     </Button>
                                   )}
                                 </TableCell>
                               </TableRow>

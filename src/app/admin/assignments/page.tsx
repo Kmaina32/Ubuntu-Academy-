@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -8,71 +7,45 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { getAllAssignments, deleteAssignment, getAllCourses } from '@/lib/firebase-service';
-import type { Assignment, Course } from '@/lib/mock-data';
-import { ArrowLeft, Loader2, FilePlus2, Pencil, Trash2 } from 'lucide-react';
-import { AssignmentForm } from '@/components/AssignmentForm';
+import { getAllSubmissions, getCourseById } from '@/lib/firebase-service';
+import type { Submission, Course } from '@/lib/mock-data';
+import { ArrowLeft, Loader2, Star, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
 
-export default function AdminAssignmentsPage() {
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
+type SubmissionWithCourse = Submission & { course?: Course };
+
+export default function AdminSubmissionsPage() {
+  const [submissions, setSubmissions] = useState<SubmissionWithCourse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
   const { toast } = useToast();
 
-  const fetchAssignmentsAndCourses = async () => {
-    try {
-      setLoading(true);
-      const [fetchedAssignments, fetchedCourses] = await Promise.all([
-          getAllAssignments(),
-          getAllCourses()
-      ]);
-      setAssignments(fetchedAssignments.sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()));
-      setCourses(fetchedCourses);
-    } catch (err) {
-      console.error("Failed to fetch data:", err);
-      toast({ title: "Error", description: "Failed to load assignments.", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchAssignmentsAndCourses();
-  }, []);
+    const fetchSubmissions = async () => {
+      try {
+        setLoading(true);
+        const fetchedSubmissions = await getAllSubmissions();
 
-  const handleFormSuccess = () => {
-    fetchAssignmentsAndCourses();
-    setIsDialogOpen(false);
-    setEditingAssignment(null);
-  };
-  
-  const handleEditClick = (assignment: Assignment) => {
-    setEditingAssignment(assignment);
-    setIsDialogOpen(true);
-  };
-
-  const handleDeleteClick = async (assignment: Assignment) => {
-      if(window.confirm(`Are you sure you want to delete the assignment "${assignment.title}"?`)) {
-          try {
-              await deleteAssignment(assignment.courseId, assignment.id);
-              toast({ title: "Success", description: "Assignment deleted." });
-              fetchAssignmentsAndCourses();
-          } catch(error) {
-              console.error("Failed to delete assignment:", error);
-              toast({ title: "Error", description: "Failed to delete assignment.", variant: "destructive" });
-          }
+        // Add course details to each submission
+        const submissionsWithCourses = await Promise.all(
+          fetchedSubmissions.map(async (sub) => {
+            const course = await getCourseById(sub.courseId);
+            return { ...sub, course };
+          })
+        );
+        
+        setSubmissions(submissionsWithCourses.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()));
+      } catch (err) {
+        console.error("Failed to fetch data:", err);
+        toast({ title: "Error", description: "Failed to load submissions.", variant: "destructive" });
+      } finally {
+        setLoading(false);
       }
-  };
-  
-  const openNewAssignmentDialog = () => {
-    setEditingAssignment(null);
-    setIsDialogOpen(true);
-  }
+    };
+    fetchSubmissions();
+  }, [toast]);
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -82,56 +55,60 @@ export default function AdminAssignmentsPage() {
                <ArrowLeft className="h-4 w-4" />
                Back to Admin Dashboard
             </Link>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
                       <div>
-                        <CardTitle>Manage Assignments</CardTitle>
-                        <CardDescription>Create, view, and manage assignments for all courses.</CardDescription>
+                        <CardTitle>Manage Submissions</CardTitle>
+                        <CardDescription>Review and grade student final exam submissions.</CardDescription>
                       </div>
-                      <DialogTrigger asChild>
-                         <Button onClick={openNewAssignmentDialog}>
-                            <FilePlus2 className="mr-2 h-4 w-4" />
-                            Create Assignment
-                        </Button>
-                      </DialogTrigger>
                   </CardHeader>
                   <CardContent>
                     {loading ? (
                        <div className="flex justify-center items-center py-10">
                           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                          <p className="ml-2">Loading assignments...</p>
+                          <p className="ml-2">Loading submissions...</p>
                        </div>
                     ) : (
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Assignment Title</TableHead>
+                            <TableHead>Student</TableHead>
                             <TableHead>Course</TableHead>
-                            <TableHead>Due Date</TableHead>
+                            <TableHead>Submitted At</TableHead>
+                            <TableHead>Status</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {assignments.map((assignment) => (
-                            <TableRow key={assignment.id}>
-                              <TableCell className="font-medium">{assignment.title}</TableCell>
-                              <TableCell>{assignment.courseTitle || 'N/A'}</TableCell>
-                              <TableCell>{format(new Date(assignment.dueDate), "PPP")}</TableCell>
+                          {submissions.map((submission) => (
+                            <TableRow key={submission.id}>
+                              <TableCell className="font-medium">{submission.userName}</TableCell>
+                              <TableCell>{submission.courseTitle}</TableCell>
+                              <TableCell>{format(new Date(submission.submittedAt), "PPP p")}</TableCell>
+                              <TableCell>
+                                {submission.graded ? (
+                                    <Badge>
+                                        <CheckCircle className="mr-1 h-3 w-3" />
+                                        Graded ({submission.pointsAwarded}/{submission.course?.exam?.maxPoints || 10})
+                                    </Badge>
+                                ) : (
+                                    <Badge variant="secondary">Pending Review</Badge>
+                                )}
+                              </TableCell>
                               <TableCell className="text-right">
-                                <Button variant="ghost" size="icon" className="mr-2" onClick={() => handleEditClick(assignment)}>
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteClick(assignment)}>
-                                  <Trash2 className="h-4 w-4" />
+                                <Button asChild size="sm">
+                                  <Link href={`/admin/assignments/grade/${submission.id}`}>
+                                      <Star className="mr-2 h-4 w-4" />
+                                      {submission.graded ? 'View Grade' : 'Grade Now'}
+                                  </Link>
                                 </Button>
                               </TableCell>
                             </TableRow>
                           ))}
-                           {assignments.length === 0 && (
+                           {submissions.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center text-muted-foreground py-10">
-                                    No assignments found.
+                                <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
+                                    No submissions found.
                                 </TableCell>
                             </TableRow>
                            )}
@@ -140,24 +117,9 @@ export default function AdminAssignmentsPage() {
                     )}
                   </CardContent>
               </Card>
-              <DialogContent className="sm:max-w-[480px]">
-                  <DialogHeader>
-                      <DialogTitle>{editingAssignment ? 'Edit Assignment' : 'Create New Assignment'}</DialogTitle>
-                      <DialogDescription>
-                          {editingAssignment ? 'Update the details for this assignment.' : 'Fill out the form to add a new assignment.'}
-                      </DialogDescription>
-                  </DialogHeader>
-                  <AssignmentForm 
-                    courses={courses}
-                    onSuccess={handleFormSuccess}
-                    assignment={editingAssignment}
-                  />
-              </DialogContent>
-            </Dialog>
         </div>
       </main>
       <Footer />
     </div>
   );
 }
-
