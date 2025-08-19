@@ -1,21 +1,57 @@
+
+'use client'
+
 import Link from 'next/link';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { courses, user } from "@/lib/mock-data";
-import { Award, BookOpen } from 'lucide-react';
+import { courses, user as mockUser } from "@/lib/mock-data";
+import { Award, BookOpen, User } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function DashboardPage() {
-  const purchasedCourseDetails = user.purchasedCourses.map(pc => {
+  const { user, loading } = useAuth();
+
+  // For demo purposes, we'll merge mock data with the logged-in user.
+  // In a real app, this data would come from your database.
+  const purchasedCourseDetails = mockUser.purchasedCourses.map(pc => {
     const courseInfo = courses.find(c => c.id === pc.courseId);
     return { ...pc, ...courseInfo };
   });
 
+  if (loading) {
+      return (
+          <div className="flex flex-col min-h-screen">
+            <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
+                <h1 className="text-3xl font-bold mb-2 font-headline">Loading...</h1>
+                <p className="text-muted-foreground mb-8">Please wait while we fetch your details.</p>
+            </main>
+            <Footer />
+          </div>
+      )
+  }
+
+  if (!user) {
+      return (
+           <div className="flex flex-col min-h-screen">
+            <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16 text-center">
+                <User className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <h1 className="text-2xl font-bold mb-2 font-headline">Access Denied</h1>
+                <p className="text-muted-foreground mb-4">Please log in to view your dashboard.</p>
+                <Button asChild>
+                    <Link href="/login">Login</Link>
+                </Button>
+            </main>
+            <Footer />
+          </div>
+      )
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
-        <h1 className="text-3xl font-bold mb-2 font-headline">Welcome Back, {user.name.split(' ')[0]}!</h1>
+        <h1 className="text-3xl font-bold mb-2 font-headline">Welcome Back, {user.displayName?.split(' ')[0]}!</h1>
         <p className="text-muted-foreground mb-8">Continue your learning journey and view your achievements.</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

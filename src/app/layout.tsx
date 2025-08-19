@@ -1,3 +1,4 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
@@ -5,6 +6,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset } from '@/components/ui/sidebar';
+import { AuthProvider } from '@/hooks/use-auth';
 
 export const metadata: Metadata = {
   title: 'Mkenya Skilled',
@@ -25,13 +27,15 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-                <Header />
-                {children}
-            </SidebarInset>
-        </SidebarProvider>
+        <AuthProvider>
+          <SidebarProvider>
+              <AppSidebar />
+              <SidebarInset>
+                  <Header />
+                  {children}
+              </SidebarInset>
+          </SidebarProvider>
+        </AuthProvider>
         <Toaster />
       </body>
     </html>

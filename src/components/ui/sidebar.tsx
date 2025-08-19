@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -206,8 +207,8 @@ const Sidebar = React.forwardRef<
             }
             side={side}
           >
-             <SheetHeader className="sr-only">
-              <SheetTitle>Sidebar Menu</SheetTitle>
+             <SheetHeader>
+                <SheetTitle className="sr-only">Sidebar Menu</SheetTitle>
             </SheetHeader>
             <div className="flex h-full w-full flex-col">{children}</div>
           </SheetContent>

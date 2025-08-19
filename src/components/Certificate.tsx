@@ -2,14 +2,15 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
-import { Course, user } from "@/lib/mock-data";
+import { Course } from "@/lib/mock-data";
 import { Download } from "lucide-react";
 
 interface CertificateProps {
   course: Course;
+  userName: string;
 }
 
-export function Certificate({ course }: CertificateProps) {
+export function Certificate({ course, userName }: CertificateProps) {
 
   const handlePrint = () => {
     window.print();
@@ -33,7 +34,7 @@ export function Certificate({ course }: CertificateProps) {
 
                 <div className="flex-grow flex flex-col justify-center">
                     <p className="text-lg text-black mb-2 print:text-sm">This certificate is proudly presented to</p>
-                    <h1 className="text-7xl font-signature text-green-700 my-4 print:text-5xl print:my-2">{user.name}</h1>
+                    <h1 className="text-7xl font-signature text-green-700 my-4 print:text-5xl print:my-2">{userName}</h1>
                     <p className="text-lg text-black mt-2 print:text-sm">
                         for successfully completing the online course
                     </p>
