@@ -40,7 +40,7 @@ export async function createCourse(courseData: Omit<Course, 'id'>): Promise<stri
     const dataToSave = {
         ...courseData,
         modules: courseData.modules || [],
-        exam: courseData.exam || { question: '', referenceAnswer: '', maxPoints: 10},
+        exam: courseData.exam || { question: 'Placeholder question', referenceAnswer: 'Placeholder answer', maxPoints: 10},
         imageUrl: courseData.imageUrl || 'https://placehold.co/600x400'
     };
     await set(newCourseRef, dataToSave);
