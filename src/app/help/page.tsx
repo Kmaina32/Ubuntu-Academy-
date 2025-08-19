@@ -111,7 +111,7 @@ export default function HelpPage() {
         <SidebarInset>
             <Header />
             <div className='flex flex-col min-h-screen'>
-                <main className="flex-grow container mx-auto p-4 md:p-8">
+                <main className="flex-grow container mx-auto p-4 md:p-8 flex flex-col">
                     <div className="text-center mb-8">
                         <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit mb-4">
                             <HelpCircle className="h-8 w-8 text-primary" />
@@ -119,7 +119,7 @@ export default function HelpPage() {
                         <h1 className="text-3xl font-bold font-headline">Help Center</h1>
                         <p className="text-muted-foreground">Get help from our AI assistant or browse the FAQ.</p>
                     </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[65vh]">
+                    <div className="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-8">
                        <div className="lg:col-span-2">
                          <Card className="h-full flex flex-col">
                             <CardHeader>

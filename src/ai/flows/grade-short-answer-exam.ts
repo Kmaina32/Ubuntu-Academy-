@@ -29,7 +29,7 @@ const GradeShortAnswerExamOutputSchema = z.object({
   pointsAwarded: z
     .number()
     .describe('The number of points awarded to the student for their answer.'),
-  feedback: z.string().describe('Feedback on the student’s answer.'),
+  feedback: z.string().describe('Detailed feedback on the student’s answer.'),
 });
 export type GradeShortAnswerExamOutput = z.infer<typeof GradeShortAnswerExamOutputSchema>;
 
@@ -43,7 +43,7 @@ const prompt = ai.definePrompt({
   name: 'gradeShortAnswerExamPrompt',
   input: {schema: GradeShortAnswerExamInputSchema},
   output: {schema: GradeShortAnswerExamOutputSchema},
-  prompt: `You are an AI exam grader. Grade the following answer to the question below. Provide feedback and the number of points awarded.
+  prompt: `You are an AI exam grader. Grade the following answer to the question below. Provide detailed feedback and the number of points awarded.
 
 Question: {{{question}}}
 

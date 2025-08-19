@@ -77,7 +77,7 @@ const prompt = ai.definePrompt({
   **Administrator Question**:
   "{{{question}}}"
 
-  Please provide a clear, helpful answer.`,
+  Please provide a clear, helpful, and detailed answer.`,
 });
 
 const siteHelpFlow = ai.defineFlow(

@@ -32,10 +32,10 @@ export async function studentHelp(
 const prompt = ai.definePrompt({
   name: 'studentHelpPrompt',
   input: {schema: StudentHelpInputSchema},
-  output: {schema: StudentHelpOutputSchema},
+  output: {schema: SiteHelpOutputSchema},
   prompt: `You are an AI support agent for the Mkenya Skilled online learning platform. Your tone is friendly, helpful, and professional. A student is asking you a question about how the platform works.
 
-  Use the following information about the student journey to answer their question comprehensively.
+  Use the following information about the student journey to answer their question comprehensively and in detail.
 
   **Platform Overview: Mkenya Skilled**
   Mkenya Skilled is an online learning platform for Kenyan users. It features courses created and managed by an admin. Students can enroll, learn, take exams, and earn certificates.
