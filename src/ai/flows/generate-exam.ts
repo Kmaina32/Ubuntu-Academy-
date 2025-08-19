@@ -14,7 +14,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const GenerateExamInputSchema = z.object({
+const GenerateExamInputSchema = z.object({
   courseTitle: z.string().describe('The title of the course.'),
   courseDescription: z.string().describe('A description of the course content to base the exam on.'),
 });
@@ -39,7 +39,7 @@ const MultipleChoiceQuestionSchema = z.object({
 
 const ExamQuestionSchema = z.union([ShortAnswerQuestionSchema, MultipleChoiceQuestionSchema]);
 
-export const GenerateExamOutputSchema = z.object({
+const GenerateExamOutputSchema = z.object({
   exam: z.array(ExamQuestionSchema).min(5).describe('The final exam for the course, containing at least five questions.'),
 });
 export type GenerateExamOutput = z.infer<typeof GenerateExamOutputSchema>;
