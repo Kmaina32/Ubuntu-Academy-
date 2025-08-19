@@ -4,14 +4,14 @@ import { getAuth } from 'firebase/auth';
 import { getDatabase } from 'firebase/database';
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  databaseURL: "YOUR_DATABASE_URL",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID",
+  apiKey: "AIzaSyBe1wU8Q-415auhlXf9k7ZXefvLX9TPOF0",
+  authDomain: "mkenya-skilled.firebaseapp.com",
+  databaseURL: "https://mkenya-skilled-default-rtdb.firebaseio.com",
+  projectId: "mkenya-skilled",
+  storageBucket: "mkenya-skilled.appspot.com",
+  messagingSenderId: "971829599240",
+  appId: "1:971829599240:web:743a5618282680bb9dc5bd",
+  measurementId: "G-MEASUREMENT_ID",
 };
 
 // Initialize Firebase
