@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, User } from 'lucide-react';
+import { Gem, Home, LayoutDashboard } from 'lucide-react';
 
 export function AppSidebar() {
     const pathname = usePathname();
@@ -45,14 +45,6 @@ export function AppSidebar() {
                         <Link href="/dashboard">
                             <LayoutDashboard />
                             <span>Dashboard</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/profile')}>
-                        <Link href="/profile">
-                            <User />
-                            <span>Profile</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
