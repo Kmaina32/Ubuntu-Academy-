@@ -8,19 +8,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Course } from "@/lib/mock-data";
-import { getAllCourses } from '@/lib/firebase-service';
-import { FilePlus2, Pencil, Trash2, Loader2 } from "lucide-react";
+import { getAllCourses, getAllUsers, RegisteredUser } from '@/lib/firebase-service';
+import { FilePlus2, Pencil, Trash2, Loader2, User as UserIcon } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminPage() {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<RegisteredUser[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        setLoading(true);
+        setLoadingCourses(true);
         const fetchedCourses = await getAllCourses();
         setCourses(fetchedCourses.reverse());
         setError(null);
@@ -28,11 +30,24 @@ export default function AdminPage() {
         setError("Failed to fetch courses. Please try again later.");
         console.error(err);
       } finally {
-        setLoading(false);
+        setLoadingCourses(false);
+      }
+    };
+
+    const fetchUsers = async () => {
+      try {
+        setLoadingUsers(true);
+        const fetchedUsers = await getAllUsers();
+        setUsers(fetchedUsers);
+      } catch (err) {
+        console.error("Failed to fetch users:", err);
+      } finally {
+        setLoadingUsers(false);
       }
     };
 
     fetchCourses();
+    fetchUsers();
   }, []);
 
   return (
@@ -62,7 +77,7 @@ export default function AdminPage() {
                 </Button>
               </CardHeader>
               <CardContent>
-                {loading ? (
+                {loadingCourses ? (
                   <div className="flex justify-center items-center py-10">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     <p className="ml-2">Loading courses...</p>
@@ -109,7 +124,38 @@ export default function AdminPage() {
                   <CardDescription>Manage student accounts.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">User management UI coming soon.</p>
+                    {loadingUsers ? (
+                         <div className="flex justify-center items-center py-10">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                            <p className="ml-2">Loading users...</p>
+                        </div>
+                    ) : (
+                         <Table>
+                            <TableHeader>
+                                <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {users.map((user) => (
+                                <TableRow key={user.uid}>
+                                    <TableCell className="font-medium">{user.displayName}</TableCell>
+                                    <TableCell>{user.email}</TableCell>
+                                    <TableCell className="text-right">
+                                    <Button variant="ghost" size="icon" className="mr-2" title="View Details">
+                                        <UserIcon className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" title="Delete User">
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                    </TableCell>
+                                </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    )}
                 </CardContent>
               </Card>
           </TabsContent>

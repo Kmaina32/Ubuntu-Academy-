@@ -17,6 +17,7 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { saveUser } from '@/lib/firebase-service';
 
 interface AuthContextType {
   user: User | null;
@@ -54,6 +55,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await updateProfile(userCredential.user, {
       displayName: name,
     });
+    // Save user to Realtime Database
+    await saveUser(userCredential.user);
     // Manually set user after signup to reflect name change immediately
     setUser(userCredential.user); 
     return userCredential;
