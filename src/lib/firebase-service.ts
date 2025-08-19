@@ -15,6 +15,8 @@ export interface HeroData {
     title: string;
     subtitle: string;
     imageUrl: string;
+    loginImageUrl: string;
+    signupImageUrl: string;
 }
 
 // Course Functions
@@ -125,19 +127,30 @@ export async function getHeroData(): Promise<HeroData> {
     const heroRef = ref(db, 'hero');
     const snapshot = await get(heroRef);
     if (snapshot.exists()) {
-        return snapshot.val();
+        const data = snapshot.val();
+        // Ensure all fields are present, providing defaults if they are not
+        return {
+            title: data.title || 'Unlock Your Potential.',
+            subtitle: data.subtitle || 'Quality, affordable courses designed for the Kenyan market. Learn valuable skills to advance your career.',
+            imageUrl: data.imageUrl || 'https://placehold.co/1200x400.png',
+            loginImageUrl: data.loginImageUrl || 'https://placehold.co/1200x900.png',
+            signupImageUrl: data.signupImageUrl || 'https://placehold.co/1200x900.png'
+        };
     }
     return {
         title: 'Unlock Your Potential.',
         subtitle: 'Quality, affordable courses designed for the Kenyan market. Learn valuable skills to advance your career.',
-        imageUrl: 'https://placehold.co/1200x400.png'
+        imageUrl: 'https://placehold.co/1200x400.png',
+        loginImageUrl: 'https://placehold.co/1200x900.png',
+        signupImageUrl: 'https://placehold.co/1200x900.png'
     };
 }
 
-export async function saveHeroData(data: HeroData): Promise<void> {
+export async function saveHeroData(data: Partial<HeroData>): Promise<void> {
     const heroRef = ref(db, 'hero');
-    await set(heroRef, data);
+    await update(heroRef, data);
 }
+
 
 // Calendar Event Functions
 export async function createCalendarEvent(eventData: Omit<CalendarEvent, 'id'>): Promise<string> {

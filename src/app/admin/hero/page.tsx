@@ -16,11 +16,14 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { getHeroData, saveHeroData } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
 
 const heroFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
   subtitle: z.string().min(20, 'Subtitle must be at least 20 characters.'),
   imageUrl: z.string().url('Please enter a valid URL.'),
+  loginImageUrl: z.string().url('Please enter a valid URL for the login page image.'),
+  signupImageUrl: z.string().url('Please enter a valid URL for the signup page image.'),
 });
 
 export default function AdminHeroPage() {
@@ -34,6 +37,8 @@ export default function AdminHeroPage() {
       title: '',
       subtitle: '',
       imageUrl: '',
+      loginImageUrl: '',
+      signupImageUrl: '',
     },
   });
 
@@ -63,13 +68,13 @@ export default function AdminHeroPage() {
       await saveHeroData(values);
       toast({
         title: 'Success!',
-        description: 'Homepage hero has been updated.',
+        description: 'Site settings have been updated.',
       });
     } catch (error) {
       console.error("Failed to save hero data:", error);
       toast({
         title: 'Error',
-        description: 'Failed to save hero data. Please try again.',
+        description: 'Failed to save site settings. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -87,18 +92,19 @@ export default function AdminHeroPage() {
             </Link>
             <Card>
                 <CardHeader>
-                    <CardTitle>Manage Homepage Hero</CardTitle>
-                    <CardDescription>Update the title, subtitle, and background image of the hero section.</CardDescription>
+                    <CardTitle>Manage Site Settings</CardTitle>
+                    <CardDescription>Update the content and images for key areas of the website.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {isFetching ? (
                     <div className="flex justify-center items-center py-10">
                       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                      <p className="ml-2">Loading hero data...</p>
+                      <p className="ml-2">Loading settings...</p>
                     </div>
                   ) : (
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <h3 className="text-lg font-semibold">Homepage Hero</h3>
                         <FormField
                           control={form.control}
                           name="title"
@@ -134,11 +140,44 @@ export default function AdminHeroPage() {
                               <FormControl>
                                 <Input placeholder="https://example.com/image.png" {...field} />
                               </FormControl>
-                               <p className="text-sm text-muted-foreground">Enter a URL for the background image. Recommended size: 1200x400 pixels.</p>
+                               <p className="text-sm text-muted-foreground">Recommended size: 1200x400 pixels.</p>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+
+                        <Separator />
+
+                        <h3 className="text-lg font-semibold">Authentication Pages</h3>
+                         <FormField
+                          control={form.control}
+                          name="loginImageUrl"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Login Page Image URL</FormLabel>
+                              <FormControl>
+                                <Input placeholder="https://example.com/login-image.png" {...field} />
+                              </FormControl>
+                               <p className="text-sm text-muted-foreground">Background image for the login page. Recommended size: 1200x900 pixels.</p>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                         <FormField
+                          control={form.control}
+                          name="signupImageUrl"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Signup Page Image URL</FormLabel>
+                              <FormControl>
+                                <Input placeholder="https://example.com/signup-image.png" {...field} />
+                              </FormControl>
+                               <p className="text-sm text-muted-foreground">Background image for the signup page. Recommended size: 1200x900 pixels.</p>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
                         <div className="flex justify-end">
                             <Button type="submit" disabled={isLoading}>
                                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

@@ -15,6 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, Gem } from 'lucide-react';
+import { getHeroData } from '@/lib/firebase-service';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
@@ -27,6 +28,15 @@ export default function LoginPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState('');
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      const data = await getHeroData();
+      setImageUrl(data.loginImageUrl);
+    }
+    fetchImage();
+  }, []);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -136,7 +146,7 @@ export default function LoginPage() {
         </div>
       </div>
       <div className="hidden bg-muted lg:flex items-center justify-center p-8">
-         <div className="w-full h-full bg-cover bg-center rounded-lg" style={{backgroundImage: "url('https://placehold.co/1200x900.png')"}} data-ai-hint="classroom students">
+         <div className="w-full h-full bg-cover bg-center rounded-lg" style={{backgroundImage: `url('${imageUrl}')`}} data-ai-hint="classroom students">
             <div className="w-full h-full bg-black/50 rounded-lg flex items-end p-8 text-white">
                 <div>
                     <h2 className="text-4xl font-bold font-headline">Unlock Your Potential</h2>

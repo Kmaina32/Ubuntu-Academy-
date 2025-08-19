@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -15,6 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, Gem } from 'lucide-react';
+import { getHeroData } from '@/lib/firebase-service';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Please enter your name.' }),
@@ -28,6 +29,15 @@ export default function SignupPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState('');
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      const data = await getHeroData();
+      setImageUrl(data.signupImageUrl);
+    }
+    fetchImage();
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -136,7 +146,7 @@ export default function SignupPage() {
         </div>
       </div>
         <div className="hidden bg-muted lg:flex items-center justify-center p-8">
-         <div className="w-full h-full bg-cover bg-center rounded-lg" style={{backgroundImage: "url('https://placehold.co/1200x900.png')"}} data-ai-hint="learning online">
+         <div className="w-full h-full bg-cover bg-center rounded-lg" style={{backgroundImage: `url('${imageUrl}')`}} data-ai-hint="learning online">
             <div className="w-full h-full bg-black/50 rounded-lg flex items-end p-8 text-white">
                 <div>
                     <h2 className="text-4xl font-bold font-headline">Start Your Journey</h2>
