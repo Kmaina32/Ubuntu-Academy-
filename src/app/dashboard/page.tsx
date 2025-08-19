@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import type { Course, UserCourse } from "@/lib/mock-data";
-import { getAllCourses } from '@/lib/firebase-service';
+import { getCourseById, getUserCourses } from '@/lib/firebase-service';
 import { Award, BookOpen, User, Loader2, Trophy, BookCopy, ListTodo } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
@@ -22,9 +22,23 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
-      // TODO: Replace with real user data fetching from Firebase
+      if (!user) return;
+      setLoadingCourses(true);
+      
+      const userCourses = await getUserCourses(user.uid);
+      
+      const courseDetailsPromises = userCourses.map(async (userCourse) => {
+          const courseDetails = await getCourseById(userCourse.courseId);
+          return {
+              ...userCourse,
+              ...courseDetails, // Adds title, instructor, etc. to the object
+              id: userCourse.courseId,
+          };
+      });
+
+      const detailedCourses = await Promise.all(courseDetailsPromises);
+      setPurchasedCourses(detailedCourses.filter(c => c.title)); // Filter out any courses that couldn't be fetched
       setLoadingCourses(false);
-      setPurchasedCourses([]);
     };
 
     if (user) {
@@ -38,7 +52,7 @@ export default function DashboardPage() {
   const completedCourses = purchasedCourses.filter(c => c.completed);
 
 
-  if (authLoading || loadingCourses) {
+  if (authLoading || (loadingCourses && user)) {
       return (
           <div className="flex flex-col min-h-screen">
             <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
@@ -135,10 +149,16 @@ export default function DashboardPage() {
                  ) : (
                     <Card className="text-center py-10">
                         <CardContent>
-                            <p className="text-muted-foreground mb-4">You are not currently enrolled in any courses.</p>
-                             <Button asChild>
-                                <Link href="/">Explore Courses</Link>
-                            </Button>
+                            {purchasedCourses.length === 0 && !loadingCourses ? (
+                                <>
+                                    <p className="text-muted-foreground mb-4">You are not currently enrolled in any courses.</p>
+                                    <Button asChild>
+                                        <Link href="/">Explore Courses</Link>
+                                    </Button>
+                                </>
+                            ) : (
+                                <p className="text-muted-foreground">You've completed all your courses! Well done.</p>
+                            )}
                         </CardContent>
                     </Card>
                  )}
@@ -157,7 +177,7 @@ export default function DashboardPage() {
                                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                                              <div>
                                                 <h3 className="font-semibold">{course.title}</h3>
-                                                <p className="text-sm text-muted-foreground">Completed with {course.progress}%</p>
+                                                <p className="text-sm text-muted-foreground">Completed on {new Date().toLocaleDateString()}</p>
                                              </div>
                                              <Button asChild variant="outline" className="mt-2 sm:mt-0">
                                                 <Link href={`/dashboard/certificate/${course.id}`}>

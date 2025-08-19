@@ -1,12 +1,13 @@
 
 import { db } from './firebase';
-import { ref, get, set, push } from 'firebase/database';
-import type { Course } from './mock-data';
+import { ref, get, set, push, update } from 'firebase/database';
+import type { Course, UserCourse } from './mock-data';
 
 export interface RegisteredUser {
     uid: string;
     email: string | null;
     displayName: string | null;
+    purchasedCourses?: Record<string, Omit<UserCourse, 'courseId'>>;
 }
 
 export interface HeroData {
@@ -57,6 +58,29 @@ export async function saveUser(user: RegisteredUser): Promise<void> {
     const userRef = ref(db, `users/${user.uid}`);
     await set(userRef, user);
 }
+
+export async function enrollUserInCourse(userId: string, courseId: string): Promise<void> {
+    const enrollmentRef = ref(db, `users/${userId}/purchasedCourses/${courseId}`);
+    await set(enrollmentRef, {
+        progress: 0,
+        completed: false,
+        certificateAvailable: false,
+    });
+}
+
+export async function getUserCourses(userId: string): Promise<UserCourse[]> {
+    const userCoursesRef = ref(db, `users/${userId}/purchasedCourses`);
+    const snapshot = await get(userCoursesRef);
+    if (snapshot.exists()) {
+        const coursesData = snapshot.val();
+        return Object.keys(coursesData).map(courseId => ({
+            courseId,
+            ...coursesData[courseId]
+        }));
+    }
+    return [];
+}
+
 
 export async function getAllUsers(): Promise<RegisteredUser[]> {
     const usersRef = ref(db, 'users');

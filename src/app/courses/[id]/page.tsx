@@ -149,6 +149,7 @@ export default function CourseDetailPage() {
        <MpesaModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        courseId={course.id}
         courseName={course.title}
         price={course.price}
         onPaymentSuccess={handlePaymentSuccess}

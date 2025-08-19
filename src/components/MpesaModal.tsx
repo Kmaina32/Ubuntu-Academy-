@@ -14,10 +14,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { enrollUserInCourse } from '@/lib/firebase-service';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+
 
 interface MpesaModalProps {
   isOpen: boolean;
   onClose: () => void;
+  courseId: string;
   courseName: string;
   price: number;
   onPaymentSuccess: () => void;
@@ -26,34 +32,55 @@ interface MpesaModalProps {
 export function MpesaModal({
   isOpen,
   onClose,
+  courseId,
   courseName,
   price,
   onPaymentSuccess,
 }: MpesaModalProps) {
+  const { user } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [paymentStep, setPaymentStep] = useState<'form' | 'processing' | 'success'>('form');
 
   const handlePay = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+        toast({ title: 'Not Logged In', description: 'You must be logged in to purchase a course.', variant: 'destructive' });
+        router.push('/login');
+        return;
+    }
+
     if (!/^\d{10}$/.test(phoneNumber)) {
-        alert('Please enter a valid 10-digit phone number.');
+        toast({ title: 'Invalid Phone Number', description: 'Please enter a valid 10-digit phone number.', variant: 'destructive' });
         return;
     }
 
     setIsLoading(true);
     setPaymentStep('processing');
 
-    // Simulate STK push and payment processing
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    try {
+        // Simulate STK push and payment processing
+        await new Promise(resolve => setTimeout(resolve, 3000));
 
-    setIsLoading(false);
-    setPaymentStep('success');
+        // Enroll user in the course in Firebase
+        await enrollUserInCourse(user.uid, courseId);
 
-    // Wait a bit on the success message before redirecting
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    onPaymentSuccess();
+        setIsLoading(false);
+        setPaymentStep('success');
+
+        // Wait a bit on the success message before redirecting
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        onPaymentSuccess();
+
+    } catch (error) {
+        console.error("Payment or enrollment failed:", error);
+        toast({ title: 'Error', description: 'Something went wrong. Please try again.', variant: 'destructive'});
+        setIsLoading(false);
+        setPaymentStep('form');
+    }
   };
   
   const handleClose = () => {
