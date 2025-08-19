@@ -8,18 +8,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, PlusCircle, Calendar as CalendarIcon, Loader2, Trash2 } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import type { CalendarEvent } from '@/lib/mock-data';
-import { getAllCalendarEvents } from '@/lib/firebase-service';
+import { getAllCalendarEvents, deleteCalendarEvent } from '@/lib/firebase-service';
 import { format, startOfDay } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { EventForm } from '@/components/EventForm';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function AdminCalendarPage() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const fetchEvents = async () => {
@@ -53,8 +64,19 @@ export default function AdminCalendarPage() {
 
   const handleFormSuccess = () => {
     fetchEvents();
-    setIsDialogOpen(false);
+    setIsFormDialogOpen(false);
   };
+
+  const handleDelete = async (eventId: string) => {
+    try {
+        await deleteCalendarEvent(eventId);
+        toast({title: "Success", description: "Event deleted successfully."});
+        fetchEvents();
+    } catch(error) {
+        console.error("Failed to delete event:", error);
+        toast({title: "Error", description: "Failed to delete event.", variant: "destructive"});
+    }
+  }
   
   const DayWithDot = ({ day, date }: { day: React.ReactNode, date: Date }) => {
     const formattedDate = format(startOfDay(date), 'yyyy-MM-dd');
@@ -75,7 +97,7 @@ export default function AdminCalendarPage() {
                <ArrowLeft className="h-4 w-4" />
                Back to Admin Dashboard
             </Link>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen}>
               <Card>
                   <CardHeader>
                       <CardTitle>Manage Calendar</CardTitle>
@@ -88,16 +110,28 @@ export default function AdminCalendarPage() {
                             <p className="ml-2">Loading calendar...</p>
                          </div>
                       ) : (
-                        <div className="flex flex-col md:flex-row gap-8">
-                            <aside className="md:w-1/3 lg:w-1/4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div className="md:col-span-2">
+                                <Calendar
+                                  mode="single"
+                                  selected={selectedDate}
+                                  onSelect={setSelectedDate}
+                                  className="rounded-md border not-prose w-full"
+                                  components={{
+                                    Day: DayWithDot,
+                                  }}
+                                />
+                            </div>
+                            <aside className="md:col-span-1">
                                 <div className="flex justify-between items-center mb-4">
                                   <h3 className="font-semibold">
                                       {selectedDate ? format(selectedDate, 'PPP') : 'Select a date'}
                                   </h3>
                                   {selectedDate && (
                                      <DialogTrigger asChild>
-                                        <Button variant="ghost" size="icon">
-                                          <PlusCircle className="h-5 w-5" />
+                                        <Button variant="outline" size="sm">
+                                          <PlusCircle className="mr-2 h-4 w-4" />
+                                          Add Event
                                         </Button>
                                     </DialogTrigger>
                                   )}
@@ -105,27 +139,35 @@ export default function AdminCalendarPage() {
                                 <div className="space-y-4">
                                   {selectedDayEvents.length > 0 ? (
                                     selectedDayEvents.map(event => (
-                                      <div key={event.id} className="p-3 bg-secondary rounded-lg">
-                                        <p className="font-semibold text-sm">{event.title}</p>
+                                      <div key={event.id} className="p-3 bg-secondary rounded-lg text-sm group relative">
+                                        <p className="font-semibold">{event.title}</p>
                                         <p className="text-xs text-muted-foreground">{event.description}</p>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+                                                  <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This action cannot be undone. This will permanently delete the event titled "{event.title}".
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDelete(event.id)}>Continue</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                       </div>
                                     ))
                                   ) : (
-                                     <p className="text-sm text-muted-foreground">No events scheduled.</p>
+                                     <p className="text-sm text-muted-foreground">No events scheduled for this day.</p>
                                   )}
                                 </div>
                             </aside>
-                            <div className="flex-grow">
-                                <Calendar
-                                  mode="single"
-                                  selected={selectedDate}
-                                  onSelect={setSelectedDate}
-                                  className="rounded-md border not-prose"
-                                  components={{
-                                    Day: DayWithDot,
-                                  }}
-                                />
-                            </div>
                         </div>
                       )}
                   </CardContent>
@@ -137,10 +179,10 @@ export default function AdminCalendarPage() {
                           Fill out the form to add a new event for {selectedDate ? format(selectedDate, 'PPP') : ''}.
                       </DialogDescription>
                   </DialogHeader>
-                  <EventForm
-                    selectedDate={selectedDate!}
+                  {selectedDate && <EventForm
+                    selectedDate={selectedDate}
                     onSuccess={handleFormSuccess}
-                  />
+                  />}
               </DialogContent>
             </Dialog>
         </div>
@@ -149,3 +191,4 @@ export default function AdminCalendarPage() {
     </div>
   );
 }
+

@@ -171,3 +171,8 @@ export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
     }
     return [];
 }
+
+export async function deleteCalendarEvent(eventId: string): Promise<void> {
+    const eventRef = ref(db, `calendarEvents/${eventId}`);
+    await remove(eventRef);
+}
