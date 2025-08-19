@@ -1,3 +1,4 @@
+
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { courses } from "@/lib/mock-data";
 import { FilePlus2, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
 
 export default function AdminPage() {
   return (
@@ -26,9 +28,11 @@ export default function AdminPage() {
                   <CardTitle>Courses</CardTitle>
                   <CardDescription>Manage your course catalog.</CardDescription>
                 </div>
-                <Button>
-                  <FilePlus2 className="mr-2 h-4 w-4" />
-                  Create Course
+                <Button asChild>
+                  <Link href="/admin/courses/create">
+                    <FilePlus2 className="mr-2 h-4 w-4" />
+                    Create Course
+                  </Link>
                 </Button>
               </CardHeader>
               <CardContent>
