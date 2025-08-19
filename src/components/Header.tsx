@@ -2,9 +2,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, User, LogOut, LayoutDashboard, UserPlus } from 'lucide-react';
+import { User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { SidebarTrigger, useSidebar } from './ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
 import {
@@ -44,16 +43,7 @@ export function Header() {
         </div>
       
         <div className="flex-1 flex justify-center">
-            <form>
-            <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                type="search"
-                placeholder="Search courses..."
-                className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
-                />
-            </div>
-            </form>
+            {/* Search bar is removed */}
         </div>
 
         <div className="flex items-center gap-4">

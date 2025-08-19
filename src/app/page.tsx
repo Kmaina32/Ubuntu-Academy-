@@ -1,26 +1,47 @@
 
+'use client'
+
+import { useState, useMemo } from 'react';
 import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import type { Course } from "@/lib/mock-data";
 import { getAllCourses, getHeroData } from '@/lib/firebase-service';
-import { Loader2 } from 'lucide-react';
-import Image from 'next/image';
+import { Loader2, Search } from 'lucide-react';
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
+import { Input } from '@/components/ui/input';
 
+// This is now a client component
+export default function Home() {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [heroData, setHeroData] = useState({ title: '', subtitle: '', imageUrl: '' });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-export default async function Home() {
-  let courses: Course[] = [];
-  let error: string | null = null;
-  const heroData = await getHeroData();
+  useState(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [coursesData, hero] = await Promise.all([getAllCourses(), getHeroData()]);
+        setCourses(coursesData);
+        setHeroData(hero);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load page content. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  });
 
-  try {
-    courses = await getAllCourses();
-  } catch (err) {
-    console.error(err);
-    error = "Failed to load courses. Please try again later.";
-  }
+  const filteredCourses = useMemo(() => {
+     return courses.filter(course => 
+        course.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [courses, searchQuery]);
 
   const courseAiHints: Record<string, string> = {
     'digital-marketing-101': 'marketing computer',
@@ -56,19 +77,37 @@ export default async function Home() {
 
           <section className="py-16 md:py-24 bg-background">
             <div className="container mx-auto px-4 md:px-6">
-              <h2 className="text-3xl font-bold text-center mb-12 font-headline">Featured Courses</h2>
+              <div className="text-center mb-12">
+                  <h2 className="text-3xl font-bold font-headline">Featured Courses</h2>
+                   <div className="relative w-full max-w-md mx-auto mt-4">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            type="search"
+                            placeholder="Search courses..."
+                            className="pl-8"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+              </div>
               {error ? (
                 <p className="text-destructive text-center">{error}</p>
-              ) : courses.length === 0 ? (
+              ) : loading ? (
                 <div className="flex justify-center items-center py-10">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     <p className="ml-2">Loading courses...</p>
                   </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {courses.map((course) => (
+                  {filteredCourses.map((course) => (
                     <CourseCard key={course.id} course={course} aiHint={courseAiHints[course.id] || 'course placeholder'} />
                   ))}
+
+                   {filteredCourses.length === 0 && (
+                      <div className="md:col-span-2 lg:col-span-3 text-center text-muted-foreground py-10">
+                          <p>No courses found that match your search.</p>
+                      </div>
+                   )}
                 </div>
               )}
             </div>

@@ -1,14 +1,14 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Course } from "@/lib/mock-data";
 import { getAllCourses, deleteCourse } from '@/lib/firebase-service';
-import { FilePlus2, Pencil, Trash2, Loader2 } from "lucide-react";
+import { FilePlus2, Pencil, Trash2, Loader2, Search } from "lucide-react";
 import Link from "next/link";
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -21,12 +21,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { Input } from '@/components/ui/input';
 
 export default function AdminPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
 
   const fetchCourses = async () => {
@@ -46,6 +48,12 @@ export default function AdminPage() {
   useEffect(() => {
     fetchCourses();
   }, []);
+  
+  const filteredCourses = useMemo(() => {
+    return courses.filter(course => 
+        course.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [courses, searchQuery]);
 
   const handleDelete = async (course: Course) => {
     try {
@@ -76,6 +84,16 @@ export default function AdminPage() {
             <CardHeader>
                 <CardTitle>Courses</CardTitle>
                 <CardDescription>Manage your course catalog.</CardDescription>
+                <div className="relative pt-4">
+                    <Search className="absolute left-2.5 top-6 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        placeholder="Search courses by title..."
+                        className="pl-8 sm:w-[300px]"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
             </CardHeader>
             <CardContent>
             {loadingCourses ? (
@@ -97,7 +115,7 @@ export default function AdminPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {courses.map((course) => (
+                    {filteredCourses.map((course) => (
                     <TableRow key={course.id}>
                         <TableCell className="font-medium">{course.title}</TableCell>
                         <TableCell>{course.category}</TableCell>
@@ -131,10 +149,10 @@ export default function AdminPage() {
                         </TableCell>
                     </TableRow>
                     ))}
-                     {courses.length === 0 && (
+                     {filteredCourses.length === 0 && (
                         <TableRow>
                             <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
-                                No courses found.
+                                No courses found{searchQuery && ' for your search'}.
                             </TableCell>
                         </TableRow>
                      )}
