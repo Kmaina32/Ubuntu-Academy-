@@ -8,7 +8,7 @@ import { getCourseById } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2 } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -80,6 +80,10 @@ export default function CoursePlayerPage() {
           <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
             <aside className="w-full md:w-80 lg:w-96 bg-background border-r flex-shrink-0 overflow-y-auto">
               <div className="p-4">
+                 <button onClick={() => router.push(`/courses/${course.id}`)} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Course Details
+                </button>
                 <h2 className="text-xl font-bold mb-1 font-headline">{course.title}</h2>
                 <Progress value={progress} className="h-2 mb-4" />
               </div>
