@@ -42,14 +42,13 @@ export function Certificate({ course }: CertificateProps) {
                     <div className="md:w-2/3 p-8 md:p-12 flex flex-col justify-between">
                         <div>
                             <p className="text-lg text-muted-foreground uppercase tracking-wider">This certificate is awarded to</p>
-                            <h1 className="text-5xl font-bold text-primary my-2 font-headline">{user.name}</h1>
+                            <h1 className="text-6xl font-signature text-primary my-4">{user.name}</h1>
                             <p className="text-lg text-muted-foreground">for successfully completing the course</p>
                             <h3 className="text-3xl font-semibold text-accent mt-2 font-headline">{course.title}</h3>
                         </div>
                         <div className="mt-12 flex justify-between items-end">
                             <div className="text-sm text-muted-foreground">
                                 <p className="font-signature text-4xl text-gray-800 -mb-4">{course.instructor}</p>
-                                <p className="font-bold text-card-foreground text-base">{course.instructor}</p>
                                 <Separator className="my-1 bg-gray-400" />
                                 <p>Lead Instructor</p>
                             </div>
