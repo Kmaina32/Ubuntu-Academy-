@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { notFound, useRouter, useParams } from 'next/navigation';
-import { Course, Lesson } from '@/lib/mock-data';
+import { Course, Lesson, Module } from '@/lib/mock-data';
 import { getCourseById } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -29,6 +29,12 @@ function getYouTubeEmbedUrl(url: string | undefined): string | null {
   } catch(e) {
     return null; // Invalid URL
   }
+}
+
+function calculateModuleProgress(module: Module, completedLessons: Set<string>): number {
+    if (!module.lessons || module.lessons.length === 0) return 0;
+    const completedInModule = module.lessons.filter(l => completedLessons.has(l.id)).length;
+    return (completedInModule / module.lessons.length) * 100;
 }
 
 export default function CoursePlayerPage() {
@@ -104,36 +110,50 @@ export default function CoursePlayerPage() {
                     Back to Course Details
                 </button>
                 <h2 className="text-xl font-bold mb-1 font-headline">{course.title}</h2>
-                <Progress value={progress} className="h-2 mb-4" />
+                <div className="flex items-center gap-2 mb-4">
+                    <Progress value={progress} className="h-2 flex-grow" />
+                    <span className="text-xs text-muted-foreground">{Math.round(progress)}%</span>
+                </div>
               </div>
               <Accordion type="multiple" defaultValue={course.modules?.map(m => m.id)} className="w-full">
-                {course.modules?.map((module) => (
-                  <AccordionItem value={module.id} key={module.id}>
-                    <AccordionTrigger className="font-semibold px-4">{module.title}</AccordionTrigger>
-                    <AccordionContent>
-                      <ul className="space-y-1 p-2">
-                        {module.lessons.map((lesson) => (
-                          <li key={lesson.id}>
-                            <button
-                              onClick={() => handleLessonClick(lesson)}
-                              disabled={!currentLesson && progress < 100}
-                              className={`w-full text-left flex items-center gap-3 p-2 rounded-md transition-colors ${
-                                currentLesson?.id === lesson.id ? 'bg-primary/10 text-primary' : 'hover:bg-primary/5'
-                              } disabled:opacity-50 disabled:cursor-not-allowed`}
-                            >
-                              {completedLessons.has(lesson.id) ? (
-                                <CheckCircle className="h-5 w-5 text-green-500" />
-                              ) : (
-                                <PlayCircle className="h-5 w-5 text-muted-foreground" />
-                              )}
-                              <span>{lesson.title}</span>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
+                {course.modules?.map((module) => {
+                  const moduleProgress = calculateModuleProgress(module, completedLessons);
+                  return (
+                      <AccordionItem value={module.id} key={module.id}>
+                        <AccordionTrigger className="font-semibold px-4">
+                            <div className="w-full">
+                                <p>{module.title}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <Progress value={moduleProgress} className="h-1 flex-grow bg-secondary" />
+                                    <span className="text-xs font-normal text-muted-foreground">{Math.round(moduleProgress)}%</span>
+                                </div>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <ul className="space-y-1 p-2">
+                            {module.lessons.map((lesson) => (
+                              <li key={lesson.id}>
+                                <button
+                                  onClick={() => handleLessonClick(lesson)}
+                                  disabled={!currentLesson && progress < 100}
+                                  className={`w-full text-left flex items-center gap-3 p-2 rounded-md transition-colors ${
+                                    currentLesson?.id === lesson.id ? 'bg-primary/10 text-primary' : 'hover:bg-primary/5'
+                                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                >
+                                  {completedLessons.has(lesson.id) ? (
+                                    <CheckCircle className="h-5 w-5 text-green-500" />
+                                  ) : (
+                                    <PlayCircle className="h-5 w-5 text-muted-foreground" />
+                                  )}
+                                  <span className="text-sm">{lesson.title}</span>
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+                  )
+                })}
                 <AccordionItem value="exam">
                     <AccordionTrigger className="font-semibold px-4">Final Exam</AccordionTrigger>
                     <AccordionContent>
@@ -148,7 +168,7 @@ export default function CoursePlayerPage() {
                             ) : (
                                 <Star className="h-5 w-5 text-yellow-500" />
                             )}
-                            <span>Take the Final Exam</span>
+                            <span className="text-sm">Take the Final Exam</span>
                         </button>
                       </div>
                     </AccordionContent>
