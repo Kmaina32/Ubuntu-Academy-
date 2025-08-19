@@ -83,25 +83,33 @@ function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling }: { cours
 export default function CourseDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
 
+   useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
+
   useEffect(() => {
-      const fetchCourse = async () => {
-          setLoading(true);
-          const fetchedCourse = await getCourseById(params.id);
-          setCourse(fetchedCourse);
-          setLoading(false);
-      }
-      fetchCourse();
-  }, [params.id]);
+    if (user) {
+        const fetchCourse = async () => {
+            setLoading(true);
+            const fetchedCourse = await getCourseById(params.id);
+            setCourse(fetchedCourse);
+            setLoading(false);
+        }
+        fetchCourse();
+    }
+  }, [params.id, user]);
 
 
-  if (loading) {
+  if (loading || authLoading || !user) {
     return (
         <div className="flex justify-center items-center min-h-screen">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
