@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
 export function AppSidebar() {
@@ -43,39 +43,68 @@ export function AppSidebar() {
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/dashboard')} tooltip="Dashboard">
-                        <Link href="/dashboard">
-                            <LayoutDashboard />
-                            <span>Dashboard</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/assignments')} tooltip="Assignments">
-                        <Link href="/assignments">
-                            <ListTodo />
-                            <span>Assignments</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/calendar')} tooltip="Calendar">
-                        <Link href="/calendar">
-                            <Calendar />
-                            <span>Calendar</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                {user && (
-                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/profile')} tooltip="Profile">
-                        <Link href="/profile">
-                            <User />
-                            <span>Profile</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
+                {user ? (
+                    <>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/dashboard')} tooltip="Dashboard">
+                                <Link href="/dashboard">
+                                    <LayoutDashboard />
+                                    <span>Dashboard</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/assignments')} tooltip="Assignments">
+                                <Link href="/assignments">
+                                    <ListTodo />
+                                    <span>Assignments</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/calendar')} tooltip="Calendar">
+                                <Link href="/calendar">
+                                    <Calendar />
+                                    <span>Calendar</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/profile')} tooltip="Profile">
+                                <Link href="/profile">
+                                    <User />
+                                    <span>Profile</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </>
+                ) : (
+                    <>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/about')} tooltip="About Us">
+                                <Link href="/about">
+                                    <Info />
+                                    <span>About Us</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/help')} tooltip="Help">
+                                <Link href="/help">
+                                    <HelpCircle />
+                                    <span>Help</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/contact')} tooltip="Contact Us">
+                                <Link href="/contact">
+                                    <Mail />
+                                    <span>Contact Us</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </>
                 )}
             </SidebarMenu>
         </SidebarContent>
