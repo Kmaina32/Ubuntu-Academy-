@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -12,13 +13,13 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, Settings } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, Settings, User } from 'lucide-react';
 
 export function AppSidebar() {
     const pathname = usePathname();
 
     const isActive = (path: string) => {
-        return pathname === path;
+        return pathname === path || (path.length > 1 && pathname.startsWith(path));
     }
 
   return (
@@ -44,6 +45,14 @@ export function AppSidebar() {
                         <Link href="/dashboard">
                             <LayoutDashboard />
                             <span>Dashboard</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/profile')}>
+                        <Link href="/profile">
+                            <User />
+                            <span>Profile</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
