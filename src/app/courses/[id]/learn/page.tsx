@@ -109,6 +109,7 @@ export default function CoursePlayerPage() {
 
           } else {
               // Fallback for courses without an enrollment date (e.g., legacy data)
+              const allLessons = fetchedCourse.modules?.flatMap(m => m.lessons) || [];
               setUnlockedLessonsCount(allLessons.length);
               if (allLessons.length > 0) {
                  setCurrentLesson(allLessons[0]);
@@ -149,8 +150,20 @@ export default function CoursePlayerPage() {
     });
 
     const currentIndex = allLessons.findIndex(l => l.id === currentLesson.id);
-    if(currentIndex < allLessons.length - 1) {
-        setCurrentLesson(allLessons[currentIndex + 1]);
+    const nextLessonIndex = currentIndex + 1;
+
+    // Check if there is a next lesson
+    if(nextLessonIndex < allLessons.length) {
+        // Check if the next lesson is unlocked
+        if (nextLessonIndex < unlockedLessonsCount) {
+             setCurrentLesson(allLessons[nextLessonIndex]);
+        } else {
+            toast({
+                title: "Great job for today!",
+                description: "You've completed all available lessons. The next lesson will unlock tomorrow.",
+            });
+            // Stay on the current (now completed) lesson view
+        }
     } else {
         // Last lesson completed
         setCurrentLesson(null);
