@@ -8,9 +8,9 @@ const firebaseConfig = {
   authDomain: "mkenya-skilled.firebaseapp.com",
   databaseURL: "https://mkenya-skilled-default-rtdb.firebaseio.com",
   projectId: "mkenya-skilled",
-  storageBucket: "mkenya-skilled.appspot.com",
+  storageBucket: "mkenya-skilled.firebasestorage.app",
   messagingSenderId: "971829599240",
-  appId: "1:971829599240:web:743a5618282680bb9dc5bd",
+  appId: "1:971829599240:web:c7ae181183e385219dc5bd",
   measurementId: "G-MEASUREMENT_ID",
 };
 
