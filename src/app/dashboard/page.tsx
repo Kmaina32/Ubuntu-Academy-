@@ -12,6 +12,9 @@ import { getCourseById, getUserCourses } from '@/lib/firebase-service';
 import { Award, BookOpen, User, Loader2, Trophy, BookCopy, ListTodo } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/Sidebar';
+import { Header } from '@/components/Header';
 
 type PurchasedCourseDetail = UserCourse & Partial<Course>;
 
@@ -52,39 +55,30 @@ export default function DashboardPage() {
   const completedCourses = purchasedCourses.filter(c => c.completed);
 
 
-  if (authLoading || (loadingCourses && user)) {
-      return (
-          <div className="flex flex-col min-h-screen">
-            <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
-                <div className="flex justify-center items-center py-10">
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                    <p className="ml-2">Loading your dashboard...</p>
-                </div>
-            </main>
-            <Footer />
-          </div>
-      )
-  }
+  const renderContent = () => {
+    if (authLoading || (loadingCourses && user)) {
+        return (
+            <div className="flex justify-center items-center py-10 h-full">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <p className="ml-2">Loading your dashboard...</p>
+            </div>
+        )
+    }
 
-  if (!user) {
-      return (
-           <div className="flex flex-col min-h-screen">
-            <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16 text-center">
+    if (!user) {
+        return (
+            <div className="text-center h-full flex flex-col justify-center">
                 <User className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <h1 className="text-2xl font-bold mb-2 font-headline">Access Denied</h1>
                 <p className="text-muted-foreground mb-4">Please log in to view your dashboard.</p>
                 <Button asChild>
                     <Link href="/login">Login</Link>
                 </Button>
-            </main>
-            <Footer />
-          </div>
-      )
-  }
+            </div>
+        )
+    }
 
-  return (
-    <div className="flex flex-col min-h-screen">
-      <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16 bg-secondary/50">
+    return (
         <div className="max-w-6xl mx-auto">
             <div className="mb-8">
                 <h1 className="text-3xl font-bold mb-1 font-headline">Welcome Back, {user.displayName?.split(' ')[0]}!</h1>
@@ -204,8 +198,21 @@ export default function DashboardPage() {
             </div>
 
         </div>
-      </main>
-      <Footer />
-    </div>
+    );
+  }
+
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <Header />
+        <div className="flex flex-col min-h-screen">
+          <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16 bg-secondary/50">
+           {renderContent()}
+          </main>
+          <Footer />
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

@@ -16,6 +16,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Award, Frown, Loader2, Sparkles, ArrowLeft } from 'lucide-react';
 import { Footer } from '@/components/Footer';
+import { AppSidebar } from '@/components/Sidebar';
+import { Header } from '@/components/Header';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
 const formSchema = z.object({
   answer: z.string().min(50, { message: 'Please provide a more detailed answer (at least 50 characters).' }),
@@ -88,110 +91,116 @@ export default function ExamPage() {
   const passed = result && course.exam && result.pointsAwarded >= course.exam.maxPoints / 2;
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <main className="flex-grow container mx-auto px-4 md:px-6 py-12">
-        <div className="max-w-3xl mx-auto">
-          <button onClick={() => router.back()} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
-             <ArrowLeft className="h-4 w-4" />
-             Back to Course
-          </button>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl font-headline">Final Exam: {course.title}</CardTitle>
-              <CardDescription>Answer the following question to the best of your ability.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {course.exam ? (
-                <>
-                  <p className="font-semibold mb-2">Question:</p>
-                  <p className="mb-6 p-4 bg-secondary rounded-md">{course.exam.question}</p>
-    
-                  {!result && (
-                    <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                        <FormField
-                          control={form.control}
-                          name="answer"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Your Answer</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="Type your detailed answer here..."
-                                  className="min-h-[200px]"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <Button type="submit" disabled={isLoading}>
-                          {isLoading ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Grading...
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="mr-2 h-4 w-4" />
-                              Submit for AI Grading
-                            </>
-                          )}
-                        </Button>
-                      </form>
-                    </Form>
-                  )}
-    
-                  {error && (
-                    <Alert variant="destructive">
-                      <AlertTitle>Error</AlertTitle>
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
-    
-                  {result && (
-                    <div className="space-y-6">
-                        <Alert variant={passed ? 'default' : 'destructive'} className={passed ? 'bg-green-100 border-green-400 text-green-900' : ''}>
-                            {passed ? <Award className="h-4 w-4"/> : <Frown className="h-4 w-4" />}
-                            <AlertTitle className="text-lg font-bold">
-                                {passed ? 'Congratulations, you passed!' : 'Needs Improvement'}
-                            </AlertTitle>
-                            <AlertDescription>
-                                You scored <span className="font-bold">{result.pointsAwarded}</span> out of <span className="font-bold">{course.exam.maxPoints}</span> points.
-                            </AlertDescription>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <Header />
+        <div className="flex flex-col min-h-screen">
+          <main className="flex-grow container mx-auto px-4 md:px-6 py-12">
+            <div className="max-w-3xl mx-auto">
+              <button onClick={() => router.back()} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Course
+              </button>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl font-headline">Final Exam: {course.title}</CardTitle>
+                  <CardDescription>Answer the following question to the best of your ability.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {course.exam ? (
+                    <>
+                      <p className="font-semibold mb-2">Question:</p>
+                      <p className="mb-6 p-4 bg-secondary rounded-md">{course.exam.question}</p>
+        
+                      {!result && (
+                        <Form {...form}>
+                          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            <FormField
+                              control={form.control}
+                              name="answer"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Your Answer</FormLabel>
+                                  <FormControl>
+                                    <Textarea
+                                      placeholder="Type your detailed answer here..."
+                                      className="min-h-[200px]"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <Button type="submit" disabled={isLoading}>
+                              {isLoading ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Grading...
+                                </>
+                              ) : (
+                                <>
+                                  <Sparkles className="mr-2 h-4 w-4" />
+                                  Submit for AI Grading
+                                </>
+                              )}
+                            </Button>
+                          </form>
+                        </Form>
+                      )}
+        
+                      {error && (
+                        <Alert variant="destructive">
+                          <AlertTitle>Error</AlertTitle>
+                          <AlertDescription>{error}</AlertDescription>
                         </Alert>
-    
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-lg font-headline">AI Feedback</CardTitle>
-                            </CardHeader>
-                            <CardContent className="prose prose-sm max-w-none text-card-foreground">
-                                <p>{result.feedback}</p>
-                            </CardContent>
-                        </Card>
-    
-                        {passed ? (
-                            <Button size="lg" onClick={() => router.push(`/dashboard/certificate/${course.id}`)}>
-                                <Award className="mr-2 h-4 w-4" />
-                                View Your Certificate
-                            </Button>
-                        ) : (
-                            <Button size="lg" variant="outline" onClick={() => { setResult(null); form.reset(); }}>
-                                Try Again
-                            </Button>
-                        )}
-                    </div>
+                      )}
+        
+                      {result && (
+                        <div className="space-y-6">
+                            <Alert variant={passed ? 'default' : 'destructive'} className={passed ? 'bg-green-100 border-green-400 text-green-900' : ''}>
+                                {passed ? <Award className="h-4 w-4"/> : <Frown className="h-4 w-4" />}
+                                <AlertTitle className="text-lg font-bold">
+                                    {passed ? 'Congratulations, you passed!' : 'Needs Improvement'}
+                                </AlertTitle>
+                                <AlertDescription>
+                                    You scored <span className="font-bold">{result.pointsAwarded}</span> out of <span className="font-bold">{course.exam.maxPoints}</span> points.
+                                </AlertDescription>
+                            </Alert>
+        
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-lg font-headline">AI Feedback</CardTitle>
+                                </CardHeader>
+                                <CardContent className="prose prose-sm max-w-none text-card-foreground">
+                                    <p>{result.feedback}</p>
+                                </CardContent>
+                            </Card>
+        
+                            {passed ? (
+                                <Button size="lg" onClick={() => router.push(`/dashboard/certificate/${course.id}`)}>
+                                    <Award className="mr-2 h-4 w-4" />
+                                    View Your Certificate
+                                </Button>
+                            ) : (
+                                <Button size="lg" variant="outline" onClick={() => { setResult(null); form.reset(); }}>
+                                    Try Again
+                                </Button>
+                            )}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-muted-foreground">The exam for this course is not yet available.</p>
                   )}
-                </>
-              ) : (
-                <p className="text-muted-foreground">The exam for this course is not yet available.</p>
-              )}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </div>
+          </main>
+          <Footer />
         </div>
-      </main>
-      <Footer />
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

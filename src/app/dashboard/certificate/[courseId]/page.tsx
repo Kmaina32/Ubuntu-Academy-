@@ -9,6 +9,9 @@ import { Footer } from "@/components/Footer";
 import { Certificate } from "@/components/Certificate";
 import { useAuth } from "@/hooks/use-auth";
 import { ArrowLeft, Loader2 } from 'lucide-react';
+import { AppSidebar } from '@/components/Sidebar';
+import { Header } from '@/components/Header';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
 export default function CertificatePage() {
   const params = useParams<{ courseId: string }>();
@@ -46,21 +49,27 @@ export default function CertificatePage() {
 
 
   return (
-    <div className="flex flex-col min-h-screen print:min-h-0">
-      <main className="flex-grow bg-secondary print:bg-white">
-        <div className="container mx-auto px-4 md:px-6 py-12 print:p-0">
-            <div className='print:hidden'>
-                <button onClick={() => router.back()} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to Dashboard
-                </button>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <Header />
+        <div className="flex flex-col min-h-screen print:min-h-0">
+          <main className="flex-grow bg-secondary print:bg-white">
+            <div className="container mx-auto px-4 md:px-6 py-12 print:p-0">
+                <div className='print:hidden'>
+                    <button onClick={() => router.back()} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to Dashboard
+                    </button>
+                </div>
+                <Certificate course={course} userName={user.displayName || 'Student'} />
             </div>
-            <Certificate course={course} userName={user.displayName || 'Student'} />
+          </main>
+          <div className="print:hidden">
+            <Footer />
+          </div>
         </div>
-      </main>
-      <div className="print:hidden">
-        <Footer />
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

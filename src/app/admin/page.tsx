@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Course } from "@/lib/mock-data";
 import { getAllCourses } from '@/lib/firebase-service';
-import { FilePlus2, Pencil, Trash2, Loader2, Users, Image as ImageIcon, ListTodo, Calendar as CalendarIcon } from "lucide-react";
+import { FilePlus2, Pencil, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminPage() {
@@ -37,46 +37,21 @@ export default function AdminPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
-        <h1 className="text-3xl font-bold mb-8 font-headline">Admin Dashboard</h1>
-
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-                <CardTitle>Courses</CardTitle>
-                <CardDescription>Manage your course catalog.</CardDescription>
-            </div>
-            <div className='flex items-center gap-2 flex-wrap justify-end'>
-                 <Button asChild variant="outline">
-                  <Link href="/admin/assignments">
-                    <ListTodo className="mr-2 h-4 w-4" />
-                    Manage Assignments
-                  </Link>
-                </Button>
-                 <Button asChild variant="outline">
-                  <Link href="/admin/calendar">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    Manage Calendar
-                  </Link>
-                </Button>
-                <Button asChild variant="outline">
-                  <Link href="/admin/hero">
-                    <ImageIcon className="mr-2 h-4 w-4" />
-                    Manage Hero
-                  </Link>
-                </Button>
-                <Button asChild variant="outline">
-                  <Link href="/admin/users">
-                    <Users className="mr-2 h-4 w-4" />
-                    Manage Users
-                  </Link>
-                </Button>
-                <Button asChild>
+        <div className="flex items-center justify-between mb-8">
+            <h1 className="text-3xl font-bold font-headline">Admin Dashboard</h1>
+             <Button asChild>
                 <Link href="/admin/courses/create">
                     <FilePlus2 className="mr-2 h-4 w-4" />
                     Create Course
                 </Link>
-                </Button>
-            </div>
+            </Button>
+        </div>
+        
+
+        <Card>
+            <CardHeader>
+                <CardTitle>Courses</CardTitle>
+                <CardDescription>Manage your course catalog.</CardDescription>
             </CardHeader>
             <CardContent>
             {loadingCourses ? (
@@ -112,6 +87,13 @@ export default function AdminPage() {
                         </TableCell>
                     </TableRow>
                     ))}
+                     {courses.length === 0 && (
+                        <TableRow>
+                            <TableCell colSpan={4} className="text-center text-muted-foreground py-10">
+                                No courses found.
+                            </TableCell>
+                        </TableRow>
+                     )}
                 </TableBody>
                 </Table>
             )}
