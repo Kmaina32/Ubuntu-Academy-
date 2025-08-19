@@ -75,10 +75,13 @@ export default function EditCoursePage() {
     };
 
   useEffect(() => {
-    fetchCourse();
+    if (params.id) {
+        fetchCourse();
+    }
   }, [params.id]);
 
   const onSubmit = async (values: CourseFormValues) => {
+    if (!params.id) return;
     setIsLoading(true);
     try {
       await updateCourse(params.id, values);
@@ -142,7 +145,7 @@ export default function EditCoursePage() {
                         <CardTitle className="text-2xl font-headline">Edit Course</CardTitle>
                         <CardDescription>Update the details for this course.</CardDescription>
                     </div>
-                    <Button variant="outline" onClick={() => setIsModalOpen(true)}>
+                    <Button variant="outline" onClick={() => setIsModalOpen(true)} disabled={!course}>
                         <BookText className="mr-2 h-4 w-4" />
                         Edit Course Content
                     </Button>
@@ -254,7 +257,11 @@ export default function EditCoursePage() {
              <CourseReviewModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                courseContent={course}
+                courseContent={{
+                    longDescription: course.longDescription,
+                    modules: course.modules,
+                    exam: course.exam
+                }}
                 onSave={handleContentSave}
                 isSaving={isLoading}
              />
@@ -264,4 +271,3 @@ export default function EditCoursePage() {
     </div>
   );
 }
-
