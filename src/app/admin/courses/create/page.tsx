@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,7 +17,6 @@ import Link from 'next/link';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { createCourse } from '@/lib/firebase-service';
 import type { Course } from '@/lib/mock-data';
-import { useState } from 'react';
 
 const courseFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -56,7 +56,7 @@ export default function CreateCoursePage() {
 
       toast({
         title: 'Course Created!',
-        description: `The course "${values.title}" has been successfully saved to the database.`,
+        description: `The course "${values.title}" has been successfully saved.`,
       });
       router.push(`/admin`);
       
