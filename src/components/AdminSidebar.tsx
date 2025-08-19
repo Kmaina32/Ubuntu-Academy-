@@ -14,6 +14,8 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle } from 'lucide-react';
+import { version } from '../../package.json';
+
 
 export function AdminSidebar() {
     const pathname = usePathname();
@@ -94,7 +96,10 @@ export function AdminSidebar() {
                 </SidebarMenuItem>
             </SidebarMenu>
         </SidebarContent>
-        <SidebarFooter>
+        <SidebarFooter className="space-y-2">
+            <div className="text-center text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+                App Version: v{version}
+            </div>
              <div className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
                 <SidebarTrigger />
                 <span className="text-sm text-muted-foreground group-data-[collapsible=icon]:hidden">Collapse</span>

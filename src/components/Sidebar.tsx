@@ -17,6 +17,7 @@ import {
 import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from './ui/separator';
+import { version } from '../../package.json';
 
 export function AppSidebar() {
     const pathname = usePathname();
@@ -153,7 +154,10 @@ export function AppSidebar() {
                 )}
             </SidebarMenu>
         </SidebarContent>
-        <SidebarFooter>
+        <SidebarFooter className="space-y-2">
+            <div className="text-center text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+                App Version: v{version}
+            </div>
              <div className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
                 <SidebarTrigger />
                 <span className="text-sm text-muted-foreground group-data-[collapsible=icon]:hidden">Collapse</span>
