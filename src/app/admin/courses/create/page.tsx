@@ -40,12 +40,18 @@ export default function CreateCoursePage() {
 
   const onSubmit = (values: z.infer<typeof courseFormSchema>) => {
     // In a real app, you would send this data to your backend/database
-    console.log(values);
+    // For this demo, we'll pass it back to the admin page via query params
+    const queryString = new URLSearchParams({
+        newCourse: 'true',
+        ...values,
+        price: values.price.toString(),
+    }).toString();
+
     toast({
       title: 'Course Created!',
       description: `The course "${values.title}" has been successfully created.`,
     });
-    router.push('/admin');
+    router.push(`/admin?${queryString}`);
   };
 
   return (

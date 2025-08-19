@@ -1,14 +1,45 @@
 
+'use client';
+
+import { Suspense, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { courses } from "@/lib/mock-data";
+import { courses as initialCourses, Course } from "@/lib/mock-data";
 import { FilePlus2, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 
-export default function AdminPage() {
+function AdminPageComponent() {
+  const searchParams = useSearchParams();
+  const [courses, setCourses] = useState<Course[]>(initialCourses);
+
+  useEffect(() => {
+    if (searchParams.get('newCourse')) {
+      const newCourse: Course = {
+        id: `new-course-${Date.now()}`,
+        title: searchParams.get('title') || '',
+        instructor: searchParams.get('instructor') || '',
+        description: searchParams.get('description') || '',
+        longDescription: searchParams.get('longDescription') || '',
+        price: Number(searchParams.get('price')) || 0,
+        imageUrl: 'https://placehold.co/600x400',
+        modules: [],
+        exam: {
+          question: '',
+          referenceAnswer: '',
+          maxPoints: 10
+        }
+      };
+      // Check if the course already exists to avoid duplicates on re-renders
+      if (!courses.some(c => c.title === newCourse.title)) {
+         setCourses(prevCourses => [newCourse, ...prevCourses]);
+      }
+    }
+  }, [searchParams, courses]);
+
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
@@ -95,4 +126,12 @@ export default function AdminPage() {
       <Footer />
     </div>
   );
+}
+
+export default function AdminPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <AdminPageComponent />
+        </Suspense>
+    )
 }
