@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Course } from "@/lib/mock-data";
 import { getAllCourses } from '@/lib/firebase-service';
-import { FilePlus2, Pencil, Trash2, Loader2, Users, Image as ImageIcon } from "lucide-react";
+import { FilePlus2, Pencil, Trash2, Loader2, Users, Image as ImageIcon, ListTodo, Calendar as CalendarIcon } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminPage() {
@@ -45,7 +45,19 @@ export default function AdminPage() {
                 <CardTitle>Courses</CardTitle>
                 <CardDescription>Manage your course catalog.</CardDescription>
             </div>
-            <div className='flex items-center gap-2'>
+            <div className='flex items-center gap-2 flex-wrap justify-end'>
+                 <Button asChild variant="outline">
+                  <Link href="/admin/assignments">
+                    <ListTodo className="mr-2 h-4 w-4" />
+                    Manage Assignments
+                  </Link>
+                </Button>
+                 <Button asChild variant="outline">
+                  <Link href="/admin/calendar">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    Manage Calendar
+                  </Link>
+                </Button>
                 <Button asChild variant="outline">
                   <Link href="/admin/hero">
                     <ImageIcon className="mr-2 h-4 w-4" />
