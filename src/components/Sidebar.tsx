@@ -14,7 +14,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
 export function AppSidebar() {
@@ -48,6 +48,14 @@ export function AppSidebar() {
                                 <Link href="/dashboard">
                                     <LayoutDashboard />
                                     <span>Dashboard</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/')} tooltip="Courses" onClick={onLinkClick}>
+                                <Link href="/">
+                                    <Book />
+                                    <span>Courses</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
