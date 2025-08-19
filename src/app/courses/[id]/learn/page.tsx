@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -15,7 +14,7 @@ import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
-import { isWeekday } from 'date-fns';
+import { isWeekend } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -47,7 +46,7 @@ function getWeekdayCount(startDate: Date, endDate: Date): number {
   let currentDate = new Date(startDate);
 
   while (currentDate <= endDate) {
-    if (isWeekday(currentDate)) {
+    if (!isWeekend(currentDate)) {
       count++;
     }
     currentDate.setDate(currentDate.getDate() + 1);
@@ -306,7 +305,7 @@ export default function CoursePlayerPage() {
                   
                   {!completedLessons.has(currentLesson.id) && (
                     <Button size="lg" className="bg-accent hover:bg-accent/90 mt-8" onClick={handleCompleteLesson}>
-                      Mark as Completed & Continue
+                      Mark as Completed &amp; Continue
                     </Button>
                   )}
                 </div>
