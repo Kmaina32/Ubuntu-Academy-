@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, notFound } from 'next/navigation';
+import { useRouter, notFound, useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,8 +21,9 @@ const formSchema = z.object({
   answer: z.string().min(50, { message: 'Please provide a more detailed answer (at least 50 characters).' }),
 });
 
-export default function ExamPage({ params }: { params: { id: string } }) {
+export default function ExamPage() {
   const router = useRouter();
+  const params = useParams<{ id: string }>();
   const [course, setCourse] = useState<Course | null>(null);
   const [loadingCourse, setLoadingCourse] = useState(true);
 

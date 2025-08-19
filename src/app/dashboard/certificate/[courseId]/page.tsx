@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { getCourseById } from "@/lib/firebase-service";
 import type { Course } from "@/lib/mock-data";
 import { Footer } from "@/components/Footer";
@@ -10,7 +10,8 @@ import { Certificate } from "@/components/Certificate";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from 'lucide-react';
 
-export default function CertificatePage({ params }: { params: { courseId: string } }) {
+export default function CertificatePage() {
+  const params = useParams<{ courseId: string }>();
   const [course, setCourse] = useState<Course | null>(null);
   const [loadingCourse, setLoadingCourse] = useState(true);
   const { user, loading: loadingAuth } = useAuth();

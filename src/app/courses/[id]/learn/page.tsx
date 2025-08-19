@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { Course, Lesson } from '@/lib/mock-data';
 import { getCourseById } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
@@ -10,8 +10,9 @@ import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { CheckCircle, Lock, PlayCircle, Star, Loader2 } from 'lucide-react';
 
-export default function CoursePlayerPage({ params }: { params: { id: string } }) {
+export default function CoursePlayerPage() {
   const router = useRouter();
+  const params = useParams<{ id: string }>();
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   
