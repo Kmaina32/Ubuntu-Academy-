@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Award, Frown, Loader2, Sparkles } from 'lucide-react';
+import { Award, Frown, Loader2, Sparkles, ArrowLeft } from 'lucide-react';
 import { Footer } from '@/components/Footer';
 
 const formSchema = z.object({
@@ -91,6 +91,10 @@ export default function ExamPage() {
     <div className="flex flex-col min-h-screen">
       <main className="flex-grow container mx-auto px-4 md:px-6 py-12">
         <div className="max-w-3xl mx-auto">
+          <button onClick={() => router.back()} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+             <ArrowLeft className="h-4 w-4" />
+             Back to Course
+          </button>
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl font-headline">Final Exam: {course.title}</CardTitle>

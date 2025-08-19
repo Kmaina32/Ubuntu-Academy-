@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { notFound, useParams } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import type { Course } from "@/lib/mock-data";
 import { getCourseById } from '@/lib/firebase-service';
@@ -12,12 +12,15 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
-import { PlayCircle, CheckCircle, Award, Loader2 } from "lucide-react";
+import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft } from "lucide-react";
+import { MpesaModal } from '@/components/MpesaModal';
 
 export default function CourseDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
       const fetchCourse = async () => {
@@ -48,11 +51,20 @@ export default function CourseDetailPage() {
     'mobile-app-dev-react-native': 'code mobile',
     'graphic-design-canva': 'design art'
   };
+  
+  const handlePaymentSuccess = () => {
+    setIsModalOpen(false);
+    router.push(`/courses/${course.id}/learn`);
+  }
 
   return (
     <>
       <main className="flex-grow py-12 md:py-16">
         <div className="container mx-auto px-4 md:px-6">
+           <button onClick={() => router.back()} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
+             <ArrowLeft className="h-4 w-4" />
+             Back
+          </button>
           <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
             <div className="md:col-span-2">
               <Badge variant="secondary" className="mb-2">{course.instructor}</Badge>
@@ -107,7 +119,9 @@ export default function CourseDetailPage() {
                   </CardHeader>
                   <CardContent className="p-6">
                      <p className="text-3xl font-bold text-primary mb-4">Ksh {course.price.toLocaleString()}</p>
-                     <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">Purchase with M-Pesa</Button>
+                     <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={() => setIsModalOpen(true)}>
+                        Purchase with M-Pesa
+                     </Button>
                      <p className="text-xs text-center mt-2 text-muted-foreground">This is a demo. No payment will be processed.</p>
                      <Separator className="my-4" />
                      <h3 className="font-semibold mb-2 font-headline">This course includes:</h3>
@@ -132,6 +146,13 @@ export default function CourseDetailPage() {
           </div>
         </div>
       </main>
+       <MpesaModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        courseName={course.title}
+        price={course.price}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
       <Footer />
     </>
   );
