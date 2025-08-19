@@ -42,6 +42,7 @@ const examSchema = z.object({
 
 const reviewSchema = z.object({
   longDescription: z.string().min(100, 'Description must be at least 100 characters'),
+  duration: z.string().min(3, "Duration is required"),
   modules: z.array(moduleSchema),
   exam: examSchema,
 });
@@ -87,19 +88,34 @@ export function CourseReviewModal({ isOpen, onClose, courseContent, onSave, isSa
         <div className="flex-grow overflow-y-auto pr-6 -mr-6">
             <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                    control={form.control}
-                    name="longDescription"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Course Description</FormLabel>
-                        <FormControl>
-                            <Textarea {...field} className="min-h-[120px]" />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="longDescription"
+                        render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                            <FormLabel>Course Description</FormLabel>
+                            <FormControl>
+                                <Textarea {...field} className="min-h-[120px]" />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="duration"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Course Duration</FormLabel>
+                            <FormControl>
+                                <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
                 
                 <h3 className="text-lg font-semibold">Modules</h3>
                 <Accordion type="multiple" defaultValue={moduleFields.map(m => m.id)} className="w-full">

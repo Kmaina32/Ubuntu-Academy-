@@ -20,7 +20,7 @@ export interface Module {
 }
 
 export interface Assignment {
-  id: string;
+  id:string;
   courseId: string;
   title: string;
   description: string;
@@ -60,6 +60,7 @@ export interface Course {
   longDescription: string;
   price: number;
   imageUrl: string;
+  duration: string; // e.g., "5 Weeks"
   modules: Module[];
   exam: {
     question: string;
@@ -72,8 +73,8 @@ export interface Course {
 export const user = {
     name: 'Jomo Kenyatta',
     purchasedCourses: [
-        { courseId: 'digital-marketing-101', progress: 50, completed: false, certificateAvailable: false, completedLessons: [] },
-        { courseId: 'graphic-design-canva', progress: 100, completed: true, certificateAvailable: true, completedLessons: [] }
+        { courseId: 'digital-marketing-101', progress: 50, completed: false, certificateAvailable: false, completedLessons: [], enrollmentDate: '2024-01-01T12:00:00.000Z' },
+        { courseId: 'graphic-design-canva', progress: 100, completed: true, certificateAvailable: true, completedLessons: [], enrollmentDate: '2024-01-01T12:00:00.000Z' }
     ]
 }
 
@@ -82,5 +83,6 @@ export interface UserCourse {
     progress: number;
     completed: boolean;
     certificateAvailable: boolean;
+    enrollmentDate: string; // ISO String
     completedLessons?: string[];
 }

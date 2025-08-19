@@ -9,12 +9,15 @@ import { getCourseById, updateUserCourseProgress, getUserCourses } from '@/lib/f
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
+import { differenceInCalendarDays, isWeekday } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 function getYouTubeEmbedUrl(url: string | undefined): string | null {
   if (!url) return null;
@@ -38,16 +41,34 @@ function calculateModuleProgress(module: Module, completedLessons: Set<string>):
     return (completedInModule / module.lessons.length) * 100;
 }
 
+// Calculate the number of weekdays between two dates
+function getWeekdayCount(startDate: Date, endDate: Date): number {
+  let count = 0;
+  let currentDate = new Date(startDate);
+
+  while (currentDate <= endDate) {
+    if (isWeekday(currentDate)) {
+      count++;
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  return count;
+}
+
+
 export default function CoursePlayerPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const { user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
+
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   
   const allLessons = course?.modules?.flatMap(m => m.lessons) || [];
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
+  const [unlockedLessonsCount, setUnlockedLessonsCount] = useState(0);
 
   useEffect(() => {
      if (!authLoading) {
@@ -62,17 +83,37 @@ export default function CoursePlayerPage() {
         if (!user) return;
         setLoading(true);
         const fetchedCourse = await getCourseById(params.id);
-        const userCourses = await getUserCourses(user.uid);
-        
         setCourse(fetchedCourse);
 
         if (fetchedCourse) {
-          if (fetchedCourse.modules && fetchedCourse.modules[0]?.lessons) {
-             setCurrentLesson(fetchedCourse.modules[0].lessons[0]);
-          }
+          const userCourses = await getUserCourses(user.uid);
           const currentUserCourse = userCourses.find(c => c.courseId === fetchedCourse.id);
+          
+          // Set initial completed lessons
           if (currentUserCourse?.completedLessons) {
             setCompletedLessons(new Set(currentUserCourse.completedLessons));
+          }
+          
+          // Drip content logic
+          if (currentUserCourse?.enrollmentDate) {
+              const enrollmentDate = new Date(currentUserCourse.enrollmentDate);
+              const today = new Date();
+              // Days since enrollment, but we only count weekdays
+              const unlockedDays = getWeekdayCount(enrollmentDate, today);
+              setUnlockedLessonsCount(unlockedDays);
+              
+              // Set the initial lesson
+              const allLessons = fetchedCourse.modules?.flatMap(m => m.lessons) || [];
+              if (allLessons.length > 0) {
+                 setCurrentLesson(allLessons[0]);
+              }
+
+          } else {
+              // Fallback for courses without an enrollment date (e.g., legacy data)
+              setUnlockedLessonsCount(allLessons.length);
+              if (allLessons.length > 0) {
+                 setCurrentLesson(allLessons[0]);
+              }
           }
         }
         setLoading(false);
@@ -81,6 +122,18 @@ export default function CoursePlayerPage() {
       fetchCourseAndProgress();
     }
   }, [params.id, user]);
+
+  const handleLessonClick = (lesson: Lesson, index: number) => {
+      if(index < unlockedLessonsCount) {
+          setCurrentLesson(lesson);
+      } else {
+          toast({
+              title: "Lesson Locked",
+              description: "This lesson will be available soon. Keep up the great work!",
+              variant: "default"
+          })
+      }
+  }
 
   const handleCompleteLesson = async () => {
     if (!currentLesson || !user || !course) return;
@@ -100,6 +153,7 @@ export default function CoursePlayerPage() {
     if(currentIndex < allLessons.length - 1) {
         setCurrentLesson(allLessons[currentIndex + 1]);
     } else {
+        // Last lesson completed
         setCurrentLesson(null);
     }
   };
@@ -134,13 +188,14 @@ export default function CoursePlayerPage() {
                     Back to Course Details
                 </button>
                 <h2 className="text-xl font-bold mb-1 font-headline">{course.title}</h2>
+                <p className="text-sm text-muted-foreground mb-2">{course.duration}</p>
                 <div className="flex items-center gap-2 mb-4">
                     <Progress value={progress} className="h-2 flex-grow" />
                     <span className="text-xs text-muted-foreground">{Math.round(progress)}%</span>
                 </div>
               </div>
               <Accordion type="multiple" defaultValue={course.modules?.map(m => m.id)} className="w-full">
-                {course.modules?.map((module) => {
+                {course.modules?.map((module, moduleIndex) => {
                   const moduleProgress = calculateModuleProgress(module, completedLessons);
                   return (
                       <AccordionItem value={module.id} key={module.id}>
@@ -155,24 +210,32 @@ export default function CoursePlayerPage() {
                         </AccordionTrigger>
                         <AccordionContent>
                           <ul className="space-y-1 p-2">
-                            {module.lessons.map((lesson) => (
-                              <li key={lesson.id}>
-                                <button
-                                  onClick={() => handleLessonClick(lesson)}
-                                  disabled={!currentLesson && progress < 100}
-                                  className={`w-full text-left flex items-center gap-3 p-2 rounded-md transition-colors ${
-                                    currentLesson?.id === lesson.id ? 'bg-primary/10 text-primary' : 'hover:bg-primary/5'
-                                  } disabled:opacity-50 disabled:cursor-not-allowed`}
-                                >
-                                  {completedLessons.has(lesson.id) ? (
-                                    <CheckCircle className="h-5 w-5 text-green-500" />
-                                  ) : (
-                                    <PlayCircle className="h-5 w-5 text-muted-foreground" />
-                                  )}
-                                  <span className="text-sm">{lesson.title}</span>
-                                </button>
-                              </li>
-                            ))}
+                            {module.lessons.map((lesson, lessonIndex) => {
+                                const overallLessonIndex = course.modules.slice(0, moduleIndex).reduce((acc, m) => acc + m.lessons.length, 0) + lessonIndex;
+                                const isUnlocked = overallLessonIndex < unlockedLessonsCount;
+                                const isCompleted = completedLessons.has(lesson.id);
+
+                                return (
+                                  <li key={lesson.id}>
+                                    <button
+                                      onClick={() => handleLessonClick(lesson, overallLessonIndex)}
+                                      disabled={!isUnlocked && !isCompleted}
+                                      className={`w-full text-left flex items-center gap-3 p-2 rounded-md transition-colors ${
+                                        currentLesson?.id === lesson.id ? 'bg-primary/10 text-primary' : 'hover:bg-primary/5'
+                                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                    >
+                                      {isCompleted ? (
+                                        <CheckCircle className="h-5 w-5 text-green-500" />
+                                      ) : isUnlocked ? (
+                                        <PlayCircle className="h-5 w-5 text-muted-foreground" />
+                                      ) : (
+                                        <Lock className="h-5 w-5 text-muted-foreground" />
+                                      )}
+                                      <span className="text-sm">{lesson.title}</span>
+                                    </button>
+                                  </li>
+                                )
+                            })}
                           </ul>
                         </AccordionContent>
                       </AccordionItem>
@@ -240,19 +303,33 @@ export default function CoursePlayerPage() {
                         </div>
                      </div>
                   )}
-
-                  <Button size="lg" className="bg-accent hover:bg-accent/90 mt-8" onClick={handleCompleteLesson}>
-                    Mark as Completed & Continue
-                  </Button>
+                  
+                  {!completedLessons.has(currentLesson.id) && (
+                    <Button size="lg" className="bg-accent hover:bg-accent/90 mt-8" onClick={handleCompleteLesson}>
+                      Mark as Completed & Continue
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                    <CheckCircle className="h-24 w-24 text-green-500 mb-4" />
-                    <h1 className="text-3xl font-bold mb-2 font-headline">You've completed all lessons!</h1>
-                    <p className="text-muted-foreground mb-6">Great job. Now it's time to test your knowledge.</p>
-                    <Button size="lg" onClick={() => router.push(`/courses/${course.id}/exam`)}>
-                        Go to Final Exam
-                    </Button>
+                    {progress >= 100 ? (
+                        <>
+                            <CheckCircle className="h-24 w-24 text-green-500 mb-4" />
+                            <h1 className="text-3xl font-bold mb-2 font-headline">You've completed all lessons!</h1>
+                            <p className="text-muted-foreground mb-6">Great job. Now it's time to test your knowledge.</p>
+                            <Button size="lg" onClick={() => router.push(`/courses/${course.id}/exam`)}>
+                                Go to Final Exam
+                            </Button>
+                        </>
+                    ) : (
+                        <Alert>
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertTitle>No lesson selected</AlertTitle>
+                            <AlertDescription>
+                                Please select an unlocked lesson from the sidebar to begin.
+                            </AlertDescription>
+                        </Alert>
+                    )}
                 </div>
               )}
             </main>

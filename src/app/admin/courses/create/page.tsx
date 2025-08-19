@@ -24,6 +24,7 @@ const courseFormSchema = z.object({
   instructor: z.string().min(2, 'Instructor name is required'),
   category: z.string().min(3, 'Category is required'),
   price: z.coerce.number().min(0, 'Price cannot be negative'),
+  duration: z.string().min(3, 'Duration is required (e.g., 5 Weeks)'),
 });
 
 type CourseFormValues = z.infer<typeof courseFormSchema>;
@@ -43,6 +44,7 @@ export default function CreateCoursePage() {
       instructor: '',
       category: '',
       price: 0,
+      duration: '',
     },
   });
 
@@ -56,6 +58,12 @@ export default function CreateCoursePage() {
     try {
       const content = await generateCourseContent({ courseTitle: values.title });
       setGeneratedContent(content);
+      // Prefill the duration from the form if the AI didn't provide one.
+      if (values.duration && !content.duration) {
+        content.duration = values.duration;
+      }
+      form.setValue('duration', content.duration || values.duration);
+
       setIsModalOpen(true);
     } catch (error) {
         console.error("Failed to generate course content:", error);
@@ -78,6 +86,7 @@ export default function CreateCoursePage() {
             instructor: courseDetails.instructor,
             category: courseDetails.category,
             price: courseDetails.price,
+            duration: editedContent.duration,
             description: editedContent.longDescription.substring(0, 150) + '...', // Create short description
             longDescription: editedContent.longDescription,
             imageUrl: 'https://placehold.co/600x400',
@@ -117,7 +126,7 @@ export default function CreateCoursePage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl font-headline">Create New Course with AI</CardTitle>
-              <CardDescription>Enter a title, instructor, and price. Our AI will generate the full course content, including modules, lessons, and an exam for you to review and edit.</CardDescription>
+              <CardDescription>Enter a title and other details. Our AI will generate the full course content, including modules, lessons, and an exam for you to review and edit.</CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -135,46 +144,63 @@ export default function CreateCoursePage() {
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="instructor"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Instructor Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Jane Doe" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                   <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Category</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Business, Technology" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Price (Ksh)</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="e.g., 4999" {...field} />
-                        </FormControl>
-                         <p className="text-sm text-muted-foreground">Enter 0 for a free course.</p>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="instructor"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Instructor Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Jane Doe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Category</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Business, Technology" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Price (Ksh)</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="e.g., 4999" {...field} />
+                          </FormControl>
+                          <p className="text-sm text-muted-foreground">Enter 0 for a free course.</p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="duration"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Course Duration</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., 5 Weeks" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   <div className="flex justify-end gap-2">
                     <Button type="button" variant="outline" onClick={() => router.push('/admin')}>
                       Cancel

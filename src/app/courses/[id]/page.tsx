@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
-import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen } from "lucide-react";
+import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen, Clock } from "lucide-react";
 import { MpesaModal } from '@/components/MpesaModal';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
@@ -62,8 +62,12 @@ function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling }: { cours
                 <h3 className="font-semibold mb-2 font-headline">This course includes:</h3>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-primary" />
+                        <span>{course.duration} to complete</span>
+                    </li>
+                    <li className="flex items-center gap-2">
                         <PlayCircle className="h-4 w-4 text-primary" />
-                        <span>On-demand video lessons</span>
+                        <span>Drip-fed video lessons</span>
                     </li>
                     <li className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-primary" />

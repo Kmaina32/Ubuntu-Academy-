@@ -82,6 +82,7 @@ export async function enrollUserInCourse(userId: string, courseId: string): Prom
         completed: false,
         certificateAvailable: false,
         completedLessons: [],
+        enrollmentDate: new Date().toISOString(), // Set enrollment date
     });
 }
 

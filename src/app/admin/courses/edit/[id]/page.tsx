@@ -25,6 +25,7 @@ const courseFormSchema = z.object({
   instructor: z.string().min(2, 'Instructor name is required'),
   category: z.string().min(3, 'Category is required'),
   price: z.coerce.number().min(0, 'Price cannot be negative'),
+  duration: z.string().min(3, 'Duration is required'),
   description: z.string().min(20, 'Short description is required'),
   longDescription: z.string().min(100, 'Long description must be at least 100 characters'),
   imageUrl: z.string().url('Must be a valid image URL'),
@@ -59,6 +60,7 @@ export default function EditCoursePage() {
             instructor: fetchedCourse.instructor || '',
             category: fetchedCourse.category || '',
             price: fetchedCourse.price || 0,
+            duration: fetchedCourse.duration || '',
             description: fetchedCourse.description || '',
             longDescription: fetchedCourse.longDescription || '',
             imageUrl: fetchedCourse.imageUrl || ''
@@ -200,19 +202,34 @@ export default function EditCoursePage() {
                         </FormItem>
                       )}
                     />
-                     <FormField
-                      control={form.control}
-                      name="price"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Price (Ksh)</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="e.g., 4999" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                         <FormField
+                            control={form.control}
+                            name="price"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Price (Ksh)</FormLabel>
+                                <FormControl>
+                                    <Input type="number" placeholder="e.g., 4999" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                         />
+                         <FormField
+                            control={form.control}
+                            name="duration"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Duration</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="e.g., 5 Weeks" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                    </div>
                     <FormField
                       control={form.control}
                       name="description"
@@ -279,6 +296,7 @@ export default function EditCoursePage() {
                 courseContent={{
                     longDescription: course.longDescription,
                     modules: course.modules,
+                    duration: course.duration,
                     exam: course.exam
                 }}
                 onSave={handleContentSave}
