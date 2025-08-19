@@ -1,13 +1,14 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -23,9 +24,20 @@ const formSchema = z.object({
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { user, login, loading: authLoading } = useAuth();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      toast({
+        title: 'Already Signed In',
+        description: 'You are already signed in.',
+      });
+      router.push('/');
+    }
+  }, [user, authLoading, router, toast]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -44,6 +56,17 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  if (authLoading || user) {
+      return (
+          <div className="flex flex-col min-h-screen">
+            <main className="flex-grow container mx-auto px-4 md:px-6 py-12 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </main>
+            <Footer />
+          </div>
+      )
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
