@@ -45,18 +45,18 @@ export function AppSidebar() {
                  {user ? (
                     <>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/dashboard')} tooltip="Dashboard" onClick={onLinkClick}>
-                                <Link href="/dashboard">
-                                    <LayoutDashboard />
-                                    <span>Dashboard</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                         <SidebarMenuItem>
                             <SidebarMenuButton asChild isActive={isActive('/') && pathname==='/'} tooltip="Browse Courses" onClick={onLinkClick}>
                                 <Link href="/">
                                     <Book />
                                     <span>Browse Courses</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/dashboard')} tooltip="Dashboard" onClick={onLinkClick}>
+                                <Link href="/dashboard">
+                                    <LayoutDashboard />
+                                    <span>Dashboard</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
