@@ -13,7 +13,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { getHeroData, saveHeroData, HeroData } from '@/lib/firebase-service';
+import { getHeroData, saveHeroData } from '@/lib/firebase-service';
+import type { HeroData } from '@/lib/firebase-service';
 import { useToast } from '@/hooks/use-toast';
 
 const heroFormSchema = z.object({
