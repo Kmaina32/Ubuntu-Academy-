@@ -17,7 +17,7 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { saveUser } from '@/lib/firebase-service';
+import { RegisteredUser, saveUser } from '@/lib/firebase-service';
 
 interface AuthContextType {
   user: User | null;
@@ -53,19 +53,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       pass
     );
     
+    // First, update the user's profile in Firebase Auth
     await updateProfile(userCredential.user, {
       displayName: name,
     });
-
-    // We pass the explicit details to saveUser because the userCredential.user object
-    // may not be immediately updated with the new displayName.
-    await saveUser({
-        uid: userCredential.user.uid,
-        email: userCredential.user.email,
-        displayName: name,
-    });
     
-    // Manually set user after signup to reflect name change immediately
+    // Now that the profile is updated, create the object for our DB
+    const newUser: RegisteredUser = {
+      uid: userCredential.user.uid,
+      email: userCredential.user.email,
+      displayName: name,
+    };
+
+    // Save the complete user object to the Realtime Database
+    await saveUser(newUser);
+    
+    // Manually update the local user state to reflect the displayName immediately
     setUser({ ...userCredential.user, displayName: name });
     
     return userCredential;
