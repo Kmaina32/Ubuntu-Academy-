@@ -5,25 +5,30 @@ import { useState, useEffect } from 'react';
 import { notFound, useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import type { Course } from "@/lib/mock-data";
-import { getCourseById } from '@/lib/firebase-service';
+import { getCourseById, enrollUserInCourse } from '@/lib/firebase-service';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
-import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft } from "lucide-react";
+import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen } from "lucide-react";
 import { MpesaModal } from '@/components/MpesaModal';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
 
 export default function CourseDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEnrolling, setIsEnrolling] = useState(false);
 
   useEffect(() => {
       const fetchCourse = async () => {
@@ -58,6 +63,25 @@ export default function CourseDetailPage() {
   const handlePaymentSuccess = () => {
     setIsModalOpen(false);
     router.push(`/courses/${course.id}/learn`);
+  }
+
+  const handleEnrollFree = async () => {
+    if (!user) {
+        toast({ title: 'Not Logged In', description: 'You must be logged in to enroll.', variant: 'destructive' });
+        router.push('/login');
+        return;
+    }
+    setIsEnrolling(true);
+    try {
+      await enrollUserInCourse(user.uid, course.id);
+      toast({ title: 'Enrolled!', description: `You have successfully enrolled in ${course.title}.` });
+      router.push(`/courses/${course.id}/learn`);
+    } catch(error) {
+      console.error("Free enrollment failed", error);
+      toast({ title: 'Error', description: 'Something went wrong during enrollment.', variant: 'destructive'});
+    } finally {
+      setIsEnrolling(false);
+    }
   }
 
   return (
@@ -124,11 +148,24 @@ export default function CourseDetailPage() {
                       />
                     </CardHeader>
                     <CardContent className="p-6">
-                      <p className="text-3xl font-bold text-primary mb-4">Ksh {course.price.toLocaleString()}</p>
-                      <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={() => setIsModalOpen(true)}>
-                          Purchase with M-Pesa
-                      </Button>
-                      <p className="text-xs text-center mt-2 text-muted-foreground">This is a demo. No payment will be processed.</p>
+                      <p className="text-3xl font-bold text-primary mb-4">
+                        {course.price > 0 ? `Ksh ${course.price.toLocaleString()}` : 'Free'}
+                      </p>
+
+                      {course.price > 0 ? (
+                        <>
+                            <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={() => setIsModalOpen(true)}>
+                                Purchase with M-Pesa
+                            </Button>
+                            <p className="text-xs text-center mt-2 text-muted-foreground">This is a demo. No payment will be processed.</p>
+                        </>
+                      ) : (
+                         <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleEnrollFree} disabled={isEnrolling}>
+                            {isEnrolling ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <BookOpen className="mr-2 h-4 w-4"/>}
+                            {isEnrolling ? 'Enrolling...' : 'Enroll for Free'}
+                        </Button>
+                      )}
+                      
                       <Separator className="my-4" />
                       <h3 className="font-semibold mb-2 font-headline">This course includes:</h3>
                       <ul className="space-y-2 text-sm text-muted-foreground">
@@ -152,14 +189,16 @@ export default function CourseDetailPage() {
             </div>
           </div>
         </main>
-        <MpesaModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          courseId={course.id}
-          courseName={course.title}
-          price={course.price}
-          onPaymentSuccess={handlePaymentSuccess}
-        />
+        {course.price > 0 && (
+            <MpesaModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            courseId={course.id}
+            courseName={course.title}
+            price={course.price}
+            onPaymentSuccess={handlePaymentSuccess}
+            />
+        )}
         <Footer />
       </SidebarInset>
     </SidebarProvider>

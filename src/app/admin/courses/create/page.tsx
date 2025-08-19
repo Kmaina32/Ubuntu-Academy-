@@ -23,7 +23,7 @@ const courseFormSchema = z.object({
   instructor: z.string().min(2, 'Instructor name is required'),
   description: z.string().min(20, 'Short description must be at least 20 characters'),
   longDescription: z.string().min(100, 'Long description must be at least 100 characters'),
-  price: z.coerce.number().min(0, 'Price must be a positive number'),
+  price: z.coerce.number().min(0, 'Price cannot be negative'),
 });
 
 export default function CreateCoursePage() {
@@ -123,6 +123,7 @@ export default function CreateCoursePage() {
                         <FormControl>
                           <Input type="number" placeholder="e.g., 4999" {...field} />
                         </FormControl>
+                         <p className="text-sm text-muted-foreground">Enter 0 for a free course.</p>
                         <FormMessage />
                       </FormItem>
                     )}
