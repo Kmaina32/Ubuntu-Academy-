@@ -32,7 +32,7 @@ export async function studentHelp(
 const prompt = ai.definePrompt({
   name: 'studentHelpPrompt',
   input: {schema: StudentHelpInputSchema},
-  output: {schema: SiteHelpOutputSchema},
+  output: {schema: StudentHelpOutputSchema},
   prompt: `You are an AI support agent for the Mkenya Skilled online learning platform. Your tone is friendly, helpful, and professional. A student is asking you a question about how the platform works.
 
   Use the following information about the student journey to answer their question comprehensively and in detail.
