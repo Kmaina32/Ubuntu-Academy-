@@ -96,7 +96,7 @@ function AdminPageComponent() {
                         </TableRow>
                       ))}
                     </TableBody>
-                  </Table>>
+                  </Table>
                 )}
               </CardContent>
             </Card>
