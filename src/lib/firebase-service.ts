@@ -55,6 +55,12 @@ export async function createCourse(courseData: Omit<Course, 'id'>): Promise<stri
     return newCourseRef.key!;
 }
 
+export async function deleteCourse(courseId: string): Promise<void> {
+    const courseRef = ref(db, `courses/${courseId}`);
+    await remove(courseRef);
+}
+
+
 // User Functions
 export async function saveUser(user: RegisteredUser): Promise<void> {
     const userRef = ref(db, `users/${user.uid}`);
@@ -89,10 +95,19 @@ export async function getAllUsers(): Promise<RegisteredUser[]> {
     const snapshot = await get(usersRef);
     if (snapshot.exists()) {
         const usersData = snapshot.val();
-        return Object.values(usersData);
+        return Object.keys(snapshot.val()).map(uid => ({
+            ...usersData[uid],
+            uid: uid
+        }));
     }
     return [];
 }
+
+export async function deleteUser(userId: string): Promise<void> {
+    const userRef = ref(db, `users/${userId}`);
+    await remove(userRef);
+}
+
 
 // Hero Section Functions
 export async function getHeroData(): Promise<HeroData> {

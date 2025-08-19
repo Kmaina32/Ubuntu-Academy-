@@ -7,32 +7,56 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Course } from "@/lib/mock-data";
-import { getAllCourses } from '@/lib/firebase-service';
+import { getAllCourses, deleteCourse } from '@/lib/firebase-service';
 import { FilePlus2, Pencil, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function AdminPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const fetchCourses = async () => {
+    try {
+      setLoadingCourses(true);
+      const fetchedCourses = await getAllCourses();
+      setCourses(fetchedCourses.reverse());
+      setError(null);
+    } catch (err) {
+      setError("Failed to fetch courses. Please try again later.");
+      console.error(err);
+    } finally {
+      setLoadingCourses(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        setLoadingCourses(true);
-        const fetchedCourses = await getAllCourses();
-        setCourses(fetchedCourses.reverse());
-        setError(null);
-      } catch (err) {
-        setError("Failed to fetch courses. Please try again later.");
-        console.error(err);
-      } finally {
-        setLoadingCourses(false);
-      }
-    };
-
     fetchCourses();
   }, []);
+
+  const handleDelete = async (course: Course) => {
+    try {
+      await deleteCourse(course.id);
+      toast({ title: "Success", description: `Course "${course.title}" has been deleted.` });
+      fetchCourses(); // Refresh the list
+    } catch (error) {
+      console.error("Failed to delete course:", error);
+      toast({ title: "Error", description: "Failed to delete course.", variant: "destructive" });
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -78,12 +102,28 @@ export default function AdminPage() {
                         <TableCell>{course.instructor}</TableCell>
                         <TableCell>{course.price.toLocaleString()}</TableCell>
                         <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" className="mr-2">
-                            <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
+                          <Button variant="ghost" size="icon" className="mr-2" disabled>
+                              <Pencil className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                      <Trash2 className="h-4 w-4" />
+                                  </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                          This action cannot be undone. This will permanently delete the course "{course.title}" and all its associated data.
+                                      </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handleDelete(course)}>Continue</AlertDialogAction>
+                                  </AlertDialogFooter>
+                              </AlertDialogContent>
+                          </AlertDialog>
                         </TableCell>
                     </TableRow>
                     ))}
