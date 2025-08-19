@@ -37,7 +37,7 @@ export default function LoginPage() {
     setError(null);
     try {
       await login(values.email, values.password);
-      router.push('/dashboard');
+      router.push('/');
     } catch (e: any) {
       setError(e.message || 'An error occurred. Please try again.');
     } finally {
