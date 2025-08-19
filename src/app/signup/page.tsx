@@ -18,7 +18,9 @@ import { Loader2, Gem } from 'lucide-react';
 import { getHeroData } from '@/lib/firebase-service';
 
 const formSchema = z.object({
-  name: z.string().min(2, { message: 'Please enter your name.' }),
+  firstName: z.string().min(1, { message: 'First name is required.' }),
+  middleName: z.string().optional(),
+  lastName: z.string().min(1, { message: 'Last name is required.' }),
   email: z.string().email({ message: 'Please enter a valid email.' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 });
@@ -41,14 +43,15 @@ export default function SignupPage() {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { name: '', email: '', password: '' },
+    defaultValues: { firstName: '', middleName: '', lastName: '', email: '', password: '' },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     setError(null);
     try {
-      await signup(values.email, values.password, values.name);
+      const displayName = [values.firstName, values.middleName, values.lastName].filter(Boolean).join(' ');
+      await signup(values.email, values.password, displayName);
       toast({
         title: 'Account Created!',
         description: "Welcome! You've been successfully signed up.",
@@ -91,18 +94,46 @@ export default function SignupPage() {
                           <AlertDescription>{error}</AlertDescription>
                       </Alert>
                       )}
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="firstName"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>First Name</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Jomo" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="lastName"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Last Name</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Kenyatta" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                      </div>
                       <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                          <FormItem>
-                          <FormLabel>Full Name</FormLabel>
-                          <FormControl>
-                              <Input placeholder="Jomo Kenyatta" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                          </FormItem>
-                      )}
+                          control={form.control}
+                          name="middleName"
+                          render={({ field }) => (
+                              <FormItem>
+                              <FormLabel>Middle Name (Optional)</FormLabel>
+                              <FormControl>
+                                  <Input placeholder="" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                              </FormItem>
+                          )}
                       />
                       <FormField
                       control={form.control}

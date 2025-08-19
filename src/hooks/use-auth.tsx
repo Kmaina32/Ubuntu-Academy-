@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return signInWithEmailAndPassword(auth, email, pass);
   };
 
-  const signup = async (email: string, pass: string, name: string) => {
+  const signup = async (email: string, pass: string, displayName: string) => {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       email,
@@ -55,21 +55,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     // First, update the user's profile in Firebase Auth
     await updateProfile(userCredential.user, {
-      displayName: name,
+      displayName: displayName,
     });
     
     // Now that the profile is updated, create the object for our DB
     const newUser: RegisteredUser = {
       uid: userCredential.user.uid,
       email: userCredential.user.email,
-      displayName: name,
+      displayName: displayName,
     };
 
     // Save the complete user object to the Realtime Database
     await saveUser(newUser);
     
     // Manually update the local user state to reflect the displayName immediately
-    setUser({ ...userCredential.user, displayName: name });
+    const updatedUser = { ...userCredential.user, displayName: displayName };
+    setUser(updatedUser);
     
     return userCredential;
   };
