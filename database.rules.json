@@ -1,0 +1,22 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "courses": {
+      ".read": true,
+      ".write": true
+    },
+    "hero": {
+      ".read": true,
+      ".write": true
+    },
+    "users": {
+      ".read": true,
+      ".write": true
+    },
+    "calendarEvents": {
+        ".read": true,
+        ".write": true
+    }
+  }
+}
