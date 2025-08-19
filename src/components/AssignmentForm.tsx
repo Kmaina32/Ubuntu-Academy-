@@ -61,7 +61,8 @@ export function AssignmentForm({ courses, assignment, onSuccess }: AssignmentFor
         await updateAssignment(values.courseId, assignment.id, dataToSave);
         toast({ title: 'Success', description: 'Assignment updated successfully.' });
       } else {
-        await createAssignment(values.courseId, dataToSave);
+        const course = courses.find(c => c.id === values.courseId);
+        await createAssignment(values.courseId, { ...dataToSave, courseTitle: course?.title || 'N/A' });
         toast({ title: 'Success', description: 'Assignment created successfully.' });
       }
       onSuccess();
@@ -152,7 +153,7 @@ export function AssignmentForm({ courses, assignment, onSuccess }: AssignmentFor
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
-                    disabled={(date) => date < new Date()}
+                    disabled={(date) => date < new Date() && !assignment}
                     initialFocus
                   />
                 </PopoverContent>

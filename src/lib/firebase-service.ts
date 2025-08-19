@@ -134,7 +134,7 @@ export async function saveHeroData(data: HeroData): Promise<void> {
 }
 
 // Assignment Functions
-export async function createAssignment(courseId: string, assignmentData: Omit<Assignment, 'id' | 'courseId' | 'courseTitle'>): Promise<string> {
+export async function createAssignment(courseId: string, assignmentData: Omit<Assignment, 'id' | 'courseId'>): Promise<string> {
     const assignmentsRef = ref(db, `courses/${courseId}/assignments`);
     const newAssignmentRef = push(assignmentsRef);
     await set(newAssignmentRef, assignmentData);
@@ -171,11 +171,9 @@ export async function getAllAssignments(): Promise<Assignment[]> {
     return allAssignments;
 }
 
-export async function updateAssignment(courseId: string, assignmentId: string, assignmentData: Partial<Assignment>): Promise<void> {
+export async function updateAssignment(courseId: string, assignmentId: string, assignmentData: Partial<Omit<Assignment, 'id' | 'courseId' | 'courseTitle'>>): Promise<void> {
     const assignmentRef = ref(db, `courses/${courseId}/assignments/${assignmentId}`);
-    // Omit id and courseId from the update payload
-    const { id, courseId: cid, ...dataToUpdate } = assignmentData;
-    await update(assignmentRef, dataToUpdate);
+    await update(assignmentRef, assignmentData);
 }
 
 export async function deleteAssignment(courseId: string, assignmentId: string): Promise<void> {
