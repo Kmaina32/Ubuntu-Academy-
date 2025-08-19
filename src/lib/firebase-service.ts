@@ -55,6 +55,21 @@ export async function createCourse(courseData: Omit<Course, 'id'>): Promise<stri
     return newCourseRef.key!;
 }
 
+export async function updateCourse(courseId: string, courseData: Partial<Omit<Course, 'id' | 'modules' | 'exam' | 'assignments'>>): Promise<void> {
+    const courseRef = ref(db, `courses/${courseId}`);
+    // We only update specific fields, not modules/exam which are more complex
+    const dataToUpdate = {
+        title: courseData.title,
+        instructor: courseData.instructor,
+        price: courseData.price,
+        description: courseData.description,
+        longDescription: courseData.longDescription,
+        imageUrl: courseData.imageUrl,
+    };
+    await update(courseRef, dataToUpdate);
+}
+
+
 export async function deleteCourse(courseId: string): Promise<void> {
     const courseRef = ref(db, `courses/${courseId}`);
     await remove(courseRef);

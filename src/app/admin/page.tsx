@@ -102,8 +102,10 @@ export default function AdminPage() {
                         <TableCell>{course.instructor}</TableCell>
                         <TableCell>{course.price.toLocaleString()}</TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="icon" className="mr-2" disabled>
-                              <Pencil className="h-4 w-4" />
+                          <Button asChild variant="ghost" size="icon" className="mr-2">
+                              <Link href={`/admin/courses/edit/${course.id}`}>
+                                <Pencil className="h-4 w-4" />
+                              </Link>
                           </Button>
                           <AlertDialog>
                               <AlertDialogTrigger asChild>
