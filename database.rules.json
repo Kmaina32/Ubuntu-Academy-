@@ -27,7 +27,8 @@
     },
     "submissions": {
       ".read": true,
-      ".write": true
+      ".write": true,
+      ".indexOn": "userId"
     }
   }
 }
