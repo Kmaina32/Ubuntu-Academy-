@@ -20,6 +20,66 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 
+function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling }: { course: Course, onEnrollFree: () => void, onPurchase: () => void, isEnrolling: boolean }) {
+    const courseAiHints: Record<string, string> = {
+        'digital-marketing-101': 'marketing computer',
+        'mobile-app-dev-react-native': 'code mobile',
+        'graphic-design-canva': 'design art'
+    };
+
+    return (
+        <Card>
+            <CardHeader className="p-0">
+                <Image
+                src={course.imageUrl}
+                alt={course.title}
+                width={600}
+                height={400}
+                className="w-full h-auto object-cover rounded-t-lg"
+                data-ai-hint={courseAiHints[course.id] || 'course placeholder'}
+                />
+            </CardHeader>
+            <CardContent className="p-6">
+                <p className="text-3xl font-bold text-primary mb-4">
+                {course.price > 0 ? `Ksh ${course.price.toLocaleString()}` : 'Free'}
+                </p>
+
+                {course.price > 0 ? (
+                <>
+                    <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={onPurchase}>
+                        Purchase with M-Pesa
+                    </Button>
+                    <p className="text-xs text-center mt-2 text-muted-foreground">This is a demo. No payment will be processed.</p>
+                </>
+                ) : (
+                    <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={onEnrollFree} disabled={isEnrolling}>
+                    {isEnrolling ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <BookOpen className="mr-2 h-4 w-4"/>}
+                    {isEnrolling ? 'Enrolling...' : 'Enroll for Free'}
+                </Button>
+                )}
+                
+                <Separator className="my-4" />
+                <h3 className="font-semibold mb-2 font-headline">This course includes:</h3>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                        <PlayCircle className="h-4 w-4 text-primary" />
+                        <span>On-demand video lessons</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-primary" />
+                        <span>Final exam</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                        <Award className="h-4 w-4 text-primary" />
+                        <span>Certificate of completion</span>
+                    </li>
+                </ul>
+            </CardContent>
+        </Card>
+    )
+}
+
+
 export default function CourseDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -53,12 +113,6 @@ export default function CourseDetailPage() {
   if (!course) {
     notFound();
   }
-  
-  const courseAiHints: Record<string, string> = {
-    'digital-marketing-101': 'marketing computer',
-    'mobile-app-dev-react-native': 'code mobile',
-    'graphic-design-canva': 'design art'
-  };
   
   const handlePaymentSuccess = () => {
     setIsModalOpen(false);
@@ -101,6 +155,11 @@ export default function CourseDetailPage() {
                 <h1 className="text-3xl md:text-4xl font-bold mb-4 font-headline">{course.title}</h1>
                 <p className="text-muted-foreground text-lg mb-6">{course.longDescription}</p>
                 
+                {/* Purchase Card for Mobile View */}
+                <div className="md:hidden mb-8">
+                    <PurchaseCard course={course} onEnrollFree={handleEnrollFree} onPurchase={() => setIsModalOpen(true)} isEnrolling={isEnrolling} />
+                </div>
+
                 <h2 className="text-2xl font-bold mb-4 font-headline">Course Content</h2>
                 <Accordion type="single" collapsible className="w-full">
                   {course.modules && course.modules.map((module) => (
@@ -134,56 +193,10 @@ export default function CourseDetailPage() {
                 </Accordion>
               </div>
               
-              <div className="md:col-span-1">
+              {/* Purchase Card for Desktop View */}
+              <div className="md:col-span-1 hidden md:block">
                 <div className="sticky top-24">
-                  <Card>
-                    <CardHeader className="p-0">
-                      <Image
-                        src={course.imageUrl}
-                        alt={course.title}
-                        width={600}
-                        height={400}
-                        className="w-full h-auto object-cover rounded-t-lg"
-                        data-ai-hint={courseAiHints[course.id] || 'course placeholder'}
-                      />
-                    </CardHeader>
-                    <CardContent className="p-6">
-                      <p className="text-3xl font-bold text-primary mb-4">
-                        {course.price > 0 ? `Ksh ${course.price.toLocaleString()}` : 'Free'}
-                      </p>
-
-                      {course.price > 0 ? (
-                        <>
-                            <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={() => setIsModalOpen(true)}>
-                                Purchase with M-Pesa
-                            </Button>
-                            <p className="text-xs text-center mt-2 text-muted-foreground">This is a demo. No payment will be processed.</p>
-                        </>
-                      ) : (
-                         <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleEnrollFree} disabled={isEnrolling}>
-                            {isEnrolling ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <BookOpen className="mr-2 h-4 w-4"/>}
-                            {isEnrolling ? 'Enrolling...' : 'Enroll for Free'}
-                        </Button>
-                      )}
-                      
-                      <Separator className="my-4" />
-                      <h3 className="font-semibold mb-2 font-headline">This course includes:</h3>
-                      <ul className="space-y-2 text-sm text-muted-foreground">
-                          <li className="flex items-center gap-2">
-                              <PlayCircle className="h-4 w-4 text-primary" />
-                              <span>On-demand video lessons</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4 text-primary" />
-                              <span>Final exam</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                              <Award className="h-4 w-4 text-primary" />
-                              <span>Certificate of completion</span>
-                          </li>
-                      </ul>
-                    </CardContent>
-                  </Card>
+                  <PurchaseCard course={course} onEnrollFree={handleEnrollFree} onPurchase={() => setIsModalOpen(true)} isEnrolling={isEnrolling}/>
                 </div>
               </div>
             </div>
