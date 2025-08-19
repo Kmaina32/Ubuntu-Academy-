@@ -81,6 +81,7 @@ export async function enrollUserInCourse(userId: string, courseId: string): Prom
         progress: 0,
         completed: false,
         certificateAvailable: false,
+        completedLessons: [],
     });
 }
 

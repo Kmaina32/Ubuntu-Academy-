@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Course, Lesson, Module } from '@/lib/mock-data';
-import { getCourseById } from '@/lib/firebase-service';
+import { getCourseById, updateUserCourseProgress, getUserCourses } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -58,37 +58,49 @@ export default function CoursePlayerPage() {
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    const fetchCourse = async () => {
+    const fetchCourseAndProgress = async () => {
         if (!user) return;
         setLoading(true);
         const fetchedCourse = await getCourseById(params.id);
+        const userCourses = await getUserCourses(user.uid);
+        
         setCourse(fetchedCourse);
-        if (fetchedCourse && fetchedCourse.modules && fetchedCourse.modules.length > 0 && fetchedCourse.modules[0].lessons && fetchedCourse.modules[0].lessons.length > 0) {
-            setCurrentLesson(fetchedCourse.modules[0].lessons[0]);
+
+        if (fetchedCourse) {
+          if (fetchedCourse.modules && fetchedCourse.modules[0]?.lessons) {
+             setCurrentLesson(fetchedCourse.modules[0].lessons[0]);
+          }
+          const currentUserCourse = userCourses.find(c => c.courseId === fetchedCourse.id);
+          if (currentUserCourse?.completedLessons) {
+            setCompletedLessons(new Set(currentUserCourse.completedLessons));
+          }
         }
         setLoading(false);
     }
     if (user) {
-      fetchCourse();
+      fetchCourseAndProgress();
     }
   }, [params.id, user]);
 
-  const handleLessonClick = (lesson: Lesson) => {
-    setCurrentLesson(lesson);
-  };
+  const handleCompleteLesson = async () => {
+    if (!currentLesson || !user || !course) return;
 
-  const handleCompleteLesson = () => {
-    if (currentLesson) {
-        const newCompleted = new Set(completedLessons);
-        newCompleted.add(currentLesson.id);
-        setCompletedLessons(newCompleted);
+    const newCompleted = new Set(completedLessons);
+    newCompleted.add(currentLesson.id);
+    setCompletedLessons(newCompleted);
 
-        const currentIndex = allLessons.findIndex(l => l.id === currentLesson.id);
-        if(currentIndex < allLessons.length - 1) {
-            setCurrentLesson(allLessons[currentIndex + 1]);
-        } else {
-            setCurrentLesson(null);
-        }
+    const newProgress = (newCompleted.size / allLessons.length) * 100;
+
+    await updateUserCourseProgress(user.uid, course.id, {
+        completedLessons: Array.from(newCompleted),
+        progress: Math.round(newProgress),
+    });
+
+    const currentIndex = allLessons.findIndex(l => l.id === currentLesson.id);
+    if(currentIndex < allLessons.length - 1) {
+        setCurrentLesson(allLessons[currentIndex + 1]);
+    } else {
+        setCurrentLesson(null);
     }
   };
 

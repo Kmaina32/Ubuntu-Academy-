@@ -72,9 +72,15 @@ export interface Course {
 export const user = {
     name: 'Jomo Kenyatta',
     purchasedCourses: [
-        { courseId: 'digital-marketing-101', progress: 50, completed: false, certificateAvailable: false },
-        { courseId: 'graphic-design-canva', progress: 100, completed: true, certificateAvailable: true }
+        { courseId: 'digital-marketing-101', progress: 50, completed: false, certificateAvailable: false, completedLessons: [] },
+        { courseId: 'graphic-design-canva', progress: 100, completed: true, certificateAvailable: true, completedLessons: [] }
     ]
 }
 
-export type UserCourse = typeof user.purchasedCourses[0];
+export interface UserCourse {
+    courseId: string;
+    progress: number;
+    completed: boolean;
+    certificateAvailable: boolean;
+    completedLessons?: string[];
+}
