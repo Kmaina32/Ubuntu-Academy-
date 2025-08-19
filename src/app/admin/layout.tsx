@@ -1,11 +1,47 @@
 
 'use client';
 
-import { AppSidebar } from "@/components/Sidebar";
-import { Header } from "@/components/Header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { usePathname } from "next/navigation";
-import { AdminSidebar } from "@/components/AdminSidebar";
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
+import { AdminSidebar } from '@/components/AdminSidebar';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { AlertTriangle, Home, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+
+const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
+
+function AdminAccessDenied() {
+    const router = useRouter();
+    return (
+        <div className="flex flex-col min-h-screen">
+             <main className="flex-grow flex items-center justify-center bg-secondary/50">
+                <Card className="w-full max-w-md text-center">
+                    <CardHeader>
+                        <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit mb-4">
+                            <AlertTriangle className="h-8 w-8 text-destructive" />
+                        </div>
+                        <CardTitle className="text-2xl font-headline">Access Denied</CardTitle>
+                        <CardDescription>You do not have permission to view this page.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button asChild>
+                           <Link href="/">
+                             <Home className="mr-2 h-4 w-4" />
+                             Return to Homepage
+                           </Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+            </main>
+            <Footer />
+        </div>
+    )
+}
+
 
 export default function AdminLayout({
   children,
@@ -13,26 +49,30 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading } = useAuth();
 
-  if (pathname.startsWith('/admin')) {
+  if (loading) {
      return (
-        <SidebarProvider>
-            <AdminSidebar />
-            <SidebarInset>
-                <Header />
-                {children}
-            </SidebarInset>
-        </SidebarProvider>
-    );
+        <div className="flex h-screen items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <p className="ml-2">Verifying credentials...</p>
+        </div>
+     )
   }
 
+  if (!user || user.uid !== ADMIN_UID) {
+      return <AdminAccessDenied />;
+  }
+
+  // If we are here, user is the admin.
   return (
-      <SidebarProvider>
-          <AppSidebar />
-          <SidebarInset>
-              <Header />
-              {children}
-          </SidebarInset>
-      </SidebarProvider>
+    <SidebarProvider>
+        <AdminSidebar />
+        <SidebarInset>
+            <Header />
+            {children}
+        </SidebarInset>
+    </SidebarProvider>
   );
 }
