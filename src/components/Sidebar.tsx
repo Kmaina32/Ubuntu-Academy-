@@ -19,7 +19,8 @@ export function AppSidebar() {
     const pathname = usePathname();
 
     const isActive = (path: string) => {
-        return pathname === path || (path.length > 1 && pathname.startsWith(path));
+        if (path === '/') return pathname === '/';
+        return pathname.startsWith(path);
     }
 
   return (
@@ -27,13 +28,13 @@ export function AppSidebar() {
         <SidebarHeader>
             <div className="flex items-center gap-2">
                 <Gem className="h-6 w-6 text-primary" />
-                <span className="font-bold text-lg font-headline">Mkenya Skilled</span>
+                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Mkenya Skilled</span>
             </div>
         </SidebarHeader>
         <SidebarContent>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/')}>
+                    <SidebarMenuButton asChild isActive={isActive('/')} tooltip="Courses">
                         <Link href="/">
                             <Home />
                             <span>Courses</span>
@@ -41,7 +42,7 @@ export function AppSidebar() {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/dashboard')}>
+                    <SidebarMenuButton asChild isActive={isActive('/dashboard')} tooltip="Dashboard">
                         <Link href="/dashboard">
                             <LayoutDashboard />
                             <span>Dashboard</span>
@@ -51,7 +52,10 @@ export function AppSidebar() {
             </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
-             <SidebarTrigger />
+             <div className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
+                <SidebarTrigger />
+                <span className="text-sm text-muted-foreground group-data-[collapsible=icon]:hidden">Collapse</span>
+            </div>
         </SidebarFooter>
     </Sidebar>
   );

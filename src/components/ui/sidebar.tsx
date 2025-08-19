@@ -169,7 +169,7 @@ const Sidebar = React.forwardRef<
     {
       side = "left",
       variant = "sidebar",
-      collapsible = "offcanvas",
+      collapsible = "icon",
       className,
       children,
       ...props
@@ -542,7 +542,7 @@ const SidebarMenuButton = React.forwardRef<
   React.ComponentProps<"button"> & {
     asChild?: boolean
     isActive?: boolean
-    tooltip?: string | React.ComponentProps<typeof TooltipContent>
+    tooltip?: string | React.ReactNode
   } & VariantProps<typeof sidebarMenuButtonVariants>
 >(
   (
@@ -553,6 +553,7 @@ const SidebarMenuButton = React.forwardRef<
       size = "default",
       tooltip,
       className,
+      children,
       ...props
     },
     ref
@@ -568,18 +569,17 @@ const SidebarMenuButton = React.forwardRef<
         data-active={isActive}
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
         {...props}
-      />
+      >
+        {children}
+      </Comp>
     )
 
     if (!tooltip) {
       return button
     }
+    
+    const tooltipContent = typeof tooltip === 'string' ? <p>{tooltip}</p> : tooltip;
 
-    if (typeof tooltip === "string") {
-      tooltip = {
-        children: tooltip,
-      }
-    }
 
     return (
       <Tooltip>
@@ -588,8 +588,9 @@ const SidebarMenuButton = React.forwardRef<
           side="right"
           align="center"
           hidden={state !== "collapsed" || isMobile}
-          {...tooltip}
-        />
+        >
+          {tooltipContent}
+        </TooltipContent>
       </Tooltip>
     )
   }
