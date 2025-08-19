@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +12,7 @@ import { getAllCourses } from '@/lib/firebase-service';
 import { FilePlus2, Pencil, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 
-function AdminPageComponent() {
+export default function AdminPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -130,12 +130,4 @@ function AdminPageComponent() {
       <Footer />
     </div>
   );
-}
-
-export default function AdminPage() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <AdminPageComponent />
-        </Suspense>
-    )
 }

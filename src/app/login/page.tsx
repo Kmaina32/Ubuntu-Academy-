@@ -31,13 +31,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      toast({
-        title: 'Already Signed In',
-        description: 'You are already signed in.',
-      });
       router.push('/');
     }
-  }, [user, authLoading, router, toast]);
+  }, [user, authLoading, router]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
