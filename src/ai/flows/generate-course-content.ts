@@ -41,7 +41,7 @@ const ModuleSchema = z.object({
 
 const ShortAnswerQuestionSchema = z.object({
     id: z.string().describe("A unique identifier for the question, e.g., 'q-1'."),
-    type: z.literal('short-answer').describe("The type of the question."),
+    type: z.string().describe("The type of the question, either 'short-answer' or 'multiple-choice'."),
     question: z.string().describe('The exam question.'),
     referenceAnswer: z.string().describe('The detailed, correct reference answer for the exam question.'),
     maxPoints: z.number().describe('The maximum points possible for the exam question, always set to 10.'),
@@ -49,7 +49,7 @@ const ShortAnswerQuestionSchema = z.object({
 
 const MultipleChoiceQuestionSchema = z.object({
     id: z.string().describe("A unique identifier for the question, e.g., 'q-2'."),
-    type: z.literal('multiple-choice').describe("The type of the question."),
+    type: z.string().describe("The type of the question, either 'short-answer' or 'multiple-choice'."),
     question: z.string().describe('The exam question.'),
     options: z.array(z.string()).length(4).describe('An array of 4 possible answers for the question.'),
     correctAnswer: z.number().min(0).max(3).describe('The index of the correct answer in the options array.'),
@@ -109,3 +109,4 @@ const generateCourseContentFlow = ai.defineFlow(
     return output!;
   }
 );
+
