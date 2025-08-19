@@ -7,7 +7,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { user as mockUser, Course, UserCourse } from "@/lib/mock-data";
+import type { Course, UserCourse } from "@/lib/mock-data";
 import { getAllCourses } from '@/lib/firebase-service';
 import { Award, BookOpen, User, Loader2, Trophy, BookCopy, ListTodo } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
@@ -22,22 +22,17 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
-      if (mockUser.purchasedCourses.length > 0) {
-        setLoadingCourses(true);
-        const allCourses = await getAllCourses();
-        const details = mockUser.purchasedCourses.map(pc => {
-          const courseInfo = allCourses.find(c => c.id === pc.courseId);
-          return { ...pc, ...courseInfo };
-        }).sort((a, b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || (b.progress ?? 0) - (a.progress ?? 0));
-        setPurchasedCourses(details);
-        setLoadingCourses(false);
-      } else {
-        setLoadingCourses(false);
-      }
+      // TODO: Replace with real user data fetching from Firebase
+      setLoadingCourses(false);
+      setPurchasedCourses([]);
     };
 
-    fetchCourseDetails();
-  }, []);
+    if (user) {
+      fetchCourseDetails();
+    } else if (!authLoading) {
+      setLoadingCourses(false);
+    }
+  }, [user, authLoading]);
   
   const inProgressCourses = purchasedCourses.filter(c => !c.completed);
   const completedCourses = purchasedCourses.filter(c => c.completed);
@@ -168,7 +163,7 @@ export default function DashboardPage() {
                                                 <Link href={`/dashboard/certificate/${course.id}`}>
                                                     <Award className="mr-2 h-4 w-4" />
                                                     View Certificate
-                                                </Link>
+                                                 </Link>
                                              </Button>
                                         </div>
                                         {index < completedCourses.length - 1 && <Separator className="my-4" />}
