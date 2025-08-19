@@ -1,4 +1,5 @@
 
+
 'use client'
 
 import Link from 'next/link';
@@ -52,7 +53,7 @@ export default function DashboardPage() {
   }, [user, authLoading]);
   
   const inProgressCourses = purchasedCourses.filter(c => !c.completed);
-  const completedCourses = purchasedCourses.filter(c => c.completed);
+  const completedCourses = purchasedCourses.filter(c => c.completed || c.certificateAvailable);
 
 
   const renderContent = () => {

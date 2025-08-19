@@ -8,15 +8,14 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/hooks/use-auth';
-import { gradeShortAnswerExam, GradeShortAnswerExamOutput } from '@/ai/flows/grade-short-answer-exam';
 import type { Course } from '@/lib/mock-data';
-import { getCourseById, createSubmission } from '@/lib/firebase-service';
+import { getCourseById, createSubmission, updateUserCourseProgress } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Award, Frown, Loader2, Sparkles, ArrowLeft, Send } from 'lucide-react';
+import { Loader2, ArrowLeft, Send } from 'lucide-react';
 import { Footer } from '@/components/Footer';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
@@ -93,11 +92,19 @@ export default function ExamPage() {
             answer: values.answer,
             graded: false, // This is now false by default
         });
+
+        // Mark course as completed for the user
+        await updateUserCourseProgress(user.uid, course.id, {
+            completed: true,
+            certificateAvailable: true,
+            progress: 100, // Or calculate based on modules/lessons
+        });
+
         toast({
             title: 'Submission Successful!',
-            description: 'Your exam has been submitted for grading. You will be notified once it has been reviewed.',
+            description: 'Your exam has been submitted. You can now view your certificate on your dashboard.',
         });
-        router.push('/assignments');
+        router.push('/dashboard');
     } catch (e) {
       console.error(e);
       setError('An error occurred while submitting your exam. Please try again.');
@@ -160,7 +167,7 @@ export default function ExamPage() {
                             ) : (
                             <>
                                 <Send className="mr-2 h-4 w-4" />
-                                Submit for Grading
+                                Submit & Get Certificate
                             </>
                             )}
                         </Button>

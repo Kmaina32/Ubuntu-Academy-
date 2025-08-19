@@ -89,6 +89,11 @@ export async function getUserCourses(userId: string): Promise<UserCourse[]> {
     return [];
 }
 
+export async function updateUserCourseProgress(userId: string, courseId: string, data: Partial<Omit<UserCourse, 'courseId'>>) {
+    const progressRef = ref(db, `users/${userId}/purchasedCourses/${courseId}`);
+    await update(progressRef, data);
+}
+
 
 export async function getAllUsers(): Promise<RegisteredUser[]> {
     const usersRef = ref(db, 'users');
