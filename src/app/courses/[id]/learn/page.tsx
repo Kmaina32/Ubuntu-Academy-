@@ -9,11 +9,27 @@ import { getCourseById } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import Link from 'next/link';
+
+function getYouTubeEmbedUrl(url: string | undefined): string | null {
+  if (!url) return null;
+  let videoId: string | null = null;
+  try {
+    const urlObj = new URL(url);
+    if (urlObj.hostname === 'youtu.be') {
+      videoId = urlObj.pathname.slice(1);
+    } else if (urlObj.hostname.includes('youtube.com')) {
+      videoId = urlObj.searchParams.get('v');
+    }
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  } catch(e) {
+    return null; // Invalid URL
+  }
+}
 
 export default function CoursePlayerPage() {
   const router = useRouter();
@@ -72,6 +88,7 @@ export default function CoursePlayerPage() {
   };
 
   const progress = allLessons.length > 0 ? (completedLessons.size / allLessons.length) * 100 : 0;
+  const currentVideoUrl = getYouTubeEmbedUrl(currentLesson?.youtubeLinks?.[0]?.url);
   
   return (
      <SidebarProvider>
@@ -143,8 +160,21 @@ export default function CoursePlayerPage() {
               {currentLesson ? (
                 <div>
                   <h1 className="text-3xl font-bold mb-4 font-headline">{currentLesson.title}</h1>
-                  <div className="aspect-video bg-black rounded-lg mb-6 flex items-center justify-center">
-                    <PlayCircle className="h-16 w-16 text-white/50" />
+                  <div className="aspect-video bg-black rounded-lg mb-6">
+                    {currentVideoUrl ? (
+                        <iframe
+                            className="w-full h-full rounded-lg"
+                            src={currentVideoUrl}
+                            title={currentLesson.title}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                        ></iframe>
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-muted rounded-lg">
+                            <Video className="h-16 w-16 text-muted-foreground/50" />
+                            <p className="ml-4 text-muted-foreground">Video coming soon.</p>
+                        </div>
+                    )}
                   </div>
                   <div className="prose max-w-none text-foreground/90">
                     <p>{currentLesson.content}</p>
@@ -152,7 +182,7 @@ export default function CoursePlayerPage() {
 
                   {currentLesson.youtubeLinks && currentLesson.youtubeLinks.length > 0 && (
                      <div className="mt-8">
-                        <h3 className="text-xl font-bold mb-4 font-headline">Further Learning</h3>
+                        <h3 className="text-xl font-bold mb-4 font-headline">Video Resources</h3>
                         <div className="space-y-3">
                            {currentLesson.youtubeLinks.map(link => (
                                 <a href={link.url} target="_blank" rel="noopener noreferrer" key={link.url} className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors">
