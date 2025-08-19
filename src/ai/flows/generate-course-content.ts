@@ -39,17 +39,30 @@ const ModuleSchema = z.object({
     lessons: z.array(LessonSchema).min(1).describe('An array of lessons for this module.'),
 });
 
-const ExamSchema = z.object({
-    question: z.string().describe('The final exam question.'),
+const ShortAnswerQuestionSchema = z.object({
+    id: z.string().describe("A unique identifier for the question, e.g., 'q-1'."),
+    type: z.literal('short-answer').describe("The type of the question."),
+    question: z.string().describe('The exam question.'),
     referenceAnswer: z.string().describe('The detailed, correct reference answer for the exam question.'),
     maxPoints: z.number().describe('The maximum points possible for the exam question, always set to 10.'),
 });
+
+const MultipleChoiceQuestionSchema = z.object({
+    id: z.string().describe("A unique identifier for the question, e.g., 'q-2'."),
+    type: z.literal('multiple-choice').describe("The type of the question."),
+    question: z.string().describe('The exam question.'),
+    options: z.array(z.string()).length(4).describe('An array of 4 possible answers for the question.'),
+    correctAnswer: z.number().min(0).max(3).describe('The index of the correct answer in the options array.'),
+    maxPoints: z.number().describe('The maximum points possible for the exam question, always set to 10.'),
+});
+
+const ExamQuestionSchema = z.union([ShortAnswerQuestionSchema, MultipleChoiceQuestionSchema]);
 
 const GenerateCourseContentOutputSchema = z.object({
   longDescription: z.string().min(100).describe('A detailed, comprehensive description of the entire course.'),
   duration: z.string().describe("The estimated total duration of the course, e.g., '4 Weeks' or '6 Weeks'."),
   modules: z.array(ModuleSchema).min(2).describe('An array of modules for the course. Should contain at least 2 modules.'),
-  exam: ExamSchema.describe('The final exam for the course.'),
+  exam: z.array(ExamQuestionSchema).min(1).describe('The final exam for the course, containing at least one question.'),
 });
 export type GenerateCourseContentOutput = z.infer<typeof GenerateCourseContentOutputSchema>;
 
@@ -65,7 +78,7 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateCourseContentOutputSchema},
   prompt: `You are an expert curriculum developer for an online learning platform in Kenya. Your task is to generate a complete and overly extensive course structure based on a given title and context.
 
-The course should be extremely comprehensive and well-structured. It must include a detailed long description, an estimated total duration (e.g., "4 Weeks"), at least two modules, and a total of at least five lessons distributed across the modules. It must also include a final exam.
+The course should be extremely comprehensive and well-structured. It must include a detailed long description, an estimated total duration (e.g., "4 Weeks"), at least two modules, and a total of at least five lessons distributed across the modules. It must also include a final exam with at least one short-answer and one multiple-choice question.
 
 Course Title: {{{courseTitle}}}
 
@@ -80,7 +93,7 @@ Please generate the following content:
 2.  **Duration**: The estimated total duration of the course.
 3.  **Modules**: A list of modules. Each module must have a unique ID, a title, and a list of lessons.
 4.  **Lessons**: A list of lessons for each module. Each lesson must have a unique ID, a title, an estimated duration (e.g., "5 min"), and the full, overly extensive lesson content. The content should be very detailed. For each lesson, extract relevant YouTube links from the context and add them to the 'youtubeLinks' field. If no relevant links are in the context for a lesson, provide an EMPTY array.
-5.  **Exam**: A final exam with a single question, a detailed reference answer for grading, and a max score of 10 points.
+5.  **Exam**: A final exam with an array of questions. Include at least one 'short-answer' question and one 'multiple-choice' question. Each question needs a unique ID, a type, text, max points (always 10), and the correct answer details (referenceAnswer for short-answer, options array and correctAnswer index for multiple-choice).
 
 Generate the full course structure now.`,
 });

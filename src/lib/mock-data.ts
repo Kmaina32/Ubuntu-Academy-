@@ -19,26 +19,35 @@ export interface Module {
   lessons: Lesson[];
 }
 
-export interface Assignment {
-  id:string;
-  courseId: string;
-  title: string;
-  description: string;
-  dueDate: string;
-  courseTitle?: string; // Optional: for displaying in lists
+export interface ShortAnswerQuestion {
+  id: string;
+  type: 'short-answer';
+  question: string;
+  referenceAnswer: string;
+  maxPoints: number;
 }
+
+export interface MultipleChoiceQuestion {
+  id: string;
+  type: 'multiple-choice';
+  question: string;
+  options: string[];
+  correctAnswer: number; // index of the correct answer
+  maxPoints: number;
+}
+
+export type ExamQuestion = ShortAnswerQuestion | MultipleChoiceQuestion;
+
 
 export interface Submission {
     id: string;
-    assignmentId: string;
     courseId: string;
     userId: string;
     userName: string;
     userEmail: string;
-    assignmentTitle: string;
     courseTitle: string;
     submittedAt: string; // ISO String
-    answer: string;
+    answers: { questionId: string, answer: string | number }[]; // string for short-answer, number for mcq index
     graded: boolean;
     pointsAwarded?: number;
     feedback?: string;
@@ -62,12 +71,7 @@ export interface Course {
   imageUrl: string;
   duration: string; // e.g., "5 Weeks"
   modules: Module[];
-  exam: {
-    question: string;
-    referenceAnswer: string;
-    maxPoints: number;
-  };
-  assignments?: Record<string, Omit<Assignment, 'id' | 'courseId' | 'courseTitle'>>;
+  exam: ExamQuestion[];
 }
 
 export const user = {
