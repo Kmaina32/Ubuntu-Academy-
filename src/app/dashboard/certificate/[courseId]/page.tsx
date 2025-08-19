@@ -15,7 +15,9 @@ export default function CertificatePage({ params }: { params: { courseId: string
       <main className="flex-grow bg-secondary">
         <Certificate course={course} />
       </main>
-      <Footer />
+      <div className="print:hidden">
+        <Footer />
+      </div>
     </div>
   );
 }

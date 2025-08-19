@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
+import { SidebarInset } from '@/components/ui/sidebar';
 
 export const metadata: Metadata = {
   title: 'Mkenya Skilled',
@@ -26,10 +27,10 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <SidebarProvider>
             <AppSidebar />
-            <div className="flex flex-col min-h-screen md:pl-12">
-              <Header />
-              {children}
-            </div>
+            <SidebarInset>
+                <Header />
+                {children}
+            </SidebarInset>
         </SidebarProvider>
         <Toaster />
       </body>
