@@ -52,6 +52,14 @@ export function AppSidebar() {
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/') && pathname==='/'} tooltip="Browse Courses" onClick={onLinkClick}>
+                                <Link href="/">
+                                    <Book />
+                                    <span>Browse Courses</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild isActive={isActive('/assignments')} tooltip="Assignments" onClick={onLinkClick}>
                                 <Link href="/assignments">
