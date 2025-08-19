@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Course, user } from "@/lib/mock-data";
-import { Download, Camera } from "lucide-react";
+import { Download } from "lucide-react";
 
 interface CertificateProps {
   course: Course;
@@ -23,66 +23,53 @@ export function Certificate({ course }: CertificateProps) {
                     Download / Print
                 </Button>
             </div>
-            <div className="max-w-4xl mx-auto bg-white border border-gray-200 shadow-lg relative">
-                
-                {/* Decorative Shapes */}
-                <div className="absolute top-0 left-0 w-1/4 h-1/4 bg-white" style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}>
-                   <div className="w-full h-full bg-purple-100" style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}></div>
-                </div>
-                 <div className="absolute top-0 left-0 w-1/4 h-1/4" style={{ clipPath: 'polygon(0 0, 90% 0, 0 90%)' }}>
-                   <div className="w-full h-full bg-[#7C5985]" style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}></div>
-                </div>
+            <div className="max-w-4xl mx-auto bg-white border-4 border-purple-800 p-8 shadow-lg relative aspect-[1.414/1]">
+                <div className="absolute inset-0 border-2 border-purple-300 m-2"></div>
+                <div className="relative z-10 flex flex-col h-full">
 
+                    <div className="text-center mb-8">
+                        <h1 className="text-5xl font-bold text-purple-900 tracking-wider">
+                            Certificate of Completion
+                        </h1>
+                        <p className="text-xl text-gray-600 mt-2">This certificate is proudly presented to</p>
+                    </div>
 
-                <div className="absolute bottom-0 right-0 w-1/4 h-1/4 bg-white" style={{ clipPath: 'polygon(100% 100%, 0% 100%, 100% 0%)' }}>
-                    <div className="w-full h-full bg-purple-100" style={{ clipPath: 'polygon(100% 100%, 0% 100%, 100% 0%)' }}></div>
-                </div>
-                 <div className="absolute bottom-0 right-0 w-1/4 h-1/4" style={{ clipPath: 'polygon(100% 100%, 10% 100%, 100% 10%)' }}>
-                    <div className="w-full h-full bg-[#7C5985]" style={{ clipPath: 'polygon(100% 100%, 0% 100%, 100% 0%)' }}></div>
-                </div>
+                    <div className="text-center my-8 flex-grow flex flex-col justify-center">
+                        <h2 className="text-7xl font-signature text-purple-800">{user.name}</h2>
+                        <p className="text-lg text-gray-600 mt-4">
+                            for successfully completing the course
+                        </p>
+                        <h3 className="text-3xl font-bold text-gray-800 mt-2">
+                            {course.title}
+                        </h3>
+                    </div>
 
-                {/* Seal */}
-                <div className="absolute top-8 right-16 w-20 h-28">
-                    <svg width="80" height="112" viewBox="0 0 80 112" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M40 8C22.33 8 8 22.33 8 40C8 57.67 22.33 72 40 72C57.67 72 72 57.67 72 40C72 22.33 57.67 8 40 8Z" fill="#7C5985"/>
-                        <path d="M40 16C26.75 16 16 26.75 16 40C16 53.25 26.75 64 40 64C53.25 64 64 53.25 64 40C64 26.75 53.25 16 40 16Z" fill="#8E6F97"/>
-                        <path d="M28 72H52V112L40 96L28 112V72Z" fill="#7C5985"/>
-                    </svg>
-                </div>
-                
-                <div className="p-12 md:p-20 text-center relative z-10">
-                    <h1 className="text-5xl font-extrabold text-gray-800 tracking-wider">CERTIFICATE</h1>
-                    <p className="text-xl font-semibold text-gray-700 mt-1">OF ACHIEVEMENT</p>
-                    
-                    <p className="mt-12 text-gray-600">This certificate is presented to</p>
-                    
-                    <h2 className="text-6xl font-signature text-gray-800 my-4">{user.name}</h2>
-                    <hr className="w-1/2 mx-auto border-gray-300"/>
+                    <div className="flex justify-between items-end mt-12">
+                        <div className="text-center">
+                            <p className="font-signature text-2xl text-gray-700">{course.instructor}</p>
+                            <hr className="border-gray-400 mt-1"/>
+                            <p className="text-sm uppercase text-gray-500">Instructor</p>
+                        </div>
 
-                    <p className="mt-8 text-gray-600">
-                        by Mkenya Skilled for successfully completing
-                    </p>
-                    <p className="text-xl font-bold text-gray-800 mt-2 tracking-wide uppercase">
-                        {course.title}
-                    </p>
-
-                    <div className="flex justify-between items-end mt-20 text-gray-600">
-                       <div className="text-left">
-                            <p className="font-bold">{new Date().toLocaleDateString('en-GB')}</p>
-                            <hr className="border-gray-400"/>
-                            <p className="text-sm uppercase">Date</p>
-                       </div>
-                       <div className="text-right">
-                            <div className="flex items-center justify-end gap-2 text-gray-500">
-                                <Camera className="h-8 w-8" />
-                                <span className="text-2xl font-bold">Mkenya Skilled</span>
-                            </div>
+                        <div className="w-32 h-32">
+                             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="50" cy="50" r="48" fill="#F5EEFF" stroke="#9D4EDD" strokeWidth="2"/>
+                                <circle cx="50" cy="50" r="42" fill="none" stroke="#9D4EDD" strokeWidth="1" strokeDasharray="4 2"/>
+                                <text x="50" y="35" fontFamily="PT Sans" fontSize="8" textAnchor="middle" fill="#5A189A" fontWeight="bold">MKENYA SKILLED</text>
+                                <text x="50" y="48" fontFamily="PT Sans" fontSize="12" textAnchor="middle" fill="#5A189A" fontWeight="bold">OFFICIAL</text>
+                                <text x="50" y="60" fontFamily="PT Sans" fontSize="12" textAnchor="middle" fill="#5A189A" fontWeight="bold">SEAL</text>
+                                <text x="50" y="75" fontFamily="PT Sans" fontSize="8" textAnchor="middle" fill="#5A189A" fontWeight="bold">EST. 2024</text>
+                                <path d="M 20 50 A 30 30 0 0 1 80 50" fill="none"/>
+                            </svg>
+                        </div>
+                        
+                        <div className="text-center">
+                             <p className="font-signature text-2xl text-gray-700">Director</p>
+                            <hr className="border-gray-400 mt-1"/>
+                            <p className="text-sm uppercase text-gray-500">Academic Director</p>
                        </div>
                     </div>
-                </div>
-
-                 <div className="absolute bottom-4 right-8 text-xs text-gray-400 z-10">
-                    Certification n°0000000014
+                     <p className="text-xs text-gray-400 text-center mt-4">Issued on: {new Date().toLocaleDateString('en-GB')} | Certificate ID: 123-456-789</p>
                 </div>
             </div>
         </div>
@@ -104,19 +91,23 @@ export function Certificate({ course }: CertificateProps) {
                     box-shadow: none !important;
                 }
                 .border {
-                    border: none !important;
+                    border-width: 4px !important;
                 }
                 body * {
                     visibility: hidden;
                 }
-                .container, .container * {
+                .max-w-4xl, .max-w-4xl * {
                     visibility: visible;
                 }
-                .container {
+                .max-w-4xl {
                     position: absolute;
                     left: 0;
                     top: 0;
                     width: 100%;
+                    height: 100%;
+                    margin: 0;
+                    padding: 2rem;
+                    box-sizing: border-box;
                 }
                 @page {
                     size: A4 landscape;
