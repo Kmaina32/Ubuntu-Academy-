@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,10 +9,11 @@ import { getCourseById } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import Link from 'next/link';
 
 export default function CoursePlayerPage() {
   const router = useRouter();
@@ -144,9 +146,28 @@ export default function CoursePlayerPage() {
                   <div className="aspect-video bg-black rounded-lg mb-6 flex items-center justify-center">
                     <PlayCircle className="h-16 w-16 text-white/50" />
                   </div>
-                  <p className="text-lg mb-4">{currentLesson.content}</p>
-                  <p className="text-muted-foreground mb-8">A video player would be embedded here.</p>
-                  <Button size="lg" className="bg-accent hover:bg-accent/90" onClick={handleCompleteLesson}>
+                  <div className="prose max-w-none text-foreground/90">
+                    <p>{currentLesson.content}</p>
+                  </div>
+
+                  {currentLesson.youtubeLinks && currentLesson.youtubeLinks.length > 0 && (
+                     <div className="mt-8">
+                        <h3 className="text-xl font-bold mb-4 font-headline">Further Learning</h3>
+                        <div className="space-y-3">
+                           {currentLesson.youtubeLinks.map(link => (
+                                <a href={link.url} target="_blank" rel="noopener noreferrer" key={link.url} className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors">
+                                    <Youtube className="h-6 w-6 text-red-600" />
+                                    <div className='flex-grow'>
+                                        <p className="font-semibold">{link.title}</p>
+                                        <p className="text-xs text-muted-foreground">{link.url}</p>
+                                    </div>
+                                </a>
+                           ))}
+                        </div>
+                     </div>
+                  )}
+
+                  <Button size="lg" className="bg-accent hover:bg-accent/90 mt-8" onClick={handleCompleteLesson}>
                     Mark as Completed & Continue
                   </Button>
                 </div>

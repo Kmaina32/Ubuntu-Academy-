@@ -8,20 +8,23 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ListTodo, Loader2, Edit } from 'lucide-react';
+import { ArrowLeft, ListTodo, Loader2, Edit, Star } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
-import type { Assignment, Submission } from '@/lib/mock-data';
-import { getAllAssignments, getUserCourses, getSubmissionsByUserId } from '@/lib/firebase-service';
+import type { Assignment, Course, Submission } from '@/lib/mock-data';
+import { getAllAssignments, getUserCourses, getSubmissionsByUserId, getAllCourses } from '@/lib/firebase-service';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 
+type UserAssignment = Course & {
+    submission?: Submission;
+};
+
 export default function AssignmentsPage() {
   const { user, loading: authLoading } = useAuth();
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [assignments, setAssignments] = useState<UserAssignment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,15 +38,20 @@ export default function AssignmentsPage() {
         const userCourses = await getUserCourses(user.uid);
         const enrolledCourseIds = new Set(userCourses.map(c => c.courseId));
         
-        const [allAssignments, userSubmissions] = await Promise.all([
-          getAllAssignments(),
+        const [allCourses, userSubmissions] = await Promise.all([
+          getAllCourses(),
           getSubmissionsByUserId(user.uid)
         ]);
-
-        const userAssignments = allAssignments.filter(assignment => enrolledCourseIds.has(assignment.courseId));
         
-        setAssignments(userAssignments.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
-        setSubmissions(userSubmissions);
+        const userAssignments = allCourses
+            .filter(course => enrolledCourseIds.has(course.id))
+            .map(course => {
+                const submission = userSubmissions.find(s => s.courseId === course.id);
+                return { ...course, submission };
+            })
+            .sort((a, b) => a.title.localeCompare(b.title));
+        
+        setAssignments(userAssignments);
       } catch (err) {
         console.error("Failed to fetch assignments:", err);
       } finally {
@@ -56,11 +64,10 @@ export default function AssignmentsPage() {
     }
   }, [user, authLoading]);
 
-  const getSubmissionStatus = (assignmentId: string) => {
-    const submission = submissions.find(s => s.assignmentId === assignmentId);
-    if (!submission) return <Badge variant="secondary">Not Submitted</Badge>;
-    if (submission.graded) return <Badge>Graded: {submission.pointsAwarded}</Badge>
-    return <Badge variant="outline">Submitted</Badge>
+  const getSubmissionStatus = (assignment: UserAssignment) => {
+    if (!assignment.submission) return <Badge variant="secondary">Not Submitted</Badge>;
+    if (assignment.submission.graded) return <Badge>Graded: {assignment.submission.pointsAwarded}/{assignment.exam.maxPoints}</Badge>
+    return <Badge variant="outline">Submitted for Grading</Badge>
   }
 
   return (
@@ -81,7 +88,7 @@ export default function AssignmentsPage() {
                             <ListTodo className="h-8 w-8 text-secondary-foreground" />
                         </div>
                         <CardTitle className="mt-4 text-2xl font-headline">My Assignments</CardTitle>
-                        <CardDescription>View upcoming deadlines and submit your work here.</CardDescription>
+                        <CardDescription>View and complete your course final exams.</CardDescription>
                     </CardHeader>
                     <CardContent>
                       {loading ? (
@@ -97,9 +104,8 @@ export default function AssignmentsPage() {
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Due Date</TableHead>
-                              <TableHead>Assignment</TableHead>
                               <TableHead>Course</TableHead>
+                              <TableHead>Assignment</TableHead>
                               <TableHead>Status</TableHead>
                               <TableHead className="text-right">Action</TableHead>
                             </TableRow>
@@ -107,18 +113,25 @@ export default function AssignmentsPage() {
                           <TableBody>
                             {assignments.map((assignment) => (
                               <TableRow key={assignment.id}>
-                                <TableCell>{format(new Date(assignment.dueDate), "PPP")}</TableCell>
                                 <TableCell className="font-medium">{assignment.title}</TableCell>
-                                <TableCell>{assignment.courseTitle}</TableCell>
+                                <TableCell>Final Exam</TableCell>
                                 <TableCell>
-                                  {getSubmissionStatus(assignment.id)}
+                                  {getSubmissionStatus(assignment)}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  {!submissions.find(s => s.assignmentId === assignment.id) && (
+                                  {!assignment.submission && (
                                     <Button asChild size="sm">
-                                      <Link href={`/assignments/submit/${assignment.courseId}/${assignment.id}`}>
+                                      <Link href={`/courses/${assignment.id}/exam`}>
                                           <Edit className="mr-2 h-4 w-4" />
-                                          Submit
+                                          Take Exam
+                                      </Link>
+                                    </Button>
+                                  )}
+                                   {(assignment.submission && assignment.submission.graded) && (
+                                    <Button asChild size="sm" variant="outline">
+                                      <Link href={`/courses/${assignment.id}/exam`}>
+                                          <Star className="mr-2 h-4 w-4" />
+                                          View Results
                                       </Link>
                                     </Button>
                                   )}
@@ -129,7 +142,7 @@ export default function AssignmentsPage() {
                         </Table>
                       ) : (
                         <div className="text-center text-muted-foreground py-10">
-                          <p>You have no pending assignments. Great job!</p>
+                          <p>You are not enrolled in any courses with assignments.</p>
                         </div>
                       )}
                     </CardContent>

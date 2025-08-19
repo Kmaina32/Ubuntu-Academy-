@@ -19,11 +19,17 @@ const GenerateCourseContentInputSchema = z.object({
 });
 export type GenerateCourseContentInput = z.infer<typeof GenerateCourseContentInputSchema>;
 
+const YoutubeLinkSchema = z.object({
+    title: z.string().describe('The title of the YouTube video.'),
+    url: z.string().url().describe('The URL of the YouTube video.'),
+});
+
 const LessonSchema = z.object({
     id: z.string().describe("A unique identifier for the lesson, e.g., 'lesson-1'."),
     title: z.string().describe('The title of the lesson.'),
     duration: z.string().describe("The estimated duration of the lesson, e.g., '5 min' or '10 min'."),
-    content: z.string().describe('The full content of the lesson text.'),
+    content: z.string().describe('The full, extensive, and detailed content of the lesson text. It should be comprehensive and provide in-depth information.'),
+    youtubeLinks: z.array(YoutubeLinkSchema).min(1).describe('An array of relevant YouTube links for this lesson.'),
 });
 
 const ModuleSchema = z.object({
@@ -55,16 +61,16 @@ const prompt = ai.definePrompt({
   name: 'generateCourseContentPrompt',
   input: {schema: GenerateCourseContentInputSchema},
   output: {schema: GenerateCourseContentOutputSchema},
-  prompt: `You are an expert curriculum developer for an online learning platform in Kenya. Your task is to generate a complete course structure based on a given title.
+  prompt: `You are an expert curriculum developer for an online learning platform in Kenya. Your task is to generate a complete and overly extensive course structure based on a given title.
 
-The course should be comprehensive and well-structured. It must include a detailed long description, at least two modules, and a total of at least five lessons distributed across the modules. It must also include a final exam.
+The course should be extremely comprehensive and well-structured. It must include a detailed long description, at least two modules, and a total of at least five lessons distributed across the modules. It must also include a final exam.
 
 Course Title: {{{courseTitle}}}
 
 Please generate the following content:
 1.  **Long Description**: A detailed description of what the course is about, who it's for, and what students will learn. Minimum 100 characters.
 2.  **Modules**: A list of modules. Each module must have a unique ID, a title, and a list of lessons.
-3.  **Lessons**: A list of lessons for each module. Each lesson must have a unique ID, a title, an estimated duration (e.g., "5 min"), and the full lesson content. Ensure there are at least 5 lessons in total across all modules.
+3.  **Lessons**: A list of lessons for each module. Each lesson must have a unique ID, a title, an estimated duration (e.g., "5 min"), and the full, overly extensive lesson content. The content should be very detailed. For each lesson, also provide at least one relevant YouTube link with a title and URL.
 4.  **Exam**: A final exam with a single question, a detailed reference answer for grading, and a max score of 10 points.
 
 Generate the full course structure now.`,

@@ -1,10 +1,16 @@
 
 
+export interface YoutubeLink {
+  title: string;
+  url: string;
+}
+
 export interface Lesson {
   id: string;
   title: string;
   duration: string;
   content: string;
+  youtubeLinks?: YoutubeLink[];
 }
 
 export interface Module {
