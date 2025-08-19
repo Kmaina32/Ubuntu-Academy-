@@ -90,6 +90,7 @@ export default function AdminPage() {
                 <TableHeader>
                     <TableRow>
                     <TableHead>Title</TableHead>
+                    <TableHead>Category</TableHead>
                     <TableHead>Instructor</TableHead>
                     <TableHead>Price (Ksh)</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -99,6 +100,7 @@ export default function AdminPage() {
                     {courses.map((course) => (
                     <TableRow key={course.id}>
                         <TableCell className="font-medium">{course.title}</TableCell>
+                        <TableCell>{course.category}</TableCell>
                         <TableCell>{course.instructor}</TableCell>
                         <TableCell>{course.price.toLocaleString()}</TableCell>
                         <TableCell className="text-right">
@@ -131,7 +133,7 @@ export default function AdminPage() {
                     ))}
                      {courses.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={4} className="text-center text-muted-foreground py-10">
+                            <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
                                 No courses found.
                             </TableCell>
                         </TableRow>

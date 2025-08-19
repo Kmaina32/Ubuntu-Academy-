@@ -22,6 +22,7 @@ import { CourseReviewModal } from '@/components/CourseReviewModal';
 const courseFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
   instructor: z.string().min(2, 'Instructor name is required'),
+  category: z.string().min(3, 'Category is required'),
   price: z.coerce.number().min(0, 'Price cannot be negative'),
 });
 
@@ -40,6 +41,7 @@ export default function CreateCoursePage() {
     defaultValues: {
       title: '',
       instructor: '',
+      category: '',
       price: 0,
     },
   });
@@ -74,6 +76,7 @@ export default function CreateCoursePage() {
         const courseData: Omit<Course, 'id'> = {
             title: courseDetails.title,
             instructor: courseDetails.instructor,
+            category: courseDetails.category,
             price: courseDetails.price,
             description: editedContent.longDescription.substring(0, 150) + '...', // Create short description
             longDescription: editedContent.longDescription,
@@ -140,6 +143,19 @@ export default function CreateCoursePage() {
                         <FormLabel>Instructor Name</FormLabel>
                         <FormControl>
                           <Input placeholder="e.g., Jane Doe" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Business, Technology" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

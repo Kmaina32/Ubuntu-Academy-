@@ -55,6 +55,7 @@ export interface Course {
   id: string;
   title: string;
   instructor: string;
+  category: string;
   description: string;
   longDescription: string;
   price: number;

@@ -23,6 +23,7 @@ import { GenerateCourseContentOutput } from '@/ai/flows/generate-course-content'
 const courseFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
   instructor: z.string().min(2, 'Instructor name is required'),
+  category: z.string().min(3, 'Category is required'),
   price: z.coerce.number().min(0, 'Price cannot be negative'),
   description: z.string().min(20, 'Short description is required'),
   longDescription: z.string().min(100, 'Long description must be at least 100 characters'),
@@ -45,6 +46,7 @@ export default function EditCoursePage() {
     defaultValues: {
       title: '',
       instructor: '',
+      category: '',
       price: 0,
       description: '',
       longDescription: '',
@@ -180,6 +182,19 @@ export default function EditCoursePage() {
                           <FormLabel>Instructor Name</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., Jane Doe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Category</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Business, Technology" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

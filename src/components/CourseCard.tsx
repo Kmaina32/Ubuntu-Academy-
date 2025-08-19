@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,7 +25,7 @@ export function CourseCard({ course, aiHint }: CourseCardProps) {
         />
       </CardHeader>
       <CardContent className="p-6 flex-grow">
-        <Badge variant="secondary" className="mb-2">{course.instructor}</Badge>
+        <Badge variant="secondary" className="mb-2">{course.category}</Badge>
         <CardTitle className="text-xl mb-2 font-headline">{course.title}</CardTitle>
         <p className="text-muted-foreground text-sm">{course.description}</p>
       </CardContent>

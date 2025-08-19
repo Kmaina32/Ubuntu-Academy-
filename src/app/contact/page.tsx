@@ -7,9 +7,10 @@ import { useAuth } from '@/hooks/use-auth';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Header } from "@/components/Header";
-import { Mail, Loader2 } from "lucide-react";
+import { Mail, Loader2, Phone, MapPin } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Separator } from '@/components/ui/separator';
 
 export default function ContactPage() {
   const { user, loading } = useAuth();
@@ -33,21 +34,50 @@ export default function ContactPage() {
     <div className='flex flex-col min-h-screen'>
       <Header />
       <main className="flex-grow flex items-center justify-center p-4 bg-secondary">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
+        <Card className="w-full max-w-lg">
+          <CardHeader className="text-center">
               <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit mb-4">
                   <Mail className="h-8 w-8 text-primary" />
               </div>
-            <CardTitle className="text-2xl font-headline">Contact Us</CardTitle>
-            <CardDescription>Get in touch with the Mkenya Skilled team.</CardDescription>
+            <CardTitle className="text-2xl font-headline">Get In Touch</CardTitle>
+            <CardDescription>We'd love to hear from you. Here's how you can reach us.</CardDescription>
           </CardHeader>
-          <CardContent className='flex flex-col items-center gap-4'>
-            <p className="text-muted-foreground">Our contact page is coming soon. We look forward to hearing from you!</p>
-             <Button asChild variant="outline">
-              <Link href="/">
-                Back to Courses
-              </Link>
-            </Button>
+          <CardContent className='space-y-6'>
+            <div className="flex items-start gap-4">
+                <div className="bg-primary/10 p-2 rounded-md mt-1">
+                   <MapPin className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                    <h3 className="font-semibold">Our Office</h3>
+                    <p className="text-muted-foreground">123 Mama Ngina Street, Nairobi, Kenya</p>
+                </div>
+            </div>
+             <div className="flex items-start gap-4">
+                 <div className="bg-primary/10 p-2 rounded-md mt-1">
+                   <Mail className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                    <h3 className="font-semibold">Email Us</h3>
+                    <p className="text-muted-foreground">For support or inquiries, email us at <a href="mailto:support@mkenyaskilled.com" className="text-primary underline">support@mkenyaskilled.com</a>.</p>
+                </div>
+            </div>
+             <div className="flex items-start gap-4">
+                 <div className="bg-primary/10 p-2 rounded-md mt-1">
+                   <Phone className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                    <h3 className="font-semibold">Call Us</h3>
+                    <p className="text-muted-foreground">Reach our support team Mon-Fri, 9am-5pm at +254 712 345 678.</p>
+                </div>
+            </div>
+             <Separator />
+             <div className="text-center">
+                <Button asChild variant="outline">
+                <Link href="/">
+                    Back to Courses
+                </Link>
+                </Button>
+             </div>
           </CardContent>
         </Card>
       </main>
