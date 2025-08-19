@@ -57,7 +57,7 @@ export function Header() {
         <div className="flex items-center gap-4">
             {loading ? (
             <Skeleton className="h-8 w-8 rounded-full" />
-            ) : (
+            ) : user ? (
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
@@ -68,8 +68,6 @@ export function Header() {
                 </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                {user ? (
-                    <>
                     <DropdownMenuLabel>
                         <p className="font-medium">{user.displayName || 'User'}</p>
                         <p className="text-xs font-normal text-muted-foreground">{user.email}</p>
@@ -86,25 +84,17 @@ export function Header() {
                         <LogOut className="mr-2 h-4 w-4" />
                         <span>Logout</span>
                     </DropdownMenuItem>
-                    </>
-                ) : (
-                    <>
-                    <DropdownMenuItem asChild>
-                        <Link href="/login">
-                        <User className="mr-2 h-4 w-4" />
-                        <span>Login</span>
-                        </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                        <Link href="/signup">
-                        <UserPlus className="mr-2 h-4 w-4" />
-                        <span>Sign Up</span>
-                        </Link>
-                    </DropdownMenuItem>
-                    </>
-                )}
                 </DropdownMenuContent>
             </DropdownMenu>
+            ) : (
+                <div className="flex items-center gap-2">
+                    <Button asChild variant="outline">
+                        <Link href="/login">Login</Link>
+                    </Button>
+                    <Button asChild>
+                        <Link href="/signup">Sign Up</Link>
+                    </Button>
+                </div>
             )}
         </div>
     </header>
