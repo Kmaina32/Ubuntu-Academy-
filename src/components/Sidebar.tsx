@@ -12,17 +12,23 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  useSidebar,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
 export function AppSidebar() {
     const pathname = usePathname();
     const { user } = useAuth();
+    const { setOpenMobile } = useSidebar();
 
     const isActive = (path: string) => {
         if (path === '/') return pathname === '/';
         return pathname.startsWith(path);
+    }
+    
+    const onLinkClick = () => {
+        setOpenMobile(false);
     }
 
   return (
@@ -35,18 +41,10 @@ export function AppSidebar() {
         </SidebarHeader>
         <SidebarContent>
             <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/')} tooltip="Courses">
-                        <Link href="/">
-                            <Home />
-                            <span>Courses</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                {user ? (
+                 {user ? (
                     <>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/dashboard')} tooltip="Dashboard">
+                            <SidebarMenuButton asChild isActive={isActive('/dashboard')} tooltip="Dashboard" onClick={onLinkClick}>
                                 <Link href="/dashboard">
                                     <LayoutDashboard />
                                     <span>Dashboard</span>
@@ -54,15 +52,15 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/assignments')} tooltip="Assignments">
+                            <SidebarMenuButton asChild isActive={isActive('/assignments')} tooltip="Assignments" onClick={onLinkClick}>
                                 <Link href="/assignments">
                                     <ListTodo />
-                                    <span>Assignments</span>
+                                    <span>My Exams</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/calendar')} tooltip="Calendar">
+                            <SidebarMenuButton asChild isActive={isActive('/calendar')} tooltip="Calendar" onClick={onLinkClick}>
                                 <Link href="/calendar">
                                     <Calendar />
                                     <span>Calendar</span>
@@ -70,7 +68,7 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/profile')} tooltip="Profile">
+                            <SidebarMenuButton asChild isActive={isActive('/profile')} tooltip="Profile" onClick={onLinkClick}>
                                 <Link href="/profile">
                                     <User />
                                     <span>Profile</span>
@@ -80,8 +78,16 @@ export function AppSidebar() {
                     </>
                 ) : (
                     <>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/')} tooltip="Courses" onClick={onLinkClick}>
+                                <Link href="/">
+                                    <Home />
+                                    <span>Courses</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/about')} tooltip="About Us">
+                            <SidebarMenuButton asChild isActive={isActive('/about')} tooltip="About Us" onClick={onLinkClick}>
                                 <Link href="/about">
                                     <Info />
                                     <span>About Us</span>
@@ -89,7 +95,7 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/help')} tooltip="Help">
+                            <SidebarMenuButton asChild isActive={isActive('/help')} tooltip="Help" onClick={onLinkClick}>
                                 <Link href="/help">
                                     <HelpCircle />
                                     <span>Help</span>
@@ -97,10 +103,10 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/contact')} tooltip="Contact Us">
+                            <SidebarMenuButton asChild isActive={isActive('/contact')} tooltip="Contact Us" onClick={onLinkClick}>
                                 <Link href="/contact">
                                     <Mail />
-                                    <span>Contact Us</span>
+                                    <span>Contact</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

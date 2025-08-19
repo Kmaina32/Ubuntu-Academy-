@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -23,6 +24,7 @@ type UserAssignment = Course & {
 
 export default function AssignmentsPage() {
   const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [assignments, setAssignments] = useState<UserAssignment[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -59,14 +61,22 @@ export default function AssignmentsPage() {
     };
 
     if (!authLoading) {
-      fetchAssignments();
+      if (user) {
+        fetchAssignments();
+      } else {
+        router.push('/login');
+      }
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, router]);
 
   const getSubmissionStatus = (assignment: UserAssignment) => {
     if (!assignment.submission) return <Badge variant="secondary">Not Submitted</Badge>;
     if (assignment.submission.graded) return <Badge>Graded: {assignment.submission.pointsAwarded}/{assignment.exam.maxPoints}</Badge>
     return <Badge variant="outline">Submitted for Grading</Badge>
+  }
+
+  if (authLoading || loading) {
+    return <div className="flex justify-center items-center h-screen"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   }
 
   return (
@@ -90,16 +100,7 @@ export default function AssignmentsPage() {
                         <CardDescription>View and complete your course final exams.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      {loading ? (
-                        <div className="flex justify-center items-center py-10">
-                          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                          <p className="ml-2">Loading assignments...</p>
-                        </div>
-                      ) : !user ? (
-                         <div className="text-center text-muted-foreground py-10">
-                            <p>Please log in to see your assignments.</p>
-                         </div>
-                      ) : assignments.length > 0 ? (
+                      {assignments.length > 0 ? (
                         <Table>
                           <TableHeader>
                             <TableRow>

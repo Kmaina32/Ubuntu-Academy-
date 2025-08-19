@@ -21,14 +21,25 @@ export default function CertificatePage() {
   const { user, loading: loadingAuth } = useAuth();
 
   useEffect(() => {
+    if (!loadingAuth) {
+      if (!user) {
+        router.push('/login');
+      }
+    }
+  }, [user, loadingAuth, router]);
+
+  useEffect(() => {
     const fetchCourse = async () => {
+        if (!user) return;
         setLoadingCourse(true);
         const fetchedCourse = await getCourseById(params.courseId);
         setCourse(fetchedCourse);
         setLoadingCourse(false);
     }
-    fetchCourse();
-  }, [params.courseId]);
+    if(user) {
+      fetchCourse();
+    }
+  }, [params.courseId, user]);
 
   if (loadingAuth || loadingCourse) {
     return <div className="flex justify-center items-center min-h-screen">
@@ -46,7 +57,6 @@ export default function CertificatePage() {
   if (!user) {
     notFound();
   }
-
 
   return (
     <SidebarProvider>

@@ -14,6 +14,7 @@ import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/use-auth';
 
 function getYouTubeEmbedUrl(url: string | undefined): string | null {
   if (!url) return null;
@@ -40,6 +41,7 @@ function calculateModuleProgress(module: Module, completedLessons: Set<string>):
 export default function CoursePlayerPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
+  const { user, loading: authLoading } = useAuth();
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -48,7 +50,16 @@ export default function CoursePlayerPage() {
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
 
   useEffect(() => {
+     if (!authLoading) {
+      if (!user) {
+        router.push('/login');
+      }
+    }
+  }, [user, authLoading, router]);
+
+  useEffect(() => {
     const fetchCourse = async () => {
+        if (!user) return;
         setLoading(true);
         const fetchedCourse = await getCourseById(params.id);
         setCourse(fetchedCourse);
@@ -57,23 +68,11 @@ export default function CoursePlayerPage() {
         }
         setLoading(false);
     }
-    fetchCourse();
-  }, [params.id]);
+    if (user) {
+      fetchCourse();
+    }
+  }, [params.id, user]);
 
-
-  if (loading) {
-    return (
-        <div className="flex justify-center items-center h-screen bg-secondary">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            <p className="ml-2">Loading course player...</p>
-        </div>
-    )
-  }
-
-  if (!course) {
-    notFound();
-  }
-  
   const handleLessonClick = (lesson: Lesson) => {
     setCurrentLesson(lesson);
   };
@@ -95,6 +94,19 @@ export default function CoursePlayerPage() {
 
   const progress = allLessons.length > 0 ? (completedLessons.size / allLessons.length) * 100 : 0;
   const currentVideoUrl = getYouTubeEmbedUrl(currentLesson?.youtubeLinks?.[0]?.url);
+
+  if (loading || authLoading) {
+    return (
+        <div className="flex justify-center items-center h-screen bg-secondary">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="ml-2">Loading course player...</p>
+        </div>
+    )
+  }
+
+  if (!course) {
+    notFound();
+  }
   
   return (
      <SidebarProvider>

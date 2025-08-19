@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -18,6 +19,12 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user, loading, logout } = useAuth();
 
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
     const names = name.split(' ');
@@ -32,17 +39,12 @@ export default function ProfilePage() {
     router.push('/');
   }
 
-  if (loading) {
+  if (loading || !user) {
      return (
         <div className="flex justify-center items-center min-h-screen">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
     )
-  }
-
-  if (!user) {
-    router.push('/login');
-    return null;
   }
 
   return (

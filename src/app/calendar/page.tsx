@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Calendar as CalendarIcon, Loader2, ExternalLink } from 'lucide-react';
@@ -15,12 +16,23 @@ import { getAllCalendarEvents } from '@/lib/firebase-service';
 import { format, startOfDay } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function CalendarPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user) {
+        router.push('/login');
+      }
+    }
+  }, [user, authLoading, router]);
 
   const fetchEvents = async () => {
     try {
@@ -36,8 +48,10 @@ export default function CalendarPage() {
   };
 
   useEffect(() => {
-    fetchEvents();
-  }, []);
+    if (user) {
+      fetchEvents();
+    }
+  }, [user]);
 
   const eventDates = useMemo(() => {
     return new Set(events.map(event => format(startOfDay(new Date(event.date)), 'yyyy-MM-dd')));
@@ -71,6 +85,10 @@ export default function CalendarPage() {
     const dates = `${date}/${date}`;
     
     return `${baseUrl}&text=${title}&details=${details}&dates=${dates}`;
+  }
+  
+  if (authLoading || loading) {
+    return <div className="flex justify-center items-center h-screen"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   }
 
   return (
@@ -106,11 +124,7 @@ export default function CalendarPage() {
                          <h3 className="font-semibold text-lg text-center mb-4">
                            Events on {selectedDate ? format(selectedDate, 'PPP') : 'selected date'}
                          </h3>
-                         {loading ? (
-                            <div className="flex justify-center items-center py-4">
-                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                            </div>
-                         ) : selectedDayEvents.length > 0 ? (
+                         {selectedDayEvents.length > 0 ? (
                            <ul className="space-y-3">
                             {selectedDayEvents.map(event => (
                                 <li key={event.id} className="p-4 bg-secondary rounded-lg flex justify-between items-center">

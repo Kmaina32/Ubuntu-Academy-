@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Search, User, LogOut, LayoutDashboard, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { SidebarTrigger } from './ui/sidebar';
+import { SidebarTrigger, useSidebar } from './ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
 import {
   DropdownMenu,
@@ -20,6 +20,7 @@ import { Skeleton } from './ui/skeleton';
 
 export function Header() {
   const { user, logout, loading } = useAuth();
+  const { isMobile } = useSidebar();
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
@@ -33,12 +34,13 @@ export function Header() {
   return (
     <header className="flex h-16 items-center justify-between gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30">
         <div className="flex items-center gap-2">
-            <div className="md:hidden">
+            {isMobile ? (
                 <SidebarTrigger />
-            </div>
-            <div className="hidden md:block">
-                <SidebarTrigger />
-            </div>
+            ) : (
+                <div className='hidden md:block'>
+                    <SidebarTrigger />
+                </div>
+            )}
         </div>
       
         <div className="flex-1 flex justify-center">

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -42,40 +41,31 @@ export default function ExamPage() {
     resolver: zodResolver(formSchema),
     defaultValues: { answer: '' },
   });
+  
+  useEffect(() => {
+     if (!authLoading) {
+      if (!user) {
+        router.push('/login');
+      }
+    }
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     const fetchCourse = async () => {
+        if (!user) return;
         setLoadingCourse(true);
         const fetchedCourse = await getCourseById(params.id);
         setCourse(fetchedCourse);
         setLoadingCourse(false);
     }
-    fetchCourse();
-  }, [params.id]);
+    if (user) {
+      fetchCourse();
+    }
+  }, [params.id, user]);
 
-
-  if (loadingCourse || authLoading) {
-    return (
-        <div className="flex flex-col min-h-screen">
-            <main className="flex-grow container mx-auto px-4 md:px-6 py-12 flex justify-center items-center">
-                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                 <p className="ml-2">Loading exam...</p>
-            </main>
-            <Footer />
-        </div>
-    )
-  }
-
-  if (!course || !course.exam) {
-    notFound();
-  }
-   if (!user) {
-    router.push('/login');
-    return null;
-  }
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!course?.exam) return;
+    if (!course?.exam || !user) return;
     setIsLoading(true);
     setError(null);
 
@@ -116,6 +106,22 @@ export default function ExamPage() {
       setIsLoading(false);
     }
   };
+
+  if (loadingCourse || authLoading) {
+    return (
+        <div className="flex flex-col min-h-screen">
+            <main className="flex-grow container mx-auto px-4 md:px-6 py-12 flex justify-center items-center">
+                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                 <p className="ml-2">Loading exam...</p>
+            </main>
+            <Footer />
+        </div>
+    )
+  }
+
+  if (!course || !course.exam) {
+    notFound();
+  }
 
   return (
     <SidebarProvider>
