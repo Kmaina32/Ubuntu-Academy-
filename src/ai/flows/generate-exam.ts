@@ -56,12 +56,12 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateExamOutputSchema},
   prompt: `You are an expert curriculum developer. Your task is to generate a final exam for an online course based on its title and description.
 
-The exam should be comprehensive and test the core concepts of the course. It must include at least five questions, with a mix of short-answer and multiple-choice questions.
+The exam must be overly comprehensive and rigorously test the core concepts of the course. It absolutely must include at least five questions, with a mix of short-answer and multiple-choice questions. Do not generate fewer than five questions.
 
 Course Title: {{{courseTitle}}}
 Course Description: {{{courseDescription}}}
 
-Please generate the full exam now. Ensure that multiple-choice questions have exactly four options and a correct answer index, and short-answer questions have a detailed reference answer.`,
+Please generate the full exam now. Ensure that multiple-choice questions have exactly four options and a correct answer index, and short-answer questions have a detailed reference answer. The exam must contain a minimum of five questions.`,
 });
 
 const generateExamFlow = ai.defineFlow(
@@ -75,4 +75,3 @@ const generateExamFlow = ai.defineFlow(
     return output!;
   }
 );
-

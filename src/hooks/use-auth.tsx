@@ -15,6 +15,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { RegisteredUser, saveUser } from '@/lib/firebase-service';
@@ -25,6 +26,7 @@ interface AuthContextType {
   login: (email: string, pass: string) => Promise<any>;
   signup: (email: string, pass: string, name: string) => Promise<any>;
   logout: () => Promise<any>;
+  sendPasswordReset: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -78,6 +80,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     return firebaseSignOut(auth)
   };
+  
+  const sendPasswordReset = (email: string) => {
+    return sendPasswordResetEmail(auth, email);
+  }
 
   const value = {
     user,
@@ -85,6 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     login,
     signup,
     logout,
+    sendPasswordReset,
   };
 
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;

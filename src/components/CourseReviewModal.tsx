@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Loader2, Trash2, PlusCircle } from 'lucide-react';
-import { GenerateCourseContentOutput } from '@/ai/flows/generate-course-content';
+import type { GenerateCourseContentOutput, ExamQuestion } from '@/ai/flows/generate-course-content';
 
 // Zod schema for the form, mirroring GenerateCourseContentOutput
 const youtubeLinkSchema = z.object({
@@ -34,17 +34,32 @@ const moduleSchema = z.object({
   lessons: z.array(lessonSchema),
 });
 
-const examSchema = z.object({
-  question: z.string().min(10, 'Question must be at least 10 characters'),
-  referenceAnswer: z.string().min(10, 'Reference answer must be at least 10 characters'),
-  maxPoints: z.coerce.number(),
+
+const shortAnswerSchema = z.object({
+  id: z.string(),
+  type: z.literal('short-answer'),
+  question: z.string().min(1, "Question cannot be empty"),
+  referenceAnswer: z.string().min(1, "Reference answer cannot be empty"),
+  maxPoints: z.coerce.number().min(1, "Points must be at least 1"),
 });
+
+const multipleChoiceSchema = z.object({
+  id: z.string(),
+  type: z.literal('multiple-choice'),
+  question: z.string().min(1, "Question cannot be empty"),
+  options: z.array(z.string().min(1, "Option cannot be empty")).length(4, "Must have exactly 4 options"),
+  correctAnswer: z.coerce.number().min(0).max(3),
+  maxPoints: z.coerce.number().min(1, "Points must be at least 1"),
+});
+
+const examQuestionSchema = z.union([shortAnswerSchema, multipleChoiceSchema]);
+
 
 const reviewSchema = z.object({
   longDescription: z.string().min(100, 'Description must be at least 100 characters'),
   duration: z.string().min(3, "Duration is required"),
   modules: z.array(moduleSchema),
-  exam: examSchema,
+  exam: z.array(examQuestionSchema),
 });
 
 type ReviewFormValues = z.infer<typeof reviewSchema>;
@@ -137,33 +152,9 @@ export function CourseReviewModal({ isOpen, onClose, courseContent, onSave, isSa
 
 
                 <h3 className="text-lg font-semibold">Final Exam</h3>
-                <div className="p-4 border rounded-lg space-y-4">
-                     <FormField
-                        control={form.control}
-                        name="exam.question"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Exam Question</FormLabel>
-                            <FormControl>
-                                <Textarea {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                     <FormField
-                        control={form.control}
-                        name="exam.referenceAnswer"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Reference Answer</FormLabel>
-                            <FormControl>
-                                <Textarea {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                 <div className="p-4 border rounded-lg space-y-4">
+                    {/* This part needs to be updated to handle an array of questions */}
+                    <p className="text-sm text-muted-foreground">Exam question management is handled separately after course creation. You can add/edit questions from the "Assignments" section in the admin dashboard.</p>
                 </div>
             </form>
             </Form>
@@ -239,12 +230,13 @@ function YouTubeLinkFields({ moduleIndex, lessonIndex, form }: { moduleIndex: nu
         <div className="space-y-2">
             <FormLabel>YouTube Video Links</FormLabel>
             {linkFields.map((link, linkIndex) => (
-                <div key={link.id} className="flex items-end gap-2">
+                <div key={link.id} className="flex flex-col md:flex-row items-stretch md:items-end gap-2">
                      <FormField
                         control={form.control}
                         name={`modules.${moduleIndex}.lessons.${lessonIndex}.youtubeLinks.${linkIndex}.title`}
                         render={({ field }) => (
                              <FormItem className="flex-grow">
+                                <FormLabel className="text-xs">Video Title</FormLabel>
                                 <FormControl>
                                     <Input placeholder="Video Title" {...field} />
                                 </FormControl>
@@ -257,6 +249,7 @@ function YouTubeLinkFields({ moduleIndex, lessonIndex, form }: { moduleIndex: nu
                         name={`modules.${moduleIndex}.lessons.${lessonIndex}.youtubeLinks.${linkIndex}.url`}
                         render={({ field }) => (
                             <FormItem className="flex-grow">
+                                <FormLabel className="text-xs">URL</FormLabel>
                                 <FormControl>
                                     <Input placeholder="https://youtube.com/watch?v=..." {...field} />
                                 </FormControl>

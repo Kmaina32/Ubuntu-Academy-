@@ -75,29 +75,29 @@ export function Certificate({ course, userName }: CertificateProps) {
             <div className="absolute inset-0 border-2 border-red-600 m-3 print:border-1"></div>
             <div className="relative z-10 flex flex-col h-full text-center">
 
-                <div className="mb-8 print:mb-4">
-                    <p className="text-xl text-gray-500 uppercase tracking-widest print:text-base">Certificate of Completion</p>
+                <div className="mb-4 md:mb-8 print:mb-4">
+                    <p className="text-lg md:text-xl text-gray-500 uppercase tracking-widest print:text-base">Certificate of Completion</p>
                 </div>
 
                 <div className="flex-grow flex flex-col justify-center">
-                    <p className="text-lg text-black mb-2 print:text-sm">This certificate is proudly presented to</p>
-                    <h1 className="text-7xl font-signature text-green-700 my-4 print:text-5xl print:my-2">{userName}</h1>
-                    <p className="text-lg text-black mt-2 print:text-sm">
+                    <p className="text-base md:text-lg text-black mb-2 print:text-sm">This certificate is proudly presented to</p>
+                    <h1 className="text-5xl md:text-7xl font-signature text-green-700 my-2 md:my-4 print:text-5xl print:my-2">{userName}</h1>
+                    <p className="text-base md:text-lg text-black mt-2 print:text-sm">
                         for successfully completing the online course
                     </p>
-                    <h2 className="text-4xl font-bold text-black mt-4 font-headline print:text-2xl print:mt-2">
+                    <h2 className="text-2xl md:text-4xl font-bold text-black mt-2 md:mt-4 font-headline print:text-2xl print:mt-2">
                         {course.title}
                     </h2>
                 </div>
 
-                <div className="flex justify-between items-end text-sm print:text-xs">
+                <div className="flex justify-between items-end text-xs md:text-sm print:text-xs">
                     <div className="text-center w-1/3">
-                        <p className="font-signature text-3xl text-black print:text-2xl">{course.instructor}</p>
+                        <p className="font-signature text-xl md:text-3xl text-black print:text-2xl">{course.instructor}</p>
                         <hr className="border-gray-400 mt-1 mx-auto w-3/4"/>
                         <p className="uppercase text-gray-500 mt-2 tracking-wider">Instructor</p>
                     </div>
 
-                    <div className="w-36 h-36 print:w-24 print:h-24">
+                    <div className="w-24 h-24 md:w-36 md:h-36 print:w-24 print:h-24">
                          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="50" cy="50" r="48" fill="white" stroke="black" strokeWidth="2"/>
                             <circle cx="50" cy="50" r="42" fill="none" stroke="black" strokeWidth="1" strokeDasharray="4 2"/>
@@ -110,12 +110,12 @@ export function Certificate({ course, userName }: CertificateProps) {
                     </div>
                     
                     <div className="text-center w-1/3">
-                         <p className="font-signature text-3xl text-black print:text-2xl">A. Omolo</p>
+                         <p className="font-signature text-xl md:text-3xl text-black print:text-2xl">A. Omolo</p>
                         <hr className="border-gray-400 mt-1 mx-auto w-3/4"/>
                         <p className="uppercase text-gray-500 mt-2 tracking-wider">Academic Director</p>
                    </div>
                 </div>
-                 <p className="text-xs text-gray-400 mt-6 print:mt-2 print:text-[8px]">Issued on: {new Date().toLocaleDateString('en-GB')} | Certificate ID: 123-456-789</p>
+                 <p className="text-[10px] md:text-xs text-gray-400 mt-4 md:mt-6 print:mt-2 print:text-[8px]">Issued on: {new Date().toLocaleDateString('en-GB')} | Certificate ID: 123-456-789</p>
             </div>
         </div>
         <style jsx global>{`
