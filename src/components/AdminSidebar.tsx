@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle } from 'lucide-react';
 
 export function AdminSidebar() {
     const pathname = usePathname();
@@ -81,6 +81,14 @@ export function AdminSidebar() {
                         <Link href="/admin/hero">
                             <Cog />
                             <span>Site Settings</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/admin/help')} tooltip="Help Center">
+                        <Link href="/admin/help">
+                            <HelpCircle />
+                            <span>Help Center</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
