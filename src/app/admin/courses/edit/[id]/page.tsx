@@ -43,15 +43,6 @@ export default function EditCoursePage() {
 
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseFormSchema),
-    defaultValues: {
-      title: '',
-      instructor: '',
-      category: '',
-      price: 0,
-      description: '',
-      longDescription: '',
-      imageUrl: '',
-    },
   });
 
   const fetchCourse = async () => {
@@ -60,9 +51,18 @@ export default function EditCoursePage() {
         const fetchedCourse = await getCourseById(params.id);
         if (!fetchedCourse) {
           notFound();
+          return;
         }
         setCourse(fetchedCourse);
-        form.reset(fetchedCourse);
+        form.reset({
+            title: fetchedCourse.title || '',
+            instructor: fetchedCourse.instructor || '',
+            category: fetchedCourse.category || '',
+            price: fetchedCourse.price || 0,
+            description: fetchedCourse.description || '',
+            longDescription: fetchedCourse.longDescription || '',
+            imageUrl: fetchedCourse.imageUrl || ''
+        });
       } catch (error) {
         console.error("Failed to fetch course data:", error);
         toast({
@@ -158,7 +158,7 @@ export default function EditCoursePage() {
                 <div className="flex justify-center items-center py-10">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
-              ) : (
+              ) : course ? (
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <FormField
@@ -263,6 +263,10 @@ export default function EditCoursePage() {
                     </div>
                   </form>
                 </Form>
+              ) : (
+                 <div className="text-center py-10 text-muted-foreground">
+                    Could not load course information.
+                 </div>
               )}
             </CardContent>
           </Card>
