@@ -16,7 +16,8 @@ import Link from 'next/link';
 import { ArrowLeft, Loader2, Sparkles } from 'lucide-react';
 import { createCourse } from '@/lib/firebase-service';
 import type { Course } from '@/lib/mock-data';
-import { generateCourseContent } from '@/ai/flows/generate-course-content';
+import { generateCourseContent, GenerateCourseContentOutput } from '@/ai/flows/generate-course-content';
+import { CourseReviewModal } from '@/components/CourseReviewModal';
 
 const courseFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -24,12 +25,17 @@ const courseFormSchema = z.object({
   price: z.coerce.number().min(0, 'Price cannot be negative'),
 });
 
+type CourseFormValues = z.infer<typeof courseFormSchema>;
+
 export default function CreateCoursePage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState<GenerateCourseContentOutput | null>(null);
+  const [courseDetails, setCourseDetails] = useState<CourseFormValues | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const form = useForm<z.infer<typeof courseFormSchema>>({
+  const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseFormSchema),
     defaultValues: {
       title: '',
@@ -38,44 +44,64 @@ export default function CreateCoursePage() {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof courseFormSchema>) => {
+  const onGenerate = async (values: CourseFormValues) => {
     setIsLoading(true);
+    setCourseDetails(values);
     toast({
       title: 'Generating Course Content...',
       description: 'The AI is building your course. This may take a moment.',
     });
     try {
-      const generatedContent = await generateCourseContent({ courseTitle: values.title });
-      
-      const courseData: Omit<Course, 'id'> = {
-        title: values.title,
-        instructor: values.instructor,
-        price: values.price,
-        description: generatedContent.longDescription.substring(0, 150) + '...', // Create short description from long one
-        longDescription: generatedContent.longDescription,
-        imageUrl: 'https://placehold.co/600x400',
-        modules: generatedContent.modules,
-        exam: generatedContent.exam,
-      }
-      await createCourse(courseData);
-
-      toast({
-        title: 'Course Created!',
-        description: `The course "${values.title}" has been successfully generated and saved.`,
-      });
-      router.push(`/admin`);
-      
+      const content = await generateCourseContent({ courseTitle: values.title });
+      setGeneratedContent(content);
+      setIsModalOpen(true);
     } catch (error) {
-        console.error("Failed to create course:", error);
+        console.error("Failed to generate course content:", error);
         toast({
             title: 'Error',
-            description: 'Failed to generate or save the course. Please try again.',
+            description: 'Failed to generate course content. Please try again.',
             variant: 'destructive',
         });
     } finally {
         setIsLoading(false);
     }
   };
+
+  const handleSaveCourse = async (editedContent: GenerateCourseContentOutput) => {
+    if (!courseDetails) return;
+    setIsLoading(true);
+     try {
+        const courseData: Omit<Course, 'id'> = {
+            title: courseDetails.title,
+            instructor: courseDetails.instructor,
+            price: courseDetails.price,
+            description: editedContent.longDescription.substring(0, 150) + '...', // Create short description
+            longDescription: editedContent.longDescription,
+            imageUrl: 'https://placehold.co/600x400',
+            modules: editedContent.modules,
+            exam: editedContent.exam,
+        }
+        await createCourse(courseData);
+        toast({
+            title: 'Course Created!',
+            description: `The course "${courseDetails.title}" has been successfully saved.`,
+        });
+        setIsModalOpen(false);
+        setGeneratedContent(null);
+        setCourseDetails(null);
+        router.push(`/admin`);
+     } catch (error) {
+         console.error("Failed to save course:", error);
+         toast({
+            title: 'Error',
+            description: 'Failed to save the course. Please try again.',
+            variant: 'destructive',
+        });
+     } finally {
+         setIsLoading(false);
+     }
+  }
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -88,11 +114,11 @@ export default function CreateCoursePage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl font-headline">Create New Course with AI</CardTitle>
-              <CardDescription>Enter a title, instructor, and price. Our AI will generate the full course content, including modules, lessons, and an exam.</CardDescription>
+              <CardDescription>Enter a title, instructor, and price. Our AI will generate the full course content, including modules, lessons, and an exam for you to review and edit.</CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={form.handleSubmit(onGenerate)} className="space-y-6">
                   <FormField
                     control={form.control}
                     name="title"
@@ -143,13 +169,24 @@ export default function CreateCoursePage() {
                       ) : (
                         <Sparkles className="mr-2 h-4 w-4" />
                       )}
-                      {isLoading ? 'Generating...' : 'Generate & Save Course'}
+                      {isLoading ? 'Generating...' : 'Generate & Review'}
                     </Button>
                   </div>
                 </form>
               </Form>
             </CardContent>
           </Card>
+
+           {generatedContent && (
+             <CourseReviewModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                courseContent={generatedContent}
+                onSave={handleSaveCourse}
+                isSaving={isLoading}
+             />
+           )}
+
         </div>
       </main>
       <Footer />
