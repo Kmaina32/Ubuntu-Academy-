@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
-import { getSubmissionById, getCourseById, updateSubmission } from '@/lib/firebase-service';
+import { getSubmissionById, getCourseById, updateSubmission, updateUserCourseProgress } from '@/lib/firebase-service';
 import type { Submission, Course } from '@/lib/mock-data';
 import { gradeShortAnswerExam, GradeShortAnswerExamOutput } from '@/ai/flows/grade-short-answer-exam';
 
@@ -16,6 +16,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, ArrowLeft, Sparkles, CheckCircle, MessageSquare, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+
+const CERTIFICATE_THRESHOLD = 8;
 
 export default function GradeSubmissionPage() {
   const params = useParams<{ submissionId: string }>();
@@ -81,12 +83,23 @@ export default function GradeSubmissionPage() {
       
       setIsGrading(true);
       try {
+        // 1. Save the grade details to the submission
         await updateSubmission(submission.id, {
             graded: true,
             pointsAwarded: gradeResult.pointsAwarded,
             feedback: gradeResult.feedback,
         });
-        toast({ title: 'Grade Saved!', description: "The student's grade has been recorded." });
+
+        // 2. Check if grade meets certificate threshold
+        if (gradeResult.pointsAwarded >= CERTIFICATE_THRESHOLD) {
+            await updateUserCourseProgress(submission.userId, submission.courseId, {
+                certificateAvailable: true,
+            });
+            toast({ title: 'Grade Saved! Certificate Awarded.', description: "The student's grade has been recorded and they have received a certificate." });
+        } else {
+             toast({ title: 'Grade Saved!', description: "The student's grade has been recorded." });
+        }
+
         router.push('/admin/assignments');
       } catch(error) {
         console.error("Failed to save grade", error);
