@@ -7,7 +7,6 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { gradeShortAnswerExam, GradeShortAnswerExamOutput } from '@/ai/flows/grade-short-answer-exam';
 import { courses } from '@/lib/mock-data';
-import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -61,7 +60,6 @@ export default function ExamPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
       <main className="flex-grow container mx-auto px-4 md:px-6 py-12">
         <div className="max-w-3xl mx-auto">
           <Card>

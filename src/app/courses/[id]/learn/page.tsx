@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import { courses, Lesson } from '@/lib/mock-data';
-import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -44,7 +43,6 @@ export default function CoursePlayerPage({ params }: { params: { id: string } })
   
   return (
     <div className="flex flex-col h-screen bg-secondary">
-      <Header />
       <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
         <aside className="w-full md:w-80 lg:w-96 bg-background border-r flex-shrink-0 overflow-y-auto">
           <div className="p-4">

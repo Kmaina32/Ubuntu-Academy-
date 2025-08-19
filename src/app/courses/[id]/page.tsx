@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { courses } from "@/lib/mock-data";
-import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +24,6 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
 
   return (
     <>
-      <Header />
       <main className="flex-grow py-12 md:py-16">
         <div className="container mx-auto px-4 md:px-6">
           <div className="grid md:grid-cols-3 gap-8 lg:gap-12">

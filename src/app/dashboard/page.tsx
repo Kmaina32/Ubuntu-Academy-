@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +14,6 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
       <main className="flex-grow container mx-auto px-4 md:px-6 py-8">
         <h1 className="text-3xl font-bold mb-2 font-headline">Welcome Back, {user.name.split(' ')[0]}!</h1>
         <p className="text-muted-foreground mb-8">Continue your learning journey and view your achievements.</p>

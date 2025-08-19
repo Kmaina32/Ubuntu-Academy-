@@ -1,4 +1,3 @@
-import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import { courses } from "@/lib/mock-data";
@@ -12,7 +11,6 @@ export default function Home() {
 
   return (
     <>
-      <Header />
       <main className="flex-grow">
         <section className="relative py-20 md:py-32 bg-gray-900">
           <div className="absolute inset-0 bg-gradient-to-r from-[#006233] via-black to-[#CE1126] opacity-60"></div>

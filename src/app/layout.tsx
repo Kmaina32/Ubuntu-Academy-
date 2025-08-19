@@ -1,6 +1,8 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/Sidebar';
 
 export const metadata: Metadata = {
   title: 'Mkenya Skilled',
@@ -20,9 +22,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <div className="flex flex-col min-h-screen">
-          {children}
-        </div>
+        <SidebarProvider>
+            <AppSidebar />
+            <div className="flex flex-col min-h-screen">
+              {children}
+            </div>
+        </SidebarProvider>
         <Toaster />
       </body>
     </html>
