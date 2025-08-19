@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/hooks/use-auth';
-import type { Course } from '@/lib/mock-data';
+import type { Course, ExamQuestion } from '@/lib/mock-data';
 import { getCourseById, createSubmission, updateUserCourseProgress } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,9 +20,17 @@ import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const formSchema = z.object({
-  answer: z.string().min(50, { message: 'Please provide a more detailed answer (at least 50 characters).' }),
+  answers: z.array(z.object({
+    questionId: z.string(),
+    answer: z.union([z.string(), z.number()]),
+  })).refine(data => data.every(item => {
+      if (typeof item.answer === 'string') return item.answer.trim().length >= 20;
+      if (typeof item.answer === 'number') return item.answer >= 0;
+      return false;
+  }), { message: "Each short answer must be at least 20 characters, and a multiple choice option must be selected."})
 });
 
 export default function ExamPage() {
@@ -39,7 +47,7 @@ export default function ExamPage() {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { answer: '' },
+    defaultValues: { answers: [] },
   });
   
   useEffect(() => {
@@ -55,13 +63,18 @@ export default function ExamPage() {
         if (!user) return;
         setLoadingCourse(true);
         const fetchedCourse = await getCourseById(params.id);
+        if(fetchedCourse?.exam) {
+           form.reset({
+             answers: fetchedCourse.exam.map(q => ({questionId: q.id, answer: q.type === 'short-answer' ? '' : -1}))
+           })
+        }
         setCourse(fetchedCourse);
         setLoadingCourse(false);
     }
     if (user) {
       fetchCourse();
     }
-  }, [params.id, user]);
+  }, [params.id, user, form]);
 
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -71,19 +84,16 @@ export default function ExamPage() {
 
     try {
         await createSubmission({
-            assignmentId: 'final-exam', // Using a consistent ID for final exams
             courseId: course.id,
             userId: user.uid,
             userName: user.displayName || 'Anonymous',
             userEmail: user.email || '',
-            assignmentTitle: 'Final Exam',
             courseTitle: course.title,
             submittedAt: new Date().toISOString(),
-            answer: values.answer,
+            answers: values.answers,
             graded: false,
         });
 
-        // Mark course progress as 100% complete for the user
         await updateUserCourseProgress(user.uid, course.id, {
             completed: true,
             progress: 100,
@@ -138,31 +148,57 @@ export default function ExamPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-2xl font-headline">Final Exam: {course.title}</CardTitle>
-                  <CardDescription>Answer the following question to the best of your ability.</CardDescription>
+                  <CardDescription>Answer all questions to the best of your ability to complete the course.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p className="font-semibold mb-2">Question:</p>
-                    <p className="mb-6 p-4 bg-secondary rounded-md">{course.exam.question}</p>
-      
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                        <FormField
-                            control={form.control}
-                            name="answer"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Your Answer</FormLabel>
-                                <FormControl>
-                                <Textarea
-                                    placeholder="Type your detailed answer here..."
-                                    className="min-h-[200px]"
-                                    {...field}
-                                />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                       {course.exam.map((question, index) => (
+                           <div key={question.id} className="space-y-4 p-4 border rounded-lg">
+                               <p className="font-semibold">{index + 1}. {question.question}</p>
+                               {question.type === 'short-answer' ? (
+                                   <FormField
+                                    control={form.control}
+                                    name={`answers.${index}.answer`}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Your Answer</FormLabel>
+                                            <FormControl>
+                                                <Textarea {...field} value={typeof field.value === 'string' ? field.value : ''} placeholder="Type your detailed answer here (min. 20 characters)..." />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                   />
+                               ) : (
+                                   <FormField
+                                    control={form.control}
+                                    name={`answers.${index}.answer`}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Select One Answer</FormLabel>
+                                            <FormControl>
+                                                <RadioGroup
+                                                    onValueChange={(val) => field.onChange(parseInt(val, 10))}
+                                                    className="flex flex-col space-y-2"
+                                                >
+                                                    {question.options.map((option, optionIndex) => (
+                                                        <FormItem key={optionIndex} className="flex items-center space-x-3 space-y-0">
+                                                            <FormControl>
+                                                                <RadioGroupItem value={String(optionIndex)} />
+                                                            </FormControl>
+                                                            <FormLabel className="font-normal">{option}</FormLabel>
+                                                        </FormItem>
+                                                    ))}
+                                                </RadioGroup>
+                                            </FormControl>
+                                             <FormMessage />
+                                        </FormItem>
+                                    )}
+                                   />
+                               )}
+                           </div>
+                       ))}
                         <Button type="submit" disabled={isLoading}>
                             {isLoading ? (
                             <>
@@ -176,8 +212,11 @@ export default function ExamPage() {
                             </>
                             )}
                         </Button>
-                        </form>
-                    </Form>
+                         {form.formState.errors.answers && (
+                             <p className="text-sm font-medium text-destructive">{form.formState.errors.answers.message}</p>
+                         )}
+                    </form>
+                  </Form>
       
                     {error && (
                         <Alert variant="destructive" className="mt-6">

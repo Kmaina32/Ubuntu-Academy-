@@ -6,18 +6,24 @@ import { useParams, useRouter, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { getSubmissionById, getCourseById, updateSubmission, updateUserCourseProgress } from '@/lib/firebase-service';
-import type { Submission, Course } from '@/lib/mock-data';
+import type { Submission, Course, ExamQuestion, ShortAnswerQuestion } from '@/lib/mock-data';
 import { gradeShortAnswerExam, GradeShortAnswerExamOutput } from '@/ai/flows/grade-short-answer-exam';
 
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, ArrowLeft, Sparkles, CheckCircle, MessageSquare, Star } from 'lucide-react';
+import { Loader2, ArrowLeft, Sparkles, CheckCircle, MessageSquare, Star, XCircle, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 
-const CERTIFICATE_THRESHOLD = 8;
+const CERTIFICATE_THRESHOLD_PERCENTAGE = 80;
+
+type GradeResult = {
+    questionId: string;
+    pointsAwarded: number;
+    feedback?: string;
+};
 
 export default function GradeSubmissionPage() {
   const params = useParams<{ submissionId: string }>();
@@ -28,8 +34,9 @@ export default function GradeSubmissionPage() {
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isGrading, setIsGrading] = useState(false);
-  const [gradeResult, setGradeResult] = useState<GradeShortAnswerExamOutput | null>(null);
+  const [isGrading, setIsGrading] = useState<string | null>(null); // questionId being graded
+  const [isSaving, setIsSaving] = useState(false);
+  const [gradeResults, setGradeResults] = useState<Map<string, GradeResult>>(new Map());
 
   useEffect(() => {
     const fetchSubmissionData = async () => {
@@ -48,56 +55,78 @@ export default function GradeSubmissionPage() {
       
       setSubmission(sub);
       setCourse(courseData);
-
-      if (sub.graded && sub.pointsAwarded !== undefined && sub.feedback) {
-          setGradeResult({ pointsAwarded: sub.pointsAwarded, feedback: sub.feedback });
+      
+      // Pre-calculate grades for MCQs and pre-fill existing grades for SAQs
+      const initialGrades = new Map<string, GradeResult>();
+      if (courseData.exam && sub.answers) {
+          courseData.exam.forEach(q => {
+             const studentAnswer = sub.answers.find(a => a.questionId === q.id);
+             if(studentAnswer) {
+                 if (q.type === 'multiple-choice') {
+                    const isCorrect = q.correctAnswer === studentAnswer.answer;
+                    initialGrades.set(q.id, {
+                        questionId: q.id,
+                        pointsAwarded: isCorrect ? q.maxPoints : 0,
+                    });
+                 }
+             }
+          });
       }
-
+      if(sub.graded && sub.pointsAwarded !== undefined && sub.feedback) {
+          const storedGrades: GradeResult[] = JSON.parse(sub.feedback);
+          storedGrades.forEach(g => initialGrades.set(g.questionId, g));
+      }
+      setGradeResults(initialGrades);
+      
       setLoading(false);
     };
     fetchSubmissionData();
   }, [params.submissionId]);
 
-  const handleGrade = async () => {
-    if (!submission || !course?.exam) return;
+  const handleGradeSAQ = async (question: ShortAnswerQuestion, studentAnswer: string) => {
+    if (!submission) return;
 
-    setIsGrading(true);
+    setIsGrading(question.id);
     try {
       const result = await gradeShortAnswerExam({
-        question: course.exam.question,
-        answer: submission.answer,
-        referenceAnswer: course.exam.referenceAnswer,
-        maxPoints: course.exam.maxPoints,
+        question: question.question,
+        answer: studentAnswer,
+        referenceAnswer: question.referenceAnswer,
+        maxPoints: question.maxPoints,
       });
-      setGradeResult(result);
+      setGradeResults(prev => new Map(prev).set(question.id, { questionId: question.id, ...result }));
     } catch (error) {
       console.error("AI grading failed", error);
       toast({ title: 'Error', description: 'The AI grader failed to process the request.', variant: 'destructive' });
     } finally {
-      setIsGrading(false);
+      setIsGrading(null);
     }
   };
+  
+  const totalMaxPoints = course?.exam.reduce((acc, q) => acc + q.maxPoints, 0) || 0;
+  const totalPointsAwarded = Array.from(gradeResults.values()).reduce((acc, r) => acc + r.pointsAwarded, 0);
+  const finalPercentage = totalMaxPoints > 0 ? (totalPointsAwarded / totalMaxPoints) * 100 : 0;
+
 
   const handleApproveGrade = async () => {
-      if (!submission || !gradeResult) return;
+      if (!submission || !course) return;
       
-      setIsGrading(true);
+      setIsSaving(true);
       try {
-        // 1. Save the grade details to the submission
+        const feedbackString = JSON.stringify(Array.from(gradeResults.values()));
         await updateSubmission(submission.id, {
             graded: true,
-            pointsAwarded: gradeResult.pointsAwarded,
-            feedback: gradeResult.feedback,
+            pointsAwarded: totalPointsAwarded,
+            feedback: feedbackString, // Store detailed breakdown
         });
 
-        // 2. Check if grade meets certificate threshold
-        if (gradeResult.pointsAwarded >= CERTIFICATE_THRESHOLD) {
+        if (finalPercentage >= CERTIFICATE_THRESHOLD_PERCENTAGE) {
             await updateUserCourseProgress(submission.userId, submission.courseId, {
                 certificateAvailable: true,
             });
-            toast({ title: 'Grade Saved! Certificate Awarded.', description: "The student's grade has been recorded and they have received a certificate." });
+            toast({ title: 'Grade Saved! Certificate Awarded.', description: `Final score: ${totalPointsAwarded}/${totalMaxPoints} (${Math.round(finalPercentage)}%)` });
         } else {
-             toast({ title: 'Grade Saved!', description: "The student's grade has been recorded." });
+             toast({ title: 'Grade Saved!', description: `Final score: ${totalPointsAwarded}/${totalMaxPoints} (${Math.round(finalPercentage)}%)` });
         }
 
         router.push('/admin/assignments');
@@ -105,7 +134,7 @@ export default function GradeSubmissionPage() {
         console.error("Failed to save grade", error);
         toast({ title: 'Error', description: 'Could not save the grade.', variant: 'destructive' });
       } finally {
-          setIsGrading(false);
+          setIsSaving(false);
       }
   }
 
@@ -120,6 +149,7 @@ export default function GradeSubmissionPage() {
 
   if (!submission || !course) {
     notFound();
+    return null;
   }
 
   return (
@@ -138,54 +168,87 @@ export default function GradeSubmissionPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <div className="space-y-2">
-                    <h3 className="font-semibold text-lg">Exam Question</h3>
-                    <p className="p-4 bg-secondary rounded-md">{course.exam.question}</p>
-                </div>
-                <div className="space-y-2">
-                    <h3 className="font-semibold text-lg">Student's Answer</h3>
-                    <p className="p-4 bg-secondary rounded-md whitespace-pre-wrap">{submission.answer}</p>
-                </div>
+                {course.exam.map((question, index) => {
+                    const studentAnswer = submission.answers.find(a => a.questionId === question.id);
+                    const grade = gradeResults.get(question.id);
 
+                    return (
+                        <div key={question.id} className="p-4 border rounded-lg space-y-3">
+                            <p className="font-semibold text-lg">{index + 1}. {question.question}</p>
+                            
+                            {question.type === 'short-answer' ? (
+                                <>
+                                    <p className="p-3 bg-secondary rounded-md whitespace-pre-wrap">{String(studentAnswer?.answer || 'Not answered')}</p>
+                                    <Separator />
+                                    {grade ? (
+                                         <div className="space-y-2">
+                                            <Alert>
+                                                <Star className="h-4 w-4" />
+                                                <AlertTitle>Score</AlertTitle>
+                                                <AlertDescription className="font-bold">
+                                                    {grade.pointsAwarded} / {question.maxPoints}
+                                                </AlertDescription>
+                                            </Alert>
+                                             <Alert>
+                                                <MessageSquare className="h-4 w-4" />
+                                                <AlertTitle>AI Feedback</AlertTitle>
+                                                <AlertDescription>
+                                                    {grade.feedback}
+                                                </AlertDescription>
+                                            </Alert>
+                                         </div>
+                                    ) : (
+                                        <Button size="sm" onClick={() => handleGradeSAQ(question as ShortAnswerQuestion, String(studentAnswer?.answer || ''))} disabled={isGrading === question.id}>
+                                            {isGrading === question.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                            Grade with AI
+                                        </Button>
+                                    )}
+                                </>
+                            ) : (
+                                <div className='space-y-2'>
+                                   {question.options.map((option, i) => {
+                                        const isSelected = i === studentAnswer?.answer;
+                                        const isCorrect = i === question.correctAnswer;
+                                        return (
+                                             <div key={i} className={`flex items-center gap-3 p-2 rounded-md ${
+                                                 isSelected && isCorrect ? 'bg-green-100 dark:bg-green-900 border border-green-500' : 
+                                                 isSelected && !isCorrect ? 'bg-red-100 dark:bg-red-900 border border-red-500' :
+                                                 isCorrect ? 'bg-green-100/50 dark:bg-green-900/50' :
+                                                 'bg-secondary'
+                                             }`}>
+                                                {isSelected && isCorrect && <CheckCircle className="h-5 w-5 text-green-600" />}
+                                                {isSelected && !isCorrect && <XCircle className="h-5 w-5 text-red-600" />}
+                                                {!isSelected && isCorrect && <Check className="h-5 w-5 text-green-600" />}
+                                                <p className={cn(isSelected && "font-bold")}>{option}</p>
+                                             </div>
+                                        )
+                                   })}
+                                </div>
+                            )}
+                        </div>
+                    )
+                })}
+                
                 <Separator />
-
-                {gradeResult ? (
-                    <div className="space-y-4">
-                         <h2 className="text-xl font-bold font-headline text-center">{submission.graded ? 'Final Grade' : 'AI Grading Result'}</h2>
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Alert>
-                                <Star className="h-4 w-4" />
-                                <AlertTitle>Score Awarded</AlertTitle>
-                                <AlertDescription className="text-2xl font-bold">
-                                    {gradeResult.pointsAwarded} / {course.exam.maxPoints}
-                                </AlertDescription>
-                            </Alert>
-                             <Alert>
-                                <MessageSquare className="h-4 w-4" />
-                                <AlertTitle>AI Feedback</AlertTitle>
-                                <AlertDescription>
-                                    {gradeResult.feedback}
-                                </AlertDescription>
-                            </Alert>
-                         </div>
-                         {!submission.graded && (
-                            <div className="flex justify-end">
-                                <Button onClick={handleApproveGrade} disabled={isGrading}>
-                                    {isGrading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
-                                    Approve & Save Grade
-                                </Button>
-                            </div>
-                         )}
+                
+                <div className="space-y-4">
+                     <h2 className="text-xl font-bold font-headline text-center">Final Score</h2>
+                     <div className="text-center">
+                        <p className="text-4xl font-bold">{totalPointsAwarded} / {totalMaxPoints}</p>
+                        <p className="text-lg text-muted-foreground">({Math.round(finalPercentage)}%)</p>
+                     </div>
+                     <div className="flex justify-end">
+                        {!submission.graded && (
+                            <Button onClick={handleApproveGrade} disabled={isSaving || gradeResults.size < course.exam.length}>
+                                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
+                                Approve & Save Grade
+                            </Button>
+                        )}
                     </div>
-                ) : (
-                    <div className="text-center">
-                        <Button size="lg" onClick={handleGrade} disabled={isGrading}>
-                            {isGrading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                            Grade with AI
-                        </Button>
-                         <p className="text-xs text-muted-foreground mt-2">This will use the AI to grade the student's submission.</p>
-                    </div>
-                )}
+                    {!submission.graded && gradeResults.size < course.exam.length && (
+                        <p className='text-xs text-muted-foreground text-right'>Grade all short-answer questions to enable saving.</p>
+                    )}
+                </div>
             </CardContent>
           </Card>
         </div>
