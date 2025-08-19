@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -25,6 +26,7 @@ const formSchema = z.object({
 export default function SignupPage() {
   const router = useRouter();
   const { signup } = useAuth();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,6 +40,10 @@ export default function SignupPage() {
     setError(null);
     try {
       await signup(values.email, values.password, values.name);
+      toast({
+        title: 'Account Created!',
+        description: "Welcome! You've been successfully signed up.",
+      });
       router.push('/dashboard');
     } catch (e: any) {
         if (e.code === 'auth/email-already-in-use') {
