@@ -19,7 +19,7 @@ export default function CoursePlayerPage() {
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   
-  const allLessons = course?.modules.flatMap(m => m.lessons) || [];
+  const allLessons = course?.modules?.flatMap(m => m.lessons) || [];
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
 
@@ -28,7 +28,7 @@ export default function CoursePlayerPage() {
         setLoading(true);
         const fetchedCourse = await getCourseById(params.id);
         setCourse(fetchedCourse);
-        if (fetchedCourse?.modules?.[0]?.lessons?.[0]) {
+        if (fetchedCourse && fetchedCourse.modules && fetchedCourse.modules.length > 0 && fetchedCourse.modules[0].lessons && fetchedCourse.modules[0].lessons.length > 0) {
             setCurrentLesson(fetchedCourse.modules[0].lessons[0]);
         }
         setLoading(false);
