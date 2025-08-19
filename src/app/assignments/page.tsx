@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -7,18 +8,20 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ListTodo, Loader2 } from 'lucide-react';
+import { ArrowLeft, ListTodo, Loader2, Edit } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
-import type { Assignment, UserCourse } from '@/lib/mock-data';
-import { getAllAssignments, getUserCourses } from '@/lib/firebase-service';
+import type { Assignment, Submission } from '@/lib/mock-data';
+import { getAllAssignments, getUserCourses, getSubmissionsByUserId } from '@/lib/firebase-service';
 import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
 
 export default function AssignmentsPage() {
   const { user, loading: authLoading } = useAuth();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,11 +34,16 @@ export default function AssignmentsPage() {
       try {
         const userCourses = await getUserCourses(user.uid);
         const enrolledCourseIds = new Set(userCourses.map(c => c.courseId));
-        const allAssignments = await getAllAssignments();
         
+        const [allAssignments, userSubmissions] = await Promise.all([
+          getAllAssignments(),
+          getSubmissionsByUserId(user.uid)
+        ]);
+
         const userAssignments = allAssignments.filter(assignment => enrolledCourseIds.has(assignment.courseId));
         
         setAssignments(userAssignments.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
+        setSubmissions(userSubmissions);
       } catch (err) {
         console.error("Failed to fetch assignments:", err);
       } finally {
@@ -47,6 +55,13 @@ export default function AssignmentsPage() {
       fetchAssignments();
     }
   }, [user, authLoading]);
+
+  const getSubmissionStatus = (assignmentId: string) => {
+    const submission = submissions.find(s => s.assignmentId === assignmentId);
+    if (!submission) return <Badge variant="secondary">Not Submitted</Badge>;
+    if (submission.graded) return <Badge>Graded: {submission.pointsAwarded}</Badge>
+    return <Badge variant="outline">Submitted</Badge>
+  }
 
   return (
      <SidebarProvider>
@@ -86,6 +101,7 @@ export default function AssignmentsPage() {
                               <TableHead>Assignment</TableHead>
                               <TableHead>Course</TableHead>
                               <TableHead>Status</TableHead>
+                              <TableHead className="text-right">Action</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -95,7 +111,17 @@ export default function AssignmentsPage() {
                                 <TableCell className="font-medium">{assignment.title}</TableCell>
                                 <TableCell>{assignment.courseTitle}</TableCell>
                                 <TableCell>
-                                  <Badge variant="secondary">Not Submitted</Badge>
+                                  {getSubmissionStatus(assignment.id)}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  {!submissions.find(s => s.assignmentId === assignment.id) && (
+                                    <Button asChild size="sm">
+                                      <Link href={`/assignments/submit/${assignment.courseId}/${assignment.id}`}>
+                                          <Edit className="mr-2 h-4 w-4" />
+                                          Submit
+                                      </Link>
+                                    </Button>
+                                  )}
                                 </TableCell>
                               </TableRow>
                             ))}

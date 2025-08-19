@@ -5,7 +5,13 @@
     ".write": false,
     "courses": {
       ".read": true,
-      ".write": true
+      ".write": true,
+      "$courseId": {
+        "assignments": {
+          ".read": true,
+          ".write": true
+        }
+      }
     },
     "hero": {
       ".read": true,
@@ -18,6 +24,10 @@
     "calendarEvents": {
         ".read": true,
         ".write": true
+    },
+    "submissions": {
+      ".read": true,
+      ".write": true
     }
   }
 }

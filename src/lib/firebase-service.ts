@@ -1,8 +1,8 @@
 
 
 import { db } from './firebase';
-import { ref, get, set, push, update, remove } from 'firebase/database';
-import type { Course, UserCourse, Assignment, CalendarEvent } from './mock-data';
+import { ref, get, set, push, update, remove, query, orderByChild, equalTo } from 'firebase/database';
+import type { Course, UserCourse, Assignment, CalendarEvent, Submission } from './mock-data';
 
 export interface RegisteredUser {
     uid: string;
@@ -114,11 +114,24 @@ export async function saveHeroData(data: HeroData): Promise<void> {
 }
 
 // Assignment Functions
-export async function createAssignment(courseId: string, assignmentData: Omit<Assignment, 'id' | 'courseId'>): Promise<string> {
+export async function createAssignment(courseId: string, assignmentData: Omit<Assignment, 'id' | 'courseId' | 'courseTitle'>): Promise<string> {
     const assignmentsRef = ref(db, `courses/${courseId}/assignments`);
     const newAssignmentRef = push(assignmentsRef);
     await set(newAssignmentRef, assignmentData);
     return newAssignmentRef.key!;
+}
+
+export async function getAssignmentById(courseId: string, assignmentId: string): Promise<Assignment | null> {
+    const assignmentRef = ref(db, `courses/${courseId}/assignments/${assignmentId}`);
+    const snapshot = await get(assignmentRef);
+    if (snapshot.exists()) {
+        return {
+            id: assignmentId,
+            courseId: courseId,
+            ...snapshot.val()
+        };
+    }
+    return null;
 }
 
 export async function getAllAssignments(): Promise<Assignment[]> {
@@ -175,4 +188,25 @@ export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
 export async function deleteCalendarEvent(eventId: string): Promise<void> {
     const eventRef = ref(db, `calendarEvents/${eventId}`);
     await remove(eventRef);
+}
+
+// Submission Functions
+export async function createSubmission(submissionData: Omit<Submission, 'id'>): Promise<string> {
+    const submissionsRef = ref(db, 'submissions');
+    const newSubmissionRef = push(submissionsRef);
+    await set(newSubmissionRef, submissionData);
+    return newSubmissionRef.key!;
+}
+
+export async function getSubmissionsByUserId(userId: string): Promise<Submission[]> {
+    const submissionsRef = query(ref(db, 'submissions'), orderByChild('userId'), equalTo(userId));
+    const snapshot = await get(submissionsRef);
+    if (snapshot.exists()) {
+        const submissionsData = snapshot.val();
+        return Object.keys(submissionsData).map(key => ({
+            id: key,
+            ...submissionsData[key],
+        }));
+    }
+    return [];
 }

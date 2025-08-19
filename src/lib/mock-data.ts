@@ -22,6 +22,22 @@ export interface Assignment {
   courseTitle?: string; // Optional: for displaying in lists
 }
 
+export interface Submission {
+    id: string;
+    assignmentId: string;
+    courseId: string;
+    userId: string;
+    userName: string;
+    userEmail: string;
+    assignmentTitle: string;
+    courseTitle: string;
+    submittedAt: string; // ISO String
+    answer: string;
+    graded: boolean;
+    pointsAwarded?: number;
+    feedback?: string;
+}
+
 export interface CalendarEvent {
   id: string;
   date: string; // YYYY-MM-DD
