@@ -2,7 +2,7 @@
 
 import { db } from './firebase';
 import { ref, get, set, push, update, remove } from 'firebase/database';
-import type { Course, UserCourse, Assignment } from './mock-data';
+import type { Course, UserCourse, Assignment, CalendarEvent } from './mock-data';
 
 export interface RegisteredUser {
     uid: string;
@@ -150,3 +150,24 @@ export async function deleteAssignment(courseId: string, assignmentId: string): 
     await remove(assignmentRef);
 }
 
+
+// Calendar Event Functions
+export async function createCalendarEvent(eventData: Omit<CalendarEvent, 'id'>): Promise<string> {
+    const eventsRef = ref(db, 'calendarEvents');
+    const newEventRef = push(eventsRef);
+    await set(newEventRef, eventData);
+    return newEventRef.key!;
+}
+
+export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
+    const eventsRef = ref(db, 'calendarEvents');
+    const snapshot = await get(eventsRef);
+    if (snapshot.exists()) {
+        const eventsData = snapshot.val();
+        return Object.keys(eventsData).map(key => ({
+            id: key,
+            ...eventsData[key]
+        }));
+    }
+    return [];
+}

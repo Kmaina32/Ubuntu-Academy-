@@ -22,6 +22,13 @@ export interface Assignment {
   courseTitle?: string; // Optional: for displaying in lists
 }
 
+export interface CalendarEvent {
+  id: string;
+  date: string; // YYYY-MM-DD
+  title: string;
+  description: string;
+}
+
 export interface Course {
   id: string;
   title: string;
