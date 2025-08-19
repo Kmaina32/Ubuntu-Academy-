@@ -2,8 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Course, user } from "@/lib/mock-data";
-import { Download, Gem } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { Download, Camera } from "lucide-react";
 
 interface CertificateProps {
   course: Course;
@@ -16,66 +15,97 @@ export function Certificate({ course }: CertificateProps) {
   };
 
   return (
-    <div className="bg-secondary font-body print:bg-white">
-        <div className="container mx-auto px-4 md:px-6 py-8 md:py-12">
+    <div className="bg-gray-100 font-sans print:bg-white">
+        <div className="container mx-auto px-4 py-8">
             <div className="flex justify-end mb-4 print:hidden">
                 <Button onClick={handlePrint}>
                     <Download className="mr-2 h-4 w-4"/>
                     Download / Print
                 </Button>
             </div>
-            <div className="max-w-4xl mx-auto bg-white shadow-2xl rounded-lg overflow-hidden">
-                <div className="md:flex">
-                    <div className="md:w-1/3 bg-gray-900 p-8 text-white flex flex-col justify-between" style={{backgroundImage: 'linear-gradient(to bottom, #006233, #000000, #CE1126)'}}>
-                        <div>
-                            <div className="flex items-center gap-3 mb-8">
-                                <Gem className="h-10 w-10 text-white" />
-                                <span className="font-bold text-2xl font-headline">Mkenya Skilled</span>
+            <div className="max-w-4xl mx-auto bg-white border border-gray-200 shadow-lg relative">
+                
+                {/* Decorative Shapes */}
+                <div className="absolute top-0 left-0 w-1/4 h-1/4 bg-white" style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}>
+                   <div className="w-full h-full bg-purple-100" style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}></div>
+                </div>
+                 <div className="absolute top-0 left-0 w-1/4 h-1/4" style={{ clipPath: 'polygon(0 0, 90% 0, 0 90%)' }}>
+                   <div className="w-full h-full bg-[#7C5985]" style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}></div>
+                </div>
+
+
+                <div className="absolute bottom-0 right-0 w-1/4 h-1/4 bg-white" style={{ clipPath: 'polygon(100% 100%, 0% 100%, 100% 0%)' }}>
+                    <div className="w-full h-full bg-purple-100" style={{ clipPath: 'polygon(100% 100%, 0% 100%, 100% 0%)' }}></div>
+                </div>
+                 <div className="absolute bottom-0 right-0 w-1/4 h-1/4" style={{ clipPath: 'polygon(100% 100%, 10% 100%, 100% 10%)' }}>
+                    <div className="w-full h-full bg-[#7C5985]" style={{ clipPath: 'polygon(100% 100%, 0% 100%, 100% 0%)' }}></div>
+                </div>
+
+                {/* Seal */}
+                <div className="absolute top-8 right-16 w-20 h-28">
+                    <svg width="80" height="112" viewBox="0 0 80 112" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M40 8C22.33 8 8 22.33 8 40C8 57.67 22.33 72 40 72C57.67 72 72 57.67 72 40C72 22.33 57.67 8 40 8Z" fill="#7C5985"/>
+                        <path d="M40 16C26.75 16 16 26.75 16 40C16 53.25 26.75 64 40 64C53.25 64 64 53.25 64 40C64 26.75 53.25 16 40 16Z" fill="#8E6F97"/>
+                        <path d="M28 72H52V112L40 96L28 112V72Z" fill="#7C5985"/>
+                    </svg>
+                </div>
+                
+                <div className="p-12 md:p-20 text-center relative z-10">
+                    <h1 className="text-5xl font-extrabold text-gray-800 tracking-wider">CERTIFICATE</h1>
+                    <p className="text-xl font-semibold text-gray-700 mt-1">OF ACHIEVEMENT</p>
+                    
+                    <p className="mt-12 text-gray-600">This certificate is presented to</p>
+                    
+                    <h2 className="text-6xl font-signature text-gray-800 my-4">{user.name}</h2>
+                    <hr className="w-1/2 mx-auto border-gray-300"/>
+
+                    <p className="mt-8 text-gray-600">
+                        by Mkenya Skilled for successfully completing
+                    </p>
+                    <p className="text-xl font-bold text-gray-800 mt-2 tracking-wide uppercase">
+                        {course.title}
+                    </p>
+
+                    <div className="flex justify-between items-end mt-20 text-gray-600">
+                       <div className="text-left">
+                            <p className="font-bold">{new Date().toLocaleDateString('en-GB')}</p>
+                            <hr className="border-gray-400"/>
+                            <p className="text-sm uppercase">Date</p>
+                       </div>
+                       <div className="text-right">
+                            <div className="flex items-center justify-end gap-2 text-gray-500">
+                                <Camera className="h-8 w-8" />
+                                <span className="text-2xl font-bold">Mkenya Skilled</span>
                             </div>
-                            <h2 className="text-4xl font-bold font-headline leading-tight">Certificate of Completion</h2>
-                        </div>
-                        <div className="mt-8">
-                            <p className="text-sm opacity-80">Issued on</p>
-                            <p className="font-semibold text-lg">{new Date().toLocaleDateString('en-KE', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                        </div>
+                       </div>
                     </div>
-                    <div className="md:w-2/3 p-8 md:p-12 flex flex-col justify-between">
-                        <div>
-                            <p className="text-lg text-muted-foreground uppercase tracking-wider">This certificate is awarded to</p>
-                            <h1 className="text-6xl font-signature text-primary my-4">{user.name}</h1>
-                            <p className="text-lg text-muted-foreground">for successfully completing the course</p>
-                            <h3 className="text-3xl font-semibold text-accent mt-2 font-headline">{course.title}</h3>
-                        </div>
-                        <div className="mt-12 flex justify-between items-end">
-                            <div className="text-sm text-muted-foreground">
-                                <p className="font-signature text-4xl text-gray-800 -mb-4">{course.instructor}</p>
-                                <Separator className="my-1 bg-gray-400" />
-                                <p>Lead Instructor</p>
-                            </div>
-                            <div className="relative h-28 w-28">
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <svg className="h-full w-full" viewBox="0 0 120 120">
-                                        <defs>
-                                            <linearGradient id="sealGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" style={{stopColor: '#D4AF37', stopOpacity:1}} />
-                                            <stop offset="100%" style={{stopColor: '#B8860B', stopOpacity:1}} />
-                                            </linearGradient>
-                                        </defs>
-                                        <circle cx="60" cy="60" r="56" fill="url(#sealGradient)" />
-                                        <circle cx="60" cy="60" r="50" fill="transparent" stroke="#fff" strokeWidth="2"/>
-                                        <text x="60" y="50" fontFamily="serif" fontSize="10" fill="white" textAnchor="middle">MKENYA SKILLED</text>
-                                        <text x="60" y="75" fontFamily="serif" fontSize="10" fill="white" textAnchor="middle">VERIFIED</text>
-                                        <Gem className="text-white" x="52" y="55" width="16" height="16" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                </div>
+
+                 <div className="absolute bottom-4 right-8 text-xs text-gray-400 z-10">
+                    Certification n°0000000014
                 </div>
             </div>
         </div>
         <style jsx global>{`
             @media print {
+                body, html {
+                    background-color: white;
+                }
+                .container {
+                    margin: 0;
+                    padding: 0;
+                    width: 100%;
+                    max-width: 100%;
+                }
+                .bg-gray-100 {
+                    background-color: white !important;
+                }
+                .shadow-lg {
+                    box-shadow: none !important;
+                }
+                .border {
+                    border: none !important;
+                }
                 body * {
                     visibility: hidden;
                 }
