@@ -30,7 +30,9 @@ export function CourseCard({ course, aiHint }: CourseCardProps) {
         <p className="text-muted-foreground text-sm">{course.description}</p>
       </CardContent>
       <CardFooter className="p-6 pt-0 flex justify-between items-center">
-        <p className="text-lg font-bold text-primary">Ksh {course.price.toLocaleString()}</p>
+        <p className="text-lg font-bold text-primary">
+          {course.price > 0 ? `Ksh ${course.price.toLocaleString()}` : 'Free'}
+        </p>
         <Button asChild>
           <Link href={`/courses/${course.id}`}>View Course</Link>
         </Button>

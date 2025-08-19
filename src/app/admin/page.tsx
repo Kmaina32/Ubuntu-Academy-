@@ -110,7 +110,7 @@ export default function AdminPage() {
                     <TableHead>Title</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Instructor</TableHead>
-                    <TableHead>Price (Ksh)</TableHead>
+                    <TableHead>Price</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -120,7 +120,7 @@ export default function AdminPage() {
                         <TableCell className="font-medium">{course.title}</TableCell>
                         <TableCell>{course.category}</TableCell>
                         <TableCell>{course.instructor}</TableCell>
-                        <TableCell>{course.price.toLocaleString()}</TableCell>
+                        <TableCell>{course.price > 0 ? `Ksh ${course.price.toLocaleString()}` : 'Free'}</TableCell>
                         <TableCell className="text-right">
                           <Button asChild variant="ghost" size="icon" className="mr-2">
                               <Link href={`/admin/courses/edit/${course.id}`}>
