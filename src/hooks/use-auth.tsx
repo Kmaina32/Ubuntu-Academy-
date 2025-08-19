@@ -52,13 +52,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       email,
       pass
     );
+    
     await updateProfile(userCredential.user, {
       displayName: name,
     });
-    // Save user to Realtime Database
-    await saveUser(userCredential.user);
+
+    // We pass the explicit details to saveUser because the userCredential.user object
+    // may not be immediately updated with the new displayName.
+    await saveUser({
+        uid: userCredential.user.uid,
+        email: userCredential.user.email,
+        displayName: name,
+    });
+    
     // Manually set user after signup to reflect name change immediately
-    setUser(userCredential.user); 
+    setUser({ ...userCredential.user, displayName: name });
+    
     return userCredential;
   };
 

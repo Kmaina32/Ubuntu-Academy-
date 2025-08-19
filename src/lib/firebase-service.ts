@@ -2,7 +2,6 @@
 import { db } from './firebase';
 import { ref, get, set, push } from 'firebase/database';
 import type { Course } from './mock-data';
-import type { User } from 'firebase/auth';
 
 export interface RegisteredUser {
     uid: string;
@@ -47,14 +46,9 @@ export async function createCourse(courseData: Omit<Course, 'id'>): Promise<stri
     return newCourseRef.key!;
 }
 
-export async function saveUser(user: User): Promise<void> {
+export async function saveUser(user: RegisteredUser): Promise<void> {
     const userRef = ref(db, `users/${user.uid}`);
-    const userData: RegisteredUser = {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName
-    };
-    await set(userRef, userData);
+    await set(userRef, user);
 }
 
 export async function getAllUsers(): Promise<RegisteredUser[]> {
