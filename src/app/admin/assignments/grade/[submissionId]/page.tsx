@@ -76,7 +76,7 @@ export default function GradeSubmissionPage() {
     }
   };
 
-  const handleSaveGrade = async () => {
+  const handleApproveGrade = async () => {
       if (!submission || !gradeResult) return;
       
       setIsGrading(true);
@@ -138,7 +138,7 @@ export default function GradeSubmissionPage() {
 
                 {gradeResult ? (
                     <div className="space-y-4">
-                         <h2 className="text-xl font-bold font-headline text-center">AI Grading Result</h2>
+                         <h2 className="text-xl font-bold font-headline text-center">{submission.graded ? 'Final Grade' : 'AI Grading Result'}</h2>
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <Alert>
                                 <Star className="h-4 w-4" />
@@ -157,7 +157,7 @@ export default function GradeSubmissionPage() {
                          </div>
                          {!submission.graded && (
                             <div className="flex justify-end">
-                                <Button onClick={handleSaveGrade} disabled={isGrading}>
+                                <Button onClick={handleApproveGrade} disabled={isGrading}>
                                     {isGrading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
                                     Approve & Save Grade
                                 </Button>
