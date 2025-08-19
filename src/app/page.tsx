@@ -58,7 +58,7 @@ export default function Home() {
           <section className="py-12 md:py-16">
             <div className="container mx-auto px-4 md:px-6">
                   <div 
-                      className="relative rounded-xl overflow-hidden p-8 md:p-12 min-h-[300px] flex items-center justify-center text-center bg-cover bg-center"
+                      className="relative rounded-xl overflow-hidden p-8 md:p-12 min-h-[400px] flex items-center justify-center text-center bg-cover bg-center"
                       style={{backgroundImage: `url('${heroData.imageUrl}')`}}
                       data-ai-hint="abstract background"
                   >
