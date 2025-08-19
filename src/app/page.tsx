@@ -4,6 +4,7 @@ import { CourseCard } from "@/components/CourseCard";
 import type { Course } from "@/lib/mock-data";
 import { getAllCourses } from '@/lib/firebase-service';
 import { Loader2 } from 'lucide-react';
+import Image from 'next/image';
 
 export default async function Home() {
   let courses: Course[] = [];
@@ -25,15 +26,24 @@ export default async function Home() {
   return (
     <>
       <main className="flex-grow">
-        <section className="relative py-20 md:py-32 bg-primary/10">
-          <div className="container mx-auto px-4 md:px-6 text-center relative z-10">
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4 tracking-tight font-headline">
-              Unlock Your Potential.
-            </h1>
-            <p className="text-lg md:text-xl text-foreground/90 max-w-3xl mx-auto">
-              Quality, affordable courses designed for the Kenyan market. Learn valuable skills to advance your career.
-            </p>
-          </div>
+        <section className="py-12 md:py-16">
+           <div className="container mx-auto px-4 md:px-6">
+                <div 
+                    className="relative rounded-xl overflow-hidden p-8 md:p-12 min-h-[300px] flex items-center justify-center text-center bg-cover bg-center"
+                    style={{backgroundImage: `url('https://placehold.co/1200x400.png')`}}
+                    data-ai-hint="abstract background"
+                >
+                    <div className="absolute inset-0 bg-black/50"></div>
+                    <div className="relative z-10 text-white">
+                        <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight font-headline">
+                        Unlock Your Potential.
+                        </h1>
+                        <p className="text-lg md:text-xl max-w-3xl mx-auto">
+                        Quality, affordable courses designed for the Kenyan market. Learn valuable skills to advance your career.
+                        </p>
+                    </div>
+                </div>
+           </div>
         </section>
 
         <section className="py-16 md:py-24 bg-background">
