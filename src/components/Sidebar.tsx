@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { Separator } from './ui/separator';
 
 export function AppSidebar() {
     const pathname = usePathname();
@@ -52,7 +53,7 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                          <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/')} tooltip="Courses" onClick={onLinkClick}>
+                            <SidebarMenuButton asChild isActive={isActive('/') && pathname === '/'} tooltip="Courses" onClick={onLinkClick}>
                                 <Link href="/">
                                     <Book />
                                     <span>Courses</span>
@@ -75,7 +76,37 @@ export function AppSidebar() {
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
+                        
+                        <Separator className="my-2" />
+
                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/about')} tooltip="About Us" onClick={onLinkClick}>
+                                <Link href="/about">
+                                    <Info />
+                                    <span>About Us</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/help')} tooltip="Help" onClick={onLinkClick}>
+                                <Link href="/help">
+                                    <HelpCircle />
+                                    <span>Help</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/contact')} tooltip="Contact Us" onClick={onLinkClick}>
+                                <Link href="/contact">
+                                    <Mail />
+                                    <span>Contact</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+
+                         <Separator className="my-2" />
+
+                         <SidebarMenuItem>
                             <SidebarMenuButton asChild isActive={isActive('/profile')} tooltip="Profile" onClick={onLinkClick}>
                                 <Link href="/profile">
                                     <User />
