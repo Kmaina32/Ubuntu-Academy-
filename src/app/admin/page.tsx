@@ -2,43 +2,38 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { courses as initialCourses, Course } from "@/lib/mock-data";
-import { FilePlus2, Pencil, Trash2 } from "lucide-react";
+import type { Course } from "@/lib/mock-data";
+import { getAllCourses } from '@/lib/firebase-service';
+import { FilePlus2, Pencil, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 function AdminPageComponent() {
-  const searchParams = useSearchParams();
-  const [courses, setCourses] = useState<Course[]>(initialCourses);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (searchParams.get('newCourse')) {
-      const newCourse: Course = {
-        id: `new-course-${Date.now()}`,
-        title: searchParams.get('title') || '',
-        instructor: searchParams.get('instructor') || '',
-        description: searchParams.get('description') || '',
-        longDescription: searchParams.get('longDescription') || '',
-        price: Number(searchParams.get('price')) || 0,
-        imageUrl: 'https://placehold.co/600x400',
-        modules: [],
-        exam: {
-          question: '',
-          referenceAnswer: '',
-          maxPoints: 10
-        }
-      };
-      // Check if the course already exists to avoid duplicates on re-renders
-      if (!courses.some(c => c.title === newCourse.title)) {
-         setCourses(prevCourses => [newCourse, ...prevCourses]);
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        const fetchedCourses = await getAllCourses();
+        setCourses(fetchedCourses.reverse());
+        setError(null);
+      } catch (err) {
+        setError("Failed to fetch courses. Please try again later.");
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
-    }
-  }, [searchParams, courses]);
+    };
+
+    fetchCourses();
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -67,33 +62,42 @@ function AdminPageComponent() {
                 </Button>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Instructor</TableHead>
-                      <TableHead>Price (Ksh)</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {courses.map((course) => (
-                      <TableRow key={course.id}>
-                        <TableCell className="font-medium">{course.title}</TableCell>
-                        <TableCell>{course.instructor}</TableCell>
-                        <TableCell>{course.price.toLocaleString()}</TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="icon" className="mr-2">
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+                {loading ? (
+                  <div className="flex justify-center items-center py-10">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    <p className="ml-2">Loading courses...</p>
+                  </div>
+                ) : error ? (
+                   <p className="text-destructive text-center py-10">{error}</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Instructor</TableHead>
+                        <TableHead>Price (Ksh)</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {courses.map((course) => (
+                        <TableRow key={course.id}>
+                          <TableCell className="font-medium">{course.title}</TableCell>
+                          <TableCell>{course.instructor}</TableCell>
+                          <TableCell>{course.price.toLocaleString()}</TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="icon" className="mr-2">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

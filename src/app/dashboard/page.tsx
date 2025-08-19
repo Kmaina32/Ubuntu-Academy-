@@ -2,30 +2,54 @@
 'use client'
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { courses, user as mockUser } from "@/lib/mock-data";
-import { Award, BookOpen, User } from 'lucide-react';
+import { user as mockUser, Course, UserCourse } from "@/lib/mock-data";
+import { getAllCourses } from '@/lib/firebase-service';
+import { Award, BookOpen, User, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
+// In a real app, this data would come from your database, not mock data.
+// We combine the mock user data with real course data from Firebase.
+type PurchasedCourseDetail = UserCourse & Partial<Course>;
+
 export default function DashboardPage() {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const [purchasedCourses, setPurchasedCourses] = useState<PurchasedCourseDetail[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
 
-  // For demo purposes, we'll merge mock data with the logged-in user.
-  // In a real app, this data would come from your database.
-  const purchasedCourseDetails = mockUser.purchasedCourses.map(pc => {
-    const courseInfo = courses.find(c => c.id === pc.courseId);
-    return { ...pc, ...courseInfo };
-  });
+  useEffect(() => {
+    const fetchCourseDetails = async () => {
+      if (mockUser.purchasedCourses.length > 0) {
+        setLoadingCourses(true);
+        // In a real app, you would fetch the user's purchased course IDs from your DB.
+        // Here we use mock data for the user's purchases.
+        const allCourses = await getAllCourses();
+        const details = mockUser.purchasedCourses.map(pc => {
+          const courseInfo = allCourses.find(c => c.id === pc.courseId);
+          return { ...pc, ...courseInfo };
+        });
+        setPurchasedCourses(details);
+        setLoadingCourses(false);
+      } else {
+        setLoadingCourses(false);
+      }
+    };
 
-  if (loading) {
+    fetchCourseDetails();
+  }, []);
+
+  if (authLoading || loadingCourses) {
       return (
           <div className="flex flex-col min-h-screen">
             <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
-                <h1 className="text-3xl font-bold mb-2 font-headline">Loading...</h1>
-                <p className="text-muted-foreground mb-8">Please wait while we fetch your details.</p>
+                <div className="flex justify-center items-center py-10">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    <p className="ml-2">Loading your dashboard...</p>
+                </div>
             </main>
             <Footer />
           </div>
@@ -55,7 +79,7 @@ export default function DashboardPage() {
         <p className="text-muted-foreground mb-8">Continue your learning journey and view your achievements.</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {purchasedCourseDetails.map((course) => (
+          {purchasedCourses.map((course) => (
             course.id && (
               <Card key={course.id} className="flex flex-col">
                 <CardHeader>

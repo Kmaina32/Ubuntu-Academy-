@@ -1,16 +1,42 @@
+
+'use client'
+
+import { useState, useEffect } from 'react';
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { courses } from "@/lib/mock-data";
+import type { Course } from "@/lib/mock-data";
+import { getCourseById } from '@/lib/firebase-service';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
-import { PlayCircle, CheckCircle, Award } from "lucide-react";
+import { PlayCircle, CheckCircle, Award, Loader2 } from "lucide-react";
 
 export default function CourseDetailPage({ params }: { params: { id: string } }) {
-  const course = courses.find((c) => c.id === params.id);
+  const [course, setCourse] = useState<Course | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+      const fetchCourse = async () => {
+          setLoading(true);
+          const fetchedCourse = await getCourseById(params.id);
+          setCourse(fetchedCourse);
+          setLoading(false);
+      }
+      fetchCourse();
+  }, [params.id]);
+
+
+  if (loading) {
+    return (
+        <div className="flex justify-center items-center min-h-screen">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="ml-2">Loading course details...</p>
+        </div>
+    )
+  }
 
   if (!course) {
     notFound();
@@ -34,7 +60,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
               
               <h2 className="text-2xl font-bold mb-4 font-headline">Course Content</h2>
               <Accordion type="single" collapsible className="w-full">
-                {course.modules.map((module) => (
+                {course.modules && course.modules.map((module) => (
                   <AccordionItem value={module.id} key={module.id}>
                     <AccordionTrigger className="text-lg font-semibold">{module.title}</AccordionTrigger>
                     <AccordionContent>
@@ -52,7 +78,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                     </AccordionContent>
                   </AccordionItem>
                 ))}
-                 {course.modules.length === 0 && <p className="text-muted-foreground p-4">Course content coming soon!</p>}
+                 {(!course.modules || course.modules.length === 0) && <p className="text-muted-foreground p-4">Course content coming soon!</p>}
                  <AccordionItem value="exam">
                     <AccordionTrigger className="text-lg font-semibold">Final Exam</AccordionTrigger>
                     <AccordionContent>

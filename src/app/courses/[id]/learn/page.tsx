@@ -1,20 +1,46 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { notFound, useRouter } from 'next/navigation';
-import { courses, Lesson } from '@/lib/mock-data';
+import { Course, Lesson } from '@/lib/mock-data';
+import { getCourseById } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2 } from 'lucide-react';
 
 export default function CoursePlayerPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const course = courses.find((c) => c.id === params.id);
+  const [course, setCourse] = useState<Course | null>(null);
+  const [loading, setLoading] = useState(true);
   
   const allLessons = course?.modules.flatMap(m => m.lessons) || [];
-  const [currentLesson, setCurrentLesson] = useState<Lesson | null>(allLessons[0] || null);
+  const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const fetchCourse = async () => {
+        setLoading(true);
+        const fetchedCourse = await getCourseById(params.id);
+        setCourse(fetchedCourse);
+        if (fetchedCourse?.modules?.[0]?.lessons?.[0]) {
+            setCurrentLesson(fetchedCourse.modules[0].lessons[0]);
+        }
+        setLoading(false);
+    }
+    fetchCourse();
+  }, [params.id]);
+
+
+  if (loading) {
+    return (
+        <div className="flex justify-center items-center h-screen bg-secondary">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="ml-2">Loading course player...</p>
+        </div>
+    )
+  }
 
   if (!course) {
     notFound();
@@ -49,8 +75,8 @@ export default function CoursePlayerPage({ params }: { params: { id: string } })
             <h2 className="text-xl font-bold mb-1 font-headline">{course.title}</h2>
             <Progress value={progress} className="h-2 mb-4" />
           </div>
-          <Accordion type="multiple" defaultValue={course.modules.map(m => m.id)} className="w-full">
-            {course.modules.map((module) => (
+          <Accordion type="multiple" defaultValue={course.modules?.map(m => m.id)} className="w-full">
+            {course.modules?.map((module) => (
               <AccordionItem value={module.id} key={module.id}>
                 <AccordionTrigger className="font-semibold px-4">{module.title}</AccordionTrigger>
                 <AccordionContent>

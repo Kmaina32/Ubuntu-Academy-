@@ -1,22 +1,39 @@
 
 'use client'
 
+import { useState, useEffect } from 'react';
 import { notFound } from "next/navigation";
-import { courses } from "@/lib/mock-data";
+import { getCourseById } from "@/lib/firebase-service";
+import type { Course } from "@/lib/mock-data";
 import { Footer } from "@/components/Footer";
 import { Certificate } from "@/components/Certificate";
 import { useAuth } from "@/hooks/use-auth";
+import { Loader2 } from 'lucide-react';
 
 export default function CertificatePage({ params }: { params: { courseId: string } }) {
-  const course = courses.find((c) => c.id === params.courseId);
-  const { user, loading } = useAuth();
+  const [course, setCourse] = useState<Course | null>(null);
+  const [loadingCourse, setLoadingCourse] = useState(true);
+  const { user, loading: loadingAuth } = useAuth();
 
+  useEffect(() => {
+    const fetchCourse = async () => {
+        setLoadingCourse(true);
+        const fetchedCourse = await getCourseById(params.courseId);
+        setCourse(fetchedCourse);
+        setLoadingCourse(false);
+    }
+    fetchCourse();
+  }, [params.courseId]);
+
+  if (loadingAuth || loadingCourse) {
+    return <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <p className="ml-2">Loading certificate...</p>
+    </div>
+  }
+  
   if (!course) {
     notFound();
-  }
-
-  if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>
   }
 
   // In a real app, you'd verify the user is entitled to this certificate.
