@@ -1,9 +1,12 @@
 
 'use client';
 
+import { useRef, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Course } from "@/lib/mock-data";
-import { Download } from "lucide-react";
+import { Download, Printer, Loader2 } from "lucide-react";
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface CertificateProps {
   course: Course;
@@ -11,20 +14,64 @@ interface CertificateProps {
 }
 
 export function Certificate({ course, userName }: CertificateProps) {
+  const certificateRef = useRef<HTMLDivElement>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handlePrint = () => {
     window.print();
   };
+  
+  const handleDownload = async () => {
+    if (!certificateRef.current) return;
+    setIsDownloading(true);
+
+    try {
+        const canvas = await html2canvas(certificateRef.current, {
+            scale: 2, // Increase scale for better quality
+            useCORS: true,
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+
+        // A4 dimensions in points: 595.28 x 841.89
+        // The certificate has a landscape aspect ratio of 1.414/1
+        // So we'll use A4 landscape dimensions
+        const pdf = new jsPDF({
+            orientation: 'landscape',
+            unit: 'pt',
+            format: 'a4',
+        });
+        
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`MkenyaSkilled_Certificate_${course.title.replace(/\s+/g, '_')}.pdf`);
+    } catch (error) {
+        console.error("Error generating PDF:", error);
+    } finally {
+        setIsDownloading(false);
+    }
+  };
+
 
   return (
     <div className="font-sans">
-        <div className="flex justify-end mb-4 print:hidden">
-            <Button onClick={handlePrint}>
-                <Download className="mr-2 h-4 w-4"/>
-                Download / Print
+        <div className="flex justify-end gap-2 mb-4 print:hidden">
+            <Button onClick={handlePrint} variant="outline">
+                <Printer className="mr-2 h-4 w-4"/>
+                Print
+            </Button>
+            <Button onClick={handleDownload} disabled={isDownloading}>
+                {isDownloading ? (
+                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                   <Download className="mr-2 h-4 w-4"/>
+                )}
+                Download PDF
             </Button>
         </div>
-        <div className="max-w-4xl mx-auto bg-white border-8 border-black p-10 shadow-2xl relative aspect-[1.414/1] print:shadow-none print:border-4">
+        <div ref={certificateRef} className="max-w-4xl mx-auto bg-white border-8 border-black p-10 shadow-2xl relative aspect-[1.414/1] print:shadow-none print:border-4">
             <div className="absolute inset-0 border-2 border-red-600 m-3 print:border-1"></div>
             <div className="relative z-10 flex flex-col h-full text-center">
 
