@@ -2,13 +2,14 @@
 import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import type { Course } from "@/lib/mock-data";
-import { getAllCourses } from '@/lib/firebase-service';
+import { getAllCourses, getHeroData } from '@/lib/firebase-service';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
 export default async function Home() {
   let courses: Course[] = [];
   let error: string | null = null;
+  const heroData = await getHeroData();
 
   try {
     courses = await getAllCourses();
@@ -30,16 +31,16 @@ export default async function Home() {
            <div className="container mx-auto px-4 md:px-6">
                 <div 
                     className="relative rounded-xl overflow-hidden p-8 md:p-12 min-h-[300px] flex items-center justify-center text-center bg-cover bg-center"
-                    style={{backgroundImage: `url('https://placehold.co/1200x400.png')`}}
+                    style={{backgroundImage: `url('${heroData.imageUrl}')`}}
                     data-ai-hint="abstract background"
                 >
                     <div className="absolute inset-0 bg-black/50"></div>
                     <div className="relative z-10 text-white">
                         <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight font-headline">
-                        Unlock Your Potential.
+                          {heroData.title}
                         </h1>
                         <p className="text-lg md:text-xl max-w-3xl mx-auto">
-                        Quality, affordable courses designed for the Kenyan market. Learn valuable skills to advance your career.
+                          {heroData.subtitle}
                         </p>
                     </div>
                 </div>

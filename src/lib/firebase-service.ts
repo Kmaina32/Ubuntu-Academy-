@@ -9,15 +9,22 @@ export interface RegisteredUser {
     displayName: string | null;
 }
 
+export interface HeroData {
+    title: string;
+    subtitle: string;
+    imageUrl: string;
+}
+
 export async function getAllCourses(): Promise<Course[]> {
   const coursesRef = ref(db, 'courses');
   const snapshot = await get(coursesRef);
   if (snapshot.exists()) {
     const coursesData = snapshot.val();
-    return Object.keys(coursesData).map(key => ({
+    const courses = Object.keys(coursesData).map(key => ({
       id: key,
       ...coursesData[key]
     }));
+    return courses.reverse();
   }
   return [];
 }
@@ -59,4 +66,23 @@ export async function getAllUsers(): Promise<RegisteredUser[]> {
         return Object.values(usersData);
     }
     return [];
+}
+
+export async function getHeroData(): Promise<HeroData> {
+    const heroRef = ref(db, 'hero');
+    const snapshot = await get(heroRef);
+    if (snapshot.exists()) {
+        return snapshot.val();
+    }
+    // Return default data if nothing is in the database
+    return {
+        title: 'Unlock Your Potential.',
+        subtitle: 'Quality, affordable courses designed for the Kenyan market. Learn valuable skills to advance your career.',
+        imageUrl: 'https://placehold.co/1200x400.png'
+    };
+}
+
+export async function saveHeroData(data: HeroData): Promise<void> {
+    const heroRef = ref(db, 'hero');
+    await set(heroRef, data);
 }
