@@ -29,13 +29,13 @@ export async function getCourseById(id: string): Promise<Course | null> {
 export async function createCourse(courseData: Omit<Course, 'id'>): Promise<string> {
     const coursesRef = ref(db, 'courses');
     const newCourseRef = push(coursesRef);
-    const newCourse: Course = {
+    // The data to be saved should not contain the id, as it's the key.
+    const dataToSave = {
         ...courseData,
-        id: newCourseRef.key!,
         modules: courseData.modules || [],
         exam: courseData.exam || { question: '', referenceAnswer: '', maxPoints: 10},
         imageUrl: courseData.imageUrl || 'https://placehold.co/600x400'
-    }
-    await set(newCourseRef, newCourse);
+    };
+    await set(newCourseRef, dataToSave);
     return newCourseRef.key!;
 }
