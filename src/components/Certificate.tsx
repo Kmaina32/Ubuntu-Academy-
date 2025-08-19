@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from "@/components/ui/button";
@@ -23,53 +24,51 @@ export function Certificate({ course }: CertificateProps) {
                     Download / Print
                 </Button>
             </div>
-            <div className="max-w-4xl mx-auto bg-white border-4 border-purple-800 p-8 shadow-lg relative aspect-[1.414/1]">
-                <div className="absolute inset-0 border-2 border-purple-300 m-2"></div>
-                <div className="relative z-10 flex flex-col h-full">
+            <div className="max-w-4xl mx-auto bg-white border-8 border-primary p-10 shadow-2xl relative aspect-[1.414/1]">
+                <div className="absolute inset-0 border-2 border-accent m-3"></div>
+                <div className="relative z-10 flex flex-col h-full text-center">
 
-                    <div className="text-center mb-8">
-                        <h1 className="text-5xl font-bold text-purple-900 tracking-wider">
-                            Certificate of Completion
-                        </h1>
-                        <p className="text-xl text-gray-600 mt-2">This certificate is proudly presented to</p>
+                    <div className="mb-8">
+                        <p className="text-xl text-muted-foreground uppercase tracking-widest">Certificate of Completion</p>
                     </div>
 
-                    <div className="text-center my-8 flex-grow flex flex-col justify-center">
-                        <h2 className="text-7xl font-signature text-purple-800">{user.name}</h2>
-                        <p className="text-lg text-gray-600 mt-4">
-                            for successfully completing the course
+                    <div className="flex-grow flex flex-col justify-center">
+                        <p className="text-lg text-foreground mb-2">This certificate is proudly presented to</p>
+                        <h1 className="text-7xl font-signature text-primary my-4">{user.name}</h1>
+                        <p className="text-lg text-foreground mt-2">
+                            for successfully completing the online course
                         </p>
-                        <h3 className="text-3xl font-bold text-gray-800 mt-2">
+                        <h2 className="text-4xl font-bold text-foreground mt-4 font-headline">
                             {course.title}
-                        </h3>
+                        </h2>
                     </div>
 
-                    <div className="flex justify-between items-end mt-12">
-                        <div className="text-center">
-                            <p className="font-signature text-2xl text-gray-700">{course.instructor}</p>
-                            <hr className="border-gray-400 mt-1"/>
-                            <p className="text-sm uppercase text-gray-500">Instructor</p>
+                    <div className="flex justify-between items-end mt-16">
+                        <div className="text-center w-1/3">
+                            <p className="font-signature text-3xl text-gray-800">{course.instructor}</p>
+                            <hr className="border-gray-400 mt-1 mx-auto w-3/4"/>
+                            <p className="text-sm uppercase text-gray-500 mt-2 tracking-wider">Instructor</p>
                         </div>
 
-                        <div className="w-32 h-32">
+                        <div className="w-36 h-36">
                              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                                 <circle cx="50" cy="50" r="48" fill="#F5EEFF" stroke="#9D4EDD" strokeWidth="2"/>
                                 <circle cx="50" cy="50" r="42" fill="none" stroke="#9D4EDD" strokeWidth="1" strokeDasharray="4 2"/>
-                                <text x="50" y="35" fontFamily="PT Sans" fontSize="8" textAnchor="middle" fill="#5A189A" fontWeight="bold">MKENYA SKILLED</text>
-                                <text x="50" y="48" fontFamily="PT Sans" fontSize="12" textAnchor="middle" fill="#5A189A" fontWeight="bold">OFFICIAL</text>
-                                <text x="50" y="60" fontFamily="PT Sans" fontSize="12" textAnchor="middle" fill="#5A189A" fontWeight="bold">SEAL</text>
-                                <text x="50" y="75" fontFamily="PT Sans" fontSize="8" textAnchor="middle" fill="#5A189A" fontWeight="bold">EST. 2024</text>
+                                <text x="50" y="35" fontFamily="PT Sans, sans-serif" fontSize="8" textAnchor="middle" fill="#5A189A" fontWeight="bold">MKENYA SKILLED</text>
+                                <text x="50" y="48" fontFamily="PT Sans, sans-serif" fontSize="12" textAnchor="middle" fill="#5A189A" fontWeight="bold">OFFICIAL</text>
+                                <text x="50" y="60" fontFamily="PT Sans, sans-serif" fontSize="12" textAnchor="middle" fill="#5A189A" fontWeight="bold">SEAL</text>
+                                <text x="50" y="75" fontFamily="PT Sans, sans-serif" fontSize="8" textAnchor="middle" fill="#5A189A" fontWeight="bold">EST. 2024</text>
                                 <path d="M 20 50 A 30 30 0 0 1 80 50" fill="none"/>
                             </svg>
                         </div>
                         
-                        <div className="text-center">
-                             <p className="font-signature text-2xl text-gray-700">Director</p>
-                            <hr className="border-gray-400 mt-1"/>
-                            <p className="text-sm uppercase text-gray-500">Academic Director</p>
+                        <div className="text-center w-1/3">
+                             <p className="font-signature text-3xl text-gray-800">A. Omolo</p>
+                            <hr className="border-gray-400 mt-1 mx-auto w-3/4"/>
+                            <p className="text-sm uppercase text-gray-500 mt-2 tracking-wider">Academic Director</p>
                        </div>
                     </div>
-                     <p className="text-xs text-gray-400 text-center mt-4">Issued on: {new Date().toLocaleDateString('en-GB')} | Certificate ID: 123-456-789</p>
+                     <p className="text-xs text-gray-400 mt-6">Issued on: {new Date().toLocaleDateString('en-GB')} | Certificate ID: 123-456-789</p>
                 </div>
             </div>
         </div>
@@ -87,11 +86,14 @@ export function Certificate({ course }: CertificateProps) {
                 .bg-gray-100 {
                     background-color: white !important;
                 }
-                .shadow-lg {
+                .shadow-2xl {
                     box-shadow: none !important;
                 }
-                .border {
-                    border-width: 4px !important;
+                .border-primary {
+                    border-color: #9D4EDD !important;
+                }
+                .border-accent {
+                    border-color: #E94560 !important;
                 }
                 body * {
                     visibility: hidden;
@@ -106,7 +108,7 @@ export function Certificate({ course }: CertificateProps) {
                     width: 100%;
                     height: 100%;
                     margin: 0;
-                    padding: 2rem;
+                    padding: 2.5rem;
                     box-sizing: border-box;
                 }
                 @page {
