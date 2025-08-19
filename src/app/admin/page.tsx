@@ -9,7 +9,7 @@ import { FilePlus2, Pencil, Trash2 } from "lucide-react";
 export default function AdminPage() {
   return (
     <div className="flex flex-col min-h-screen">
-      <main className="flex-grow container mx-auto px-4 md:px-6 py-8">
+      <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
         <h1 className="text-3xl font-bold mb-8 font-headline">Admin Dashboard</h1>
 
         <Tabs defaultValue="courses">

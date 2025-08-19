@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Award, Frown, Loader2, Sparkles } from 'lucide-react';
+import { Footer } from '@/components/Footer';
 
 const formSchema = z.object({
   answer: z.string().min(50, { message: 'Please provide a more detailed answer (at least 50 characters).' }),
@@ -152,6 +153,7 @@ export default function ExamPage({ params }: { params: { id: string } }) {
           </Card>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
