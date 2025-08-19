@@ -48,6 +48,7 @@ export function Certificate({ course }: CertificateProps) {
                         </div>
                         <div className="mt-12 flex justify-between items-end">
                             <div className="text-sm text-muted-foreground">
+                                <p className="font-signature text-4xl text-gray-800 -mb-4">{course.instructor}</p>
                                 <p className="font-bold text-card-foreground text-base">{course.instructor}</p>
                                 <Separator className="my-1 bg-gray-400" />
                                 <p>Lead Instructor</p>
