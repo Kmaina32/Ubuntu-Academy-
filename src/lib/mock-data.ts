@@ -1,4 +1,5 @@
 
+
 export interface Lesson {
   id: string;
   title: string;
@@ -10,6 +11,15 @@ export interface Module {
   id: string;
   title: string;
   lessons: Lesson[];
+}
+
+export interface Assignment {
+  id: string;
+  courseId: string;
+  title: string;
+  description: string;
+  dueDate: string;
+  courseTitle?: string; // Optional: for displaying in lists
 }
 
 export interface Course {
@@ -25,7 +35,8 @@ export interface Course {
     question: string;
     referenceAnswer: string;
     maxPoints: number;
-  }
+  };
+  assignments?: Record<string, Omit<Assignment, 'id' | 'courseId' | 'courseTitle'>>;
 }
 
 export const user = {

@@ -1,7 +1,8 @@
 
+
 import { db } from './firebase';
-import { ref, get, set, push, update } from 'firebase/database';
-import type { Course, UserCourse } from './mock-data';
+import { ref, get, set, push, update, remove } from 'firebase/database';
+import type { Course, UserCourse, Assignment } from './mock-data';
 
 export interface RegisteredUser {
     uid: string;
@@ -16,6 +17,7 @@ export interface HeroData {
     imageUrl: string;
 }
 
+// Course Functions
 export async function getAllCourses(): Promise<Course[]> {
   const coursesRef = ref(db, 'courses');
   const snapshot = await get(coursesRef);
@@ -43,7 +45,6 @@ export async function getCourseById(id: string): Promise<Course | null> {
 export async function createCourse(courseData: Omit<Course, 'id'>): Promise<string> {
     const coursesRef = ref(db, 'courses');
     const newCourseRef = push(coursesRef);
-    // The data to be saved should not contain the id, as it's the key.
     const dataToSave = {
         ...courseData,
         modules: courseData.modules || [],
@@ -54,6 +55,7 @@ export async function createCourse(courseData: Omit<Course, 'id'>): Promise<stri
     return newCourseRef.key!;
 }
 
+// User Functions
 export async function saveUser(user: RegisteredUser): Promise<void> {
     const userRef = ref(db, `users/${user.uid}`);
     await set(userRef, user);
@@ -92,13 +94,13 @@ export async function getAllUsers(): Promise<RegisteredUser[]> {
     return [];
 }
 
+// Hero Section Functions
 export async function getHeroData(): Promise<HeroData> {
     const heroRef = ref(db, 'hero');
     const snapshot = await get(heroRef);
     if (snapshot.exists()) {
         return snapshot.val();
     }
-    // Return default data if nothing is in the database
     return {
         title: 'Unlock Your Potential.',
         subtitle: 'Quality, affordable courses designed for the Kenyan market. Learn valuable skills to advance your career.',
@@ -110,3 +112,41 @@ export async function saveHeroData(data: HeroData): Promise<void> {
     const heroRef = ref(db, 'hero');
     await set(heroRef, data);
 }
+
+// Assignment Functions
+export async function createAssignment(courseId: string, assignmentData: Omit<Assignment, 'id' | 'courseId'>): Promise<string> {
+    const assignmentsRef = ref(db, `courses/${courseId}/assignments`);
+    const newAssignmentRef = push(assignmentsRef);
+    await set(newAssignmentRef, assignmentData);
+    return newAssignmentRef.key!;
+}
+
+export async function getAllAssignments(): Promise<Assignment[]> {
+    const courses = await getAllCourses();
+    let allAssignments: Assignment[] = [];
+    for (const course of courses) {
+        if (course.assignments) {
+            const courseAssignments = Object.keys(course.assignments).map(key => ({
+                ...course.assignments[key],
+                id: key,
+                courseId: course.id,
+                courseTitle: course.title,
+            }));
+            allAssignments = [...allAssignments, ...courseAssignments];
+        }
+    }
+    return allAssignments;
+}
+
+export async function updateAssignment(courseId: string, assignmentId: string, assignmentData: Partial<Assignment>): Promise<void> {
+    const assignmentRef = ref(db, `courses/${courseId}/assignments/${assignmentId}`);
+    // Omit id and courseId from the update payload
+    const { id, courseId: cid, ...dataToUpdate } = assignmentData;
+    await update(assignmentRef, dataToUpdate);
+}
+
+export async function deleteAssignment(courseId: string, assignmentId: string): Promise<void> {
+    const assignmentRef = ref(db, `courses/${courseId}/assignments/${assignmentId}`);
+    await remove(assignmentRef);
+}
+
