@@ -32,52 +32,52 @@ function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolle
                   className="w-full h-auto object-cover rounded-t-lg"
                 />
             </CardHeader>
-            <CardContent className="p-6">
-                <p className="text-3xl font-bold text-primary mb-4 break-words">
+            <CardContent className="p-4 sm:p-6">
+                <p className="text-2xl sm:text-3xl font-bold text-primary mb-4 break-words overflow-wrap-anywhere">
                 {course.price > 0 ? `Ksh ${course.price.toLocaleString()}` : 'Free'}
                 </p>
 
                 {isEnrolled ? (
                     <div className="space-y-2">
-                        <Button size="lg" className="w-full" disabled>
-                           <Check className="mr-2 h-4 w-4"/> Enrolled
+                        <Button size="lg" className="w-full text-sm">
+                           <Check className="mr-2 h-4 w-4 flex-shrink-0"/> Enrolled
                         </Button>
-                         <Button size="lg" variant="outline" asChild className="w-full">
+                         <Button size="lg" variant="outline" asChild className="w-full text-sm">
                            <Link href={`/courses/${course.id}/learn`}>Go to Course</Link>
                         </Button>
                     </div>
                 ) : course.price > 0 ? (
                 <>
-                    <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={onPurchase}>
+                    <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground text-sm" onClick={onPurchase}>
                         Purchase with M-Pesa
                     </Button>
-                    <p className="text-xs text-center mt-2 text-muted-foreground">This is a demo. No payment will be processed.</p>
+                    <p className="text-xs text-center mt-2 text-muted-foreground px-2">This is a demo. No payment will be processed.</p>
                 </>
                 ) : (
-                    <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={onEnrollFree} disabled={isEnrolling}>
-                    {isEnrolling ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <BookOpen className="mr-2 h-4 w-4"/>}
+                    <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground text-sm" onClick={onEnrollFree} disabled={isEnrolling}>
+                    {isEnrolling ? <Loader2 className="mr-2 h-4 w-4 animate-spin flex-shrink-0" /> : <BookOpen className="mr-2 h-4 w-4 flex-shrink-0"/>}
                     {isEnrolling ? 'Enrolling...' : 'Enroll for Free'}
                 </Button>
                 )}
                 
                 <Separator className="my-4" />
-                <h3 className="font-semibold mb-2 font-headline">This course includes:</h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
+                <h3 className="font-semibold mb-2 font-headline text-sm sm:text-base">This course includes:</h3>
+                <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
                     <li className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-primary" />
-                        <span>{course.duration} to complete</span>
+                        <Clock className="h-4 w-4 text-primary flex-shrink-0" />
+                        <span className="break-words overflow-wrap-anywhere">{course.duration} to complete</span>
                     </li>
                     <li className="flex items-center gap-2">
-                        <PlayCircle className="h-4 w-4 text-primary" />
-                        <span>Drip-fed video lessons</span>
+                        <PlayCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                        <span className="break-words">Drip-fed video lessons</span>
                     </li>
                     <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-primary" />
-                        <span>Final exam</span>
+                        <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                        <span className="break-words">Final exam</span>
                     </li>
                     <li className="flex items-center gap-2">
-                        <Award className="h-4 w-4 text-primary" />
-                        <span>Certificate of completion</span>
+                        <Award className="h-4 w-4 text-primary flex-shrink-0" />
+                        <span className="break-words">Certificate of completion</span>
                     </li>
                 </ul>
             </CardContent>
@@ -127,9 +127,11 @@ export default function CourseDetailPage() {
 
   if (loading || authLoading || !user) {
     return (
-        <div className="flex justify-center items-center min-h-screen">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            <p className="ml-2">Loading course details...</p>
+        <div className="flex justify-center items-center min-h-screen px-4">
+            <div className="flex items-center">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <p className="ml-2 text-sm sm:text-base">Loading course details...</p>
+            </div>
         </div>
     )
   }
@@ -168,50 +170,78 @@ export default function CourseDetailPage() {
       <AppSidebar />
       <SidebarInset>
         <Header />
-        <main className="flex-grow py-12 md:py-16">
-          <div className="container mx-auto px-4 md:px-6">
-            <button onClick={() => router.back()} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
-              <ArrowLeft className="h-4 w-4" />
-              Back
+        <main className="flex-grow py-8 sm:py-12 md:py-16 overflow-x-hidden">
+          <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
+            <button 
+              onClick={() => router.back()} 
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4 sm:mb-6"
+            >
+              <ArrowLeft className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">Back</span>
             </button>
-            <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-              <div className="md:col-span-2">
-                <Badge variant="secondary" className="mb-2">{course.instructor}</Badge>
-                <h1 className="text-3xl md:text-4xl font-bold mb-4 font-headline break-words">{course.title}</h1>
-                <p className="text-muted-foreground text-lg mb-6 break-words">{course.longDescription}</p>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 xl:gap-12">
+              <div className="lg:col-span-2 min-w-0">
+                <Badge variant="secondary" className="mb-2 text-xs sm:text-sm break-words max-w-full">
+                  {course.instructor}
+                </Badge>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 font-headline break-words overflow-wrap-anywhere leading-tight">
+                  {course.title}
+                </h1>
+                <p className="text-muted-foreground text-sm sm:text-base lg:text-lg mb-6 break-words overflow-wrap-anywhere leading-relaxed">
+                  {course.longDescription}
+                </p>
                 
                 {/* Purchase Card for Mobile View */}
-                <div className="md:hidden mb-8">
-                    <PurchaseCard course={course} onEnrollFree={handleEnrollFree} onPurchase={() => setIsModalOpen(true)} isEnrolling={isEnrolling} isEnrolled={isEnrolled} />
+                <div className="lg:hidden mb-6 sm:mb-8">
+                    <PurchaseCard 
+                      course={course} 
+                      onEnrollFree={handleEnrollFree} 
+                      onPurchase={() => setIsModalOpen(true)} 
+                      isEnrolling={isEnrolling} 
+                      isEnrolled={isEnrolled} 
+                    />
                 </div>
 
-                <h2 className="text-2xl font-bold mb-4 font-headline">Course Content</h2>
+                <h2 className="text-xl sm:text-2xl font-bold mb-4 font-headline">Course Content</h2>
                 <Accordion type="single" collapsible className="w-full">
                   {course.modules && course.modules.map((module) => (
                     <AccordionItem value={module.id} key={module.id}>
-                      <AccordionTrigger className="text-lg font-semibold break-words">{module.title}</AccordionTrigger>
+                      <AccordionTrigger className="text-base sm:text-lg font-semibold break-words overflow-wrap-anywhere text-left pr-2">
+                        {module.title}
+                      </AccordionTrigger>
                       <AccordionContent>
-                        <ul className="space-y-3 p-4">
+                        <ul className="space-y-3 p-2 sm:p-4">
                           {module.lessons.map((lesson) => (
-                            <li key={lesson.id} className="flex items-center justify-between">
-                              <div className="flex items-center gap-3 min-w-0">
-                                <PlayCircle className="h-5 w-5 text-muted-foreground shrink-0" />
-                                <span className="truncate break-words">{lesson.title}</span>
+                            <li key={lesson.id} className="flex items-start sm:items-center justify-between gap-2">
+                              <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                                <PlayCircle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0 mt-0.5 sm:mt-0" />
+                                <span className="text-sm sm:text-base break-words overflow-wrap-anywhere">
+                                  {lesson.title}
+                                </span>
                               </div>
-                              <span className="text-sm text-muted-foreground shrink-0">{lesson.duration}</span>
+                              <span className="text-xs sm:text-sm text-muted-foreground flex-shrink-0 whitespace-nowrap">
+                                {lesson.duration}
+                              </span>
                             </li>
                           ))}
                         </ul>
                       </AccordionContent>
                     </AccordionItem>
                   ))}
-                  {(!course.modules || course.modules.length === 0) && <p className="text-muted-foreground p-4">Course content coming soon!</p>}
+                  {(!course.modules || course.modules.length === 0) && 
+                    <p className="text-muted-foreground p-4 text-sm sm:text-base">Course content coming soon!</p>
+                  }
                   <AccordionItem value="exam">
-                      <AccordionTrigger className="text-lg font-semibold">Final Exam</AccordionTrigger>
+                      <AccordionTrigger className="text-base sm:text-lg font-semibold text-left pr-2">
+                        Final Exam
+                      </AccordionTrigger>
                       <AccordionContent>
-                        <div className="flex items-center gap-3 p-4">
-                            <CheckCircle className="h-5 w-5 text-muted-foreground" />
-                            <span>Test your knowledge to earn your certificate.</span>
+                        <div className="flex items-center gap-3 p-2 sm:p-4">
+                            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
+                            <span className="text-sm sm:text-base break-words">
+                              Test your knowledge to earn your certificate.
+                            </span>
                         </div>
                       </AccordionContent>
                   </AccordionItem>
@@ -219,9 +249,15 @@ export default function CourseDetailPage() {
               </div>
               
               {/* Purchase Card for Desktop View */}
-              <div className="md:col-span-1 hidden md:block">
+              <div className="lg:col-span-1 hidden lg:block">
                 <div className="sticky top-24">
-                  <PurchaseCard course={course} onEnrollFree={handleEnrollFree} onPurchase={() => setIsModalOpen(true)} isEnrolling={isEnrolling} isEnrolled={isEnrolled}/>
+                  <PurchaseCard 
+                    course={course} 
+                    onEnrollFree={handleEnrollFree} 
+                    onPurchase={() => setIsModalOpen(true)} 
+                    isEnrolling={isEnrolling} 
+                    isEnrolled={isEnrolled}
+                  />
                 </div>
               </div>
             </div>
