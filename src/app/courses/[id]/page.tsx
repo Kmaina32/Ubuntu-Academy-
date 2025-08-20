@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { notFound, useParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from 'next/link';
 import type { Course } from "@/lib/mock-data";
 import { getCourseById, enrollUserInCourse, getUserCourses } from '@/lib/firebase-service';
 import { Footer } from "@/components/Footer";
