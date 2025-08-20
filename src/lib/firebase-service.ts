@@ -286,7 +286,7 @@ export async function getTutorSettings(): Promise<TutorSettings> {
     const settingsRef = ref(db, 'tutorSettings');
     const snapshot = await get(settingsRef);
     const defaults: TutorSettings = {
-        voice: 'Algenib',
+        voice: 'algenib',
         speed: 1.0,
         prompts: "Welcome! To talk with me, your virtual tutor, just click the chat button.\nHow can I help you with this lesson?",
     };
