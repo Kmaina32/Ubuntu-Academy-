@@ -100,9 +100,9 @@ export function AdminSidebar() {
              <div className="px-2 mt-auto">
                  <Separator className="my-2" />
                  <Button asChild variant="outline" className="w-full justify-start group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:h-auto group-data-[collapsible=icon]:p-2">
-                    <Link href="/" target="_blank">
+                    <Link href="/">
                         <ExternalLink />
-                        <span className="group-data-[collapsible=icon]:hidden">View Site</span>
+                        <span className="group-data-[collapsible=icon]:hidden">Go to app</span>
                     </Link>
                  </Button>
             </div>
