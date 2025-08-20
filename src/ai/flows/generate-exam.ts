@@ -20,7 +20,7 @@ export type GenerateExamInput = z.infer<typeof GenerateExamInputSchema>;
 
 const ShortAnswerQuestionSchema = z.object({
     id: z.string().describe("A unique identifier for the question, e.g., 'q-1'."),
-    type: z.string().describe("The type of the question, either 'short-answer' or 'multiple-choice'."),
+    type: z.string().describe("The type of the question, should be 'short-answer'."),
     question: z.string().describe('The exam question.'),
     referenceAnswer: z.string().describe('The detailed, correct reference answer for the exam question.'),
     maxPoints: z.number().describe('The maximum points possible for the exam question, always set to 10.'),
@@ -28,17 +28,17 @@ const ShortAnswerQuestionSchema = z.object({
 
 const MultipleChoiceQuestionSchema = z.object({
     id: z.string().describe("A unique identifier for the question, e.g., 'q-2'."),
-    type: z.string().describe("The type of the question, either 'short-answer' or 'multiple-choice'."),
+    type: z.string().describe("The type of the question, should be 'multiple-choice'."),
     question: z.string().describe('The exam question.'),
     options: z.array(z.string()).length(4).describe('An array of 4 possible answers for the question.'),
-    correctAnswer: z.number().min(0).max(3).describe('The index of the correct answer in the options array.'),
+    correctAnswer: z.coerce.number().min(0).max(3).describe('The index of the correct answer in the options array.'),
     maxPoints: z.number().describe('The maximum points possible for the exam question, always set to 10.'),
 });
 
 const ExamQuestionSchema = z.union([ShortAnswerQuestionSchema, MultipleChoiceQuestionSchema]);
 
 const GenerateExamOutputSchema = z.object({
-  exam: z.array(ExamQuestionSchema).min(5).describe('The final exam for the course, containing at least five questions.'),
+  exam: z.array(ExamQuestionSchema).min(5).max(5).describe('The final exam for the course, containing exactly five questions.'),
 });
 export type GenerateExamOutput = z.infer<typeof GenerateExamOutputSchema>;
 
@@ -54,12 +54,18 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateExamOutputSchema},
   prompt: `You are an expert curriculum developer. Your task is to generate a final exam for an online course based on its title and description.
 
-The exam must be overly comprehensive and rigorously test the core concepts of the course. It absolutely must include at least five questions, with a mix of short-answer and multiple-choice questions. Do not generate fewer than five questions.
+The exam must be rigorous and test the core concepts of the course.
+It must contain EXACTLY five (5) questions.
+The mix of questions must be:
+- Three (3) multiple-choice questions.
+- Two (2) short-answer questions.
+
+Do not generate more or less than five questions.
 
 Course Title: {{{courseTitle}}}
 Course Description: {{{courseDescription}}}
 
-Please generate the full exam now. Ensure that multiple-choice questions have exactly four options and a correct answer index, and short-answer questions have a detailed reference answer. It is critical that the final exam contains a minimum of five questions.`,
+Please generate the full exam now. Ensure that multiple-choice questions have exactly four options and a correct answer index, and short-answer questions have a detailed reference answer. It is critical that the final exam contains exactly five questions as specified.`,
 });
 
 const generateExamFlow = ai.defineFlow(
