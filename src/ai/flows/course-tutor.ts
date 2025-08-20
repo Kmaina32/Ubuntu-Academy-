@@ -11,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { textToSpeech } from './text-to-speech';
 
 const CourseTutorInputSchema = z.object({
   question: z.string().describe('The student\'s question about the lesson.'),
@@ -20,6 +21,7 @@ export type CourseTutorInput = z.infer<typeof CourseTutorInputSchema>;
 
 const CourseTutorOutputSchema = z.object({
   answer: z.string().describe("Gina's helpful answer to the student's question."),
+  answerAudio: z.string().optional().describe('The data URI of the spoken answer audio.'),
 });
 export type CourseTutorOutput = z.infer<typeof CourseTutorOutputSchema>;
 
@@ -58,6 +60,15 @@ const courseTutorFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('Failed to generate a text answer.');
+    }
+
+    const audioResponse = await textToSpeech(output.answer);
+    
+    return {
+        answer: output.answer,
+        answerAudio: audioResponse.media,
+    };
   }
 );

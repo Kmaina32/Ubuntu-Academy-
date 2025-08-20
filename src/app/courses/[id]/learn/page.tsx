@@ -1,14 +1,14 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Course, Lesson, Module } from '@/lib/mock-data';
 import { getCourseById, updateUserCourseProgress, getUserCourses } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2 } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -23,6 +23,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { courseTutor } from '@/ai/flows/course-tutor';
+import { textToSpeech } from '@/ai/flows/text-to-speech';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 
@@ -166,6 +167,7 @@ function CourseOutline({ course, progress, completedLessons, unlockedLessonsCoun
 type ChatMessage = {
     role: 'user' | 'assistant';
     content: string;
+    audioUrl?: string;
 };
 
 function AiTutor({ lesson }: { lesson: Lesson | null }) {
@@ -173,6 +175,14 @@ function AiTutor({ lesson }: { lesson: Lesson | null }) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [question, setQuestion] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const audioRef = useRef<HTMLAudioElement>(null);
+
+    const playAudio = (url: string) => {
+        if (audioRef.current) {
+            audioRef.current.src = url;
+            audioRef.current.play().catch(e => console.error("Audio playback failed:", e));
+        }
+    };
 
     const handleTutorSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -185,8 +195,11 @@ function AiTutor({ lesson }: { lesson: Lesson | null }) {
 
         try {
             const result = await courseTutor({ question, courseContext: lesson.content });
-            const tutorMessage: ChatMessage = { role: 'assistant', content: result.answer };
+            const tutorMessage: ChatMessage = { role: 'assistant', content: result.answer, audioUrl: result.answerAudio };
             setMessages(prev => [...prev, tutorMessage]);
+            if(result.answerAudio) {
+                playAudio(result.answerAudio);
+            }
         } catch (error) {
             console.error("AI Tutor failed:", error);
             toast({ title: 'Error', description: 'The AI Tutor is currently unavailable. Please try again later.', variant: 'destructive'});
@@ -199,77 +212,85 @@ function AiTutor({ lesson }: { lesson: Lesson | null }) {
     if (!lesson) return null;
 
     return (
-        <Sheet>
-            <SheetTrigger asChild>
-                <Button className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg">
-                    <MessageSquare className="h-7 w-7" />
-                </Button>
-            </SheetTrigger>
-            <SheetContent className="w-full sm:w-[480px] p-0 flex flex-col">
-                 <SheetHeader className="p-6 pb-2">
-                    <SheetTitle>Chat with Gina</SheetTitle>
-                    <SheetDescription>
-                        Your AI tutor for this lesson. Ask anything about "{lesson.title}".
-                    </SheetDescription>
-                 </SheetHeader>
-                <ScrollArea className="flex-grow p-6">
-                    <div className="space-y-4">
-                        {messages.length === 0 && (
-                            <div className="text-center text-muted-foreground text-sm py-8">
-                                Ask a question about this lesson to get started.
-                            </div>
-                        )}
-                        {messages.map((message, index) => (
-                            <div key={index} className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
-                                {message.role === 'assistant' && (
+        <>
+            <audio ref={audioRef} className="hidden" />
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg">
+                        <MessageSquare className="h-7 w-7" />
+                    </Button>
+                </SheetTrigger>
+                <SheetContent className="w-full sm:w-[480px] p-0 flex flex-col">
+                    <SheetHeader className="p-6 pb-2">
+                        <SheetTitle>Chat with Gina</SheetTitle>
+                        <SheetDescription>
+                            Your AI tutor for this lesson. Ask anything about "{lesson.title}".
+                        </SheetDescription>
+                    </SheetHeader>
+                    <ScrollArea className="flex-grow p-6">
+                        <div className="space-y-4">
+                            {messages.length === 0 && (
+                                <div className="text-center text-muted-foreground text-sm py-8">
+                                    Ask a question about this lesson to get started.
+                                </div>
+                            )}
+                            {messages.map((message, index) => (
+                                <div key={index} className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
+                                    {message.role === 'assistant' && (
+                                        <Avatar className="h-8 w-8 border bg-primary text-primary-foreground">
+                                            <Bot className="h-5 w-5 m-1.5" />
+                                        </Avatar>
+                                    )}
+                                    <div className={`rounded-lg px-3 py-2 max-w-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+                                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                                        {message.role === 'assistant' && message.audioUrl && (
+                                            <Button variant="ghost" size="icon" className="h-7 w-7 mt-1" onClick={() => playAudio(message.audioUrl!)}>
+                                                <Volume2 className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                        {message.role === 'user' && (
+                                        <Avatar className="h-8 w-8 border">
+                                            <User className="h-5 w-5 m-1.5" />
+                                        </Avatar>
+                                    )}
+                                </div>
+                            ))}
+                            {isLoading && (
+                                <div className="flex items-start gap-3">
                                     <Avatar className="h-8 w-8 border bg-primary text-primary-foreground">
                                         <Bot className="h-5 w-5 m-1.5" />
                                     </Avatar>
-                                )}
-                                <div className={`rounded-lg px-3 py-2 max-w-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                                    <div className="rounded-lg px-4 py-3 bg-secondary flex items-center">
+                                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                                    </div>
                                 </div>
-                                    {message.role === 'user' && (
-                                    <Avatar className="h-8 w-8 border">
-                                        <User className="h-5 w-5 m-1.5" />
-                                    </Avatar>
-                                )}
-                            </div>
-                        ))}
-                        {isLoading && (
-                            <div className="flex items-start gap-3">
-                                <Avatar className="h-8 w-8 border bg-primary text-primary-foreground">
-                                    <Bot className="h-5 w-5 m-1.5" />
-                                </Avatar>
-                                <div className="rounded-lg px-4 py-3 bg-secondary flex items-center">
-                                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                                </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
+                    </ScrollArea>
+                    <div className="p-6 border-t bg-background">
+                        <form onSubmit={handleTutorSubmit} className="flex items-start gap-2">
+                            <Textarea 
+                                placeholder="e.g., Can you explain this concept..." 
+                                value={question}
+                                onChange={e => setQuestion(e.target.value)}
+                                className="min-h-0 resize-none"
+                                rows={1}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleTutorSubmit(e);
+                                    }
+                                    }}
+                            />
+                            <Button type="submit" size="icon" disabled={isLoading || !question.trim()}>
+                                <Send className="h-4 w-4"/>
+                            </Button>
+                        </form>
                     </div>
-                </ScrollArea>
-                <div className="p-6 border-t bg-background">
-                    <form onSubmit={handleTutorSubmit} className="flex items-start gap-2">
-                        <Textarea 
-                            placeholder="e.g., Can you explain this concept..." 
-                            value={question}
-                            onChange={e => setQuestion(e.target.value)}
-                            className="min-h-0 resize-none"
-                            rows={1}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault();
-                                    handleTutorSubmit(e);
-                                }
-                                }}
-                        />
-                        <Button type="submit" size="icon" disabled={isLoading || !question.trim()}>
-                            <Send className="h-4 w-4"/>
-                        </Button>
-                    </form>
-                </div>
-            </SheetContent>
-        </Sheet>
+                </SheetContent>
+            </Sheet>
+        </>
     )
 }
 
@@ -279,6 +300,7 @@ export default function CoursePlayerPage() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const welcomeAudioRef = useRef<HTMLAudioElement>(null);
 
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
@@ -337,6 +359,36 @@ export default function CoursePlayerPage() {
       fetchCourseAndProgress();
     }
   }, [params.id, user]);
+  
+  // Effect for playing the welcome message
+  useEffect(() => {
+    const playWelcomeMessage = async () => {
+      // Check if the welcome message has been played for this course before
+      const hasPlayedWelcome = sessionStorage.getItem(`welcome_played_${params.id}`);
+
+      if (!hasPlayedWelcome) {
+        try {
+          const welcomeText = "Welcome! To talk with me, your virtual tutor, just click the chat button.";
+          const audioResponse = await textToSpeech(welcomeText);
+          if (welcomeAudioRef.current && audioResponse.media) {
+            welcomeAudioRef.current.src = audioResponse.media;
+            // Autoplay might be blocked by browser policies, it requires user interaction first
+            // We can try to play, and if it fails, it will fail silently.
+            welcomeAudioRef.current.play().catch(() => {});
+            sessionStorage.setItem(`welcome_played_${params.id}`, 'true');
+          }
+        } catch (error) {
+          console.error("Failed to generate welcome message:", error);
+        }
+      }
+    };
+    
+    // Only play once the course is loaded
+    if (!loading && course) {
+        playWelcomeMessage();
+    }
+  }, [loading, course, params.id]);
+
 
   const handleLessonClick = (lesson: Lesson, index: number) => {
       if(index < unlockedLessonsCount) {
@@ -517,6 +569,7 @@ export default function CoursePlayerPage() {
             </main>
 
             <AiTutor lesson={currentLesson} />
+            <audio ref={welcomeAudioRef} className="hidden" />
           </div>
         </div>
       </SidebarInset>
