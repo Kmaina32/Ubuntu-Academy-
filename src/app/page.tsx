@@ -70,7 +70,7 @@ export default function Home() {
       <SidebarInset>
         <Header />
         <main className="flex-grow">
-          <section className="relative py-12 md:py-16 bg-secondary/50 overflow-hidden">
+          <section className="relative py-8 md:py-12 bg-secondary/50 overflow-hidden">
             <div className="container mx-auto px-4 md:px-6">
                  <div 
                       className="relative rounded-xl overflow-hidden min-h-[400px] flex items-center justify-center text-center"
@@ -81,13 +81,13 @@ export default function Home() {
                       <div 
                         className={`absolute inset-0 transition-opacity duration-1000 ${showSlideshow ? 'opacity-0' : 'opacity-100'}`}
                       >
-                         <Image 
+                         {heroData.imageUrl && <Image 
                             src={heroData.imageUrl}
                             alt="Hero background"
                             fill
                             className="object-cover"
                             data-ai-hint="abstract background"
-                         />
+                         />}
                          <div className="absolute inset-0 bg-black/50"></div>
                          <div className="relative z-20 h-full flex flex-col items-center justify-center text-white p-4">
                             <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight font-headline">
