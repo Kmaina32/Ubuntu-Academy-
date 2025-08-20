@@ -8,7 +8,7 @@ import { getCourseById, updateUserCourseProgress, getUserCourses, saveTutorHisto
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit, FileText, Sparkles, Pencil } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit, FileText, Sparkles, Pencil, VolumeX } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -23,11 +23,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { courseTutor } from '@/ai/flows/course-tutor';
-import { textToSpeech } from '@/ai/flows/text-to-speech';
 import { speechToText } from '@/ai/flows/speech-to-text';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import { useRecorder } from '@/hooks/use-recorder';
+import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 function getYouTubeEmbedUrl(url: string | undefined): string | null {
   if (!url) return null;
@@ -64,6 +64,15 @@ function getWeekdayCount(startDate: Date, endDate: Date): number {
   }
   return count;
 }
+
+function Markdown({ content }: { content: string }) {
+    const html = content
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br />');
+    return <p className="text-sm" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
 
 function CourseOutline({ course, progress, completedLessons, unlockedLessonsCount, currentLesson, onLessonClick, onExamClick, isMobileSheet = false }: {
     course: Course;
@@ -172,6 +181,7 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
     const [messages, setMessages] = useState<TutorMessage[]>([]);
     const [question, setQuestion] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isVoiceMode, setIsVoiceMode] = useState(true);
     const audioRef = useRef<HTMLAudioElement>(null);
     const { isRecording, startRecording, stopRecording } = useRecorder();
 
@@ -184,8 +194,10 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
     useEffect(() => {
         const loadHistory = async () => {
             if (user && course && lesson) {
+                setIsLoading(true);
                 const history = await getTutorHistory(user.uid, course.id, lesson.id);
                 setMessages(history);
+                setIsLoading(false);
             }
         };
         loadHistory();
@@ -242,10 +254,13 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
                 voice: settings?.voice,
                 speed: settings?.speed
             });
+
+            const audioToPlay = (isVoiceMode && result.answerAudio) ? result.answerAudio : undefined;
+
             const tutorMessage: TutorMessage = { 
                 role: 'assistant', 
                 content: result.answer, 
-                audioUrl: result.answerAudio,
+                audioUrl: audioToPlay,
                 suggestions: result.suggestions
             };
             const finalMessages = [...newMessages, tutorMessage];
@@ -253,8 +268,8 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
             
             await saveTutorHistory(user.uid, course.id, lesson.id, finalMessages);
 
-            if(result.answerAudio) {
-                playAudio(result.answerAudio);
+            if(audioToPlay) {
+                playAudio(audioToPlay);
             }
         } catch (error) {
             console.error("AI Tutor failed:", error);
@@ -290,13 +305,29 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
                     </Button>
                 </SheetTrigger>
                 <SheetContent className="w-full sm:w-[480px] flex flex-col p-0 rounded-l-lg">
-                    <SheetHeader className="p-6 pb-4">
-                        <SheetTitle>Chat with Gina</SheetTitle>
-                        <SheetDescription>
-                            Your AI tutor for this lesson. Ask anything about "{lesson.title}".
-                        </SheetDescription>
+                     <SheetHeader className="p-6 pb-2 border-b">
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <SheetTitle>Chat with Gina</SheetTitle>
+                                <SheetDescription>
+                                    Your AI tutor for this lesson.
+                                </SheetDescription>
+                            </div>
+                             <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button variant="outline" size="icon" onClick={() => setIsVoiceMode(!isVoiceMode)}>
+                                            {isVoiceMode ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>{isVoiceMode ? 'Disable Voice' : 'Enable Voice'}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
                     </SheetHeader>
-                    <ScrollArea className="flex-grow px-6">
+                    <ScrollArea className="flex-grow p-6">
                         <div className="space-y-4">
                             {messages.length === 0 && (
                                 <div className="text-center text-muted-foreground text-sm py-8 space-y-4">
@@ -323,7 +354,7 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
                                             </Avatar>
                                         )}
                                         <div className={`rounded-lg px-3 py-2 max-w-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                                            <Markdown content={message.content} />
                                             {message.role === 'assistant' && message.audioUrl && (
                                                 <Button variant="ghost" size="icon" className="h-7 w-7 mt-1" onClick={() => playAudio(message.audioUrl!)}>
                                                     <Volume2 className="h-4 w-4" />
@@ -645,3 +676,5 @@ export default function CoursePlayerPage() {
     </SidebarProvider>
   );
 }
+
+    
