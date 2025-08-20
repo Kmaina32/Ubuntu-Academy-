@@ -6,7 +6,4 @@ import '@/ai/flows/student-help.ts';
 import '@/ai/flows/generate-exam.ts';
 import '@/ai/flows/course-tutor.ts';
 import '@/ai/flows/text-to-speech.ts';
-
-
-
-
+import '@/ai/flows/speech-to-text.ts';

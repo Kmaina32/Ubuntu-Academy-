@@ -8,7 +8,7 @@ import { getCourseById, updateUserCourseProgress, getUserCourses } from '@/lib/f
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2 } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -24,8 +24,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { courseTutor } from '@/ai/flows/course-tutor';
 import { textToSpeech } from '@/ai/flows/text-to-speech';
+import { speechToText } from '@/ai/flows/speech-to-text';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { useRecorder } from '@/hooks/use-recorder';
 
 function getYouTubeEmbedUrl(url: string | undefined): string | null {
   if (!url) return null;
@@ -176,6 +178,27 @@ function AiTutor({ lesson }: { lesson: Lesson | null }) {
     const [question, setQuestion] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const audioRef = useRef<HTMLAudioElement>(null);
+    const { isRecording, startRecording, stopRecording } = useRecorder();
+
+    useEffect(() => {
+        const transcribeAndSetQuestion = async (audioB64: string) => {
+            setIsLoading(true);
+            try {
+                const result = await speechToText({ audioDataUri: audioB64 });
+                setQuestion(result.transcript);
+            } catch (error) {
+                console.error("Speech to text failed:", error);
+                toast({ title: 'Error', description: 'Could not understand your speech. Please try again.', variant: 'destructive'});
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (stopRecording) {
+            stopRecording(transcribeAndSetQuestion);
+        }
+    }, [stopRecording, toast]);
+
 
     const playAudio = (url: string) => {
         if (audioRef.current) {
@@ -270,6 +293,9 @@ function AiTutor({ lesson }: { lesson: Lesson | null }) {
                     </ScrollArea>
                     <div className="p-6 border-t bg-background">
                         <form onSubmit={handleTutorSubmit} className="flex items-start gap-2">
+                             <Button type="button" size="icon" variant={isRecording ? 'destructive' : 'outline'} onClick={isRecording ? stopRecording : startRecording} disabled={isLoading}>
+                                {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                            </Button>
                             <Textarea 
                                 placeholder="e.g., Can you explain this concept..." 
                                 value={question}
