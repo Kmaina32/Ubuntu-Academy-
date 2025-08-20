@@ -15,6 +15,7 @@ import { Header } from "@/components/Header";
 import { Input } from '@/components/ui/input';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import Autoplay from "embla-carousel-autoplay"
+import { Button } from '@/components/ui/button';
 
 
 export default function Home() {
@@ -26,7 +27,7 @@ export default function Home() {
   const [showSlideshow, setShowSlideshow] = useState(false);
 
   const autoplayPlugin = useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: true })
+    Autoplay({ delay: 5000, stopOnInteraction: true })
   );
 
   useEffect(() => {
@@ -112,7 +113,7 @@ export default function Home() {
                                 <CarouselContent>
                                     {courses.map((course) => (
                                         <CarouselItem key={course.id}>
-                                            <Link href={`/courses/${course.id}`} className="block h-[400px] w-full relative">
+                                            <div className="block h-[400px] w-full relative">
                                                 <Image
                                                     src={course.imageUrl}
                                                     alt={course.title}
@@ -121,11 +122,16 @@ export default function Home() {
                                                     data-ai-hint={courseAiHints[course.id] || 'course placeholder'}
                                                 />
                                                 <div className="absolute inset-0 bg-black/60"></div>
-                                                <div className="relative z-20 h-full flex flex-col items-center justify-center text-white p-4">
+                                                <div className="relative z-20 h-full flex flex-col items-center justify-center text-white p-8">
                                                      <h2 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight font-headline">{course.title}</h2>
                                                      <p className="text-md max-w-2xl mx-auto">{course.description}</p>
+                                                      <div className="absolute bottom-8 right-8">
+                                                        <Button asChild>
+                                                            <Link href={`/courses/${course.id}`}>View Course Overview</Link>
+                                                        </Button>
+                                                      </div>
                                                 </div>
-                                            </Link>
+                                            </div>
                                         </CarouselItem>
                                     ))}
                                 </CarouselContent>
