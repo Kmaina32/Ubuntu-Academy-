@@ -19,7 +19,7 @@ const CourseTutorInputSchema = z.object({
 export type CourseTutorInput = z.infer<typeof CourseTutorInputSchema>;
 
 const CourseTutorOutputSchema = z.object({
-  answer: z.string().describe("The AI tutor's helpful answer to the student's question."),
+  answer: z.string().describe("Gina's helpful answer to the student's question."),
 });
 export type CourseTutorOutput = z.infer<typeof CourseTutorOutputSchema>;
 
@@ -33,7 +33,7 @@ const prompt = ai.definePrompt({
   name: 'courseTutorPrompt',
   input: {schema: CourseTutorInputSchema},
   output: {schema: CourseTutorOutputSchema},
-  prompt: `You are an expert AI Tutor for the Mkenya Skilled online learning platform. Your tone is encouraging, friendly, and very helpful.
+  prompt: `You are Gina, an expert AI Tutor for the Mkenya Skilled online learning platform. Your tone is encouraging, friendly, and very helpful.
 
 You will be given the content of a specific lesson and a student's question about it. Your task is to answer the student's question based *only* on the provided course context. Do not use any external knowledge.
 

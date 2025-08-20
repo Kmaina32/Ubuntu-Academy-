@@ -8,7 +8,7 @@ import { getCourseById, updateUserCourseProgress, getUserCourses } from '@/lib/f
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -17,13 +17,13 @@ import { useAuth } from '@/hooks/use-auth';
 import { isWeekend } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { courseTutor } from '@/ai/flows/course-tutor';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 
 function getYouTubeEmbedUrl(url: string | undefined): string | null {
@@ -168,7 +168,7 @@ type ChatMessage = {
     content: string;
 };
 
-function AiTutor({ lesson }: { lesson: Lesson }) {
+function AiTutor({ lesson }: { lesson: Lesson | null }) {
     const { toast } = useToast();
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [question, setQuestion] = useState('');
@@ -176,7 +176,7 @@ function AiTutor({ lesson }: { lesson: Lesson }) {
 
     const handleTutorSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!question.trim()) return;
+        if (!question.trim() || !lesson) return;
 
         const userMessage: ChatMessage = { role: 'user', content: question };
         setMessages(prev => [...prev, userMessage]);
@@ -195,79 +195,81 @@ function AiTutor({ lesson }: { lesson: Lesson }) {
             setIsLoading(false);
         }
     }
+    
+    if (!lesson) return null;
 
     return (
-        <Accordion type="single" collapsible className="w-full mt-8">
-            <AccordionItem value="item-1">
-                <AccordionTrigger>
-                    <div className="flex items-center gap-2">
-                        <Bot className="h-5 w-5" />
-                        <span className="font-semibold">Need help? Ask the AI Tutor</span>
-                    </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                    <Card className="mt-2">
-                        <CardContent className="p-4 h-96 flex flex-col">
-                            <ScrollArea className="flex-grow pr-4 -mr-4 mb-4">
-                                <div className="space-y-4">
-                                    {messages.length === 0 && (
-                                        <div className="text-center text-muted-foreground text-sm py-8">
-                                            Ask a question about this lesson to get started.
-                                        </div>
-                                    )}
-                                    {messages.map((message, index) => (
-                                        <div key={index} className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
-                                            {message.role === 'assistant' && (
-                                                <Avatar className="h-8 w-8 border">
-                                                    <Bot className="h-5 w-5 m-1.5" />
-                                                </Avatar>
-                                            )}
-                                            <div className={`rounded-lg px-3 py-2 max-w-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                                                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                                            </div>
-                                             {message.role === 'user' && (
-                                                <Avatar className="h-8 w-8 border">
-                                                    <User className="h-5 w-5 m-1.5" />
-                                                </Avatar>
-                                            )}
-                                        </div>
-                                    ))}
-                                    {isLoading && (
-                                        <div className="flex items-start gap-3">
-                                            <Avatar className="h-8 w-8 border">
-                                                <Bot className="h-5 w-5 m-1.5" />
-                                            </Avatar>
-                                            <div className="rounded-lg px-4 py-3 bg-secondary flex items-center">
-                                               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                                            </div>
-                                        </div>
-                                    )}
+        <Sheet>
+            <SheetTrigger asChild>
+                <Button className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg">
+                    <MessageSquare className="h-7 w-7" />
+                </Button>
+            </SheetTrigger>
+            <SheetContent className="w-full sm:w-[480px] p-0 flex flex-col">
+                 <SheetHeader className="p-6 pb-2">
+                    <SheetTitle>Chat with Gina</SheetTitle>
+                    <SheetDescription>
+                        Your AI tutor for this lesson. Ask anything about "{lesson.title}".
+                    </SheetDescription>
+                 </SheetHeader>
+                <ScrollArea className="flex-grow p-6">
+                    <div className="space-y-4">
+                        {messages.length === 0 && (
+                            <div className="text-center text-muted-foreground text-sm py-8">
+                                Ask a question about this lesson to get started.
+                            </div>
+                        )}
+                        {messages.map((message, index) => (
+                            <div key={index} className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
+                                {message.role === 'assistant' && (
+                                    <Avatar className="h-8 w-8 border bg-primary text-primary-foreground">
+                                        <Bot className="h-5 w-5 m-1.5" />
+                                    </Avatar>
+                                )}
+                                <div className={`rounded-lg px-3 py-2 max-w-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+                                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                                 </div>
-                            </ScrollArea>
-                            <Separator className="mb-4"/>
-                            <form onSubmit={handleTutorSubmit} className="flex items-start gap-2">
-                                <Textarea 
-                                    placeholder="e.g., Can you explain this concept in a simpler way?" 
-                                    value={question}
-                                    onChange={e => setQuestion(e.target.value)}
-                                    className="min-h-0 resize-none"
-                                    rows={1}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                          e.preventDefault();
-                                          handleTutorSubmit(e);
-                                        }
-                                      }}
-                                />
-                                <Button type="submit" size="icon" disabled={isLoading || !question.trim()}>
-                                    <Send className="h-4 w-4"/>
-                                </Button>
-                            </form>
-                        </CardContent>
-                    </Card>
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
+                                    {message.role === 'user' && (
+                                    <Avatar className="h-8 w-8 border">
+                                        <User className="h-5 w-5 m-1.5" />
+                                    </Avatar>
+                                )}
+                            </div>
+                        ))}
+                        {isLoading && (
+                            <div className="flex items-start gap-3">
+                                <Avatar className="h-8 w-8 border bg-primary text-primary-foreground">
+                                    <Bot className="h-5 w-5 m-1.5" />
+                                </Avatar>
+                                <div className="rounded-lg px-4 py-3 bg-secondary flex items-center">
+                                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </ScrollArea>
+                <div className="p-6 border-t bg-background">
+                    <form onSubmit={handleTutorSubmit} className="flex items-start gap-2">
+                        <Textarea 
+                            placeholder="e.g., Can you explain this concept..." 
+                            value={question}
+                            onChange={e => setQuestion(e.target.value)}
+                            className="min-h-0 resize-none"
+                            rows={1}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleTutorSubmit(e);
+                                }
+                                }}
+                        />
+                        <Button type="submit" size="icon" disabled={isLoading || !question.trim()}>
+                            <Send className="h-4 w-4"/>
+                        </Button>
+                    </form>
+                </div>
+            </SheetContent>
+        </Sheet>
     )
 }
 
@@ -445,7 +447,7 @@ export default function CoursePlayerPage() {
          {!isMobile && <Header />}
 
         <div className="flex flex-col h-[calc(100vh-4rem)] bg-secondary">
-          <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
+          <div className="flex-grow flex flex-col md:flex-row overflow-hidden relative">
             {!isMobile && (
               <aside className="w-full md:w-80 lg:w-96 bg-background border-r flex-shrink-0 overflow-y-auto">
                  <CourseOutline 
@@ -489,8 +491,6 @@ export default function CoursePlayerPage() {
                       Mark as Completed &amp; Continue
                     </Button>
                   )}
-
-                  <AiTutor lesson={currentLesson} />
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center">
@@ -515,6 +515,8 @@ export default function CoursePlayerPage() {
                 </div>
               )}
             </main>
+
+            <AiTutor lesson={currentLesson} />
           </div>
         </div>
       </SidebarInset>
