@@ -75,7 +75,7 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="py-16 md:py-24 bg-background">
+          <section className="py-12 md:py-16 bg-background">
             <div className="container mx-auto px-4 md:px-6">
               <div className="text-center mb-12">
                   <h2 className="text-3xl font-bold font-headline">Featured Courses</h2>

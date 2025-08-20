@@ -138,7 +138,7 @@ function NotificationsPopover() {
 
 export function Header({ children }: { children?: React.ReactNode }) {
   const { user, logout, loading } = useAuth();
-  const { isMobile } = useSidebar();
+  const { isMobile, openMobile } = useSidebar();
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
@@ -170,10 +170,12 @@ export function Header({ children }: { children?: React.ReactNode }) {
         </div>
       
         <div className="flex-1 flex justify-center md:hidden">
-            <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
-                <Gem className="h-6 w-6 text-primary" />
-                <span>Mkenya Skilled</span>
-            </Link>
+            {!openMobile && (
+                 <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
+                    <Gem className="h-6 w-6 text-primary" />
+                    <span>Mkenya Skilled</span>
+                </Link>
+            )}
         </div>
 
         <div className="flex items-center gap-2">
