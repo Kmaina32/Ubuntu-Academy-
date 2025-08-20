@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Footer } from "@/components/Footer";
@@ -17,6 +17,7 @@ import { getHeroData, saveHeroData } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+import { Slider } from '@/components/ui/slider';
 
 const heroFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -24,6 +25,8 @@ const heroFormSchema = z.object({
   imageUrl: z.string().url('Please enter a valid URL.'),
   loginImageUrl: z.string().url('Please enter a valid URL for the login page image.'),
   signupImageUrl: z.string().url('Please enter a valid URL for the signup page image.'),
+  slideshowSpeed: z.coerce.number().min(1, 'Speed must be at least 1 second.'),
+  imageBrightness: z.coerce.number().min(0).max(100),
 });
 
 export default function AdminHeroPage() {
@@ -39,6 +42,8 @@ export default function AdminHeroPage() {
       imageUrl: '',
       loginImageUrl: '',
       signupImageUrl: '',
+      slideshowSpeed: 5,
+      imageBrightness: 60,
     },
   });
 
@@ -145,6 +150,44 @@ export default function AdminHeroPage() {
                             </FormItem>
                           )}
                         />
+
+                        <Separator />
+
+                         <h3 className="text-lg font-semibold">Homepage Slideshow</h3>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                           <FormField
+                              control={form.control}
+                              name="slideshowSpeed"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Slideshow Speed (seconds)</FormLabel>
+                                  <FormControl>
+                                    <Input type="number" placeholder="e.g., 5" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <Controller
+                                control={form.control}
+                                name="imageBrightness"
+                                render={({ field: { value, onChange } }) => (
+                                    <FormItem>
+                                        <FormLabel>Image Brightness: {value}%</FormLabel>
+                                        <FormControl>
+                                            <Slider
+                                                defaultValue={[value]}
+                                                max={100}
+                                                step={5}
+                                                onValueChange={(vals) => onChange(vals[0])}
+                                            />
+                                        </FormControl>
+                                        <p className="text-xs text-muted-foreground">Controls the darkness of the overlay. 100% is brightest.</p>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                         </div>
 
                         <Separator />
 

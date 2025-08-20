@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import type { Course } from "@/lib/mock-data";
-import { getAllCourses, getHeroData } from '@/lib/firebase-service';
+import { getAllCourses, getHeroData, HeroData } from '@/lib/firebase-service';
 import { Loader2, Search } from 'lucide-react';
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/Sidebar";
@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 
 export default function Home() {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [heroData, setHeroData] = useState({ title: '', subtitle: '', imageUrl: '' });
+  const [heroData, setHeroData] = useState<HeroData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,6 +37,10 @@ export default function Home() {
         const [coursesData, hero] = await Promise.all([getAllCourses(), getHeroData()]);
         setCourses(coursesData);
         setHeroData(hero);
+        
+        // Update autoplay plugin with speed from DB
+        autoplayPlugin.current = Autoplay({ delay: hero.slideshowSpeed * 1000, stopOnInteraction: true });
+
       } catch (err) {
         console.error(err);
         setError("Failed to load page content. Please try again later.");
@@ -48,7 +52,7 @@ export default function Home() {
 
     const timer = setTimeout(() => {
         setShowSlideshow(true);
-    }, 5000);
+    }, 5000); // This initial delay remains 5s before switching to slideshow mode
 
     return () => clearTimeout(timer);
   }, []);
@@ -65,6 +69,21 @@ export default function Home() {
     'graphic-design-canva': 'design art'
   };
 
+  const overlayOpacity = heroData ? 1 - (heroData.imageBrightness / 100) : 0.4;
+  const overlayStyle = { backgroundColor: `rgba(0, 0, 0, ${overlayOpacity})` };
+
+  if (loading || !heroData) {
+    return (
+        <div className="flex flex-col min-h-screen">
+          <main className="flex-grow flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="ml-2">Loading Mkenya Skilled...</p>
+          </main>
+          <Footer />
+        </div>
+    )
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -76,7 +95,7 @@ export default function Home() {
                  <div 
                       className="relative rounded-xl overflow-hidden min-h-[400px] flex items-center justify-center text-center"
                   >
-                     <div className="absolute inset-0 bg-black/40 z-10"></div>
+                     <div className="absolute inset-0 z-10" style={overlayStyle}></div>
                      
                      {/* Static Hero Content */}
                       <div 
@@ -87,9 +106,10 @@ export default function Home() {
                             alt="Hero background"
                             fill
                             className="object-cover"
+                            priority
                             data-ai-hint="abstract background"
                          />}
-                         <div className="absolute inset-0 bg-black/30"></div>
+                         <div className="absolute inset-0" style={{...overlayStyle, backgroundColor: `rgba(0,0,0,0.4)`}}></div>
                          <div className="relative z-20 h-full flex flex-col items-center justify-center text-white p-4">
                             <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight font-headline">
                                 {heroData.title}
@@ -113,7 +133,7 @@ export default function Home() {
                                 <CarouselContent>
                                     {courses.map((course) => (
                                         <CarouselItem key={course.id}>
-                                            <div className="block h-[400px] w-full relative">
+                                            <Link href={`/courses/${course.id}`} className="block h-[400px] w-full relative">
                                                 <Image
                                                     src={course.imageUrl}
                                                     alt={course.title}
@@ -121,17 +141,17 @@ export default function Home() {
                                                     className="object-cover"
                                                     data-ai-hint={courseAiHints[course.id] || 'course placeholder'}
                                                 />
-                                                <div className="absolute inset-0 bg-black/40"></div>
+                                                <div className="absolute inset-0" style={{...overlayStyle, backgroundColor: `rgba(0,0,0,0.3)`}}></div>
                                                 <div className="relative z-20 h-full flex flex-col items-center justify-center text-white p-8">
                                                      <h2 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight font-headline">{course.title}</h2>
                                                      <p className="text-md max-w-2xl mx-auto">{course.description}</p>
                                                       <div className="absolute bottom-8 right-8">
                                                         <Button asChild>
-                                                            <Link href={`/courses/${course.id}`}>View Course Overview</Link>
+                                                            <div >View Course Overview</div>
                                                         </Button>
                                                       </div>
                                                 </div>
-                                            </div>
+                                            </Link>
                                         </CarouselItem>
                                     ))}
                                 </CarouselContent>

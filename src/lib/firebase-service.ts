@@ -18,6 +18,8 @@ export interface HeroData {
     imageUrl: string;
     loginImageUrl: string;
     signupImageUrl: string;
+    slideshowSpeed: number;
+    imageBrightness: number;
 }
 
 // Image Upload Service
@@ -145,24 +147,25 @@ export async function deleteUser(userId: string): Promise<void> {
 export async function getHeroData(): Promise<HeroData> {
     const heroRef = ref(db, 'hero');
     const snapshot = await get(heroRef);
-    if (snapshot.exists()) {
-        const data = snapshot.val();
-        // Ensure all fields are present, providing defaults if they are not
-        return {
-            title: data.title || 'Unlock Your Potential.',
-            subtitle: data.subtitle || 'Quality, affordable courses designed for the Kenyan market. Learn valuable skills to advance your career.',
-            imageUrl: data.imageUrl || 'https://placehold.co/1200x400.png',
-            loginImageUrl: data.loginImageUrl || 'https://placehold.co/1200x900.png',
-            signupImageUrl: data.signupImageUrl || 'https://placehold.co/1200x900.png'
-        };
-    }
-    return {
+    const defaults: HeroData = {
         title: 'Unlock Your Potential.',
         subtitle: 'Quality, affordable courses designed for the Kenyan market. Learn valuable skills to advance your career.',
         imageUrl: 'https://placehold.co/1200x400.png',
         loginImageUrl: 'https://placehold.co/1200x900.png',
-        signupImageUrl: 'https://placehold.co/1200x900.png'
+        signupImageUrl: 'https://placehold.co/1200x900.png',
+        slideshowSpeed: 5,
+        imageBrightness: 60, // Represents 60% brightness (40% overlay opacity)
     };
+
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        // Ensure all fields are present, providing defaults if they are not
+        return {
+            ...defaults,
+            ...data,
+        };
+    }
+    return defaults;
 }
 
 export async function saveHeroData(data: Partial<HeroData>): Promise<void> {
