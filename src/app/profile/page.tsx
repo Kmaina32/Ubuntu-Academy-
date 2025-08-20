@@ -20,9 +20,10 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { updateProfile } from 'firebase/auth';
-import { uploadImage } from '@/lib/firebase-service';
+import { uploadImage, saveUser } from '@/lib/firebase-service';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { auth } from '@/lib/firebase';
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, 'First name is required.'),
@@ -44,7 +45,7 @@ const splitDisplayName = (displayName: string | null | undefined): {firstName: s
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, setUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -129,6 +130,10 @@ export default function ProfilePage() {
     try {
         const downloadURL = await uploadImage(user.uid, file);
         await updateProfile(user, { photoURL: downloadURL });
+        // Force a reload of the user to get the new photoURL
+        await auth.currentUser?.reload();
+        setUser(auth.currentUser);
+
         toast({ title: 'Success', description: 'Your profile picture has been updated.' });
     } catch(error) {
         console.error(error);
@@ -165,9 +170,23 @@ export default function ProfilePage() {
     setIsLoading(true);
     try {
         const newDisplayName = [values.firstName, values.middleName, values.lastName].filter(Boolean).join(' ');
+        
+        // Update Firebase Auth profile
         await updateProfile(user, {
             displayName: newDisplayName
         });
+
+        // Update the user record in the Realtime Database
+        await saveUser({
+            uid: user.uid,
+            email: user.email,
+            displayName: newDisplayName
+        });
+        
+        // Manually reload user state to reflect changes immediately
+        await auth.currentUser?.reload();
+        setUser(auth.currentUser);
+        
         toast({ title: 'Success', description: 'Your profile has been updated.' });
     } catch(error) {
         console.error(error);

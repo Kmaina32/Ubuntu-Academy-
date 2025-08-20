@@ -7,6 +7,8 @@ import {
   createContext,
   useContext,
   ReactNode,
+  Dispatch,
+  SetStateAction,
 } from 'react';
 import {
   User,
@@ -22,6 +24,7 @@ import { RegisteredUser, saveUser } from '@/lib/firebase-service';
 
 interface AuthContextType {
   user: User | null;
+  setUser: Dispatch<SetStateAction<User | null>>;
   loading: boolean;
   login: (email: string, pass: string) => Promise<any>;
   signup: (email: string, pass: string, name: string) => Promise<any>;
@@ -71,8 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await saveUser(newUser);
     
     // Manually update the local user state to reflect the displayName immediately
-    const updatedUser = { ...userCredential.user, displayName: displayName };
-    setUser(updatedUser as User);
+    setUser(auth.currentUser);
     
     return userCredential;
   };
@@ -87,6 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const value = {
     user,
+    setUser,
     loading,
     login,
     signup,
