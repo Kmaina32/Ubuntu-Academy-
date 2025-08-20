@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -23,18 +22,18 @@ import { useToast } from '@/hooks/use-toast';
 
 function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolled }: { course: Course, onEnrollFree: () => void, onPurchase: () => void, isEnrolling: boolean, isEnrolled: boolean }) {
     return (
-        <Card>
-            <CardHeader className="p-0">
+        <Card className="max-w-full overflow-hidden">
+            <CardHeader className="p-0 max-w-full overflow-hidden">
                 <Image
-                src={course.imageUrl}
-                alt={course.title}
-                width={600}
-                height={400}
-                className="w-full h-auto object-cover rounded-t-lg"
+                  src={course.imageUrl}
+                  alt={course.title}
+                  width={600}
+                  height={400}
+                  className="w-full max-w-full h-auto object-cover rounded-t-lg"
                 />
             </CardHeader>
             <CardContent className="p-6">
-                <p className="text-3xl font-bold text-primary mb-4">
+                <p className="text-3xl font-bold text-primary mb-4 break-words">
                 {course.price > 0 ? `Ksh ${course.price.toLocaleString()}` : 'Free'}
                 </p>
 
@@ -128,7 +127,7 @@ export default function CourseDetailPage() {
 
   if (loading || authLoading || !user) {
     return (
-        <div className="flex justify-center items-center min-h-screen">
+        <div className="flex justify-center items-center min-h-screen overflow-x-hidden">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             <p className="ml-2">Loading course details...</p>
         </div>
@@ -169,20 +168,20 @@ export default function CourseDetailPage() {
       <AppSidebar />
       <SidebarInset>
         <Header />
-        <main className="flex-grow py-12 md:py-16">
-          <div className="container mx-auto px-4 md:px-6">
+        <main className="flex-grow py-12 md:py-16 overflow-x-hidden">
+          <div className="container mx-auto px-4 md:px-6 max-w-full">
             <button onClick={() => router.back()} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
               <ArrowLeft className="h-4 w-4" />
               Back
             </button>
-            <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-              <div className="md:col-span-2">
+            <div className="grid md:grid-cols-3 gap-8 lg:gap-12 max-w-full overflow-hidden">
+              <div className="md:col-span-2 max-w-full overflow-hidden">
                 <Badge variant="secondary" className="mb-2">{course.instructor}</Badge>
-                <h1 className="text-3xl md:text-4xl font-bold mb-4 font-headline">{course.title}</h1>
-                <p className="text-muted-foreground text-lg mb-6">{course.longDescription}</p>
+                <h1 className="text-3xl md:text-4xl font-bold mb-4 font-headline break-words">{course.title}</h1>
+                <p className="text-muted-foreground text-lg mb-6 break-words">{course.longDescription}</p>
                 
                 {/* Purchase Card for Mobile View */}
-                <div className="md:hidden mb-8">
+                <div className="md:hidden mb-8 max-w-full overflow-hidden">
                     <PurchaseCard course={course} onEnrollFree={handleEnrollFree} onPurchase={() => setIsModalOpen(true)} isEnrolling={isEnrolling} isEnrolled={isEnrolled} />
                 </div>
 
@@ -190,16 +189,16 @@ export default function CourseDetailPage() {
                 <Accordion type="single" collapsible className="w-full">
                   {course.modules && course.modules.map((module) => (
                     <AccordionItem value={module.id} key={module.id}>
-                      <AccordionTrigger className="text-lg font-semibold">{module.title}</AccordionTrigger>
+                      <AccordionTrigger className="text-lg font-semibold break-words">{module.title}</AccordionTrigger>
                       <AccordionContent>
                         <ul className="space-y-3 p-4">
                           {module.lessons.map((lesson) => (
                             <li key={lesson.id} className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <PlayCircle className="h-5 w-5 text-muted-foreground" />
-                                <span>{lesson.title}</span>
+                              <div className="flex items-center gap-3 min-w-0">
+                                <PlayCircle className="h-5 w-5 text-muted-foreground shrink-0" />
+                                <span className="truncate break-words">{lesson.title}</span>
                               </div>
-                              <span className="text-sm text-muted-foreground">{lesson.duration}</span>
+                              <span className="text-sm text-muted-foreground shrink-0">{lesson.duration}</span>
                             </li>
                           ))}
                         </ul>
@@ -220,7 +219,7 @@ export default function CourseDetailPage() {
               </div>
               
               {/* Purchase Card for Desktop View */}
-              <div className="md:col-span-1 hidden md:block">
+              <div className="md:col-span-1 hidden md:block max-w-full overflow-hidden">
                 <div className="sticky top-24">
                   <PurchaseCard course={course} onEnrollFree={handleEnrollFree} onPurchase={() => setIsModalOpen(true)} isEnrolling={isEnrolling} isEnrolled={isEnrolled}/>
                 </div>
