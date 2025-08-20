@@ -108,7 +108,7 @@ export function AdminSidebar() {
             </div>
         </SidebarContent>
         <SidebarFooter>
-            <div className="text-center text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+            <div className="text-left text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
                 Beta Version: v{version}
             </div>
         </SidebarFooter>
