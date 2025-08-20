@@ -233,7 +233,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
     <header className="flex h-16 items-center border-b bg-background px-4 md:px-6 sticky top-0 z-30">
         <div className="flex items-center gap-2">
             <SidebarTrigger />
-             <div className='hidden md:block'>
+             <div className='block md:hidden'>
                  <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
                     <Gem className="h-6 w-6 text-primary" />
                     <span>Mkenya Skilled</span>
