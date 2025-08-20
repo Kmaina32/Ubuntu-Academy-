@@ -39,7 +39,9 @@ export default function Home() {
         setHeroData(hero);
         
         // Update autoplay plugin with speed from DB
-        autoplayPlugin.current = Autoplay({ delay: (hero.slideshowSpeed || 5) * 1000, stopOnInteraction: true });
+        if (hero.slideshowSpeed) {
+            autoplayPlugin.current = Autoplay({ delay: hero.slideshowSpeed * 1000, stopOnInteraction: true });
+        }
 
       } catch (err) {
         console.error(err);
@@ -52,7 +54,7 @@ export default function Home() {
 
     const timer = setTimeout(() => {
         setShowSlideshow(true);
-    }, 5000); // This initial delay remains 5s before switching to slideshow mode
+    }, 5000); 
 
     return () => clearTimeout(timer);
   }, []);
@@ -81,7 +83,7 @@ export default function Home() {
           <section className="relative py-8 md:py-12 bg-secondary/50 overflow-hidden">
             <div className="container mx-auto px-4 md:px-6">
                  <div 
-                      className="relative rounded-xl overflow-hidden flex items-center justify-center text-center w-full"
+                      className="relative rounded-xl overflow-hidden flex items-center justify-center text-center max-w-4xl mx-auto"
                   >
                      <div className="absolute inset-0 z-10" style={overlayStyle}></div>
                      
@@ -98,7 +100,7 @@ export default function Home() {
                             data-ai-hint="abstract background"
                          />}
                          <div className="absolute inset-0" style={{...overlayStyle, backgroundColor: `rgba(0,0,0,0.4)`}}></div>
-                         <div className="relative z-20 h-full flex flex-col items-center justify-center text-white p-4">
+                         <div className="relative z-20 h-[400px] flex flex-col items-center justify-center text-white p-4">
                             <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight font-headline">
                                 {heroData?.title}
                             </h1>
@@ -109,7 +111,7 @@ export default function Home() {
                       </div>
 
                      {/* Slideshow Content */}
-                      <div className={`w-full h-full transition-opacity duration-1000 ${showSlideshow ? 'opacity-100' : 'opacity-0'}`}>
+                      <div className={`w-full transition-opacity duration-1000 ${showSlideshow ? 'opacity-100' : 'opacity-0'}`}>
                           {courses.length > 0 && (
                             <Carousel
                                 className="w-full h-[400px]"
@@ -121,7 +123,7 @@ export default function Home() {
                                 <CarouselContent>
                                     {courses.map((course) => (
                                         <CarouselItem key={course.id}>
-                                            <div className="block h-[400px] w-full relative">
+                                            <div className="h-[400px] w-full relative">
                                                 <Image
                                                     src={course.imageUrl}
                                                     alt={course.title}
