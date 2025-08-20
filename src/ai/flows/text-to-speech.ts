@@ -64,7 +64,6 @@ export const textToSpeech = ai.defineFlow(
           voiceConfig: {
             prebuiltVoiceConfig: { voiceName: voice || 'Algenib' },
           },
-          speaking_rate: speed,
         },
       },
       prompt: text,
