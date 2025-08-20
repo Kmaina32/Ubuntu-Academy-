@@ -449,6 +449,7 @@ export default function CoursePlayerPage() {
   }, [params.id, user]);
   
   // Effect for playing the welcome message
+  /*
   useEffect(() => {
     const playWelcomeMessage = async () => {
       const hasPlayedWelcome = sessionStorage.getItem(`welcome_played_${params.id}`);
@@ -460,8 +461,7 @@ export default function CoursePlayerPage() {
         try {
           const audioResponse = await textToSpeech({ 
               text: firstPrompt, 
-              voice: tutorSettings.voice,
-              speed: tutorSettings.speed
+              voice: tutorSettings.voice
           });
           if (welcomeAudioRef.current && audioResponse.media) {
             welcomeAudioRef.current.src = audioResponse.media;
@@ -478,6 +478,7 @@ export default function CoursePlayerPage() {
         playWelcomeMessage();
     }
   }, [loading, course, params.id, tutorSettings]);
+  */
 
 
   const handleLessonClick = (lesson: Lesson, index: number) => {
