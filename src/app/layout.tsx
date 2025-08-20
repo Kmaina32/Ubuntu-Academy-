@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light" style={{ colorScheme: 'light' }}>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -28,9 +28,10 @@ export default function RootLayout({
             __html: `
               (function() {
                 const theme = localStorage.getItem('theme') || 'light';
+                document.documentElement.className = theme;
+                document.documentElement.style.colorScheme = theme;
                 if (theme === 'dark') {
                   document.documentElement.classList.add('dark');
-                  document.documentElement.style.colorScheme = 'dark';
                 }
               })();
             `,
