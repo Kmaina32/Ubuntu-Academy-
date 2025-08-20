@@ -167,13 +167,9 @@ export function AppSidebar() {
                 )}
             </SidebarMenu>
         </SidebarContent>
-        <SidebarFooter className="space-y-2">
-            <div className="text-center text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-                App Version: v{version}
-            </div>
-             <div className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
-                <SidebarTrigger />
-                <span className="text-sm text-muted-foreground group-data-[collapsible=icon]:hidden">Collapse</span>
+        <SidebarFooter>
+             <div className="text-center text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+                Beta Version: v{version}
             </div>
         </SidebarFooter>
     </Sidebar>
