@@ -170,6 +170,7 @@ type ChatMessage = {
     role: 'user' | 'assistant';
     content: string;
     audioUrl?: string;
+    suggestions?: string[];
 };
 
 function AiTutor({ lesson }: { lesson: Lesson | null }) {
@@ -213,26 +214,22 @@ function AiTutor({ lesson }: { lesson: Lesson | null }) {
         }
     };
     
-    const handlePromptClick = (prompt: string) => {
-        setQuestion(prompt);
-        // We use a timeout to allow the state to update before submitting the form
-        setTimeout(() => {
-            document.getElementById('tutor-form-submit')?.click();
-        }, 0);
-    }
+    const sendTutorRequest = async (currentQuestion: string) => {
+        if (!currentQuestion.trim() || !lesson) return;
 
-    const handleTutorSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!question.trim() || !lesson) return;
-
-        const userMessage: ChatMessage = { role: 'user', content: question };
+        const userMessage: ChatMessage = { role: 'user', content: currentQuestion };
         setMessages(prev => [...prev, userMessage]);
         setQuestion('');
         setIsLoading(true);
 
         try {
-            const result = await courseTutor({ question, courseContext: lesson.content });
-            const tutorMessage: ChatMessage = { role: 'assistant', content: result.answer, audioUrl: result.answerAudio };
+            const result = await courseTutor({ question: currentQuestion, courseContext: lesson.content });
+            const tutorMessage: ChatMessage = { 
+                role: 'assistant', 
+                content: result.answer, 
+                audioUrl: result.answerAudio,
+                suggestions: result.suggestions
+            };
             setMessages(prev => [...prev, tutorMessage]);
             if(result.answerAudio) {
                 playAudio(result.answerAudio);
@@ -244,6 +241,15 @@ function AiTutor({ lesson }: { lesson: Lesson | null }) {
         } finally {
             setIsLoading(false);
         }
+    }
+
+    const handleTutorSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        sendTutorRequest(question);
+    }
+
+    const handleSuggestionClick = (suggestion: string) => {
+        sendTutorRequest(suggestion);
     }
     
     if (!lesson) return null;
@@ -273,7 +279,7 @@ function AiTutor({ lesson }: { lesson: Lesson | null }) {
                                      <p className="font-semibold mb-2">How can I help you learn?</p>
                                      <div className="flex flex-col gap-2">
                                         {initialPrompts.map(prompt => (
-                                            <Button key={prompt} variant="outline" size="sm" onClick={() => handlePromptClick(prompt)}>
+                                            <Button key={prompt} variant="outline" size="sm" onClick={() => handleSuggestionClick(prompt)}>
                                                 {prompt}
                                             </Button>
                                         ))}
@@ -282,24 +288,35 @@ function AiTutor({ lesson }: { lesson: Lesson | null }) {
                                 </div>
                             )}
                             {messages.map((message, index) => (
-                                <div key={index} className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
-                                    {message.role === 'assistant' && (
-                                        <Avatar className="h-8 w-8 border bg-primary text-primary-foreground">
-                                            <Bot className="h-5 w-5 m-1.5" />
-                                        </Avatar>
-                                    )}
-                                    <div className={`rounded-lg px-3 py-2 max-w-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                                        {message.role === 'assistant' && message.audioUrl && (
-                                            <Button variant="ghost" size="icon" className="h-7 w-7 mt-1" onClick={() => playAudio(message.audioUrl!)}>
-                                                <Volume2 className="h-4 w-4" />
-                                            </Button>
+                                <div key={index}>
+                                    <div className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
+                                        {message.role === 'assistant' && (
+                                            <Avatar className="h-8 w-8 border bg-primary text-primary-foreground">
+                                                <Bot className="h-5 w-5 m-1.5" />
+                                            </Avatar>
+                                        )}
+                                        <div className={`rounded-lg px-3 py-2 max-w-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+                                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                                            {message.role === 'assistant' && message.audioUrl && (
+                                                <Button variant="ghost" size="icon" className="h-7 w-7 mt-1" onClick={() => playAudio(message.audioUrl!)}>
+                                                    <Volume2 className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                            {message.role === 'user' && (
+                                            <Avatar className="h-8 w-8 border">
+                                                <User className="h-5 w-5 m-1.5" />
+                                            </Avatar>
                                         )}
                                     </div>
-                                        {message.role === 'user' && (
-                                        <Avatar className="h-8 w-8 border">
-                                            <User className="h-5 w-5 m-1.5" />
-                                        </Avatar>
+                                    {message.role === 'assistant' && message.suggestions && (
+                                        <div className="flex flex-wrap gap-2 mt-3 ml-11">
+                                            {message.suggestions.map((suggestion, i) => (
+                                                <Button key={i} size="sm" variant="outline" onClick={() => handleSuggestionClick(suggestion)}>
+                                                    {suggestion}
+                                                </Button>
+                                            ))}
+                                        </div>
                                     )}
                                 </div>
                             ))}

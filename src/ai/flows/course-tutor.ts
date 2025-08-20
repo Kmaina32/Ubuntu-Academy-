@@ -23,6 +23,7 @@ export type CourseTutorInput = z.infer<typeof CourseTutorInputSchema>;
 const CourseTutorOutputSchema = z.object({
   answer: z.string().describe("Gina's helpful answer to the student's question or the next step in the tutoring session."),
   answerAudio: z.string().optional().describe('The data URI of the spoken answer audio.'),
+  suggestions: z.array(z.string()).optional().describe('A list of 2-3 relevant follow-up questions the student might have.'),
 });
 export type CourseTutorOutput = z.infer<typeof CourseTutorOutputSchema>;
 
@@ -46,13 +47,14 @@ You will be given the content of a specific lesson and a student's question abou
     *   Answer the student's question based *only* on the provided course context.
     *   If the question cannot be answered from the context, politely explain that you can only answer questions related to the current lesson material.
     *   Provide a clear, helpful, and detailed answer.
+    *   After your answer, generate 2-3 short, relevant follow-up questions a student might ask next.
 
 2.  **If the user's input is "Tutor me" or a similar request for guided tutoring:**
     *   Initiate a step-by-step tutoring session.
     *   Begin by breaking down the lesson into smaller, manageable parts.
     *   Start with the first concept. Explain it clearly and concisely.
-    *   After explaining a concept, ask a simple question to check for understanding (e.g., "Does that make sense?", "Would you like me to explain that differently?").
-    *   End your response by asking if the student is ready to move on to the next topic. For example: "Ready to continue?" or "Shall we move on?".
+    *   After explaining a concept, ask a simple question to check for understanding and provide a few logical follow-up questions as suggestions.
+    *   For example, you might ask "Does that make sense?" and suggest ["Yes, please continue.", "Can you explain that differently?", "What's an example?"].
     *   Wait for the student's response before explaining the next concept.
 
 ---
@@ -64,7 +66,7 @@ You will be given the content of a specific lesson and a student's question abou
 **Student's Input:**
 "{{{question}}}"
 
-Please provide your response now.`,
+Please provide your response and suggestions now.`,
 });
 
 const courseTutorFlow = ai.defineFlow(
@@ -84,6 +86,7 @@ const courseTutorFlow = ai.defineFlow(
     return {
         answer: output.answer,
         answerAudio: audioResponse.media,
+        suggestions: output.suggestions,
     };
   }
 );
