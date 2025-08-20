@@ -22,12 +22,6 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 
 function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolled }: { course: Course, onEnrollFree: () => void, onPurchase: () => void, isEnrolling: boolean, isEnrolled: boolean }) {
-    const courseAiHints: Record<string, string> = {
-        'digital-marketing-101': 'marketing computer',
-        'mobile-app-dev-react-native': 'code mobile',
-        'graphic-design-canva': 'design art'
-    };
-
     return (
         <Card>
             <CardHeader className="p-0">
@@ -37,7 +31,6 @@ function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolle
                 width={600}
                 height={400}
                 className="w-full h-auto object-cover rounded-t-lg"
-                data-ai-hint={courseAiHints[course.id] || 'course placeholder'}
                 />
             </CardHeader>
             <CardContent className="p-6">
