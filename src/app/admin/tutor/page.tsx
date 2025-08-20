@@ -24,11 +24,11 @@ const tutorSettingsSchema = z.object({
 });
 
 const voices = [
-    { id: 'Algenib', name: 'Algenib (Female)' },
-    { id: 'Achernar', name: 'Achernar (Male)' },
-    { id: 'Enif', name: 'Enif (Female)' },
-    { id: 'Gacrux', name: 'Gacrux (Male)' },
-    { id: 'Hadar', name: 'Hadar (Male)' },
+    { id: 'algenib', name: 'Algenib (Female)' },
+    { id: 'achernar', name: 'Achernar (Male)' },
+    { id: 'vindemiatrix', name: 'Vindemiatrix (Female)' },
+    { id: 'gacrux', name: 'Gacrux (Male)' },
+    { id: 'puck', name: 'Puck (Male)' },
 ];
 
 export default function AdminTutorPage() {
@@ -39,7 +39,7 @@ export default function AdminTutorPage() {
   const form = useForm<z.infer<typeof tutorSettingsSchema>>({
     resolver: zodResolver(tutorSettingsSchema),
     defaultValues: {
-      voice: 'Algenib',
+      voice: 'algenib',
       speed: 1.0,
       prompts: "Welcome! To talk with me, your virtual tutor, just click the chat button.\nHow can I help you with this lesson?",
     },
