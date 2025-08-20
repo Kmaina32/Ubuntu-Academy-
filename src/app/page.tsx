@@ -1,7 +1,9 @@
 
 'use client'
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import type { Course } from "@/lib/mock-data";
@@ -11,14 +13,21 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
 import { Input } from '@/components/ui/input';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import Autoplay from "embla-carousel-autoplay"
 
-// This is now a client component
+
 export default function Home() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [heroData, setHeroData] = useState({ title: '', subtitle: '', imageUrl: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSlideshow, setShowSlideshow] = useState(false);
+
+  const autoplayPlugin = useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: true })
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,6 +44,12 @@ export default function Home() {
       }
     };
     fetchData();
+
+    const timer = setTimeout(() => {
+        setShowSlideshow(true);
+    }, 5000);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const filteredCourses = useMemo(() => {
@@ -55,27 +70,73 @@ export default function Home() {
       <SidebarInset>
         <Header />
         <main className="flex-grow">
-          <section className="py-12 md:py-16">
+          <section className="relative py-12 md:py-16 bg-secondary/50 overflow-hidden">
             <div className="container mx-auto px-4 md:px-6">
-                  <div 
-                      className="relative rounded-xl overflow-hidden p-8 md:p-12 min-h-[400px] flex items-center justify-center text-center bg-cover bg-center"
-                      style={{backgroundImage: `url('${heroData.imageUrl}')`}}
-                      data-ai-hint="abstract background"
+                 <div 
+                      className="relative rounded-xl overflow-hidden min-h-[400px] flex items-center justify-center text-center"
                   >
-                      <div className="absolute inset-0 bg-black/50"></div>
-                      <div className="relative z-10 text-white">
-                          <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight font-headline">
-                            {heroData.title}
-                          </h1>
-                          <p className="text-lg md:text-xl max-w-3xl mx-auto">
-                            {heroData.subtitle}
-                          </p>
+                     <div className="absolute inset-0 bg-black/50 z-10"></div>
+                     
+                     {/* Static Hero Content */}
+                      <div 
+                        className={`absolute inset-0 transition-opacity duration-1000 ${showSlideshow ? 'opacity-0' : 'opacity-100'}`}
+                      >
+                         <Image 
+                            src={heroData.imageUrl}
+                            alt="Hero background"
+                            fill
+                            className="object-cover"
+                            data-ai-hint="abstract background"
+                         />
+                         <div className="absolute inset-0 bg-black/50"></div>
+                         <div className="relative z-20 h-full flex flex-col items-center justify-center text-white p-4">
+                            <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight font-headline">
+                                {heroData.title}
+                            </h1>
+                            <p className="text-lg md:text-xl max-w-3xl mx-auto">
+                                {heroData.subtitle}
+                            </p>
+                         </div>
+                      </div>
+
+                     {/* Slideshow Content */}
+                      <div className={`w-full h-full transition-opacity duration-1000 ${showSlideshow ? 'opacity-100' : 'opacity-0'}`}>
+                          {courses.length > 0 && (
+                            <Carousel
+                                className="w-full h-[400px]"
+                                plugins={[autoplayPlugin.current]}
+                                onMouseEnter={() => autoplayPlugin.current.stop()}
+                                onMouseLeave={() => autoplayPlugin.current.reset()}
+                                opts={{ loop: true }}
+                            >
+                                <CarouselContent>
+                                    {courses.map((course) => (
+                                        <CarouselItem key={course.id}>
+                                            <Link href={`/courses/${course.id}`} className="block h-full w-full relative">
+                                                <Image
+                                                    src={course.imageUrl}
+                                                    alt={course.title}
+                                                    fill
+                                                    className="object-cover"
+                                                    data-ai-hint={courseAiHints[course.id] || 'course placeholder'}
+                                                />
+                                                <div className="absolute inset-0 bg-black/60"></div>
+                                                <div className="relative z-20 h-full flex flex-col items-center justify-center text-white p-4">
+                                                     <h2 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight font-headline">{course.title}</h2>
+                                                     <p className="text-md max-w-2xl mx-auto">{course.description}</p>
+                                                </div>
+                                            </Link>
+                                        </CarouselItem>
+                                    ))}
+                                </CarouselContent>
+                            </Carousel>
+                          )}
                       </div>
                   </div>
             </div>
           </section>
 
-          <section className="py-12 md:py-16 bg-background">
+          <section className="py-8 md:py-12 bg-background">
             <div className="container mx-auto px-4 md:px-6">
               <div className="text-center mb-12">
                   <h2 className="text-3xl font-bold font-headline">Featured Courses</h2>
