@@ -71,7 +71,10 @@ export default function AssignmentsPage() {
 
   const getSubmissionStatus = (assignment: UserAssignment) => {
     if (!assignment.submission) return <Badge variant="secondary">Not Submitted</Badge>;
-    if (assignment.submission.graded) return <Badge>Graded: {assignment.submission.pointsAwarded}/{assignment.exam.maxPoints}</Badge>
+    if (assignment.submission.graded) {
+        const maxPoints = assignment.exam.reduce((acc, q) => acc + q.maxPoints, 0);
+        return <Badge>Graded: {assignment.submission.pointsAwarded}/{maxPoints}</Badge>
+    }
     return <Badge variant="outline">Submitted for Grading</Badge>
   }
 
@@ -105,7 +108,7 @@ export default function AssignmentsPage() {
                           <TableHeader>
                             <TableRow>
                               <TableHead>Course</TableHead>
-                              <TableHead>Assignment</TableHead>
+                              <TableHead>Exam</TableHead>
                               <TableHead>Status</TableHead>
                               <TableHead className="text-right">Action</TableHead>
                             </TableRow>
