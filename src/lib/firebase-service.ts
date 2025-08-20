@@ -1,7 +1,8 @@
 
 
-import { db } from './firebase';
+import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo } from 'firebase/database';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import type { Course, UserCourse, Assignment, CalendarEvent, Submission } from './mock-data';
 
 export interface RegisteredUser {
@@ -17,6 +18,15 @@ export interface HeroData {
     imageUrl: string;
     loginImageUrl: string;
     signupImageUrl: string;
+}
+
+// Image Upload Service
+export async function uploadImage(userId: string, file: File): Promise<string> {
+    const filePath = `profile-pictures/${userId}/${file.name}`;
+    const imageRef = storageRef(storage, filePath);
+    await uploadBytes(imageRef, file);
+    const downloadURL = await getDownloadURL(imageRef);
+    return downloadURL;
 }
 
 // Course Functions
