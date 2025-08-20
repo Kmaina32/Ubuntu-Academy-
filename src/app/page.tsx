@@ -112,7 +112,7 @@ export default function Home() {
                                 <CarouselContent>
                                     {courses.map((course) => (
                                         <CarouselItem key={course.id}>
-                                            <Link href={`/courses/${course.id}`} className="block h-full w-full relative">
+                                            <Link href={`/courses/${course.id}`} className="block h-[400px] w-full relative">
                                                 <Image
                                                     src={course.imageUrl}
                                                     alt={course.title}
