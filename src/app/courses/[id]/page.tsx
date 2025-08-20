@@ -22,14 +22,14 @@ import { useToast } from '@/hooks/use-toast';
 
 function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolled }: { course: Course, onEnrollFree: () => void, onPurchase: () => void, isEnrolling: boolean, isEnrolled: boolean }) {
     return (
-        <Card className="max-w-full overflow-hidden">
-            <CardHeader className="p-0 max-w-full overflow-hidden">
+        <Card className="w-full overflow-hidden">
+            <CardHeader className="p-0">
                 <Image
                   src={course.imageUrl}
                   alt={course.title}
                   width={600}
                   height={400}
-                  className="w-full max-w-full h-auto object-cover rounded-t-lg"
+                  className="w-full h-auto object-cover rounded-t-lg"
                 />
             </CardHeader>
             <CardContent className="p-6">
@@ -127,7 +127,7 @@ export default function CourseDetailPage() {
 
   if (loading || authLoading || !user) {
     return (
-        <div className="flex justify-center items-center min-h-screen overflow-x-hidden">
+        <div className="flex justify-center items-center min-h-screen">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             <p className="ml-2">Loading course details...</p>
         </div>
@@ -168,20 +168,20 @@ export default function CourseDetailPage() {
       <AppSidebar />
       <SidebarInset>
         <Header />
-        <main className="flex-grow py-12 md:py-16 overflow-x-hidden">
-          <div className="container mx-auto px-4 md:px-6 max-w-full">
+        <main className="flex-grow py-12 md:py-16">
+          <div className="container mx-auto px-4 md:px-6">
             <button onClick={() => router.back()} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
               <ArrowLeft className="h-4 w-4" />
               Back
             </button>
-            <div className="grid md:grid-cols-3 gap-8 lg:gap-12 max-w-full overflow-hidden">
-              <div className="md:col-span-2 max-w-full overflow-hidden">
+            <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+              <div className="md:col-span-2">
                 <Badge variant="secondary" className="mb-2">{course.instructor}</Badge>
                 <h1 className="text-3xl md:text-4xl font-bold mb-4 font-headline break-words">{course.title}</h1>
                 <p className="text-muted-foreground text-lg mb-6 break-words">{course.longDescription}</p>
                 
                 {/* Purchase Card for Mobile View */}
-                <div className="md:hidden mb-8 max-w-full overflow-hidden">
+                <div className="md:hidden mb-8">
                     <PurchaseCard course={course} onEnrollFree={handleEnrollFree} onPurchase={() => setIsModalOpen(true)} isEnrolling={isEnrolling} isEnrolled={isEnrolled} />
                 </div>
 
@@ -219,7 +219,7 @@ export default function CourseDetailPage() {
               </div>
               
               {/* Purchase Card for Desktop View */}
-              <div className="md:col-span-1 hidden md:block max-w-full overflow-hidden">
+              <div className="md:col-span-1 hidden md:block">
                 <div className="sticky top-24">
                   <PurchaseCard course={course} onEnrollFree={handleEnrollFree} onPurchase={() => setIsModalOpen(true)} isEnrolling={isEnrolling} isEnrolled={isEnrolled}/>
                 </div>

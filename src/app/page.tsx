@@ -80,7 +80,7 @@ export default function Home() {
       <SidebarInset>
         <Header />
         <main className="flex-grow">
-          <section className="relative py-8 md:py-12 bg-secondary/50 overflow-hidden">
+          <section className="relative py-8 md:py-12 bg-secondary/50">
             <div className="container mx-auto px-4 md:px-6">
                  <div 
                       className="relative rounded-xl overflow-hidden flex items-center justify-center text-center max-w-4xl mx-auto"
