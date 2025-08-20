@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { User, LogOut, Bell, Calendar, Sparkles, PartyPopper } from 'lucide-react';
+import { User, LogOut, Bell, Calendar, Sparkles, PartyPopper, Gem } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger, useSidebar } from './ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
@@ -169,8 +169,11 @@ export function Header({ children }: { children?: React.ReactNode }) {
             )}
         </div>
       
-        <div className="flex-1 flex justify-center">
-            {/* Search bar is removed */}
+        <div className="flex-1 flex justify-center md:hidden">
+            <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
+                <Gem className="h-6 w-6 text-primary" />
+                <span>Mkenya Skilled</span>
+            </Link>
         </div>
 
         <div className="flex items-center gap-2">
