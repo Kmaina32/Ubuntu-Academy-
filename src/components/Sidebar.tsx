@@ -14,10 +14,12 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from './ui/separator';
 import { version } from '../../package.json';
+
+const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
 
 export function AppSidebar() {
     const pathname = usePathname();
@@ -115,6 +117,17 @@ export function AppSidebar() {
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
+                        
+                        {user.uid === ADMIN_UID && (
+                             <SidebarMenuItem>
+                                <SidebarMenuButton asChild isActive={isActive('/admin')} tooltip="Admin Dashboard" onClick={onLinkClick}>
+                                    <Link href="/admin">
+                                        <Shield />
+                                        <span>Admin Dashboard</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        )}
                     </>
                 ) : (
                     <>
