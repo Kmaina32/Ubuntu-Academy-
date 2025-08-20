@@ -50,7 +50,7 @@ export async function createCourse(courseData: Omit<Course, 'id'>): Promise<stri
     const dataToSave = {
         ...courseData,
         modules: courseData.modules || [],
-        exam: courseData.exam || { question: 'Placeholder question', referenceAnswer: 'Placeholder answer', maxPoints: 10},
+        exam: courseData.exam || [],
         imageUrl: courseData.imageUrl || 'https://placehold.co/600x400'
     };
     await set(newCourseRef, dataToSave);
@@ -72,7 +72,13 @@ export async function deleteCourse(courseId: string): Promise<void> {
 // User Functions
 export async function saveUser(user: RegisteredUser): Promise<void> {
     const userRef = ref(db, `users/${user.uid}`);
-    await set(userRef, user);
+    // We only want to store non-sensitive, profile-related info
+    const userData = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+    };
+    await set(userRef, userData);
 }
 
 export async function enrollUserInCourse(userId: string, courseId: string): Promise<void> {
@@ -110,9 +116,9 @@ export async function getAllUsers(): Promise<RegisteredUser[]> {
     const snapshot = await get(usersRef);
     if (snapshot.exists()) {
         const usersData = snapshot.val();
-        return Object.keys(snapshot.val()).map(uid => ({
+        return Object.keys(usersData).map(uid => ({
+            uid,
             ...usersData[uid],
-            uid: uid
         }));
     }
     return [];
