@@ -78,13 +78,13 @@ export default function AdminCalendarPage() {
     }
   }
   
-  const DayWithDot = ({ day, date }: { day: React.ReactNode, date: Date }) => {
+  const DayWithDot = ({ date }: { date: Date }) => {
     const formattedDate = format(startOfDay(date), 'yyyy-MM-dd');
     const hasEvent = eventDates.has(formattedDate);
     return (
-      <div className="relative">
-        {day}
-        {hasEvent && <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full"></div>}
+      <div className="relative flex items-center justify-center w-full h-full">
+        <span>{date.getDate()}</span>
+        {hasEvent && <div className="absolute bottom-1 w-1.5 h-1.5 bg-primary rounded-full"></div>}
       </div>
     );
   };
@@ -191,3 +191,5 @@ export default function AdminCalendarPage() {
     </div>
   );
 }
+
+    
