@@ -39,7 +39,7 @@ export default function Home() {
         setHeroData(hero);
         
         // Update autoplay plugin with speed from DB
-        autoplayPlugin.current = Autoplay({ delay: hero.slideshowSpeed * 1000, stopOnInteraction: true });
+        autoplayPlugin.current = Autoplay({ delay: (hero.slideshowSpeed || 5) * 1000, stopOnInteraction: true });
 
       } catch (err) {
         console.error(err);
@@ -133,7 +133,7 @@ export default function Home() {
                                 <CarouselContent>
                                     {courses.map((course) => (
                                         <CarouselItem key={course.id}>
-                                            <Link href={`/courses/${course.id}`} className="block h-[400px] w-full relative">
+                                            <div className="block h-[400px] w-full relative">
                                                 <Image
                                                     src={course.imageUrl}
                                                     alt={course.title}
@@ -147,11 +147,11 @@ export default function Home() {
                                                      <p className="text-md max-w-2xl mx-auto">{course.description}</p>
                                                       <div className="absolute bottom-8 right-8">
                                                         <Button asChild>
-                                                            <div >View Course Overview</div>
+                                                            <Link href={`/courses/${course.id}`}>View Course Overview</Link>
                                                         </Button>
                                                       </div>
                                                 </div>
-                                            </Link>
+                                            </div>
                                         </CarouselItem>
                                     ))}
                                 </CarouselContent>
