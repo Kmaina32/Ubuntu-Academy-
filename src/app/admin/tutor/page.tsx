@@ -12,10 +12,10 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { ArrowLeft, Loader2, Bot, SlidersHorizontal, Volume2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
+import { getTutorSettings, saveTutorSettings, TutorSettings } from '@/lib/firebase-service';
 
 const tutorSettingsSchema = z.object({
   voice: z.string().min(1, 'Please select a voice.'),
@@ -46,17 +46,25 @@ export default function AdminTutorPage() {
   });
 
   useEffect(() => {
-    // In a real app, you would fetch these settings from Firebase
-    // For now, we just use the default values.
-    setIsFetching(false);
-  }, []);
+    const fetchSettings = async () => {
+        setIsFetching(true);
+        try {
+            const settings = await getTutorSettings();
+            form.reset(settings);
+        } catch (error) {
+            console.error("Failed to fetch tutor settings", error);
+            toast({title: "Error", description: "Could not load settings.", variant: "destructive"});
+        } finally {
+            setIsFetching(false);
+        }
+    }
+    fetchSettings();
+  }, [form, toast]);
 
   const onSubmit = async (values: z.infer<typeof tutorSettingsSchema>) => {
     setIsLoading(true);
     try {
-      // Here you would save the settings to Firebase
-      console.log("Saving tutor settings:", values);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      await saveTutorSettings(values);
       toast({
         title: 'Success!',
         description: 'Tutor settings have been updated.',

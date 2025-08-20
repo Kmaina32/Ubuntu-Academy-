@@ -16,7 +16,8 @@ import { textToSpeech } from './text-to-speech';
 const CourseTutorInputSchema = z.object({
   question: z.string().describe('The student\'s question about the lesson, or a command like "Tutor me".'),
   courseContext: z.string().describe('The full text content of the current lesson.'),
-  // We can add chat history here in the future to make it more conversational
+  voice: z.string().optional().describe('The selected voice for the TTS.'),
+  speed: z.number().optional().describe('The selected speed for the TTS.'),
 });
 export type CourseTutorInput = z.infer<typeof CourseTutorInputSchema>;
 
@@ -81,7 +82,11 @@ const courseTutorFlow = ai.defineFlow(
       throw new Error('Failed to generate a text answer.');
     }
 
-    const audioResponse = await textToSpeech(output.answer);
+    const audioResponse = await textToSpeech({
+        text: output.answer,
+        voice: input.voice,
+        speed: input.speed
+    });
     
     return {
         answer: output.answer,

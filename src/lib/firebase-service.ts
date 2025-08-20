@@ -22,6 +22,12 @@ export interface HeroData {
     imageBrightness: number;
 }
 
+export interface TutorSettings {
+    voice: string;
+    speed: number;
+    prompts?: string;
+}
+
 // Image Upload Service
 export async function uploadImage(userId: string, file: File): Promise<string> {
     const filePath = `profile-pictures/${userId}/${file.name}`;
@@ -268,4 +274,24 @@ export async function getTutorHistory(
     return snapshot.val();
   }
   return [];
+}
+
+// Tutor Settings Functions
+export async function saveTutorSettings(settings: TutorSettings): Promise<void> {
+    const settingsRef = ref(db, 'tutorSettings');
+    await set(settingsRef, settings);
+}
+
+export async function getTutorSettings(): Promise<TutorSettings> {
+    const settingsRef = ref(db, 'tutorSettings');
+    const snapshot = await get(settingsRef);
+    const defaults: TutorSettings = {
+        voice: 'Algenib',
+        speed: 1.0,
+        prompts: "Welcome! To talk with me, your virtual tutor, just click the chat button.\nHow can I help you with this lesson?",
+    };
+    if (snapshot.exists()) {
+        return { ...defaults, ...snapshot.val() };
+    }
+    return defaults;
 }

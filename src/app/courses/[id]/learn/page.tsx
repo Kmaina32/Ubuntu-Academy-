@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Course, Lesson, Module, TutorMessage } from '@/lib/mock-data';
-import { getCourseById, updateUserCourseProgress, getUserCourses, saveTutorHistory, getTutorHistory } from '@/lib/firebase-service';
+import { getCourseById, updateUserCourseProgress, getUserCourses, saveTutorHistory, getTutorHistory, getTutorSettings, TutorSettings } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -166,7 +166,7 @@ function CourseOutline({ course, progress, completedLessons, unlockedLessonsCoun
     )
 }
 
-function AiTutor({ course, lesson }: { course: Course, lesson: Lesson | null }) {
+function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson | null, settings: TutorSettings | null }) {
     const { user } = useAuth();
     const { toast } = useToast();
     const [messages, setMessages] = useState<TutorMessage[]>([]);
@@ -175,7 +175,7 @@ function AiTutor({ course, lesson }: { course: Course, lesson: Lesson | null }) 
     const audioRef = useRef<HTMLAudioElement>(null);
     const { isRecording, startRecording, stopRecording } = useRecorder();
 
-    const initialPrompts = [
+    const initialPrompts = settings?.prompts?.split('\n').filter(p => p.trim() !== '') || [
         "Explain this lesson's key concepts.",
         "Give me a simple analogy for this topic.",
         "Tutor me"
@@ -228,7 +228,12 @@ function AiTutor({ course, lesson }: { course: Course, lesson: Lesson | null }) 
         setIsLoading(true);
 
         try {
-            const result = await courseTutor({ question: currentQuestion, courseContext: lesson.content });
+            const result = await courseTutor({ 
+                question: currentQuestion, 
+                courseContext: lesson.content,
+                voice: settings?.voice,
+                speed: settings?.speed
+            });
             const tutorMessage: TutorMessage = { 
                 role: 'assistant', 
                 content: result.answer, 
@@ -273,14 +278,14 @@ function AiTutor({ course, lesson }: { course: Course, lesson: Lesson | null }) 
                         <MessageSquare className="h-7 w-7" />
                     </Button>
                 </SheetTrigger>
-                <SheetContent className="w-full sm:w-[480px] flex flex-col">
-                    <SheetHeader>
+                <SheetContent className="w-full sm:w-[480px] flex flex-col p-0 rounded-l-lg">
+                    <SheetHeader className="p-6 pb-4">
                         <SheetTitle>Chat with Gina</SheetTitle>
                         <SheetDescription>
                             Your AI tutor for this lesson. Ask anything about "{lesson.title}".
                         </SheetDescription>
                     </SheetHeader>
-                    <ScrollArea className="flex-grow -mx-6 px-6">
+                    <ScrollArea className="flex-grow px-6">
                         <div className="space-y-4">
                             {messages.length === 0 && (
                                 <div className="text-center text-muted-foreground text-sm py-8 space-y-4">
@@ -342,7 +347,7 @@ function AiTutor({ course, lesson }: { course: Course, lesson: Lesson | null }) 
                             )}
                         </div>
                     </ScrollArea>
-                    <div className="border-t -mx-6 px-6 pt-6 bg-background">
+                    <div className="border-t p-6 bg-background">
                         <form onSubmit={handleTutorSubmit} className="flex items-start gap-2">
                              <Button type="button" size="icon" variant={isRecording ? 'destructive' : 'outline'} onClick={isRecording ? stopRecording : startRecording} disabled={isLoading}>
                                 {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
@@ -381,6 +386,7 @@ export default function CoursePlayerPage() {
 
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
+  const [tutorSettings, setTutorSettings] = useState<TutorSettings | null>(null);
   
   const allLessons = course?.modules?.flatMap(m => m.lessons) || [];
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
@@ -400,8 +406,13 @@ export default function CoursePlayerPage() {
     const fetchCourseAndProgress = async () => {
         if (!user) return;
         setLoading(true);
-        const fetchedCourse = await getCourseById(params.id);
+        const [fetchedCourse, fetchedTutorSettings] = await Promise.all([
+             getCourseById(params.id),
+             getTutorSettings()
+        ]);
+        
         setCourse(fetchedCourse);
+        setTutorSettings(fetchedTutorSettings);
 
         if (fetchedCourse) {
           const userCourses = await getUserCourses(user.uid);
@@ -440,17 +451,20 @@ export default function CoursePlayerPage() {
   // Effect for playing the welcome message
   useEffect(() => {
     const playWelcomeMessage = async () => {
-      // Check if the welcome message has been played for this course before
       const hasPlayedWelcome = sessionStorage.getItem(`welcome_played_${params.id}`);
 
-      if (!hasPlayedWelcome) {
+      if (!hasPlayedWelcome && tutorSettings?.prompts) {
+        const firstPrompt = tutorSettings.prompts.split('\n')[0];
+        if (!firstPrompt) return;
+
         try {
-          const welcomeText = "Welcome! To talk with me, your virtual tutor, just click the chat button.";
-          const audioResponse = await textToSpeech(welcomeText);
+          const audioResponse = await textToSpeech({ 
+              text: firstPrompt, 
+              voice: tutorSettings.voice,
+              speed: tutorSettings.speed
+          });
           if (welcomeAudioRef.current && audioResponse.media) {
             welcomeAudioRef.current.src = audioResponse.media;
-            // Autoplay might be blocked by browser policies, it requires user interaction first
-            // We can try to play, and if it fails, it will fail silently.
             welcomeAudioRef.current.play().catch(() => {});
             sessionStorage.setItem(`welcome_played_${params.id}`, 'true');
           }
@@ -460,11 +474,10 @@ export default function CoursePlayerPage() {
       }
     };
     
-    // Only play once the course is loaded
-    if (!loading && course) {
+    if (!loading && course && tutorSettings) {
         playWelcomeMessage();
     }
-  }, [loading, course, params.id]);
+  }, [loading, course, params.id, tutorSettings]);
 
 
   const handleLessonClick = (lesson: Lesson, index: number) => {
@@ -645,7 +658,7 @@ export default function CoursePlayerPage() {
               )}
             </main>
 
-            <AiTutor course={course} lesson={currentLesson} />
+            <AiTutor course={course} lesson={currentLesson} settings={tutorSettings} />
             <audio ref={welcomeAudioRef} className="hidden" />
           </div>
         </div>

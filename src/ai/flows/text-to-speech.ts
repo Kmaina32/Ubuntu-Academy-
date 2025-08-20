@@ -39,6 +39,11 @@ async function toWav(
   });
 }
 
+const TextToSpeechInputSchema = z.object({
+  text: z.string(),
+  voice: z.string().optional(),
+  speed: z.number().optional(),
+});
 
 const TextToSpeechOutputSchema = z.object({
   media: z.string().describe("The base64-encoded WAV audio data URI."),
@@ -47,18 +52,19 @@ const TextToSpeechOutputSchema = z.object({
 export const textToSpeech = ai.defineFlow(
   {
     name: 'textToSpeech',
-    inputSchema: z.string(),
+    inputSchema: TextToSpeechInputSchema,
     outputSchema: TextToSpeechOutputSchema,
   },
-  async (text) => {
+  async ({ text, voice, speed }) => {
     const { media } = await ai.generate({
       model: googleAI.model('gemini-2.5-flash-preview-tts'),
       config: {
         responseModalities: ['AUDIO'],
         speechConfig: {
           voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: 'Algenib' },
+            prebuiltVoiceConfig: { voiceName: voice || 'Algenib' },
           },
+          speakingRate: speed,
         },
       },
       prompt: text,
