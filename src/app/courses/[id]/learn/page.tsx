@@ -273,14 +273,14 @@ function AiTutor({ course, lesson }: { course: Course, lesson: Lesson | null }) 
                         <MessageSquare className="h-7 w-7" />
                     </Button>
                 </SheetTrigger>
-                <SheetContent className="w-full sm:w-[480px] p-0 flex flex-col">
-                    <SheetHeader className="p-6 pb-2">
+                <SheetContent className="w-full sm:w-[480px] flex flex-col">
+                    <SheetHeader>
                         <SheetTitle>Chat with Gina</SheetTitle>
                         <SheetDescription>
                             Your AI tutor for this lesson. Ask anything about "{lesson.title}".
                         </SheetDescription>
                     </SheetHeader>
-                    <ScrollArea className="flex-grow p-6">
+                    <ScrollArea className="flex-grow -mx-6 px-6">
                         <div className="space-y-4">
                             {messages.length === 0 && (
                                 <div className="text-center text-muted-foreground text-sm py-8 space-y-4">
@@ -342,7 +342,7 @@ function AiTutor({ course, lesson }: { course: Course, lesson: Lesson | null }) 
                             )}
                         </div>
                     </ScrollArea>
-                    <div className="p-6 border-t bg-background">
+                    <div className="border-t -mx-6 px-6 pt-6 bg-background">
                         <form onSubmit={handleTutorSubmit} className="flex items-start gap-2">
                              <Button type="button" size="icon" variant={isRecording ? 'destructive' : 'outline'} onClick={isRecording ? stopRecording : startRecording} disabled={isLoading}>
                                 {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
