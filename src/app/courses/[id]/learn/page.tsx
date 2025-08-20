@@ -8,7 +8,7 @@ import { getCourseById, updateUserCourseProgress, getUserCourses, saveTutorHisto
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit, FileText, Sparkles, Pencil } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -175,12 +175,12 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
     const audioRef = useRef<HTMLAudioElement>(null);
     const { isRecording, startRecording, stopRecording } = useRecorder();
 
-    const initialPrompts = settings?.prompts?.split('\n').filter(p => p.trim() !== '') || [
-        "Explain this lesson's key concepts.",
-        "Give me a simple analogy for this topic.",
-        "Tutor me"
+    const initialPrompts = [
+        { label: 'Summarize', icon: FileText, action: 'summarize' as const },
+        { label: 'Quiz Me', icon: Sparkles, action: 'quiz' as const },
+        { label: 'Tutor Me', icon: Pencil, action: 'tutor_me' as const },
     ];
-
+    
     useEffect(() => {
         const loadHistory = async () => {
             if (user && course && lesson) {
@@ -218,10 +218,17 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
         }
     };
     
-    const sendTutorRequest = async (currentQuestion: string) => {
-        if (!currentQuestion.trim() || !lesson || !user || !course) return;
+    const sendTutorRequest = async (currentQuestion?: string, action?: 'summarize' | 'quiz') => {
+        if (!lesson || !user || !course) return;
+        if (!currentQuestion && !action) return;
 
-        const userMessage: TutorMessage = { role: 'user', content: currentQuestion };
+        const userMessageContent = action === 'summarize' 
+            ? 'Summarize this lesson for me.' 
+            : action === 'quiz'
+            ? 'Give me a quiz on this lesson.'
+            : currentQuestion!;
+
+        const userMessage: TutorMessage = { role: 'user', content: userMessageContent };
         const newMessages = [...messages, userMessage];
         setMessages(newMessages);
         setQuestion('');
@@ -229,7 +236,8 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
 
         try {
             const result = await courseTutor({ 
-                question: currentQuestion, 
+                question: action ? undefined : currentQuestion, 
+                action,
                 courseContext: lesson.content,
                 voice: settings?.voice,
                 speed: settings?.speed
@@ -243,7 +251,6 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
             const finalMessages = [...newMessages, tutorMessage];
             setMessages(finalMessages);
             
-            // Save history after getting a response
             await saveTutorHistory(user.uid, course.id, lesson.id, finalMessages);
 
             if(result.answerAudio) {
@@ -252,7 +259,7 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
         } catch (error) {
             console.error("AI Tutor failed:", error);
             toast({ title: 'Error', description: 'The AI Tutor is currently unavailable. Please try again later.', variant: 'destructive'});
-            setMessages(prev => prev.slice(0, -1)); // Remove the user's message on failure
+            setMessages(prev => prev.slice(0, -1));
         } finally {
             setIsLoading(false);
         }
@@ -263,8 +270,12 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
         sendTutorRequest(question);
     }
 
-    const handleSuggestionClick = (suggestion: string) => {
-        sendTutorRequest(suggestion);
+    const handleActionClick = (action: 'summarize' | 'quiz' | 'tutor_me') => {
+        if (action === 'tutor_me') {
+            sendTutorRequest("Tutor me");
+        } else {
+            sendTutorRequest(undefined, action);
+        }
     }
     
     if (!lesson) return null;
@@ -292,10 +303,11 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
                                     <BrainCircuit className="h-10 w-10 mx-auto text-primary/50" />
                                     <div>
                                      <p className="font-semibold mb-2">How can I help you learn?</p>
-                                     <div className="flex flex-col gap-2">
+                                     <div className="grid grid-cols-1 gap-2">
                                         {initialPrompts.map(prompt => (
-                                            <Button key={prompt} variant="outline" size="sm" onClick={() => handleSuggestionClick(prompt)}>
-                                                {prompt}
+                                            <Button key={prompt.action} variant="outline" size="sm" onClick={() => handleActionClick(prompt.action)}>
+                                                <prompt.icon className="mr-2 h-4 w-4" />
+                                                {prompt.label}
                                             </Button>
                                         ))}
                                      </div>
@@ -327,7 +339,7 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
                                     {message.role === 'assistant' && message.suggestions && (
                                         <div className="flex flex-wrap gap-2 mt-3 ml-11">
                                             {message.suggestions.map((suggestion, i) => (
-                                                <Button key={i} size="sm" variant="outline" onClick={() => handleSuggestionClick(suggestion)}>
+                                                <Button key={i} size="sm" variant="outline" onClick={() => sendTutorRequest(suggestion)}>
                                                     {suggestion}
                                                 </Button>
                                             ))}
@@ -382,7 +394,6 @@ export default function CoursePlayerPage() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
-  const welcomeAudioRef = useRef<HTMLAudioElement>(null);
 
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
@@ -448,38 +459,6 @@ export default function CoursePlayerPage() {
     }
   }, [params.id, user]);
   
-  // Effect for playing the welcome message
-  /*
-  useEffect(() => {
-    const playWelcomeMessage = async () => {
-      const hasPlayedWelcome = sessionStorage.getItem(`welcome_played_${params.id}`);
-
-      if (!hasPlayedWelcome && tutorSettings?.prompts) {
-        const firstPrompt = tutorSettings.prompts.split('\n')[0];
-        if (!firstPrompt) return;
-
-        try {
-          const audioResponse = await textToSpeech({ 
-              text: firstPrompt, 
-              voice: tutorSettings.voice
-          });
-          if (welcomeAudioRef.current && audioResponse.media) {
-            welcomeAudioRef.current.src = audioResponse.media;
-            welcomeAudioRef.current.play().catch(() => {});
-            sessionStorage.setItem(`welcome_played_${params.id}`, 'true');
-          }
-        } catch (error) {
-          console.error("Failed to generate welcome message:", error);
-        }
-      }
-    };
-    
-    if (!loading && course && tutorSettings) {
-        playWelcomeMessage();
-    }
-  }, [loading, course, params.id, tutorSettings]);
-  */
-
 
   const handleLessonClick = (lesson: Lesson, index: number) => {
       if(index < unlockedLessonsCount) {
@@ -660,7 +639,6 @@ export default function CoursePlayerPage() {
             </main>
 
             <AiTutor course={course} lesson={currentLesson} settings={tutorSettings} />
-            <audio ref={welcomeAudioRef} className="hidden" />
           </div>
         </div>
       </SidebarInset>
