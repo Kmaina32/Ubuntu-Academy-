@@ -35,6 +35,14 @@ function NotificationsPopover() {
     const { user } = useAuth();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
+    const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(new Set());
+
+    useEffect(() => {
+        const storedIds = localStorage.getItem('readNotificationIds');
+        if (storedIds) {
+            setReadNotificationIds(new Set(JSON.parse(storedIds)));
+        }
+    }, []);
 
     useEffect(() => {
         if (!user) return;
@@ -91,12 +99,24 @@ function NotificationsPopover() {
 
     }, [user]);
 
+    const unreadCount = notifications.filter(n => !readNotificationIds.has(n.id)).length;
+
+    const handleOpenChange = (open: boolean) => {
+        if (open && unreadCount > 0) {
+            const newReadIds = new Set(readNotificationIds);
+            notifications.forEach(n => newReadIds.add(n.id));
+            setReadNotificationIds(newReadIds);
+            localStorage.setItem('readNotificationIds', JSON.stringify(Array.from(newReadIds)));
+        }
+    };
+
+
     return (
-        <Popover>
+        <Popover onOpenChange={handleOpenChange}>
             <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
                     <Bell />
-                    {notifications.length > 0 && (
+                    {unreadCount > 0 && (
                         <span className="absolute top-0 right-0 flex h-2 w-2">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
