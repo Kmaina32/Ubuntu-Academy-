@@ -11,8 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { createCalendarEvent, updateCalendarEvent } from '@/lib/firebase-service';
-import type { CalendarEvent } from '@/lib/mock-data';
+import { createCalendarEvent } from '@/lib/firebase-service';
 import { format, startOfDay } from 'date-fns';
 
 const eventFormSchema = z.object({
@@ -24,19 +23,18 @@ type EventFormValues = z.infer<typeof eventFormSchema>;
 
 interface EventFormProps {
   selectedDate: Date;
-  event?: CalendarEvent | null;
   onSuccess: () => void;
 }
 
-export function EventForm({ selectedDate, event, onSuccess }: EventFormProps) {
+export function EventForm({ selectedDate, onSuccess }: EventFormProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
-      title: event?.title || '',
-      description: event?.description || '',
+      title: '',
+      description: '',
     },
   });
 
@@ -44,18 +42,12 @@ export function EventForm({ selectedDate, event, onSuccess }: EventFormProps) {
     setIsLoading(true);
     try {
       const dataToSave = {
-        ...values,
+        title: values.title,
+        description: values.description || '',
         date: format(startOfDay(selectedDate), 'yyyy-MM-dd'),
-        description: values.description || ''
       };
-
-      if (event) {
-        // await updateCalendarEvent(event.id, dataToSave);
-        // toast({ title: 'Success', description: 'Event updated successfully.' });
-      } else {
-        await createCalendarEvent(dataToSave);
-        toast({ title: 'Success', description: 'Event created successfully.' });
-      }
+      await createCalendarEvent(dataToSave);
+      toast({ title: 'Success', description: 'Event created successfully.' });
       onSuccess();
     } catch (error) {
       console.error('Failed to save event:', error);
@@ -97,7 +89,7 @@ export function EventForm({ selectedDate, event, onSuccess }: EventFormProps) {
         <div className="flex justify-end">
           <Button type="submit" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {event ? 'Update Event' : 'Create Event'}
+            Create Event
           </Button>
         </div>
       </form>
