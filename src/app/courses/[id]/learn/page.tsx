@@ -8,7 +8,7 @@ import { getCourseById, updateUserCourseProgress, getUserCourses } from '@/lib/f
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -19,7 +19,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
+import { courseTutor } from '@/ai/flows/course-tutor';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
 
 function getYouTubeEmbedUrl(url: string | undefined): string | null {
   if (!url) return null;
@@ -158,6 +163,113 @@ function CourseOutline({ course, progress, completedLessons, unlockedLessonsCoun
     )
 }
 
+type ChatMessage = {
+    role: 'user' | 'assistant';
+    content: string;
+};
+
+function AiTutor({ lesson }: { lesson: Lesson }) {
+    const { toast } = useToast();
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [question, setQuestion] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleTutorSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!question.trim()) return;
+
+        const userMessage: ChatMessage = { role: 'user', content: question };
+        setMessages(prev => [...prev, userMessage]);
+        setQuestion('');
+        setIsLoading(true);
+
+        try {
+            const result = await courseTutor({ question, courseContext: lesson.content });
+            const tutorMessage: ChatMessage = { role: 'assistant', content: result.answer };
+            setMessages(prev => [...prev, tutorMessage]);
+        } catch (error) {
+            console.error("AI Tutor failed:", error);
+            toast({ title: 'Error', description: 'The AI Tutor is currently unavailable. Please try again later.', variant: 'destructive'});
+            setMessages(prev => prev.slice(0, -1)); // Remove the user's message on failure
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    return (
+        <Accordion type="single" collapsible className="w-full mt-8">
+            <AccordionItem value="item-1">
+                <AccordionTrigger>
+                    <div className="flex items-center gap-2">
+                        <Bot className="h-5 w-5" />
+                        <span className="font-semibold">Need help? Ask the AI Tutor</span>
+                    </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                    <Card className="mt-2">
+                        <CardContent className="p-4 h-96 flex flex-col">
+                            <ScrollArea className="flex-grow pr-4 -mr-4 mb-4">
+                                <div className="space-y-4">
+                                    {messages.length === 0 && (
+                                        <div className="text-center text-muted-foreground text-sm py-8">
+                                            Ask a question about this lesson to get started.
+                                        </div>
+                                    )}
+                                    {messages.map((message, index) => (
+                                        <div key={index} className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
+                                            {message.role === 'assistant' && (
+                                                <Avatar className="h-8 w-8 border">
+                                                    <Bot className="h-5 w-5 m-1.5" />
+                                                </Avatar>
+                                            )}
+                                            <div className={`rounded-lg px-3 py-2 max-w-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+                                                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                                            </div>
+                                             {message.role === 'user' && (
+                                                <Avatar className="h-8 w-8 border">
+                                                    <User className="h-5 w-5 m-1.5" />
+                                                </Avatar>
+                                            )}
+                                        </div>
+                                    ))}
+                                    {isLoading && (
+                                        <div className="flex items-start gap-3">
+                                            <Avatar className="h-8 w-8 border">
+                                                <Bot className="h-5 w-5 m-1.5" />
+                                            </Avatar>
+                                            <div className="rounded-lg px-4 py-3 bg-secondary flex items-center">
+                                               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </ScrollArea>
+                            <Separator className="mb-4"/>
+                            <form onSubmit={handleTutorSubmit} className="flex items-start gap-2">
+                                <Textarea 
+                                    placeholder="e.g., Can you explain this concept in a simpler way?" 
+                                    value={question}
+                                    onChange={e => setQuestion(e.target.value)}
+                                    className="min-h-0 resize-none"
+                                    rows={1}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                          e.preventDefault();
+                                          handleTutorSubmit(e);
+                                        }
+                                      }}
+                                />
+                                <Button type="submit" size="icon" disabled={isLoading || !question.trim()}>
+                                    <Send className="h-4 w-4"/>
+                                </Button>
+                            </form>
+                        </CardContent>
+                    </Card>
+                </AccordionContent>
+            </AccordionItem>
+        </Accordion>
+    )
+}
 
 export default function CoursePlayerPage() {
   const router = useRouter();
@@ -371,29 +483,14 @@ export default function CoursePlayerPage() {
                   <div className="prose max-w-none text-foreground/90">
                     <p>{currentLesson.content}</p>
                   </div>
-
-                  {currentLesson.youtubeLinks && currentLesson.youtubeLinks.length > 0 && (
-                     <div className="mt-8">
-                        <h3 className="text-xl font-bold mb-4 font-headline">Video Resources</h3>
-                        <div className="space-y-3">
-                           {currentLesson.youtubeLinks.map(link => (
-                                <a href={link.url} target="_blank" rel="noopener noreferrer" key={link.url} className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors">
-                                    <Youtube className="h-6 w-6 text-red-600" />
-                                    <div className='flex-grow'>
-                                        <p className="font-semibold">{link.title}</p>
-                                        <p className="text-xs text-muted-foreground">{link.url}</p>
-                                    </div>
-                                </a>
-                           ))}
-                        </div>
-                     </div>
-                  )}
                   
                   {!completedLessons.has(currentLesson.id) && (
                     <Button size="lg" className="bg-accent hover:bg-accent/90 mt-8" onClick={handleCompleteLesson}>
                       Mark as Completed &amp; Continue
                     </Button>
                   )}
+
+                  <AiTutor lesson={currentLesson} />
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center">
