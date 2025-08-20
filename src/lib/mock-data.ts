@@ -72,6 +72,7 @@ export interface Course {
   duration: string; // e.g., "5 Weeks"
   modules: Module[];
   exam: ExamQuestion[];
+  createdAt: string; // ISO string
 }
 
 export const user = {

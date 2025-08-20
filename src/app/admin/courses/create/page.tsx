@@ -81,7 +81,7 @@ export default function CreateCoursePage() {
     if (!courseDetails) return;
     setIsLoading(true);
      try {
-        const courseData: Omit<Course, 'id'> = {
+        const courseData: Omit<Course, 'id' | 'createdAt'> = {
             title: courseDetails.title,
             instructor: courseDetails.instructor,
             category: courseDetails.category,

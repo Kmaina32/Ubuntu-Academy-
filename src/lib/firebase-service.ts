@@ -49,6 +49,7 @@ export async function createCourse(courseData: Omit<Course, 'id'>): Promise<stri
     const newCourseRef = push(coursesRef);
     const dataToSave = {
         ...courseData,
+        createdAt: new Date().toISOString(), // Add creation timestamp
         modules: courseData.modules || [],
         exam: courseData.exam || [],
         imageUrl: courseData.imageUrl || 'https://placehold.co/600x400'
