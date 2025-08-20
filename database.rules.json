@@ -1,3 +1,4 @@
+
 {
   "rules": {
     "courses": {
@@ -26,6 +27,10 @@
         ".read": "root.child('submissions').child($submissionId).child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true"
       },
       ".indexOn": "userId"
+    },
+    "tutorSettings": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     }
   }
 }
