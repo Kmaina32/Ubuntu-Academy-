@@ -16,6 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, ArrowLeft, Sparkles, CheckCircle, MessageSquare, Star, XCircle, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 const CERTIFICATE_THRESHOLD_PERCENTAGE = 80;
 
@@ -257,3 +258,5 @@ export default function GradeSubmissionPage() {
     </div>
   );
 }
+
+    

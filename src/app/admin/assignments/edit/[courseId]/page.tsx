@@ -232,18 +232,18 @@ export default function EditExamPage() {
                           <FormField
                             control={form.control}
                             name={`exam.${index}.correctAnswer`}
-                            render={({ field }) => (
+                            render={({ field: radioField }) => (
                               <FormItem className="space-y-3">
                                 <FormLabel>Options (select the correct one)</FormLabel>
                                 <FormControl>
                                   <RadioGroup
-                                    onValueChange={(value) => field.onChange(parseInt(value, 10))}
-                                    defaultValue={String(field.value)}
+                                    onValueChange={(value) => radioField.onChange(parseInt(value, 10))}
+                                    defaultValue={String(radioField.value)}
                                     className="flex flex-col space-y-1"
                                   >
-                                    {form.getValues(`exam.${index}.options`).map((_, optionIndex) => (
+                                    {field.options.map((_, optionIndex) => (
                                        <div key={optionIndex} className="flex items-center gap-2">
-                                            <RadioGroupItem value={String(optionIndex)} id={`${field.name}-${optionIndex}`} />
+                                            <RadioGroupItem value={String(optionIndex)} id={`${radioField.name}-${optionIndex}`} />
                                             <FormField
                                                 control={form.control}
                                                 name={`exam.${index}.options.${optionIndex}`}
@@ -291,3 +291,5 @@ export default function EditExamPage() {
     </div>
   );
 }
+
+    
