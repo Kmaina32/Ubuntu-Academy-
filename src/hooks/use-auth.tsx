@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     // Manually update the local user state to reflect the displayName immediately
     const updatedUser = { ...userCredential.user, displayName: displayName };
-    setUser(updatedUser);
+    setUser(updatedUser as User);
     
     return userCredential;
   };
@@ -94,7 +94,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     sendPasswordReset,
   };
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

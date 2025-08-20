@@ -1,7 +1,7 @@
 
 'use client'
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import type { Course } from "@/lib/mock-data";
@@ -20,7 +20,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useState(() => {
+  useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -35,7 +35,7 @@ export default function Home() {
       }
     };
     fetchData();
-  });
+  }, []);
 
   const filteredCourses = useMemo(() => {
      return courses.filter(course => 

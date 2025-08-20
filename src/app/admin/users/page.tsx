@@ -84,7 +84,8 @@ export default function AdminUsersPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {users.map((user) => (
+                                {users.length > 0 ? (
+                                  users.map((user) => (
                                 <TableRow key={user.uid}>
                                     <TableCell className="font-medium">{user.displayName}</TableCell>
                                     <TableCell>{user.email}</TableCell>
@@ -113,7 +114,14 @@ export default function AdminUsersPage() {
                                     </AlertDialog>
                                     </TableCell>
                                 </TableRow>
-                                ))}
+                                ))) : (
+                                  <TableRow>
+                                      <TableCell colSpan={3} className="text-center text-muted-foreground py-10">
+                                          No users found. New users will appear here after they sign up.
+                                      </TableCell>
+                                  </TableRow>
+                                )
+                              }
                             </TableBody>
                         </Table>
                     )}
