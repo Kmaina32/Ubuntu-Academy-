@@ -14,13 +14,14 @@ import {z} from 'genkit';
 import { textToSpeech } from './text-to-speech';
 
 const CourseTutorInputSchema = z.object({
-  question: z.string().describe('The student\'s question about the lesson.'),
+  question: z.string().describe('The student\'s question about the lesson, or a command like "Tutor me".'),
   courseContext: z.string().describe('The full text content of the current lesson.'),
+  // We can add chat history here in the future to make it more conversational
 });
 export type CourseTutorInput = z.infer<typeof CourseTutorInputSchema>;
 
 const CourseTutorOutputSchema = z.object({
-  answer: z.string().describe("Gina's helpful answer to the student's question."),
+  answer: z.string().describe("Gina's helpful answer to the student's question or the next step in the tutoring session."),
   answerAudio: z.string().optional().describe('The data URI of the spoken answer audio.'),
 });
 export type CourseTutorOutput = z.infer<typeof CourseTutorOutputSchema>;
@@ -37,19 +38,33 @@ const prompt = ai.definePrompt({
   output: {schema: CourseTutorOutputSchema},
   prompt: `You are Gina, an expert AI Tutor for the Mkenya Skilled online learning platform. Your tone is encouraging, friendly, and very helpful.
 
-You will be given the content of a specific lesson and a student's question about it. Your task is to answer the student's question based *only* on the provided course context. Do not use any external knowledge.
+You will be given the content of a specific lesson and a student's question about it. Your task is to respond to the student based on the provided course context. Do not use any external knowledge.
 
-If the question cannot be answered from the context, politely explain that you can only answer questions related to the current lesson material.
+**Behavior Scenarios:**
 
-Lesson Content:
+1.  **If the user asks a direct question:**
+    *   Answer the student's question based *only* on the provided course context.
+    *   If the question cannot be answered from the context, politely explain that you can only answer questions related to the current lesson material.
+    *   Provide a clear, helpful, and detailed answer.
+
+2.  **If the user's input is "Tutor me" or a similar request for guided tutoring:**
+    *   Initiate a step-by-step tutoring session.
+    *   Begin by breaking down the lesson into smaller, manageable parts.
+    *   Start with the first concept. Explain it clearly and concisely.
+    *   After explaining a concept, ask a simple question to check for understanding (e.g., "Does that make sense?", "Would you like me to explain that differently?").
+    *   End your response by asking if the student is ready to move on to the next topic. For example: "Ready to continue?" or "Shall we move on?".
+    *   Wait for the student's response before explaining the next concept.
+
+---
+**Lesson Content:**
 ---
 {{{courseContext}}}
 ---
 
-Student's Question:
+**Student's Input:**
 "{{{question}}}"
 
-Please provide a clear, helpful, and detailed answer.`,
+Please provide your response now.`,
 });
 
 const courseTutorFlow = ai.defineFlow(

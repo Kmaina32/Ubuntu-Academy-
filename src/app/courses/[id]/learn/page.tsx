@@ -8,7 +8,7 @@ import { getCourseById, updateUserCourseProgress, getUserCourses } from '@/lib/f
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -180,6 +180,12 @@ function AiTutor({ lesson }: { lesson: Lesson | null }) {
     const audioRef = useRef<HTMLAudioElement>(null);
     const { isRecording, startRecording, stopRecording } = useRecorder();
 
+    const initialPrompts = [
+        "Explain this lesson's key concepts.",
+        "Give me a simple analogy for this topic.",
+        "Tutor me"
+    ];
+
     useEffect(() => {
         const transcribeAndSetQuestion = async (audioB64: string) => {
             setIsLoading(true);
@@ -206,6 +212,14 @@ function AiTutor({ lesson }: { lesson: Lesson | null }) {
             audioRef.current.play().catch(e => console.error("Audio playback failed:", e));
         }
     };
+    
+    const handlePromptClick = (prompt: string) => {
+        setQuestion(prompt);
+        // We use a timeout to allow the state to update before submitting the form
+        setTimeout(() => {
+            document.getElementById('tutor-form-submit')?.click();
+        }, 0);
+    }
 
     const handleTutorSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -253,8 +267,18 @@ function AiTutor({ lesson }: { lesson: Lesson | null }) {
                     <ScrollArea className="flex-grow p-6">
                         <div className="space-y-4">
                             {messages.length === 0 && (
-                                <div className="text-center text-muted-foreground text-sm py-8">
-                                    Ask a question about this lesson to get started.
+                                <div className="text-center text-muted-foreground text-sm py-8 space-y-4">
+                                    <BrainCircuit className="h-10 w-10 mx-auto text-primary/50" />
+                                    <div>
+                                     <p className="font-semibold mb-2">How can I help you learn?</p>
+                                     <div className="flex flex-col gap-2">
+                                        {initialPrompts.map(prompt => (
+                                            <Button key={prompt} variant="outline" size="sm" onClick={() => handlePromptClick(prompt)}>
+                                                {prompt}
+                                            </Button>
+                                        ))}
+                                     </div>
+                                    </div>
                                 </div>
                             )}
                             {messages.map((message, index) => (
@@ -309,7 +333,7 @@ function AiTutor({ lesson }: { lesson: Lesson | null }) {
                                     }
                                     }}
                             />
-                            <Button type="submit" size="icon" disabled={isLoading || !question.trim()}>
+                            <Button type="submit" size="icon" disabled={isLoading || !question.trim()} id="tutor-form-submit">
                                 <Send className="h-4 w-4"/>
                             </Button>
                         </form>
