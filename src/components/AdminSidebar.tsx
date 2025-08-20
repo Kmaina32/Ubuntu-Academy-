@@ -13,8 +13,10 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink } from 'lucide-react';
 import { version } from '../../package.json';
+import { Button } from './ui/button';
+import { Separator } from './ui/separator';
 
 
 export function AdminSidebar() {
@@ -95,6 +97,15 @@ export function AdminSidebar() {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
+             <div className="px-2 mt-auto">
+                 <Separator className="my-2" />
+                 <Button asChild variant="outline" className="w-full justify-start group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:h-auto group-data-[collapsible=icon]:p-2">
+                    <Link href="/" target="_blank">
+                        <ExternalLink />
+                        <span className="group-data-[collapsible=icon]:hidden">View Site</span>
+                    </Link>
+                 </Button>
+            </div>
         </SidebarContent>
         <SidebarFooter className="space-y-2">
             <div className="text-center text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">

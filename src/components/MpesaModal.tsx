@@ -84,9 +84,12 @@ export function MpesaModal({
   };
   
   const handleClose = () => {
-    setPhoneNumber('');
-    setPaymentStep('form');
-    setIsLoading(false);
+    // only reset if not in success state, otherwise it clears too fast
+    if(paymentStep !== 'success') {
+      setPhoneNumber('');
+      setPaymentStep('form');
+      setIsLoading(false);
+    }
     onClose();
   }
 
@@ -143,7 +146,7 @@ export function MpesaModal({
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <p className="font-semibold">Payment Successful!</p>
-                <p className="text-sm text-muted-foreground">Redirecting you to the course...</p>
+                <p className="text-sm text-muted-foreground">You now have access to the course.</p>
             </div>
         )}
       </DialogContent>

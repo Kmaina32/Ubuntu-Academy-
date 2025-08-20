@@ -5,14 +5,14 @@ import { useState, useEffect } from 'react';
 import { notFound, useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import type { Course } from "@/lib/mock-data";
-import { getCourseById, enrollUserInCourse } from '@/lib/firebase-service';
+import { getCourseById, enrollUserInCourse, getUserCourses } from '@/lib/firebase-service';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
-import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen, Clock } from "lucide-react";
+import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen, Clock, Check } from "lucide-react";
 import { MpesaModal } from '@/components/MpesaModal';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
@@ -20,7 +20,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 
-function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling }: { course: Course, onEnrollFree: () => void, onPurchase: () => void, isEnrolling: boolean }) {
+function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolled }: { course: Course, onEnrollFree: () => void, onPurchase: () => void, isEnrolling: boolean, isEnrolled: boolean }) {
     const courseAiHints: Record<string, string> = {
         'digital-marketing-101': 'marketing computer',
         'mobile-app-dev-react-native': 'code mobile',
@@ -44,7 +44,16 @@ function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling }: { cours
                 {course.price > 0 ? `Ksh ${course.price.toLocaleString()}` : 'Free'}
                 </p>
 
-                {course.price > 0 ? (
+                {isEnrolled ? (
+                    <div className="space-y-2">
+                        <Button size="lg" className="w-full" disabled>
+                           <Check className="mr-2 h-4 w-4"/> Enrolled
+                        </Button>
+                         <Button size="lg" variant="outline" asChild className="w-full">
+                           <Link href={`/courses/${course.id}/learn`}>Go to Course</Link>
+                        </Button>
+                    </div>
+                ) : course.price > 0 ? (
                 <>
                     <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" onClick={onPurchase}>
                         Purchase with M-Pesa
@@ -93,6 +102,8 @@ export default function CourseDetailPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+
 
    useEffect(() => {
     if (!authLoading && !user) {
@@ -104,7 +115,15 @@ export default function CourseDetailPage() {
     if (user) {
         const fetchCourse = async () => {
             setLoading(true);
-            const fetchedCourse = await getCourseById(params.id);
+            const [fetchedCourse, userCourses] = await Promise.all([
+                getCourseById(params.id),
+                getUserCourses(user.uid)
+            ]);
+            
+            if(userCourses.some(c => c.courseId === params.id)) {
+                setIsEnrolled(true);
+            }
+
             setCourse(fetchedCourse);
             setLoading(false);
         }
@@ -128,7 +147,8 @@ export default function CourseDetailPage() {
   
   const handlePaymentSuccess = () => {
     setIsModalOpen(false);
-    router.push(`/courses/${course.id}/learn`);
+    setIsEnrolled(true);
+    toast({ title: 'Payment Successful!', description: `You have successfully enrolled in ${course.title}.` });
   }
 
   const handleEnrollFree = async () => {
@@ -141,7 +161,7 @@ export default function CourseDetailPage() {
     try {
       await enrollUserInCourse(user.uid, course.id);
       toast({ title: 'Enrolled!', description: `You have successfully enrolled in ${course.title}.` });
-      router.push(`/courses/${course.id}/learn`);
+      setIsEnrolled(true);
     } catch(error) {
       console.error("Free enrollment failed", error);
       toast({ title: 'Error', description: 'Something went wrong during enrollment.', variant: 'destructive'});
@@ -169,7 +189,7 @@ export default function CourseDetailPage() {
                 
                 {/* Purchase Card for Mobile View */}
                 <div className="md:hidden mb-8">
-                    <PurchaseCard course={course} onEnrollFree={handleEnrollFree} onPurchase={() => setIsModalOpen(true)} isEnrolling={isEnrolling} />
+                    <PurchaseCard course={course} onEnrollFree={handleEnrollFree} onPurchase={() => setIsModalOpen(true)} isEnrolling={isEnrolling} isEnrolled={isEnrolled} />
                 </div>
 
                 <h2 className="text-2xl font-bold mb-4 font-headline">Course Content</h2>
@@ -208,7 +228,7 @@ export default function CourseDetailPage() {
               {/* Purchase Card for Desktop View */}
               <div className="md:col-span-1 hidden md:block">
                 <div className="sticky top-24">
-                  <PurchaseCard course={course} onEnrollFree={handleEnrollFree} onPurchase={() => setIsModalOpen(true)} isEnrolling={isEnrolling}/>
+                  <PurchaseCard course={course} onEnrollFree={handleEnrollFree} onPurchase={() => setIsModalOpen(true)} isEnrolling={isEnrolling} isEnrolled={isEnrolled}/>
                 </div>
               </div>
             </div>
