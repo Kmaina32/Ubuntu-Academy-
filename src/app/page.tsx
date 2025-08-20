@@ -74,13 +74,17 @@ export default function Home() {
 
   if (loading || !heroData) {
     return (
-        <div className="flex flex-col min-h-screen">
-          <main className="flex-grow flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            <p className="ml-2">Loading Mkenya Skilled...</p>
-          </main>
-          <Footer />
-        </div>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+            <Header />
+            <main className="flex-grow flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <p className="ml-2">Loading Mkenya Skilled...</p>
+            </main>
+            <Footer />
+        </SidebarInset>
+    </SidebarProvider>
     )
   }
 
@@ -93,7 +97,7 @@ export default function Home() {
           <section className="relative py-8 md:py-12 bg-secondary/50 overflow-hidden">
             <div className="container mx-auto px-4 md:px-6">
                  <div 
-                      className="relative rounded-xl overflow-hidden min-h-[400px] flex items-center justify-center text-center"
+                      className="relative rounded-xl overflow-hidden min-h-[400px] flex items-center justify-center text-center w-full"
                   >
                      <div className="absolute inset-0 z-10" style={overlayStyle}></div>
                      
@@ -141,7 +145,7 @@ export default function Home() {
                                                     className="object-cover"
                                                     data-ai-hint={courseAiHints[course.id] || 'course placeholder'}
                                                 />
-                                                <div className="absolute inset-0" style={{...overlayStyle, backgroundColor: `rgba(0,0,0,0.3)`}}></div>
+                                                <div className="absolute inset-0" style={{...overlayStyle, backgroundColor: `rgba(0,0,0,0.4)`}}></div>
                                                 <div className="relative z-20 h-full flex flex-col items-center justify-center text-white p-8">
                                                      <h2 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight font-headline">{course.title}</h2>
                                                      <p className="text-md max-w-2xl mx-auto">{course.description}</p>
