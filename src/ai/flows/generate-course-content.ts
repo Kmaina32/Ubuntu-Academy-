@@ -62,7 +62,7 @@ const GenerateCourseContentOutputSchema = z.object({
   longDescription: z.string().min(100).describe('A detailed, comprehensive description of the entire course.'),
   duration: z.string().describe("The estimated total duration of the course, e.g., '4 Weeks' or '6 Weeks'."),
   modules: z.array(ModuleSchema).min(2).describe('An array of modules for the course. Should contain at least 2 modules.'),
-  exam: z.array(ExamQuestionSchema).min(1).describe('The final exam for the course, containing at least one question.'),
+  exam: z.array(ExamQuestionSchema).min(5).describe('The final exam for the course, containing at least five questions, with a mix of short-answer and multiple-choice questions.'),
 });
 export type GenerateCourseContentOutput = z.infer<typeof GenerateCourseContentOutputSchema>;
 
@@ -78,7 +78,7 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateCourseContentOutputSchema},
   prompt: `You are an expert curriculum developer for an online learning platform in Kenya. Your task is to generate a complete and overly extensive course structure based on a given title and context.
 
-The course should be extremely comprehensive and well-structured. It must include a detailed long description, an estimated total duration (e.g., "4 Weeks"), at least two modules, and a total of at least five lessons distributed across the modules. It must also include a final exam with at least one short-answer and one multiple-choice question.
+The course should be extremely comprehensive and well-structured. It must include a detailed long description, an estimated total duration (e.g., "4 Weeks"), at least two modules, and a total of at least five lessons distributed across the modules. It must also include a final exam with at least five questions, with a mix of short-answer and multiple-choice questions.
 
 Course Title: {{{courseTitle}}}
 
@@ -93,7 +93,7 @@ Please generate the following content:
 2.  **Duration**: The estimated total duration of the course.
 3.  **Modules**: A list of modules. Each module must have a unique ID, a title, and a list of lessons.
 4.  **Lessons**: A list of lessons for each module. Each lesson must have a unique ID, a title, an estimated duration (e.g., "5 min"), and the full, overly extensive lesson content. The content should be very detailed. For each lesson, extract relevant YouTube links from the context and add them to the 'youtubeLinks' field. If no relevant links are in the context for a lesson, provide an EMPTY array.
-5.  **Exam**: A final exam with an array of questions. Include at least one 'short-answer' question and one 'multiple-choice' question. Each question needs a unique ID, a type, text, max points (always 10), and the correct answer details (referenceAnswer for short-answer, options array and correctAnswer index for multiple-choice).
+5.  **Exam**: A final exam with an array of at least 5 questions. Include a mix of 'short-answer' and 'multiple-choice' questions. Each question needs a unique ID, a type, text, max points (always 10), and the correct answer details (referenceAnswer for short-answer, options array and correctAnswer index for multiple-choice).
 
 Generate the full course structure now.`,
 });
@@ -109,4 +109,3 @@ const generateCourseContentFlow = ai.defineFlow(
     return output!;
   }
 );
-

@@ -1,6 +1,4 @@
 
-// This file is machine-generated - edit with care!
-
 'use server';
 
 /**
@@ -61,7 +59,7 @@ The exam must be overly comprehensive and rigorously test the core concepts of t
 Course Title: {{{courseTitle}}}
 Course Description: {{{courseDescription}}}
 
-Please generate the full exam now. Ensure that multiple-choice questions have exactly four options and a correct answer index, and short-answer questions have a detailed reference answer. The exam must contain a minimum of five questions.`,
+Please generate the full exam now. Ensure that multiple-choice questions have exactly four options and a correct answer index, and short-answer questions have a detailed reference answer. It is critical that the final exam contains a minimum of five questions.`,
 });
 
 const generateExamFlow = ai.defineFlow(
