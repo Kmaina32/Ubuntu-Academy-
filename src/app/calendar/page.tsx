@@ -98,7 +98,7 @@ export default function CalendarPage() {
         <Header />
         <div className="flex flex-col min-h-screen">
           <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-6xl mx-auto">
                 <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
                   <ArrowLeft className="h-4 w-4" />
                   Back to Dashboard
@@ -111,39 +111,48 @@ export default function CalendarPage() {
                         <CardTitle className="mt-4 text-2xl font-headline">My Calendar</CardTitle>
                         <CardDescription>Keep track of your course schedule and deadlines.</CardDescription>
                     </CardHeader>
-                    <CardContent className="flex justify-center">
-                      <Calendar
-                            mode="single"
-                            selected={selectedDate}
-                            onSelect={setSelectedDate}
-                            className="rounded-md border not-prose"
-                            components={{ Day: DayWithDot }}
-                        />
-                    </CardContent>
                     <CardContent>
-                         <h3 className="font-semibold text-lg text-center mb-4">
-                           Events on {selectedDate ? format(selectedDate, 'PPP') : 'selected date'}
-                         </h3>
-                         {selectedDayEvents.length > 0 ? (
-                           <ul className="space-y-3">
-                            {selectedDayEvents.map(event => (
-                                <li key={event.id} className="p-4 bg-secondary rounded-lg flex justify-between items-center">
-                                    <div>
+                       {loading ? (
+                         <div className="flex justify-center items-center py-10">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                            <p className="ml-2">Loading calendar...</p>
+                         </div>
+                        ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div className="md:col-span-2 flex justify-center">
+                                <Calendar
+                                    mode="single"
+                                    selected={selectedDate}
+                                    onSelect={setSelectedDate}
+                                    className="rounded-md border not-prose w-full max-w-md"
+                                    components={{ Day: DayWithDot }}
+                                />
+                            </div>
+                            <aside className="md:col-span-1">
+                                <h3 className="font-semibold mb-4 text-lg">
+                                    Events for {selectedDate ? format(selectedDate, 'PPP') : 'selected date'}
+                                </h3>
+                                <div className="space-y-4">
+                                  {selectedDayEvents.length > 0 ? (
+                                    selectedDayEvents.map(event => (
+                                      <div key={event.id} className="p-3 bg-secondary rounded-lg text-sm">
                                         <p className="font-semibold">{event.title}</p>
-                                        <p className="text-sm text-muted-foreground">{event.description}</p>
-                                    </div>
-                                    <Button asChild variant="outline" size="sm">
-                                        <a href={createGoogleCalendarLink(event)} target="_blank" rel="noopener noreferrer">
-                                            Add to Calendar
-                                            <ExternalLink className="ml-2 h-4 w-4" />
-                                        </a>
-                                    </Button>
-                                </li>
-                            ))}
-                           </ul>
-                         ) : (
-                           <p className="text-center text-muted-foreground text-sm">No events scheduled for this day.</p>
-                         )}
+                                        <p className="text-xs text-muted-foreground mb-2">{event.description}</p>
+                                         <Button asChild variant="outline" size="sm" className="w-full">
+                                            <a href={createGoogleCalendarLink(event)} target="_blank" rel="noopener noreferrer">
+                                                Add to Calendar
+                                                <ExternalLink className="ml-2 h-4 w-4" />
+                                            </a>
+                                        </Button>
+                                      </div>
+                                    ))
+                                  ) : (
+                                     <p className="text-sm text-muted-foreground">No events scheduled for this day.</p>
+                                  )}
+                                </div>
+                            </aside>
+                        </div>
+                      )}
                     </CardContent>
                 </Card>
             </div>
@@ -154,5 +163,3 @@ export default function CalendarPage() {
     </SidebarProvider>
   );
 }
-
-    
