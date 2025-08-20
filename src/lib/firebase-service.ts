@@ -88,6 +88,7 @@ export async function saveUser(user: RegisteredUser): Promise<void> {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName,
+        purchasedCourses: user.purchasedCourses || {}
     };
     await set(userRef, userData);
 }
