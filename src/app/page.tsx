@@ -76,7 +76,7 @@ export default function Home() {
                  <div 
                       className="relative rounded-xl overflow-hidden min-h-[400px] flex items-center justify-center text-center"
                   >
-                     <div className="absolute inset-0 bg-black/50 z-10"></div>
+                     <div className="absolute inset-0 bg-black/40 z-10"></div>
                      
                      {/* Static Hero Content */}
                       <div 
@@ -89,7 +89,7 @@ export default function Home() {
                             className="object-cover"
                             data-ai-hint="abstract background"
                          />}
-                         <div className="absolute inset-0 bg-black/50"></div>
+                         <div className="absolute inset-0 bg-black/30"></div>
                          <div className="relative z-20 h-full flex flex-col items-center justify-center text-white p-4">
                             <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight font-headline">
                                 {heroData.title}
@@ -121,7 +121,7 @@ export default function Home() {
                                                     className="object-cover"
                                                     data-ai-hint={courseAiHints[course.id] || 'course placeholder'}
                                                 />
-                                                <div className="absolute inset-0 bg-black/60"></div>
+                                                <div className="absolute inset-0 bg-black/40"></div>
                                                 <div className="relative z-20 h-full flex flex-col items-center justify-center text-white p-8">
                                                      <h2 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight font-headline">{course.title}</h2>
                                                      <p className="text-md max-w-2xl mx-auto">{course.description}</p>
