@@ -230,27 +230,18 @@ export function Header({ children }: { children?: React.ReactNode }) {
   }
 
   return (
-    <header className="flex h-16 items-center justify-between gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30">
+    <header className="flex h-16 items-center border-b bg-background px-4 md:px-6 sticky top-0 z-30">
         <div className="flex items-center gap-2">
-            {isMobile ? (
-                <SidebarTrigger />
-            ) : (
-                <div className='hidden md:block'>
-                    <SidebarTrigger />
-                </div>
-            )}
-        </div>
-      
-        <div className="flex-1 flex justify-center md:hidden">
-            {!openMobile && (
+            <SidebarTrigger />
+             <div className='hidden md:block'>
                  <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
                     <Gem className="h-6 w-6 text-primary" />
                     <span>Mkenya Skilled</span>
                 </Link>
-            )}
+            </div>
         </div>
-
-        <div className="flex items-center gap-2">
+      
+        <div className="flex w-full items-center justify-end gap-2">
             <ThemeToggle />
             {loading ? (
             <Skeleton className="h-8 w-8 rounded-full" />
