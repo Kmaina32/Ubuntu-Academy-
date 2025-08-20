@@ -79,13 +79,15 @@ export default function Home() {
                 <div
                   className={`absolute inset-0 transition-opacity duration-1000 ${showSlideshow ? 'opacity-0' : 'opacity-100'}`}
                 >
-                  <Image
-                    src={heroData.imageUrl}
-                    alt="Hero background"
-                    fill
-                    className="object-cover max-w-full"
-                    data-ai-hint="abstract background"
-                  />
+                  {heroData.imageUrl && (
+                    <Image
+                        src={heroData.imageUrl}
+                        alt="Hero background"
+                        fill
+                        className="object-cover max-w-full"
+                        data-ai-hint="abstract background"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-black/50"></div>
                   <div className="relative z-20 h-full flex flex-col items-center justify-center text-white p-4">
                     <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight font-headline break-words">
