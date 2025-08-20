@@ -136,7 +136,7 @@ function NotificationsPopover() {
     )
 }
 
-export function Header() {
+export function Header({ children }: { children?: React.ReactNode }) {
   const { user, logout, loading } = useAuth();
   const { isMobile } = useSidebar();
 
@@ -148,6 +148,14 @@ export function Header() {
     }
     return names[0]?.[0] || 'U';
   };
+  
+  if (children) {
+      return (
+        <header className="flex h-16 items-center justify-between gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30">
+          {children}
+        </header>
+      )
+  }
 
   return (
     <header className="flex h-16 items-center justify-between gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30">

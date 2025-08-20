@@ -8,7 +8,7 @@ import { getCourseById, updateUserCourseProgress, getUserCourses } from '@/lib/f
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -17,6 +17,9 @@ import { useAuth } from '@/hooks/use-auth';
 import { isWeekend } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { useIsMobile } from '@/hooks/use-mobile';
+
 
 function getYouTubeEmbedUrl(url: string | undefined): string | null {
   if (!url) return null;
@@ -54,12 +57,114 @@ function getWeekdayCount(startDate: Date, endDate: Date): number {
   return count;
 }
 
+function CourseOutline({ course, progress, completedLessons, unlockedLessonsCount, currentLesson, onLessonClick, onExamClick, isMobileSheet = false }: {
+    course: Course;
+    progress: number;
+    completedLessons: Set<string>;
+    unlockedLessonsCount: number;
+    currentLesson: Lesson | null;
+    onLessonClick: (lesson: Lesson, index: number) => void;
+    onExamClick: () => void;
+    isMobileSheet?: boolean;
+}) {
+     const router = useRouter();
+
+    return (
+       <div className="p-4">
+            {isMobileSheet ? (
+                <SheetHeader className="mb-4 text-left">
+                    <SheetTitle>Course Outline</SheetTitle>
+                </SheetHeader>
+            ) : (
+                <button onClick={() => router.push(`/courses/${course.id}`)} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Course Details
+                </button>
+            )}
+            <h2 className="text-xl font-bold mb-1 font-headline">{course.title}</h2>
+            <p className="text-sm text-muted-foreground mb-2">{course.duration}</p>
+            <div className="flex items-center gap-2 mb-4">
+                <Progress value={progress} className="h-2 flex-grow" />
+                <span className="text-xs text-muted-foreground">{Math.round(progress)}%</span>
+            </div>
+            <Accordion type="multiple" defaultValue={course.modules?.map(m => m.id)} className="w-full">
+            {course.modules?.map((module, moduleIndex) => {
+                const moduleProgress = calculateModuleProgress(module, completedLessons);
+                return (
+                    <AccordionItem value={module.id} key={module.id}>
+                        <AccordionTrigger className="font-semibold px-4">
+                            <div className="w-full">
+                                <p>{module.title}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <Progress value={moduleProgress} className="h-1 flex-grow bg-secondary" />
+                                    <span className="text-xs font-normal text-muted-foreground">{Math.round(moduleProgress)}%</span>
+                                </div>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                        <ul className="space-y-1 p-2">
+                            {module.lessons.map((lesson, lessonIndex) => {
+                                const overallLessonIndex = course.modules.slice(0, moduleIndex).reduce((acc, m) => acc + m.lessons.length, 0) + lessonIndex;
+                                const isUnlocked = overallLessonIndex < unlockedLessonsCount;
+                                const isCompleted = completedLessons.has(lesson.id);
+
+                                return (
+                                <li key={lesson.id}>
+                                    <button
+                                    onClick={() => onLessonClick(lesson, overallLessonIndex)}
+                                    disabled={!isUnlocked && !isCompleted}
+                                    className={`w-full text-left flex items-center gap-3 p-2 rounded-md transition-colors ${
+                                        currentLesson?.id === lesson.id ? 'bg-primary/10 text-primary' : 'hover:bg-primary/5'
+                                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                    >
+                                    {isCompleted ? (
+                                        <CheckCircle className="h-5 w-5 text-green-500" />
+                                    ) : isUnlocked ? (
+                                        <PlayCircle className="h-5 w-5 text-muted-foreground" />
+                                    ) : (
+                                        <Lock className="h-5 w-5 text-muted-foreground" />
+                                    )}
+                                    <span className="text-sm">{lesson.title}</span>
+                                    </button>
+                                </li>
+                                )
+                            })}
+                        </ul>
+                        </AccordionContent>
+                    </AccordionItem>
+                )
+            })}
+            <AccordionItem value="exam">
+                <AccordionTrigger className="font-semibold px-4">Final Exam</AccordionTrigger>
+                <AccordionContent>
+                    <div className="p-2">
+                    <button
+                        onClick={onExamClick}
+                        disabled={progress < 100}
+                        className="w-full text-left flex items-center gap-3 p-2 rounded-md transition-colors hover:bg-primary/5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {progress < 100 ? (
+                            <Lock className="h-5 w-5 text-muted-foreground" />
+                        ) : (
+                            <Star className="h-5 w-5 text-yellow-500" />
+                        )}
+                        <span className="text-sm">Take the Final Exam</span>
+                    </button>
+                    </div>
+                </AccordionContent>
+            </AccordionItem>
+            </Accordion>
+        </div>
+    )
+}
+
 
 export default function CoursePlayerPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
@@ -68,6 +173,7 @@ export default function CoursePlayerPage() {
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
   const [unlockedLessonsCount, setUnlockedLessonsCount] = useState(0);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   useEffect(() => {
      if (!authLoading) {
@@ -88,27 +194,22 @@ export default function CoursePlayerPage() {
           const userCourses = await getUserCourses(user.uid);
           const currentUserCourse = userCourses.find(c => c.courseId === fetchedCourse.id);
           
-          // Set initial completed lessons
           if (currentUserCourse?.completedLessons) {
             setCompletedLessons(new Set(currentUserCourse.completedLessons));
           }
           
-          // Drip content logic
           if (currentUserCourse?.enrollmentDate) {
               const enrollmentDate = new Date(currentUserCourse.enrollmentDate);
               const today = new Date();
-              // Days since enrollment, but we only count weekdays
               const unlockedDays = getWeekdayCount(enrollmentDate, today);
               setUnlockedLessonsCount(unlockedDays);
               
-              // Set the initial lesson
               const allLessons = fetchedCourse.modules?.flatMap(m => m.lessons) || [];
               if (allLessons.length > 0) {
                  setCurrentLesson(allLessons[0]);
               }
 
           } else {
-              // Fallback for courses without an enrollment date (e.g., legacy data)
               const allLessons = fetchedCourse.modules?.flatMap(m => m.lessons) || [];
               setUnlockedLessonsCount(allLessons.length);
               if (allLessons.length > 0) {
@@ -126,6 +227,9 @@ export default function CoursePlayerPage() {
   const handleLessonClick = (lesson: Lesson, index: number) => {
       if(index < unlockedLessonsCount) {
           setCurrentLesson(lesson);
+          if (isMobile) {
+            setIsSheetOpen(false);
+          }
       } else {
           toast({
               title: "Lesson Locked",
@@ -133,6 +237,13 @@ export default function CoursePlayerPage() {
               variant: "default"
           })
       }
+  }
+
+  const handleExamClick = () => {
+    router.push(`/courses/${course!.id}/exam`);
+    if (isMobile) {
+        setIsSheetOpen(false);
+    }
   }
 
   const handleCompleteLesson = async () => {
@@ -152,9 +263,7 @@ export default function CoursePlayerPage() {
     const currentIndex = allLessons.findIndex(l => l.id === currentLesson.id);
     const nextLessonIndex = currentIndex + 1;
 
-    // Check if there is a next lesson
     if(nextLessonIndex < allLessons.length) {
-        // Check if the next lesson is unlocked
         if (nextLessonIndex < unlockedLessonsCount) {
              setCurrentLesson(allLessons[nextLessonIndex]);
         } else {
@@ -162,10 +271,8 @@ export default function CoursePlayerPage() {
                 title: "Great job for today!",
                 description: "You've completed all available lessons. The next lesson will unlock tomorrow.",
             });
-            // Stay on the current (now completed) lesson view
         }
     } else {
-        // Last lesson completed
         setCurrentLesson(null);
     }
   };
@@ -190,90 +297,56 @@ export default function CoursePlayerPage() {
      <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <Header />
-        <div className="flex flex-col h-screen bg-secondary">
-          <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
-            <aside className="w-full md:w-80 lg:w-96 bg-background border-r flex-shrink-0 overflow-y-auto">
-              <div className="p-4">
-                 <button onClick={() => router.push(`/courses/${course.id}`)} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to Course Details
-                </button>
-                <h2 className="text-xl font-bold mb-1 font-headline">{course.title}</h2>
-                <p className="text-sm text-muted-foreground mb-2">{course.duration}</p>
-                <div className="flex items-center gap-2 mb-4">
-                    <Progress value={progress} className="h-2 flex-grow" />
-                    <span className="text-xs text-muted-foreground">{Math.round(progress)}%</span>
-                </div>
+         {isMobile && (
+           <Header>
+              <div className="flex items-center gap-2">
+                 <button onClick={() => router.back()} className="p-2">
+                   <ArrowLeft />
+                 </button>
               </div>
-              <Accordion type="multiple" defaultValue={course.modules?.map(m => m.id)} className="w-full">
-                {course.modules?.map((module, moduleIndex) => {
-                  const moduleProgress = calculateModuleProgress(module, completedLessons);
-                  return (
-                      <AccordionItem value={module.id} key={module.id}>
-                        <AccordionTrigger className="font-semibold px-4">
-                            <div className="w-full">
-                                <p>{module.title}</p>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <Progress value={moduleProgress} className="h-1 flex-grow bg-secondary" />
-                                    <span className="text-xs font-normal text-muted-foreground">{Math.round(moduleProgress)}%</span>
-                                </div>
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <ul className="space-y-1 p-2">
-                            {module.lessons.map((lesson, lessonIndex) => {
-                                const overallLessonIndex = course.modules.slice(0, moduleIndex).reduce((acc, m) => acc + m.lessons.length, 0) + lessonIndex;
-                                const isUnlocked = overallLessonIndex < unlockedLessonsCount;
-                                const isCompleted = completedLessons.has(lesson.id);
+               <div className="flex-1 text-center">
+                  <h1 className="text-lg font-semibold truncate px-2">{course.title}</h1>
+               </div>
+               <div className="flex items-center gap-2">
+                 <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <Menu />
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-[300px] sm:w-[400px] p-0">
+                       <CourseOutline 
+                            course={course}
+                            progress={progress}
+                            completedLessons={completedLessons}
+                            unlockedLessonsCount={unlockedLessonsCount}
+                            currentLesson={currentLesson}
+                            onLessonClick={handleLessonClick}
+                            onExamClick={handleExamClick}
+                            isMobileSheet={true}
+                        />
+                    </SheetContent>
+                 </Sheet>
+              </div>
+           </Header>
+         )}
+         {!isMobile && <Header />}
 
-                                return (
-                                  <li key={lesson.id}>
-                                    <button
-                                      onClick={() => handleLessonClick(lesson, overallLessonIndex)}
-                                      disabled={!isUnlocked && !isCompleted}
-                                      className={`w-full text-left flex items-center gap-3 p-2 rounded-md transition-colors ${
-                                        currentLesson?.id === lesson.id ? 'bg-primary/10 text-primary' : 'hover:bg-primary/5'
-                                      } disabled:opacity-50 disabled:cursor-not-allowed`}
-                                    >
-                                      {isCompleted ? (
-                                        <CheckCircle className="h-5 w-5 text-green-500" />
-                                      ) : isUnlocked ? (
-                                        <PlayCircle className="h-5 w-5 text-muted-foreground" />
-                                      ) : (
-                                        <Lock className="h-5 w-5 text-muted-foreground" />
-                                      )}
-                                      <span className="text-sm">{lesson.title}</span>
-                                    </button>
-                                  </li>
-                                )
-                            })}
-                          </ul>
-                        </AccordionContent>
-                      </AccordionItem>
-                  )
-                })}
-                <AccordionItem value="exam">
-                    <AccordionTrigger className="font-semibold px-4">Final Exam</AccordionTrigger>
-                    <AccordionContent>
-                      <div className="p-2">
-                        <button
-                            onClick={() => router.push(`/courses/${course.id}/exam`)}
-                            disabled={progress < 100}
-                            className="w-full text-left flex items-center gap-3 p-2 rounded-md transition-colors hover:bg-primary/5 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {progress < 100 ? (
-                              <Lock className="h-5 w-5 text-muted-foreground" />
-                            ) : (
-                                <Star className="h-5 w-5 text-yellow-500" />
-                            )}
-                            <span className="text-sm">Take the Final Exam</span>
-                        </button>
-                      </div>
-                    </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </aside>
+        <div className="flex flex-col h-[calc(100vh-4rem)] bg-secondary">
+          <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
+            {!isMobile && (
+              <aside className="w-full md:w-80 lg:w-96 bg-background border-r flex-shrink-0 overflow-y-auto">
+                 <CourseOutline 
+                    course={course}
+                    progress={progress}
+                    completedLessons={completedLessons}
+                    unlockedLessonsCount={unlockedLessonsCount}
+                    currentLesson={currentLesson}
+                    onLessonClick={handleLessonClick}
+                    onExamClick={handleExamClick}
+                />
+              </aside>
+            )}
 
             <main className="flex-grow p-6 md:p-8 overflow-y-auto">
               {currentLesson ? (
