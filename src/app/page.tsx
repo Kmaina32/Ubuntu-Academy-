@@ -72,22 +72,6 @@ export default function Home() {
   const overlayOpacity = heroData ? 1 - (heroData.imageBrightness / 100) : 0.4;
   const overlayStyle = { backgroundColor: `rgba(0, 0, 0, ${overlayOpacity})` };
 
-  if (loading || !heroData) {
-    return (
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-            <Header />
-            <main className="flex-grow flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              <p className="ml-2">Loading Mkenya Skilled...</p>
-            </main>
-            <Footer />
-        </SidebarInset>
-    </SidebarProvider>
-    )
-  }
-
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -105,7 +89,7 @@ export default function Home() {
                       <div 
                         className={`absolute inset-0 transition-opacity duration-1000 ${showSlideshow ? 'opacity-0' : 'opacity-100'}`}
                       >
-                         {heroData.imageUrl && <Image 
+                         {heroData && heroData.imageUrl && <Image 
                             src={heroData.imageUrl}
                             alt="Hero background"
                             fill
@@ -116,10 +100,10 @@ export default function Home() {
                          <div className="absolute inset-0" style={{...overlayStyle, backgroundColor: `rgba(0,0,0,0.4)`}}></div>
                          <div className="relative z-20 h-full flex flex-col items-center justify-center text-white p-4">
                             <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight font-headline">
-                                {heroData.title}
+                                {heroData?.title}
                             </h1>
                             <p className="text-lg md:text-xl max-w-3xl mx-auto">
-                                {heroData.subtitle}
+                                {heroData?.subtitle}
                             </p>
                          </div>
                       </div>
@@ -149,11 +133,9 @@ export default function Home() {
                                                 <div className="relative z-20 h-full flex flex-col items-center justify-center text-white p-8">
                                                      <h2 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight font-headline">{course.title}</h2>
                                                      <p className="text-md max-w-2xl mx-auto">{course.description}</p>
-                                                      <div className="absolute bottom-8 right-8">
-                                                        <Button asChild>
-                                                            <Link href={`/courses/${course.id}`}>View Course Overview</Link>
-                                                        </Button>
-                                                      </div>
+                                                      <Link href={`/courses/${course.id}`} className="absolute bottom-8 right-8 z-30">
+                                                        <Button>View Course Overview</Button>
+                                                      </Link>
                                                 </div>
                                             </div>
                                         </CarouselItem>
@@ -168,39 +150,48 @@ export default function Home() {
 
           <section className="py-8 md:py-12 bg-background">
             <div className="container mx-auto px-4 md:px-6">
-              <div className="text-center mb-12">
-                  <h2 className="text-3xl font-bold font-headline">Featured Courses</h2>
-                   <div className="relative w-full max-w-md mx-auto mt-4">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            type="search"
-                            placeholder="Search courses..."
-                            className="pl-8"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-              </div>
-              {error ? (
-                <p className="text-destructive text-center">{error}</p>
-              ) : loading ? (
-                <div className="flex justify-center items-center py-10">
+               {loading || !heroData ? (
+                 <div className="flex justify-center items-center py-10">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                    <p className="ml-2">Loading courses...</p>
+                    <p className="ml-2">Loading...</p>
                   </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredCourses.map((course) => (
-                    <CourseCard key={course.id} course={course} aiHint={courseAiHints[course.id] || 'course placeholder'} />
-                  ))}
-
-                   {filteredCourses.length === 0 && (
-                      <div className="md:col-span-2 lg:col-span-3 text-center text-muted-foreground py-10">
-                          <p>No courses found that match your search.</p>
+               ) : (
+                <>
+                  <div className="text-center mb-12">
+                      <h2 className="text-3xl font-bold font-headline">Featured Courses</h2>
+                       <div className="relative w-full max-w-md mx-auto mt-4">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                placeholder="Search courses..."
+                                className="pl-8"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                  </div>
+                  {error ? (
+                    <p className="text-destructive text-center">{error}</p>
+                  ) : loading ? (
+                    <div className="flex justify-center items-center py-10">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                        <p className="ml-2">Loading courses...</p>
                       </div>
-                   )}
-                </div>
-              )}
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {filteredCourses.map((course) => (
+                        <CourseCard key={course.id} course={course} aiHint={courseAiHints[course.id] || 'course placeholder'} />
+                      ))}
+
+                       {filteredCourses.length === 0 && (
+                          <div className="md:col-span-2 lg:col-span-3 text-center text-muted-foreground py-10">
+                              <p>No courses found that match your search.</p>
+                          </div>
+                       )}
+                    </div>
+                  )}
+                </>
+               )}
             </div>
           </section>
         </main>
