@@ -3,8 +3,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { notFound, useRouter, useParams } from 'next/navigation';
-import { Course, Lesson, Module } from '@/lib/mock-data';
-import { getCourseById, updateUserCourseProgress, getUserCourses } from '@/lib/firebase-service';
+import { Course, Lesson, Module, TutorMessage } from '@/lib/mock-data';
+import { getCourseById, updateUserCourseProgress, getUserCourses, saveTutorHistory, getTutorHistory } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -166,16 +166,10 @@ function CourseOutline({ course, progress, completedLessons, unlockedLessonsCoun
     )
 }
 
-type ChatMessage = {
-    role: 'user' | 'assistant';
-    content: string;
-    audioUrl?: string;
-    suggestions?: string[];
-};
-
-function AiTutor({ lesson }: { lesson: Lesson | null }) {
+function AiTutor({ course, lesson }: { course: Course, lesson: Lesson | null }) {
+    const { user } = useAuth();
     const { toast } = useToast();
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [messages, setMessages] = useState<TutorMessage[]>([]);
     const [question, setQuestion] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const audioRef = useRef<HTMLAudioElement>(null);
@@ -186,6 +180,16 @@ function AiTutor({ lesson }: { lesson: Lesson | null }) {
         "Give me a simple analogy for this topic.",
         "Tutor me"
     ];
+
+    useEffect(() => {
+        const loadHistory = async () => {
+            if (user && course && lesson) {
+                const history = await getTutorHistory(user.uid, course.id, lesson.id);
+                setMessages(history);
+            }
+        };
+        loadHistory();
+    }, [user, course, lesson]);
 
     useEffect(() => {
         const transcribeAndSetQuestion = async (audioB64: string) => {
@@ -215,22 +219,28 @@ function AiTutor({ lesson }: { lesson: Lesson | null }) {
     };
     
     const sendTutorRequest = async (currentQuestion: string) => {
-        if (!currentQuestion.trim() || !lesson) return;
+        if (!currentQuestion.trim() || !lesson || !user || !course) return;
 
-        const userMessage: ChatMessage = { role: 'user', content: currentQuestion };
-        setMessages(prev => [...prev, userMessage]);
+        const userMessage: TutorMessage = { role: 'user', content: currentQuestion };
+        const newMessages = [...messages, userMessage];
+        setMessages(newMessages);
         setQuestion('');
         setIsLoading(true);
 
         try {
             const result = await courseTutor({ question: currentQuestion, courseContext: lesson.content });
-            const tutorMessage: ChatMessage = { 
+            const tutorMessage: TutorMessage = { 
                 role: 'assistant', 
                 content: result.answer, 
                 audioUrl: result.answerAudio,
                 suggestions: result.suggestions
             };
-            setMessages(prev => [...prev, tutorMessage]);
+            const finalMessages = [...newMessages, tutorMessage];
+            setMessages(finalMessages);
+            
+            // Save history after getting a response
+            await saveTutorHistory(user.uid, course.id, lesson.id, finalMessages);
+
             if(result.answerAudio) {
                 playAudio(result.answerAudio);
             }
@@ -635,7 +645,7 @@ export default function CoursePlayerPage() {
               )}
             </main>
 
-            <AiTutor lesson={currentLesson} />
+            <AiTutor course={course} lesson={currentLesson} />
             <audio ref={welcomeAudioRef} className="hidden" />
           </div>
         </div>

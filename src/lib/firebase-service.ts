@@ -3,7 +3,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, Assignment, CalendarEvent, Submission } from './mock-data';
+import type { Course, UserCourse, Assignment, CalendarEvent, Submission, TutorMessage } from './mock-data';
 
 export interface RegisteredUser {
     uid: string;
@@ -244,4 +244,28 @@ export async function getSubmissionById(id: string): Promise<Submission | null> 
 export async function updateSubmission(id: string, data: Partial<Submission>): Promise<void> {
     const submissionRef = ref(db, `submissions/${id}`);
     await update(submissionRef, data);
+}
+
+// Tutor History Functions
+export async function saveTutorHistory(
+  userId: string,
+  courseId: string,
+  lessonId: string,
+  messages: TutorMessage[]
+): Promise<void> {
+  const historyRef = ref(db, `tutorHistory/${userId}/${courseId}/${lessonId}`);
+  await set(historyRef, messages);
+}
+
+export async function getTutorHistory(
+  userId: string,
+  courseId: string,
+  lessonId: string
+): Promise<TutorMessage[]> {
+  const historyRef = ref(db, `tutorHistory/${userId}/${courseId}/${lessonId}`);
+  const snapshot = await get(historyRef);
+  if (snapshot.exists()) {
+    return snapshot.val();
+  }
+  return [];
 }

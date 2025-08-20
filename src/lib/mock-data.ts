@@ -91,3 +91,10 @@ export interface UserCourse {
     enrollmentDate: string; // ISO String
     completedLessons?: string[];
 }
+
+export type TutorMessage = {
+  role: 'user' | 'assistant';
+  content: string;
+  audioUrl?: string;
+  suggestions?: string[];
+};
