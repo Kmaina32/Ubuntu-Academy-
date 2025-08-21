@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -140,7 +141,7 @@ export function DiscussionForum({ courseId }: DiscussionForumProps) {
                         <Textarea
                             value={newReplyContent}
                             onChange={(e) => setNewReplyContent(e.target.value)}
-                            placeholder="Share your thoughts and findings here..."
+                            placeholder="Submit your findings to the instructor's topic here..."
                             className="mb-2"
                         />
                         <Button onClick={handleCreateReply} disabled={isSubmitting || !newReplyContent.trim()}>

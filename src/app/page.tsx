@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState, useMemo, useEffect, useRef } from 'react';
@@ -5,16 +6,19 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
-import type { Course } from "@/lib/mock-data";
-import { getAllCourses, getHeroData } from '@/lib/firebase-service';
+import type { Course, UserCourse } from "@/lib/mock-data";
+import { getAllCourses, getHeroData, getUserCourses } from '@/lib/firebase-service';
 import { Loader2, Search } from 'lucide-react';
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function Home() {
+  const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
+  const [userCourses, setUserCourses] = useState<UserCourse[]>([]);
   const [heroData, setHeroData] = useState({ title: '', subtitle: '', imageUrl: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +31,12 @@ export default function Home() {
         const [coursesData, hero] = await Promise.all([getAllCourses(), getHeroData()]);
         setCourses(coursesData);
         setHeroData(hero);
+
+        if (user) {
+            const fetchedUserCourses = await getUserCourses(user.uid);
+            setUserCourses(fetchedUserCourses);
+        }
+
       } catch (err) {
         console.error(err);
         setError("Failed to load page content. Please try again later.");
@@ -35,13 +45,15 @@ export default function Home() {
       }
     };
     fetchData();
-  }, []);
+  }, [user]);
 
   const filteredCourses = useMemo(() => {
     return courses.filter(course =>
       course.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [courses, searchQuery]);
+
+  const enrolledCourseIds = useMemo(() => new Set(userCourses.map(c => c.courseId)), [userCourses]);
 
   const courseAiHints: Record<string, string> = {
     'digital-marketing-101': 'marketing computer',
@@ -107,7 +119,12 @@ export default function Home() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filteredCourses.map((course) => (
-                    <CourseCard key={course.id} course={course} aiHint={courseAiHints[course.id] || 'course placeholder'} />
+                    <CourseCard 
+                        key={course.id} 
+                        course={course} 
+                        isEnrolled={enrolledCourseIds.has(course.id)}
+                        aiHint={courseAiHints[course.id] || 'course placeholder'} 
+                    />
                   ))}
 
                   {filteredCourses.length === 0 && (

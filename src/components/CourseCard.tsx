@@ -5,13 +5,15 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { Course } from '@/lib/mock-data';
+import { Check } from 'lucide-react';
 
 interface CourseCardProps {
   course: Course;
+  isEnrolled: boolean;
   aiHint: string;
 }
 
-export function CourseCard({ course, aiHint }: CourseCardProps) {
+export function CourseCard({ course, isEnrolled, aiHint }: CourseCardProps) {
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
       <CardHeader className="p-0">
@@ -33,9 +35,16 @@ export function CourseCard({ course, aiHint }: CourseCardProps) {
         <p className="text-lg font-bold text-primary">
           {course.price > 0 ? `Ksh ${course.price.toLocaleString()}` : 'Free'}
         </p>
-        <Button asChild>
-          <Link href={`/courses/${course.id}`}>View Course</Link>
-        </Button>
+        {isEnrolled ? (
+            <Button disabled variant="outline">
+                <Check className="mr-2 h-4 w-4" />
+                Enrolled
+            </Button>
+        ) : (
+            <Button asChild>
+                <Link href={`/courses/${course.id}`}>View Course</Link>
+            </Button>
+        )}
       </CardFooter>
     </Card>
   );
