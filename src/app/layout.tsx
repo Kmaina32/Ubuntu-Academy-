@@ -3,6 +3,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/hooks/use-auth';
+import { ThemeEffects } from '@/components/ThemeEffects';
 
 export const metadata: Metadata = {
   title: 'Mkenya Skilled',
@@ -42,6 +43,7 @@ export default async function RootLayout({
           }}
         />
         <AuthProvider>
+            <ThemeEffects />
             {children}
         </AuthProvider>
         <Toaster />
