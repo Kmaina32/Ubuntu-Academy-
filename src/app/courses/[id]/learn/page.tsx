@@ -442,6 +442,159 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
     )
 }
 
+function NotesSheet({ course }: { course: Course }) {
+    const { user, loading: authLoading } = useAuth();
+    const { toast } = useToast();
+
+    const [notes, setNotes] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isDownloading, setIsDownloading] = useState(false);
+    
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const pdfRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!user) return;
+            setIsLoading(true);
+            try {
+                const notesData = await getUserNotes(user.uid, course.id);
+                setNotes(notesData);
+            } catch(error) {
+                console.error("Failed to load notebook data:", error);
+                toast({ title: 'Error', description: 'Could not load notebook data.', variant: 'destructive'});
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (user && course.id) {
+            fetchData();
+        }
+    }, [user, course.id, toast]);
+    
+    const handleDownload = async () => {
+        if (!pdfRef.current || !course || !user) return;
+        setIsDownloading(true);
+
+        const canvas = await html2canvas(pdfRef.current, { scale: 2, backgroundColor: null });
+        const imgData = canvas.toDataURL('image/png');
+        
+        const pdf = new jsPDF('p', 'pt', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = imgWidth / imgHeight;
+
+        let finalWidth = pdfWidth - 80; // with margins
+        let finalHeight = finalWidth / ratio;
+        
+        if (finalHeight > pdfHeight - 80) {
+            finalHeight = pdfHeight - 80;
+            finalWidth = finalHeight * ratio;
+        }
+
+        const x = (pdfWidth - finalWidth) / 2;
+        const y = (pdfHeight - finalHeight) / 2;
+        
+        pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
+        pdf.save(`MkenyaSkilled_Notes_${course.title.replace(/\s+/g, '_')}.pdf`);
+        setIsDownloading(false);
+    };
+
+    const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const newNotes = e.target.value;
+        setNotes(newNotes);
+        
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+
+        setIsSaving(true);
+        timeoutRef.current = setTimeout(async () => {
+            if (user && course) {
+                await saveUserNotes(user.uid, course.id, newNotes);
+                setIsSaving(false);
+            }
+        }, 1500); // Debounce save
+    };
+
+    return (
+        <>
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg">
+                        <NotebookIcon className="h-7 w-7" />
+                    </Button>
+                </SheetTrigger>
+                <SheetContent className="w-full sm:w-[540px] flex flex-col p-0 rounded-l-lg">
+                     <SheetHeader className="p-6 pb-2 border-b">
+                        <div className="flex justify-between items-center">
+                             <div>
+                                <SheetTitle className="flex items-center gap-2">
+                                    <NotebookIcon className="h-5 w-5"/>
+                                    My Notebook
+                                </SheetTitle>
+                                <SheetDescription>
+                                    Notes for: {course.title}
+                                </SheetDescription>
+                            </div>
+                             <Button variant="outline" size="sm" onClick={handleDownload} disabled={isDownloading}>
+                                {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                                PDF
+                            </Button>
+                        </div>
+                    </SheetHeader>
+                     <div className="flex-grow p-2">
+                        {isLoading ? (
+                            <div className="flex justify-center items-center h-full">
+                                <Loader2 className="h-6 w-6 animate-spin"/>
+                            </div>
+                        ) : (
+                           <Textarea
+                                value={notes}
+                                onChange={handleNotesChange}
+                                placeholder="Start typing your notes here..."
+                                className="w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base p-4 bg-secondary/50 rounded-md"
+                            />
+                        )}
+                    </div>
+                     <div className="p-4 border-t text-xs text-muted-foreground text-right h-10 flex items-center justify-end">
+                        {isSaving ? 'Saving...' : 'Saved'}
+                    </div>
+                </SheetContent>
+            </Sheet>
+
+            {/* Hidden element for PDF generation */}
+            <div className="absolute -left-[9999px] top-0 opacity-0" aria-hidden="true">
+                <div ref={pdfRef} className="p-10 bg-white w-[595px] text-black">
+                    <div className="border-b-2 border-black pb-4 mb-4 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                            <Gem className="h-8 w-8 text-primary" />
+                            <span className="font-bold text-xl font-headline">Mkenya Skilled</span>
+                        </div>
+                        <div className="text-right text-xs">
+                            <p className="font-semibold">{user?.displayName}</p>
+                            <p>{formatDate(new Date(), 'PPP')}</p>
+                        </div>
+                    </div>
+                    <h1 className="text-2xl font-bold font-headline mb-2">{course.title}</h1>
+                    <h2 className="text-lg text-gray-600 mb-6">My Personal Notes</h2>
+                    <div className="bg-gray-50 p-4 rounded-md border min-h-[600px]">
+                        <pre className="whitespace-pre-wrap font-body text-sm">{notes || 'No notes taken for this course.'}</pre>
+                    </div>
+                        <p className="text-center text-xs text-gray-400 mt-6">
+                        &copy; {new Date().getFullYear()} Mkenya Skilled. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </>
+    )
+}
+
 export default function CoursePlayerPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
@@ -716,11 +869,7 @@ export default function CoursePlayerPage() {
             </main>
             
             <AiTutor course={course} lesson={currentLesson} settings={tutorSettings} />
-            <Link href={`/notebook/${course.id}`}>
-                 <Button className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg">
-                    <NotebookIcon className="h-7 w-7" />
-                </Button>
-            </Link>
+            <NotesSheet course={course} />
           </div>
         </div>
       </SidebarInset>

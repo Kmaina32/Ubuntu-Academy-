@@ -86,7 +86,7 @@ export default function NotebooksListPage() {
                       {courses.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {courses.map((course) => (
-                                <Link key={course.courseId} href={`/notebook/${course.courseId}`} passHref>
+                                <Link key={course.courseId} href={`/courses/${course.courseId}/learn`} passHref>
                                     <Card className="hover:bg-secondary/50 transition-colors h-full">
                                         <CardHeader>
                                             <CardTitle className="text-lg">{course.title}</CardTitle>
