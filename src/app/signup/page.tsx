@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -17,6 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, Gem } from 'lucide-react';
 import { getHeroData } from '@/lib/firebase-service';
 import { Separator } from '@/components/ui/separator';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 const formSchema = z.object({
   firstName: z.string().min(1, { message: 'First name is required.' }),
@@ -45,6 +46,7 @@ export default function SignupPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState('');
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchImage = async () => {
@@ -188,7 +190,12 @@ export default function SignupPage() {
                           </FormItem>
                       )}
                       />
-                      <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
+                       <ReCAPTCHA
+                          sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+                          onChange={(token) => setRecaptchaToken(token)}
+                          onExpired={() => setRecaptchaToken(null)}
+                        />
+                      <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading || !recaptchaToken}>
                       {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Create Account'}
                       </Button>
                   </form>
