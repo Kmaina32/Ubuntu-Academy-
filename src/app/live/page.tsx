@@ -20,11 +20,8 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 export default function StudentLivePage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
-    const { toast } = useToast();
     const [session, setSession] = useState<LiveSession | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const streamRef = useRef<MediaStream | null>(null);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -42,45 +39,6 @@ export default function StudentLivePage() {
 
         return () => unsubscribe();
     }, []);
-
-    useEffect(() => {
-        const setupCamera = async () => {
-             if (session?.isActive && videoRef.current) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                    videoRef.current.srcObject = stream;
-                    streamRef.current = stream;
-                } catch (error) {
-                    console.error("Error accessing camera on student side:", error);
-                     toast({
-                        variant: 'destructive',
-                        title: 'Camera Access Denied',
-                        description: 'Please enable camera permissions to view the stream.',
-                    });
-                }
-            }
-        };
-        
-        const cleanupCamera = () => {
-            if (streamRef.current) {
-                streamRef.current.getTracks().forEach(track => track.stop());
-            }
-            if (videoRef.current) {
-                videoRef.current.srcObject = null;
-            }
-        };
-
-        if (session?.isActive) {
-            setupCamera();
-        } else {
-            cleanupCamera();
-        }
-
-        return () => {
-            cleanupCamera();
-        };
-
-    }, [session, toast]);
 
     return (
         <SidebarProvider>
@@ -107,8 +65,10 @@ export default function StudentLivePage() {
                                             <span>Connecting to live session...</span>
                                         </div>
                                     ) : session?.isActive ? (
-                                        <div className="w-full h-full rounded-lg bg-black">
-                                            <video ref={videoRef} className="w-full h-full rounded-lg" autoPlay playsInline muted></video>
+                                        <div className="flex flex-col items-center gap-2 text-primary">
+                                            <Video className="h-12 w-12" />
+                                            <p className="font-semibold">Live Session in Progress</p>
+                                            <p className="text-sm">Waiting for instructor's video feed...</p>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col items-center gap-2">
@@ -120,9 +80,9 @@ export default function StudentLivePage() {
                                 </div>
                                 {session?.isActive && (
                                     <Alert variant="default">
-                                        <AlertTitle>Viewing Instructor's Stream</AlertTitle>
+                                        <AlertTitle>Receiving Live Stream</AlertTitle>
                                         <AlertDescription>
-                                            You are now connected to the live classroom. In a production environment, you would see the instructor's video feed here.
+                                            You are connected to the classroom. The instructor's video would appear here in a real WebRTC implementation.
                                         </AlertDescription>
                                     </Alert>
                                 )}
