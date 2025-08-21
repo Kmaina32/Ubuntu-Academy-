@@ -113,3 +113,23 @@ export interface Notification {
     link?: string;
     createdAt: string;
 }
+
+export interface DiscussionReply {
+    id: string;
+    content: string;
+    authorId: string;
+    authorName: string;
+    authorAvatar: string;
+    createdAt: string; // ISO String
+}
+
+export interface DiscussionThread {
+    id: string;
+    title: string;
+    content: string;
+    authorId: string;
+    authorName: string;
+    authorAvatar: string;
+    createdAt: string; // ISO String
+    replies?: DiscussionReply[];
+}

@@ -3,7 +3,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification } from './mock-data';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply } from './mock-data';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -383,4 +383,40 @@ export async function getUserNotes(userId: string, courseId: string): Promise<st
         return snapshot.val();
     }
     return '';
+}
+
+// Discussion Forum Functions
+export async function createThread(courseId: string, threadData: Omit<DiscussionThread, 'id'>): Promise<string> {
+    const threadsRef = ref(db, `discussions/threads/${courseId}`);
+    const newThreadRef = push(threadsRef);
+    await set(newThreadRef, threadData);
+    return newThreadRef.key!;
+}
+
+export async function getThreadsForCourse(courseId: string): Promise<DiscussionThread[]> {
+    const threadsRef = query(ref(db, `discussions/threads/${courseId}`), orderByChild('createdAt'));
+    const snapshot = await get(threadsRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        const threads = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        return threads.reverse();
+    }
+    return [];
+}
+
+export async function createReply(threadId: string, replyData: Omit<DiscussionReply, 'id'>): Promise<string> {
+    const repliesRef = ref(db, `discussions/replies/${threadId}`);
+    const newReplyRef = push(repliesRef);
+    await set(newReplyRef, replyData);
+    return newReplyRef.key!;
+}
+
+export async function getRepliesForThread(threadId: string): Promise<DiscussionReply[]> {
+    const repliesRef = query(ref(db, `discussions/replies/${threadId}`), orderByChild('createdAt'));
+    const snapshot = await get(repliesRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        return Object.keys(data).map(key => ({ id: key, ...data[key] }));
+    }
+    return [];
 }

@@ -37,6 +37,23 @@
         ".read": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
         ".write": "auth != null && auth.uid === $userId"
       }
+    },
+    "discussions": {
+      ".read": "auth != null",
+      "threads": {
+        "$courseId": {
+          ".read": "auth != null",
+          ".write": "auth != null",
+          ".indexOn": "createdAt"
+        }
+      },
+      "replies": {
+        "$threadId": {
+           ".read": "auth != null",
+           ".write": "auth != null",
+           ".indexOn": "createdAt"
+        }
+      }
     }
   }
 }

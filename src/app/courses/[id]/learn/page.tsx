@@ -9,7 +9,7 @@ import { getCourseById, updateUserCourseProgress, getUserCourses, saveTutorHisto
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit, FileText, Sparkles, Pencil, VolumeX, Link as LinkIcon, Notebook as NotebookIcon, Download, Gem } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit, FileText, Sparkles, Pencil, VolumeX, Link as LinkIcon, Notebook as NotebookIcon, Download, Gem, MessageCircle } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -30,6 +30,9 @@ import { useRecorder } from '@/hooks/use-recorder';
 import { Separator } from '@/components/ui/separator';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DiscussionForum } from '@/components/DiscussionForum';
+
 
 function getYouTubeEmbedUrl(url: string | undefined): string | null {
   if (!url) return null;
@@ -794,78 +797,95 @@ export default function CoursePlayerPage() {
             )}
 
             <main className="flex-grow p-6 md:p-8 overflow-y-auto bg-secondary">
-              {currentLesson ? (
-                <div>
-                  <h1 className="text-3xl font-bold mb-4 font-headline">{currentLesson.title}</h1>
-                  <div className="aspect-video bg-black rounded-lg mb-6">
-                    {currentVideoUrl ? (
-                        <iframe
-                            className="w-full h-full rounded-lg"
-                            src={currentVideoUrl}
-                            title={currentLesson.title}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                        ></iframe>
+               <Tabs defaultValue="lesson" className="w-full">
+                  <TabsList className="mb-4">
+                    <TabsTrigger value="lesson">
+                        <Video className="mr-2 h-4 w-4" />
+                        Lesson
+                    </TabsTrigger>
+                    <TabsTrigger value="discussion">
+                        <MessageCircle className="mr-2 h-4 w-4" />
+                        Discussion
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="lesson">
+                     {currentLesson ? (
+                        <div>
+                        <h1 className="text-3xl font-bold mb-4 font-headline">{currentLesson.title}</h1>
+                        <div className="aspect-video bg-black rounded-lg mb-6">
+                            {currentVideoUrl ? (
+                                <iframe
+                                    className="w-full h-full rounded-lg"
+                                    src={currentVideoUrl}
+                                    title={currentLesson.title}
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                ></iframe>
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-muted rounded-lg">
+                                    <Video className="h-16 w-16 text-muted-foreground/50" />
+                                    <p className="ml-4 text-muted-foreground">Video coming soon.</p>
+                                </div>
+                            )}
+                        </div>
+                        <div className="prose max-w-none text-foreground/90">
+                            <p>{currentLesson.content}</p>
+                        </div>
+                        
+                        {currentLesson.googleDriveLinks && currentLesson.googleDriveLinks.length > 0 && (
+                            <div className="mt-8">
+                                <Separator />
+                                <h3 className="text-lg font-semibold my-4">Lesson Resources</h3>
+                                <div className="space-y-2">
+                                    {currentLesson.googleDriveLinks.map(link => (
+                                        <a 
+                                            href={link.url} 
+                                            key={link.url}
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-3 p-3 bg-background border rounded-md hover:bg-secondary transition-colors"
+                                        >
+                                            <GoogleDriveIcon className="h-6 w-6 flex-shrink-0" />
+                                            <span className="text-sm font-medium text-primary">{link.title}</span>
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {!completedLessons.has(currentLesson.id) && (
+                            <Button size="lg" className="bg-accent hover:bg-accent/90 mt-8" onClick={handleCompleteLesson}>
+                            Mark as Completed &amp; Continue
+                            </Button>
+                        )}
+                        </div>
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-muted rounded-lg">
-                            <Video className="h-16 w-16 text-muted-foreground/50" />
-                            <p className="ml-4 text-muted-foreground">Video coming soon.</p>
+                        <div className="flex flex-col items-center justify-center h-full text-center">
+                            {progress >= 100 ? (
+                                <>
+                                    <CheckCircle className="h-24 w-24 text-green-500 mb-4" />
+                                    <h1 className="text-3xl font-bold mb-2 font-headline">You've completed all lessons!</h1>
+                                    <p className="text-muted-foreground mb-6">Great job. Now it's time to test your knowledge.</p>
+                                    <Button size="lg" onClick={() => router.push(`/courses/${course.id}/exam`)}>
+                                        Go to Final Exam
+                                    </Button>
+                                </>
+                            ) : (
+                                <Alert>
+                                    <AlertCircle className="h-4 w-4" />
+                                    <AlertTitle>No lesson selected</AlertTitle>
+                                    <AlertDescription>
+                                        Please select an unlocked lesson from the sidebar to begin.
+                                    </AlertDescription>
+                                </Alert>
+                            )}
                         </div>
                     )}
-                  </div>
-                  <div className="prose max-w-none text-foreground/90">
-                    <p>{currentLesson.content}</p>
-                  </div>
-                  
-                  {currentLesson.googleDriveLinks && currentLesson.googleDriveLinks.length > 0 && (
-                      <div className="mt-8">
-                          <Separator />
-                          <h3 className="text-lg font-semibold my-4">Lesson Resources</h3>
-                          <div className="space-y-2">
-                              {currentLesson.googleDriveLinks.map(link => (
-                                  <a 
-                                    href={link.url} 
-                                    key={link.url}
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-3 p-3 bg-background border rounded-md hover:bg-secondary transition-colors"
-                                >
-                                      <GoogleDriveIcon className="h-6 w-6 flex-shrink-0" />
-                                      <span className="text-sm font-medium text-primary">{link.title}</span>
-                                  </a>
-                              ))}
-                          </div>
-                      </div>
-                  )}
-
-                  {!completedLessons.has(currentLesson.id) && (
-                    <Button size="lg" className="bg-accent hover:bg-accent/90 mt-8" onClick={handleCompleteLesson}>
-                      Mark as Completed &amp; Continue
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                    {progress >= 100 ? (
-                        <>
-                            <CheckCircle className="h-24 w-24 text-green-500 mb-4" />
-                            <h1 className="text-3xl font-bold mb-2 font-headline">You've completed all lessons!</h1>
-                            <p className="text-muted-foreground mb-6">Great job. Now it's time to test your knowledge.</p>
-                            <Button size="lg" onClick={() => router.push(`/courses/${course.id}/exam`)}>
-                                Go to Final Exam
-                            </Button>
-                        </>
-                    ) : (
-                        <Alert>
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertTitle>No lesson selected</AlertTitle>
-                            <AlertDescription>
-                                Please select an unlocked lesson from the sidebar to begin.
-                            </AlertDescription>
-                        </Alert>
-                    )}
-                </div>
-              )}
+                  </TabsContent>
+                   <TabsContent value="discussion">
+                     <DiscussionForum courseId={course.id} />
+                  </TabsContent>
+                </Tabs>
             </main>
             
             <AiTutor course={course} lesson={currentLesson} settings={tutorSettings} />
