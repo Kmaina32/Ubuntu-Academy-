@@ -12,8 +12,10 @@ The platform is divided into two main user experiences: the student-facing appli
 - **Authentication:** Secure user sign-up and login.
 - **Dashboard:** A personalized space for students to view their enrolled courses, track progress, and access certificates.
 - **Course Enrollment:** Supports both free and paid courses, with a simulated M-Pesa payment flow for paid content.
-- **AI-Powered Help Center:** An AI assistant (powered by Genkit) to help students with their questions about the platform.
-- **Learning Interface:** A rich course player with drip-fed content (lessons unlock daily on weekdays), video support, and progress tracking.
+- **AI-Powered Help Center:** An AI assistant to help students with their questions about the platform.
+- **Learning Interface:** A rich course player with video support and progress tracking.
+- **AI Tutor ("Gina"):** Inside the course player, students can chat with an AI tutor. They can ask questions about the lesson, request summaries, or take a quiz. The tutor also supports voice-to-text input and text-to-speech output for an interactive experience.
+- **Integrated Notebook:** Students have access to a personal notebook for each course, directly within the learning interface. Notes are saved automatically and can be downloaded as a branded PDF.
 - **Assessments:** Take multi-part final exams with a mix of multiple-choice and short-answer questions.
 - **Certificate Generation:** Automatically receive a downloadable and printable certificate upon successful course completion.
 - **Profile Management:** Students can update their personal details, which are reflected on their certificates.
@@ -23,6 +25,7 @@ The platform is divided into two main user experiences: the student-facing appli
 - **Course Management:** Full CRUD (Create, Read, Update, Delete) functionality for courses.
 - **AI-Powered Content Generation:** Create entire courses—including modules, lessons, and a final exam—from a single title prompt. The generated content can be reviewed and edited before saving.
 - **AI-Powered Exam Generation:** Generate a comprehensive exam for any existing course with a single click.
+- **Content Drip Control:** Admins can set a content release schedule for each course: unlock lessons daily, weekly, or make them all available at once.
 - **Flexible Exam Management:** Create and manage exams with both multiple-choice and short-answer questions.
 - **AI-Assisted Grading:** Review student exam submissions. Multiple-choice questions are auto-graded, and an AI assistant provides suggested scores and feedback for short-answer questions.
 - **User Management:** View a list of all registered users.
@@ -62,3 +65,4 @@ To get the application running locally, follow these steps:
 
 4.  **Open the Application:**
     Navigate to `http://localhost:9002` in your browser to see the application in action.
+
