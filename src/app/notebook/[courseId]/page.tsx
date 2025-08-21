@@ -3,6 +3,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter, useParams, notFound } from 'next/navigation';
+import Link from 'next/link';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
