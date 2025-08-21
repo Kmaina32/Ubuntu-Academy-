@@ -11,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
 
 const GenerateExamInputSchema = z.object({
   courseTitle: z.string().describe('The title of the course.'),
@@ -50,6 +51,7 @@ export async function generateExam(
 
 const prompt = ai.definePrompt({
   name: 'generateExamPrompt',
+  model: googleAI.model('gemini-2.0-flash'),
   input: {schema: GenerateExamInputSchema},
   output: {schema: GenerateExamOutputSchema},
   prompt: `You are an expert curriculum developer. Your task is to generate a final exam for an online course based on its title and description.
