@@ -101,7 +101,7 @@ export function Certificate({ course, userName }: CertificateProps) {
                          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="50" cy="50" r="48" fill="white" stroke="black" strokeWidth="2"/>
                             <circle cx="50" cy="50" r="42" fill="none" stroke="black" strokeWidth="1" strokeDasharray="4 2"/>
-                            <text x="50" y="35" fontFamily="PT Sans, sans-serif" fontSize="8" textAnchor="middle" fill="black" fontWeight="bold">MKENYA SKILLED</text>
+                            <text x="50" y="35" fontFamily="PT Sans, sans-serif" fontSize="8" textAnchor="middle" fill="black" fontWeight="bold">SkillSet Academy</text>
                             <text x="50" y="48" fontFamily="PT Sans, sans-serif" fontSize="12" textAnchor="middle" fill="#B91C1C" fontWeight="bold">OFFICIAL</text>
                             <text x="50" y="60" fontFamily="PT Sans, sans-serif" fontSize="12" textAnchor="middle" fill="#15803D" fontWeight="bold">SEAL</text>
                             <text x="50" y="75" fontFamily="PT Sans, sans-serif" fontSize="8" textAnchor="middle" fill="black" fontWeight="bold">EST. 2024</text>

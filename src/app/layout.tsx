@@ -7,7 +7,7 @@ import { ThemeEffects } from '@/components/ThemeEffects';
 import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
-  title: 'Mkenya Skilled',
+  title: 'SkillSet Academy',
   description: 'Online courses for Kenyans, by Kenyans.',
 };
 
