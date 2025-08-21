@@ -1,10 +1,9 @@
 
 
-
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession } from './mock-data';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program } from './mock-data';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -440,4 +439,44 @@ export async function getLiveSession(): Promise<LiveSession | null> {
 export async function updateLiveSession(data: Partial<LiveSession>): Promise<void> {
     const sessionRef = ref(db, 'liveSession');
     await update(sessionRef, data);
+}
+
+// Program Functions
+export async function createProgram(programData: Omit<Program, 'id'>): Promise<string> {
+    const programsRef = ref(db, 'programs');
+    const newProgramRef = push(programsRef);
+    await set(newProgramRef, programData);
+    return newProgramRef.key!;
+}
+
+export async function getAllPrograms(): Promise<Program[]> {
+    const programsRef = ref(db, 'programs');
+    const snapshot = await get(programsRef);
+    if (snapshot.exists()) {
+        const programsData = snapshot.val();
+        return Object.keys(programsData).map(key => ({
+            id: key,
+            ...programsData[key]
+        }));
+    }
+    return [];
+}
+
+export async function getProgramById(id: string): Promise<Program | null> {
+    const programRef = ref(db, `programs/${id}`);
+    const snapshot = await get(programRef);
+    if (snapshot.exists()) {
+        return { id, ...snapshot.val() };
+    }
+    return null;
+}
+
+export async function updateProgram(id: string, data: Partial<Program>): Promise<void> {
+    const programRef = ref(db, `programs/${id}`);
+    await update(programRef, data);
+}
+
+export async function deleteProgram(id: string): Promise<void> {
+    const programRef = ref(db, `programs/${id}`);
+    await remove(programRef);
 }
