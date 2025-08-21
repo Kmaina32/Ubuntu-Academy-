@@ -76,12 +76,12 @@ export default function UnverifiedPage() {
                     </div>
                     <CardTitle className="text-2xl font-headline">Verify Your Email</CardTitle>
                     <CardDescription>
-                        A verification link has been sent to <strong>{user.email}</strong>. Please check your inbox (and spam folder) to continue.
+                        A verification link has been sent to <strong>{user.email}</strong>. Please check your inbox to continue.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <p className="text-sm text-muted-foreground">
-                        You need to verify your email address to access your dashboard and courses.
+                        Can't find the email? Check your spam or junk folder. If it's not there, you can resend the link.
                     </p>
                     <Button onClick={handleResend} disabled={isSending}>
                       {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MailCheck className="mr-2 h-4 w-4" />}
