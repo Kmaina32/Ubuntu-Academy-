@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, ArrowLeft, VideoOff } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-import { getLiveSession } from '@/lib/firebase-service';
 import type { LiveSession } from '@/lib/mock-data';
 import { db } from '@/lib/firebase';
 import { ref, onValue } from 'firebase/database';
@@ -16,6 +15,7 @@ import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function StudentLivePage() {
     const { user, loading: authLoading } = useAuth();
@@ -23,13 +23,46 @@ export default function StudentLivePage() {
     const { toast } = useToast();
     const [session, setSession] = useState<LiveSession | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
+    const streamRef = useRef<MediaStream | null>(null);
 
      useEffect(() => {
         if (!authLoading && !user) {
             router.push('/login');
         }
     }, [user, authLoading, router]);
+    
+    useEffect(() => {
+        const getCameraPermission = async () => {
+        try {
+            // In a real app, this would be a remote stream. For demo, we use local camera.
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            setHasCameraPermission(true);
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+            streamRef.current = stream;
+        } catch (error) {
+            console.error('Error accessing camera:', error);
+            setHasCameraPermission(false);
+            toast({
+                variant: 'destructive',
+                title: 'Camera Access Denied',
+                description: 'Please enable camera permissions in your browser settings to view the live session.',
+            });
+        }
+        };
+
+        getCameraPermission();
+
+        return () => {
+             if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+            }
+        }
+    }, [toast]);
+
 
     useEffect(() => {
         setIsLoading(true);
@@ -37,7 +70,14 @@ export default function StudentLivePage() {
 
         const unsubscribe = onValue(sessionRef, (snapshot) => {
             if (snapshot.exists()) {
-                setSession(snapshot.val());
+                const sessionData = snapshot.val();
+                setSession(sessionData);
+
+                if (!sessionData.isActive && streamRef.current) {
+                    streamRef.current.getTracks().forEach(track => track.stop());
+                     if(videoRef.current) videoRef.current.srcObject = null;
+                }
+
             } else {
                 setSession(null);
             }
@@ -46,18 +86,6 @@ export default function StudentLivePage() {
 
         return () => unsubscribe();
     }, []);
-
-    useEffect(() => {
-         // In a real app, you would use the streamData from the session
-        // to establish a WebRTC peer connection and display the remote stream.
-        // For this demo, we'll just simulate it.
-        if (session?.isActive && videoRef.current) {
-            // This is a placeholder. You'd replace this with your WebRTC logic.
-            // For the demo, we assume the video would just play.
-            console.log("Live session is active, video should be playing.");
-        }
-    }, [session])
-
 
     return (
         <SidebarProvider>
@@ -84,9 +112,7 @@ export default function StudentLivePage() {
                                             <span>Connecting to live session...</span>
                                         </div>
                                     ) : session?.isActive ? (
-                                        <div className="w-full h-full flex items-center justify-center bg-black text-white rounded-lg">
-                                            <p>Live stream would appear here.</p>
-                                        </div>
+                                        <video ref={videoRef} className="w-full h-full rounded-lg" autoPlay muted playsInline />
                                     ) : (
                                         <div className="flex flex-col items-center gap-2">
                                             <VideoOff className="h-12 w-12" />
@@ -95,6 +121,14 @@ export default function StudentLivePage() {
                                         </div>
                                     )}
                                 </div>
+                                 {hasCameraPermission === false && (
+                                    <Alert variant="destructive">
+                                        <AlertTitle>Camera Access Required</AlertTitle>
+                                        <AlertDescription>
+                                            Please allow camera access in your browser to view the live session.
+                                        </AlertDescription>
+                                    </Alert>
+                                )}
                             </CardContent>
                         </Card>
                     </div>
