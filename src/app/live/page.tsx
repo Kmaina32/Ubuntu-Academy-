@@ -44,16 +44,19 @@ export default function StudentLivePage() {
             setIsLoading(false);
         });
 
-        // In a real app, you would use the streamData from the session
+        return () => unsubscribe();
+    }, []);
+
+    useEffect(() => {
+         // In a real app, you would use the streamData from the session
         // to establish a WebRTC peer connection and display the remote stream.
         // For this demo, we'll just simulate it.
         if (session?.isActive && videoRef.current) {
             // This is a placeholder. You'd replace this with your WebRTC logic.
-            // videoRef.current.srcObject = remoteStream;
+            // For the demo, we assume the video would just play.
+            console.log("Live session is active, video should be playing.");
         }
-
-        return () => unsubscribe();
-    }, [session?.isActive]);
+    }, [session])
 
 
     return (
@@ -82,9 +85,9 @@ export default function StudentLivePage() {
                                         </div>
                                     ) : session?.isActive ? (
                                         // This video tag would be used by WebRTC to display the stream
-                                        <video ref={videoRef} className="w-full h-full rounded-lg" autoPlay playsInline>
-                                            {/* For demo purposes, we show a placeholder */}
-                                            <div className="w-full h-full flex items-center justify-center">
+                                        <video ref={videoRef} className="w-full h-full rounded-lg bg-black" autoPlay playsInline>
+                                            {/* For demo purposes, we show a placeholder inside the video tag which won't be visible if a stream is active */}
+                                            <div className="w-full h-full flex items-center justify-center text-white">
                                                 <p>Live stream would appear here.</p>
                                             </div>
                                         </video>
