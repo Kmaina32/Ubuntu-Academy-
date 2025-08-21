@@ -28,16 +28,19 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                const theme = localStorage.getItem('theme') || 'light';
-                document.documentElement.className = theme;
-                document.documentElement.style.colorScheme = theme;
-                if (theme === 'dark') {
-                  document.documentElement.classList.add('dark');
-                }
-                const activeTheme = localStorage.getItem('mkenya-skilled-theme');
-                if (activeTheme && activeTheme !== 'default') {
-                    document.documentElement.classList.add('theme-' + activeTheme);
-                }
+                try {
+                  const theme = localStorage.getItem('theme') || 'light';
+                  document.documentElement.className = theme;
+                  document.documentElement.style.colorScheme = theme;
+                  if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                  }
+                  
+                  const activeTheme = localStorage.getItem('mkenya-skilled-theme');
+                  if (activeTheme && activeTheme !== 'default') {
+                      document.documentElement.classList.add('theme-' + activeTheme);
+                  }
+                } catch (e) {}
               })();
             `,
           }}

@@ -203,39 +203,60 @@
 
 /* New Year Fireworks */
 .theme-new-year .fireworks { display: block; }
+
 .firework {
-    position: absolute;
-    width: 0.5rem;
-    height: 0.5rem;
-    background: #FFD700; /* Gold */
-    border-radius: 50%;
-    animation: launch 2s ease-out infinite;
-    opacity: 0;
-}
-.firework::before,
-.firework::after {
-    content: '';
-    position: absolute;
-    width: inherit;
-    height: inherit;
-    background: inherit;
-    border-radius: 50%;
-}
-.firework::before {
-    animation: explode 0.5s 1.8s ease-out forwards;
-}
-.firework::after {
-    animation: explode 0.8s 1.7s ease-out forwards;
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: gold;
+  border-radius: 50%;
+  opacity: 1;
+  animation: launch 1.5s ease-in-out infinite;
 }
 
 @keyframes launch {
-    0% { transform: translateY(100vh); opacity: 0; }
-    50% { opacity: 1; }
-    100% { transform: translateY(20vh); opacity: 0; }
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-100px) scale(1.5);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-200px) scale(0);
+    opacity: 0;
+  }
 }
+
+.firework::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 2px;
+  height: 50px;
+  background: linear-gradient(to top, rgba(255,215,0,0.5), transparent);
+  transform: translateX(-50%);
+}
+
+.firework > div {
+  position: absolute;
+  width: 2px;
+  height: 70px;
+  background: gold;
+  transform-origin: 50% 100%;
+  opacity: 0;
+  animation: explode 0.8s 1.5s ease-out infinite;
+}
+
 @keyframes explode {
-    to {
-        transform: scale(10);
-        opacity: 0;
-    }
+  0% {
+    transform: rotate(0deg) translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(0deg) translateY(50px) scale(0);
+    opacity: 0;
+  }
 }

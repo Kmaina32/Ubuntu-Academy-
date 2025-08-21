@@ -31,6 +31,7 @@ const heroFormSchema = z.object({
   imageBrightness: z.coerce.number().min(0).max(100),
   recaptchaEnabled: z.boolean(),
   theme: z.string().optional(),
+  animationsEnabled: z.boolean(),
 });
 
 export default function AdminHeroPage() {
@@ -50,6 +51,7 @@ export default function AdminHeroPage() {
       imageBrightness: 60,
       recaptchaEnabled: true,
       theme: 'default',
+      animationsEnabled: true,
     },
   });
 
@@ -65,10 +67,11 @@ export default function AdminHeroPage() {
           title: remoteData.hero_title || dbData.title,
           subtitle: remoteData.hero_subtitle || dbData.subtitle,
           theme: dbData.theme || 'default',
+          animationsEnabled: dbData.animationsEnabled !== false, // default to true if not set
         });
 
       } catch (error) {
-        console.error("Failed to fetch site data:", error);
+        console.error("Failed to site data:", error);
         toast({
           title: 'Error',
           description: 'Failed to load site data. Please try again.',
@@ -107,6 +110,7 @@ export default function AdminHeroPage() {
         localStorage.setItem('mkenya-skilled-theme', values.theme);
         applyTheme(values.theme);
       }
+       localStorage.setItem('mkenya-skilled-animations', String(values.animationsEnabled));
       
       toast({
         title: 'Success!',
@@ -176,7 +180,27 @@ export default function AdminHeroPage() {
                                 </FormItem>
                             )}
                         />
-
+                         <FormField
+                          control={form.control}
+                          name="animationsEnabled"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                              <div className="space-y-0.5">
+                                <FormLabel>Enable Theme Animations</FormLabel>
+                                <FormMessage />
+                                 <p className="text-sm text-muted-foreground">
+                                    Show animated effects like snow or fireworks for active themes.
+                                </p>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
 
                         <div>
                             <h3 className="text-lg font-semibold flex items-center gap-2"><Rss /> Homepage Content (Remotely Configured)</h3>

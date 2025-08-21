@@ -27,6 +27,7 @@ export interface HeroData {
     imageBrightness: number;
     recaptchaEnabled: boolean;
     theme?: string;
+    animationsEnabled?: boolean;
 }
 
 export interface TutorSettings {
@@ -181,6 +182,7 @@ export async function getHeroData(): Promise<HeroData> {
     imageBrightness: 60,
     recaptchaEnabled: true,
     theme: 'default',
+    animationsEnabled: true,
   };
 
   const dbData = snapshot.exists() ? snapshot.val() : {};
