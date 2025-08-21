@@ -4,9 +4,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, VideoOff } from 'lucide-react';
+import { Loader2, ArrowLeft, VideoOff, Video } from 'lucide-react';
 import Link from 'next/link';
-import { useToast } from '@/hooks/use-toast';
 import type { LiveSession } from '@/lib/mock-data';
 import { db } from '@/lib/firebase';
 import { ref, onValue } from 'firebase/database';
@@ -15,16 +14,15 @@ import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function StudentLivePage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
-    const { toast } = useToast();
     const [session, setSession] = useState<LiveSession | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const videoRef = useRef<HTMLVideoElement>(null);
 
-     useEffect(() => {
+    useEffect(() => {
         if (!authLoading && !user) {
             router.push('/login');
         }
@@ -41,6 +39,16 @@ export default function StudentLivePage() {
 
         return () => unsubscribe();
     }, []);
+
+    useEffect(() => {
+        // This effect handles the video display based on session status
+        if (session?.isActive && videoRef.current) {
+            // In a real app with WebRTC, you would attach the remote stream here.
+            // For this simulation, we just ensure the video element is visible.
+        } else if (!session?.isActive && videoRef.current) {
+            videoRef.current.srcObject = null;
+        }
+    }, [session]);
 
     return (
         <SidebarProvider>
@@ -67,8 +75,14 @@ export default function StudentLivePage() {
                                             <span>Connecting to live session...</span>
                                         </div>
                                     ) : session?.isActive ? (
-                                        <div className="w-full h-full rounded-lg bg-black flex items-center justify-center">
-                                            <p className="text-white">Instructor's video stream would appear here.</p>
+                                        <div className="w-full h-full rounded-lg bg-black flex items-center justify-center text-white">
+                                            {/* This video tag would be used by a real WebRTC implementation */}
+                                            <video ref={videoRef} className="w-full h-full" autoPlay playsInline></video>
+                                            <div className="absolute flex flex-col items-center gap-2 pointer-events-none">
+                                                <Video className="h-12 w-12" />
+                                                <p className="font-semibold">Instructor's Live Stream</p>
+                                                <p className="text-sm">(This is a simulated video feed)</p>
+                                            </div>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col items-center gap-2">
