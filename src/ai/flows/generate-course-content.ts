@@ -25,12 +25,18 @@ const YoutubeLinkSchema = z.object({
     url: z.string().url().describe('The URL of the YouTube video.'),
 });
 
+const GoogleDriveLinkSchema = z.object({
+    title: z.string().describe('The title of the Google Drive resource.'),
+    url: z.string().url().describe('The shareable URL of the Google Drive file.'),
+});
+
 const LessonSchema = z.object({
     id: z.string().describe("A unique identifier for the lesson, e.g., 'lesson-1'."),
     title: z.string().describe('The title of the lesson.'),
     duration: z.string().describe("The estimated duration of the lesson, e.g., '5 min' or '10 min'."),
     content: z.string().describe('The full, extensive, and detailed content of the lesson text. It should be comprehensive and provide in-depth information.'),
     youtubeLinks: z.array(YoutubeLinkSchema).describe('An array of relevant YouTube links for this lesson. Extract these from the course context if available.'),
+    googleDriveLinks: z.array(GoogleDriveLinkSchema).describe('An array for Google Drive links. ALWAYS provide an EMPTY array as you cannot access Google Drive.'),
 });
 
 const ModuleSchema = z.object({
@@ -98,7 +104,9 @@ Please generate the following content:
 1.  **Long Description**: A detailed description of what the course is about, who it's for, and what students will learn. Minimum 100 characters.
 2.  **Duration**: The estimated total duration of the course.
 3.  **Modules**: A list of exactly 2 modules. Each module must have a unique ID, a title, and its list of lessons.
-4.  **Lessons**: Distribute at least 5 lessons between the modules. Each lesson must have a unique ID, title, duration (e.g., "5 min"), and full, extensive lesson content. Extract relevant YouTube links from the context for each lesson. If none are found, provide an EMPTY array.
+4.  **Lessons**: Distribute at least 5 lessons between the modules. Each lesson must have a unique ID, title, duration (e.g., "5 min"), and full, extensive lesson content. 
+    - For youtubeLinks, extract relevant YouTube links from the context. If none are found, provide an EMPTY array.
+    - For googleDriveLinks, ALWAYS provide an EMPTY array.
 5.  **Exam**: A final exam with an array of exactly 5 questions. This exam must contain three (3) 'multiple-choice' questions and two (2) 'short-answer' questions. Each question needs a unique ID, type, text, max points (always 10), and the correct answer details (referenceAnswer for short-answer, options array and correctAnswer index for multiple-choice).
 
 Generate the full course structure now.`,

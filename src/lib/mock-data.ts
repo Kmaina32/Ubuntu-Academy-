@@ -5,12 +5,18 @@ export interface YoutubeLink {
   url: string;
 }
 
+export interface GoogleDriveLink {
+  title: string;
+  url: string;
+}
+
 export interface Lesson {
   id: string;
   title: string;
   duration: string;
   content: string;
   youtubeLinks?: YoutubeLink[];
+  googleDriveLinks?: GoogleDriveLink[];
 }
 
 export interface Module {

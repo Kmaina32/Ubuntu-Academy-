@@ -13,9 +13,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Loader2, Trash2, PlusCircle } from 'lucide-react';
 import type { GenerateCourseContentOutput, ExamQuestion } from '@/ai/flows/generate-course-content';
+import { Separator } from './ui/separator';
 
 // Zod schema for the form, mirroring GenerateCourseContentOutput
 const youtubeLinkSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  url: z.string().url('Must be a valid URL'),
+});
+
+const googleDriveLinkSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   url: z.string().url('Must be a valid URL'),
 });
@@ -26,6 +32,7 @@ const lessonSchema = z.object({
   duration: z.string().min(1, 'Duration is required'),
   content: z.string().min(10, 'Content must be at least 10 characters'),
   youtubeLinks: z.array(youtubeLinkSchema),
+  googleDriveLinks: z.array(googleDriveLinkSchema),
 });
 
 const moduleSchema = z.object({
@@ -97,7 +104,7 @@ export function CourseReviewModal({ isOpen, onClose, courseContent, onSave, isSa
         <DialogHeader>
           <DialogTitle>Review & Edit Course Content</DialogTitle>
           <DialogDescription>
-            The AI has generated the following course structure. Review, edit, and add video links before saving.
+            The AI has generated the following course structure. Review, edit, and add resource links before saving.
           </DialogDescription>
         </DialogHeader>
         <div className="flex-grow overflow-y-auto pr-6 -mr-6">
@@ -153,7 +160,6 @@ export function CourseReviewModal({ isOpen, onClose, courseContent, onSave, isSa
 
                 <h3 className="text-lg font-semibold">Final Exam</h3>
                  <div className="p-4 border rounded-lg space-y-4">
-                    {/* This part needs to be updated to handle an array of questions */}
                     <p className="text-sm text-muted-foreground">Exam question management is handled separately after course creation. You can add/edit questions from the "Assignments" section in the admin dashboard.</p>
                 </div>
             </form>
@@ -214,6 +220,8 @@ function LessonFields({ moduleIndex, form }: { moduleIndex: number, form: any}) 
                         )}
                     />
                     <YouTubeLinkFields moduleIndex={moduleIndex} lessonIndex={lessonIndex} form={form} />
+                    <Separator />
+                    <GoogleDriveLinkFields moduleIndex={moduleIndex} lessonIndex={lessonIndex} form={form} />
                 </div>
             ))}
         </div>
@@ -265,6 +273,56 @@ function YouTubeLinkFields({ moduleIndex, lessonIndex, form }: { moduleIndex: nu
             <Button type="button" variant="outline" size="sm" onClick={() => appendLink({ title: '', url: ''})}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Video Link
+            </Button>
+        </div>
+    )
+}
+
+function GoogleDriveLinkFields({ moduleIndex, lessonIndex, form }: { moduleIndex: number, lessonIndex: number, form: any}) {
+    const { fields: linkFields, remove: removeLink, append: appendLink } = useFieldArray({
+        control: form.control,
+        name: `modules.${moduleIndex}.lessons.${lessonIndex}.googleDriveLinks`
+    });
+
+    return (
+        <div className="space-y-2">
+            <FormLabel>Google Drive Resources</FormLabel>
+            {linkFields.map((link, linkIndex) => (
+                <div key={link.id} className="flex flex-col md:flex-row items-stretch md:items-end gap-2">
+                     <FormField
+                        control={form.control}
+                        name={`modules.${moduleIndex}.lessons.${lessonIndex}.googleDriveLinks.${linkIndex}.title`}
+                        render={({ field }) => (
+                             <FormItem className="flex-grow">
+                                <FormLabel className="text-xs">Resource Title</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="e.g., Lesson 1 Slides" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name={`modules.${moduleIndex}.lessons.${lessonIndex}.googleDriveLinks.${linkIndex}.url`}
+                        render={({ field }) => (
+                            <FormItem className="flex-grow">
+                                <FormLabel className="text-xs">Shareable URL</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="https://docs.google.com/..." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <Button type="button" variant="ghost" size="icon" className="text-destructive shrink-0" onClick={() => removeLink(linkIndex)}>
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </div>
+            ))}
+            <Button type="button" variant="outline" size="sm" onClick={() => appendLink({ title: '', url: ''})}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Drive Link
             </Button>
         </div>
     )
