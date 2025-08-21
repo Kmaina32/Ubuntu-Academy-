@@ -12,8 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Loader2, Shield } from 'lucide-react';
-import { getHeroData, saveHeroData } from '@/lib/firebase-service';
+import { ArrowLeft, Loader2, Shield, Rss } from 'lucide-react';
+import { getHeroData, saveHeroData, getRemoteConfigValues, saveRemoteConfigValues } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
@@ -54,13 +54,20 @@ export default function AdminHeroPage() {
     const fetchHeroData = async () => {
       setIsFetching(true);
       try {
-        const data = await getHeroData();
-        form.reset(data);
+        const dbData = await getHeroData();
+        const remoteData = await getRemoteConfigValues(['hero_title', 'hero_subtitle']);
+
+        form.reset({
+          ...dbData,
+          title: remoteData.hero_title || dbData.title,
+          subtitle: remoteData.hero_subtitle || dbData.subtitle,
+        });
+
       } catch (error) {
-        console.error("Failed to fetch hero data:", error);
+        console.error("Failed to fetch site data:", error);
         toast({
           title: 'Error',
-          description: 'Failed to load hero data. Please try again.',
+          description: 'Failed to load site data. Please try again.',
           variant: 'destructive',
         });
       } finally {
@@ -73,7 +80,16 @@ export default function AdminHeroPage() {
   const onSubmit = async (values: z.infer<typeof heroFormSchema>) => {
     setIsLoading(true);
     try {
-      await saveHeroData(values);
+      // Save Remote Config values
+      await saveRemoteConfigValues({
+        hero_title: values.title,
+        hero_subtitle: values.subtitle,
+      });
+
+      // Save other settings to the database
+      const { title, subtitle, ...dbValues } = values;
+      await saveHeroData(dbValues);
+      
       toast({
         title: 'Success!',
         description: 'Site settings have been updated.',
@@ -112,7 +128,11 @@ export default function AdminHeroPage() {
                   ) : (
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                        <h3 className="text-lg font-semibold">Homepage Hero</h3>
+                        
+                        <h3 className="text-lg font-semibold flex items-center gap-2"><Rss /> Homepage Content (Remotely Configured)</h3>
+                        <p className="text-sm text-muted-foreground -mt-4">
+                            These values can be updated instantly for all users without needing to redeploy the app.
+                        </p>
                         <FormField
                           control={form.control}
                           name="title"
@@ -139,6 +159,10 @@ export default function AdminHeroPage() {
                             </FormItem>
                           )}
                         />
+                        
+                        <Separator />
+
+                        <h3 className="text-lg font-semibold">Homepage Hero</h3>
                         <FormField
                           control={form.control}
                           name="imageUrl"

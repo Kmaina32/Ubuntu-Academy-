@@ -3,6 +3,7 @@ import { initializeApp, getApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getDatabase } from 'firebase/database';
 import { getStorage } from 'firebase/storage';
+import { getRemoteConfig } from 'firebase/remote-config';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBe1wU8Q-415auhlXf9k7ZXefvLX9TPOF0",
@@ -20,5 +21,12 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getDatabase(app);
 const storage = getStorage(app);
+const remoteConfig = getRemoteConfig(app);
 
-export { app, auth, db, storage };
+// You can set default values for Remote Config here
+remoteConfig.defaultConfig = {
+    "hero_title": "Unlock Your Potential.",
+    "hero_subtitle": "Quality, affordable courses designed for the Kenyan market."
+};
+
+export { app, auth, db, storage, remoteConfig };

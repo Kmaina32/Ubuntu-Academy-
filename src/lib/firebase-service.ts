@@ -4,6 +4,9 @@ import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import type { Course, UserCourse, Assignment, CalendarEvent, Submission, TutorMessage } from './mock-data';
+import { getRemoteConfig, fetchAndActivate, getString, getValue } from 'firebase/remote-config';
+import { app } from './firebase';
+
 
 export interface RegisteredUser {
     uid: string;
@@ -175,16 +178,30 @@ export async function getHeroData(): Promise<HeroData> {
         imageBrightness: 60, // Represents 60% brightness (40% overlay opacity)
         recaptchaEnabled: true,
     };
+    
+    // Fetch remote config values
+    const remoteConfig = getRemoteConfig(app);
+    await fetchAndActivate(remoteConfig);
+
+    const remoteTitle = getString(remoteConfig, 'hero_title');
+    const remoteSubtitle = getString(remoteConfig, 'hero_subtitle');
+
 
     if (snapshot.exists()) {
         const data = snapshot.val();
-        // Ensure all fields are present, providing defaults if they are not
         return {
             ...defaults,
             ...data,
+            title: remoteTitle || data.title,
+            subtitle: remoteSubtitle || data.subtitle,
         };
     }
-    return defaults;
+
+    return {
+        ...defaults,
+        title: remoteTitle || defaults.title,
+        subtitle: remoteSubtitle || defaults.subtitle,
+    };
 }
 
 export async function saveHeroData(data: Partial<HeroData>): Promise<void> {
@@ -306,4 +323,24 @@ export async function getTutorSettings(): Promise<TutorSettings> {
         return { ...defaults, ...snapshot.val() };
     }
     return defaults;
+}
+
+// Remote Config Functions
+export async function getRemoteConfigValues(keys: string[]): Promise<Record<string, string>> {
+    const remoteConfig = getRemoteConfig(app);
+    await fetchAndActivate(remoteConfig);
+    
+    const configValues: Record<string, string> = {};
+    keys.forEach(key => {
+        configValues[key] = getString(remoteConfig, key);
+    });
+    return configValues;
+}
+
+export async function saveRemoteConfigValues(data: Record<string, string>): Promise<void> {
+    // Note: This is a client-side mock. In a real app, you'd use the Admin SDK on a server.
+    // We will save to RTDB as a stand-in for this demo.
+    const remoteConfigRef = ref(db, 'remoteConfig');
+    await update(remoteConfigRef, data);
+    console.log("Remote config values saved to RTDB for demo purposes:", data);
 }

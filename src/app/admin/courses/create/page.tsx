@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, Sparkles } from 'lucide-react';
@@ -25,6 +26,7 @@ const courseFormSchema = z.object({
   category: z.string().min(3, 'Category is required'),
   price: z.coerce.number().min(0, 'Price cannot be negative'),
   duration: z.string().min(3, 'Duration is required (e.g., 5 Weeks)'),
+  courseContext: z.string().optional(),
 });
 
 type CourseFormValues = z.infer<typeof courseFormSchema>;
@@ -45,6 +47,7 @@ export default function CreateCoursePage() {
       category: '',
       price: 0,
       duration: '',
+      courseContext: '',
     },
   });
 
@@ -56,7 +59,10 @@ export default function CreateCoursePage() {
       description: 'The AI is building your course. This may take a moment.',
     });
     try {
-      const content = await generateCourseContent({ courseTitle: values.title });
+      const content = await generateCourseContent({ 
+          courseTitle: values.title,
+          courseContext: values.courseContext
+      });
       setGeneratedContent(content);
       // Prefill the duration from the form if the AI didn't provide one.
       if (values.duration && !content.duration) {
@@ -140,6 +146,20 @@ export default function CreateCoursePage() {
                         <FormControl>
                           <Input placeholder="e.g., Introduction to Digital Marketing" {...field} />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <FormField
+                    control={form.control}
+                    name="courseContext"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Course Context (Optional)</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Paste any existing course material, topics, or YouTube links here to guide the AI..." {...field} className="min-h-[150px]" />
+                        </FormControl>
+                         <p className="text-sm text-muted-foreground">Provide source material to improve AI generation quality.</p>
                         <FormMessage />
                       </FormItem>
                     )}
