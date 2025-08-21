@@ -21,7 +21,7 @@ export type GenerateExamInput = z.infer<typeof GenerateExamInputSchema>;
 
 const ShortAnswerQuestionSchema = z.object({
     id: z.string().describe("A unique identifier for the question, e.g., 'q-1'."),
-    type: z.string().describe("The type of the question, should be 'short-answer'."),
+    type: z.literal('short-answer').describe("The type of the question, must be 'short-answer'."),
     question: z.string().describe('The exam question.'),
     referenceAnswer: z.string().describe('The detailed, correct reference answer for the exam question.'),
     maxPoints: z.number().describe('The maximum points possible for the exam question, always set to 10.'),
@@ -29,7 +29,7 @@ const ShortAnswerQuestionSchema = z.object({
 
 const MultipleChoiceQuestionSchema = z.object({
     id: z.string().describe("A unique identifier for the question, e.g., 'q-2'."),
-    type: z.string().describe("The type of the question, should be 'multiple-choice'."),
+    type: z.literal('multiple-choice').describe("The type of the question, must be 'multiple-choice'."),
     question: z.string().describe('The exam question.'),
     options: z.array(z.string()).length(4).describe('An array of 4 possible answers for the question.'),
     correctAnswer: z.coerce.number().min(0).max(3).describe('The index of the correct answer in the options array.'),
@@ -51,19 +51,24 @@ export async function generateExam(
 
 const prompt = ai.definePrompt({
   name: 'generateExamPrompt',
-  model: googleAI.model('gemini-2.0-flash'),
+  model: 'gemini-1.5-flash',
   input: {schema: GenerateExamInputSchema},
   output: {schema: GenerateExamOutputSchema},
   prompt: `You are an expert curriculum developer. Your task is to generate a final exam for an online course based on its title and description.
 
 The exam must be rigorous and test the core concepts of the course.
-It must contain at least five (5) questions.
+The final exam must contain at least five questions.
 The questions should be a mix of multiple-choice and short-answer types.
+
+**CRITICAL INSTRUCTIONS FOR QUESTION FORMAT:**
+- For **'multiple-choice'** questions, you MUST provide an \`options\` array with exactly 4 string values and a \`correctAnswer\` field with the index (0-3) of the correct option. DO NOT use \`referenceAnswer\` for multiple-choice questions.
+- For **'short-answer'** questions, you MUST provide a \`referenceAnswer\` field with a detailed correct answer. DO NOT use \`options\` or \`correctAnswer\` for short-answer questions.
+- Every question MUST have a \`type\` field set to either 'multiple-choice' or 'short-answer'.
 
 Course Title: {{{courseTitle}}}
 Course Description: {{{courseDescription}}}
 
-Please generate the full exam now. Ensure that multiple-choice questions have exactly four options and a correct answer index, and short-answer questions have a detailed reference answer. It is critical that the final exam contains at least five questions.`,
+Please generate the full exam now.`,
 });
 
 const generateExamFlow = ai.defineFlow(
