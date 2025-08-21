@@ -3,7 +3,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, Assignment, CalendarEvent, Submission, TutorMessage } from './mock-data';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification } from './mock-data';
 import { getRemoteConfig, fetchAndActivate, getString, getValue } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -343,4 +343,30 @@ export async function saveRemoteConfigValues(data: Record<string, string>): Prom
     const remoteConfigRef = ref(db, 'remoteConfig');
     await update(remoteConfigRef, data);
     console.log("Remote config values saved to RTDB for demo purposes:", data);
+}
+
+
+// Notification Functions
+export async function createNotification(notificationData: Omit<Notification, 'id' | 'createdAt'>): Promise<string> {
+    const notificationsRef = ref(db, 'notifications');
+    const newNotificationRef = push(notificationsRef);
+    const dataToSave = {
+        ...notificationData,
+        createdAt: new Date().toISOString(),
+    };
+    await set(newNotificationRef, dataToSave);
+    return newNotificationRef.key!;
+}
+
+export async function getAllNotifications(): Promise<Notification[]> {
+    const notificationsRef = ref(db, 'notifications');
+    const snapshot = await get(notificationsRef);
+    if (snapshot.exists()) {
+        const notificationsData = snapshot.val();
+        return Object.keys(notificationsData).map(key => ({
+            id: key,
+            ...notificationsData[key]
+        }));
+    }
+    return [];
 }

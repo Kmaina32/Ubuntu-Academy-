@@ -98,3 +98,11 @@ export type TutorMessage = {
   audioUrl?: string;
   suggestions?: string[];
 };
+
+export interface Notification {
+    id: string;
+    title: string;
+    body: string;
+    link?: string;
+    createdAt: string;
+}

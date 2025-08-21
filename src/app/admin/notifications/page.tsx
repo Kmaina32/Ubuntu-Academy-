@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Loader2, Bell, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { createNotification } from '@/lib/firebase-service';
 
 const notificationSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -37,13 +38,10 @@ export default function AdminNotificationsPage() {
   const onSubmit = async (values: z.infer<typeof notificationSchema>) => {
     setIsLoading(true);
     try {
-      // In a real app, you would connect this to your FCM backend service.
-      console.log('Sending notification:', values);
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
-      
+      await createNotification(values);
       toast({
         title: 'Success!',
-        description: 'Your notification has been sent to all users.',
+        description: 'Your notification has been saved and will be sent to all users.',
       });
       form.reset();
     } catch (error) {

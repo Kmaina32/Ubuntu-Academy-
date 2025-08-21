@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { User, LogOut, Bell, Calendar, Sparkles, PartyPopper, Gem, Moon, Sun } from 'lucide-react';
+import { User, LogOut, Bell, Calendar, Sparkles, PartyPopper, Gem, Moon, Sun, BellRing } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger, useSidebar } from './ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
@@ -19,8 +19,8 @@ import { Skeleton } from './ui/skeleton';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Separator } from './ui/separator';
 import { useEffect, useState, useMemo } from 'react';
-import type { Course, CalendarEvent } from '@/lib/mock-data';
-import { getAllCourses, getAllCalendarEvents } from '@/lib/firebase-service';
+import type { Course, CalendarEvent, Notification as DbNotification } from '@/lib/mock-data';
+import { getAllCourses, getAllCalendarEvents, getAllNotifications } from '@/lib/firebase-service';
 import { differenceInDays, isToday, parseISO } from 'date-fns';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -30,6 +30,7 @@ type Notification = {
     title: string;
     description: string;
     href?: string;
+    date: string;
 };
 
 function NotificationsPopover() {
@@ -50,49 +51,68 @@ function NotificationsPopover() {
 
         const generateNotifications = async () => {
             setLoading(true);
-            const newNotifications: Notification[] = [];
+            let combinedNotifications: Notification[] = [];
 
-            // 1. Welcome Message
+            // 1. Fetch DB notifications
+            const dbNotifications = await getAllNotifications();
+            dbNotifications.forEach((n: DbNotification) => {
+                combinedNotifications.push({
+                    id: `db-${n.id}`,
+                    icon: BellRing,
+                    title: n.title,
+                    description: n.body,
+                    href: n.link || '#',
+                    date: n.createdAt
+                });
+            });
+
+            // 2. Welcome Message
             const creationTime = user.metadata.creationTime ? new Date(user.metadata.creationTime) : new Date();
             if (differenceInDays(new Date(), creationTime) <= 1) {
-                newNotifications.push({
+                combinedNotifications.push({
                     id: 'welcome',
                     icon: PartyPopper,
                     title: 'Welcome to Mkenya Skilled!',
                     description: 'We are glad to have you here. Explore our courses.',
-                    href: '/'
+                    href: '/',
+                    date: creationTime.toISOString()
                 });
             }
 
-            // 2. New Course Alerts
+            // 3. New Course Alerts
             const courses = await getAllCourses();
             const recentCourses = courses.filter(course =>
                 course.createdAt && differenceInDays(new Date(), new Date(course.createdAt)) <= 7
             );
             recentCourses.forEach(course => {
-                newNotifications.push({
+                combinedNotifications.push({
                     id: `new-course-${course.id}`,
                     icon: Sparkles,
                     title: `New Course: ${course.title}`,
                     description: 'Check out this new course we just added.',
-                    href: `/courses/${course.id}`
+                    href: `/courses/${course.id}`,
+                    date: course.createdAt
                 });
             });
 
-            // 3. Upcoming Events
+            // 4. Upcoming Events
             const events = await getAllCalendarEvents();
             const todayEvents = events.filter(event => isToday(parseISO(event.date)));
             todayEvents.forEach(event => {
-                 newNotifications.push({
+                 combinedNotifications.push({
                     id: `event-${event.id}`,
                     icon: Calendar,
                     title: `Today: ${event.title}`,
                     description: 'An event is scheduled for today. Check your calendar.',
-                    href: '/calendar'
+                    href: '/calendar',
+                    date: event.date
                 });
             });
             
-            setNotifications(newNotifications.reverse());
+            // Sort all notifications by date, descending
+            combinedNotifications.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            
+            setNotifications(combinedNotifications);
             setLoading(false);
         }
 
