@@ -1,5 +1,6 @@
 
 
+
 export interface YoutubeLink {
   title: string;
   url: string;
@@ -86,7 +87,7 @@ export const user = {
     name: 'Jomo Kenyatta',
     purchasedCourses: [
         { courseId: 'digital-marketing-101', progress: 50, completed: false, certificateAvailable: false, completedLessons: [], enrollmentDate: '2024-01-01T12:00:00.000Z' },
-        { courseId: 'graphic-design-canva', progress: 100, completed: true, certificateAvailable: true, completedLessons: [], enrollmentDate: '2024-01-01T12:00:00.000Z' }
+        { courseId: 'graphic-design-canva', progress: 100, completed: true, certificateAvailable: true, completedLessons: [], enrollmentDate: '2024-0-01T12:00:00.000Z' }
     ]
 }
 
@@ -132,4 +133,10 @@ export interface DiscussionThread {
     authorAvatar: string;
     createdAt: string; // ISO String
     replies?: DiscussionReply[];
+}
+
+export interface LiveSession {
+    isActive: boolean;
+    streamData: string; // This would hold the WebRTC signaling data
+    startedAt: string; // ISO string
 }

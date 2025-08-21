@@ -1,9 +1,10 @@
 
 
+
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply } from './mock-data';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession } from './mock-data';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -12,6 +13,7 @@ export interface RegisteredUser {
     uid: string;
     email: string | null;
     displayName: string | null;
+    cohort?: string;
     purchasedCourses?: Record<string, Omit<UserCourse, 'courseId'>>;
 }
 
@@ -102,6 +104,7 @@ export async function saveUser(user: RegisteredUser): Promise<void> {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName,
+        cohort: user.cohort || null,
         purchasedCourses: user.purchasedCourses || {}
     };
     await set(userRef, userData);
@@ -419,4 +422,20 @@ export async function getRepliesForThread(threadId: string): Promise<DiscussionR
         return Object.keys(data).map(key => ({ id: key, ...data[key] }));
     }
     return [];
+}
+
+
+// Live Session Functions
+export async function getLiveSession(): Promise<LiveSession | null> {
+    const sessionRef = ref(db, 'liveSession');
+    const snapshot = await get(sessionRef);
+    if(snapshot.exists()) {
+        return snapshot.val() as LiveSession;
+    }
+    return null;
+}
+
+export async function updateLiveSession(data: Partial<LiveSession>): Promise<void> {
+    const sessionRef = ref(db, 'liveSession');
+    await update(sessionRef, data);
 }

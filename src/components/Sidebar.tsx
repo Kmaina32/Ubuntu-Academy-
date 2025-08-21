@@ -14,7 +14,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book, Shield, Notebook as NotebookIcon } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from './ui/separator';
 import { version } from '../../package.json';
@@ -84,6 +84,14 @@ export function AppSidebar() {
                                 <Link href="/calendar">
                                     <Calendar />
                                     <span>Calendar</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/live')} tooltip="Live Classroom" onClick={onLinkClick}>
+                                <Link href="/live">
+                                    <Clapperboard />
+                                    <span>Live Classroom</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

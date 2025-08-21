@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getAllUsers, RegisteredUser, deleteUser } from '@/lib/firebase-service';
-import { ArrowLeft, Loader2, Trash2, User as UserIcon } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2, User as UserIcon, Users2 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -20,11 +20,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { Badge } from '@/components/ui/badge';
+import { CohortManager } from '@/components/CohortManager';
+
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<RegisteredUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<RegisteredUser | null>(null);
+  const [isCohortModalOpen, setIsCohortModalOpen] = useState(false);
   const { toast } = useToast();
 
   const fetchUsers = async () => {
@@ -54,82 +59,112 @@ export default function AdminUsersPage() {
       toast({ title: 'Error', description: 'Failed to delete user.', variant: 'destructive' });
     }
   }
+  
+  const handleOpenCohortManager = (user: RegisteredUser) => {
+      setSelectedUser(user);
+      setIsCohortModalOpen(true);
+  }
+
+  const handleCohortUpdate = () => {
+    fetchUsers(); // Re-fetch users to show updated cohort
+    setIsCohortModalOpen(false);
+    setSelectedUser(null);
+  }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
-        <div className="max-w-4xl mx-auto">
-            <Link href="/admin" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
-               <ArrowLeft className="h-4 w-4" />
-               Back to Admin Dashboard
-            </Link>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Manage Users</CardTitle>
-                    <CardDescription>View and manage all registered student accounts.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {loadingUsers ? (
-                            <div className="flex justify-center items-center py-10">
-                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                            <p className="ml-2">Loading users...</p>
-                        </div>
-                    ) : (
-                            <Table>
-                            <TableHeader>
-                                <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {users.length > 0 ? (
-                                  users.map((user) => (
-                                <TableRow key={user.uid}>
-                                    <TableCell className="font-medium">{user.displayName}</TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon" className="mr-2" title="View Details" disabled>
-                                        <UserIcon className="h-4 w-4" />
-                                    </Button>
-                                     <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" title="Delete User">
-                                              <Trash2 className="h-4 w-4" />
-                                          </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    This will delete the user record for "{user.displayName}" from the database. It does not delete their authentication account.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => handleDelete(user)}>Continue</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                    </TableCell>
-                                </TableRow>
-                                ))) : (
-                                  <TableRow>
-                                      <TableCell colSpan={3} className="text-center text-muted-foreground py-10">
-                                          No users found. New users will appear here after they sign up.
-                                      </TableCell>
-                                  </TableRow>
-                                )
-                              }
-                            </TableBody>
-                        </Table>
-                    )}
-                </CardContent>
-            </Card>
+    <>
+        <div className="flex flex-col min-h-screen">
+        <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
+            <div className="max-w-4xl mx-auto">
+                <Link href="/admin" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Admin Dashboard
+                </Link>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Manage Users</CardTitle>
+                        <CardDescription>View and manage all registered student accounts.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {loadingUsers ? (
+                                <div className="flex justify-center items-center py-10">
+                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                                <p className="ml-2">Loading users...</p>
+                            </div>
+                        ) : (
+                                <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                    <TableHead>Name</TableHead>
+                                    <TableHead>Email</TableHead>
+                                    <TableHead>Cohort</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {users.length > 0 ? (
+                                    users.map((user) => (
+                                    <TableRow key={user.uid}>
+                                        <TableCell className="font-medium">{user.displayName}</TableCell>
+                                        <TableCell>{user.email}</TableCell>
+                                        <TableCell>
+                                            {user.cohort ? (
+                                                <Badge variant="secondary">{user.cohort}</Badge>
+                                            ) : (
+                                                <span className="text-muted-foreground text-xs">N/A</span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                        <Button variant="ghost" size="icon" className="mr-2" title="Manage Cohort" onClick={() => handleOpenCohortManager(user)}>
+                                            <Users2 className="h-4 w-4" />
+                                        </Button>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" title="Delete User">
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This will delete the user record for "{user.displayName}" from the database. It does not delete their authentication account.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDelete(user)}>Continue</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                        </TableCell>
+                                    </TableRow>
+                                    ))) : (
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="text-center text-muted-foreground py-10">
+                                            No users found. New users will appear here after they sign up.
+                                        </TableCell>
+                                    </TableRow>
+                                    )
+                                }
+                                </TableBody>
+                            </Table>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+        </main>
+        <Footer />
         </div>
-      </main>
-      <Footer />
-    </div>
+        
+        {selectedUser && (
+            <CohortManager
+                user={selectedUser}
+                isOpen={isCohortModalOpen}
+                onClose={() => setIsCohortModalOpen(false)}
+                onSuccess={handleCohortUpdate}
+            />
+        )}
+    </>
   );
 }

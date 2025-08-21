@@ -1,0 +1,63 @@
+
+{
+  "rules": {
+    "courses": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "hero": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true",
+        ".write": "$uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      },
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "calendarEvents": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "submissions": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$submissionId": {
+        ".read": "root.child('submissions').child($submissionId).child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      },
+      ".indexOn": "userId"
+    },
+    "tutorSettings": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "tutorHistory": {
+      "$userId": {
+        ".read": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+        ".write": "auth != null && auth.uid === $userId"
+      }
+    },
+    "discussions": {
+      ".read": "auth != null",
+      "threads": {
+        "$courseId": {
+          ".read": "auth != null",
+          ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+          ".indexOn": "createdAt"
+        }
+      },
+      "replies": {
+        "$threadId": {
+           ".read": "auth != null",
+           ".write": "auth != null",
+           ".indexOn": "createdAt"
+        }
+      }
+    },
+     "liveSession": {
+        ".read": "auth != null",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    }
+  }
+}

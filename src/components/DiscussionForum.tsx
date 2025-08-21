@@ -13,6 +13,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft, Loader2, Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
+const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
+
 const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
     const names = name.split(' ');
@@ -34,6 +36,7 @@ export function DiscussionForum({ courseId }: DiscussionForumProps) {
     const [newThreadContent, setNewThreadContent] = useState('');
     const [newReplyContent, setNewReplyContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const isAdmin = user?.uid === ADMIN_UID;
 
     const fetchThreads = async () => {
         setLoadingThreads(true);
@@ -97,7 +100,7 @@ export function DiscussionForum({ courseId }: DiscussionForumProps) {
                 <CardHeader>
                     <button onClick={() => setSelectedThread(null)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
                         <ArrowLeft className="h-4 w-4" />
-                        Back to all threads
+                        Back to all topics
                     </button>
                     <CardTitle>{selectedThread.title}</CardTitle>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
@@ -105,7 +108,7 @@ export function DiscussionForum({ courseId }: DiscussionForumProps) {
                             <AvatarImage src={selectedThread.authorAvatar} />
                             <AvatarFallback>{getInitials(selectedThread.authorName)}</AvatarFallback>
                         </Avatar>
-                        <span>{selectedThread.authorName}</span>
+                        <span>Posted by {selectedThread.authorName}</span>
                         <span>&bull;</span>
                         <span>{formatDistanceToNow(new Date(selectedThread.createdAt), { addSuffix: true })}</span>
                     </div>
@@ -114,7 +117,7 @@ export function DiscussionForum({ courseId }: DiscussionForumProps) {
                     <p className="whitespace-pre-wrap pb-6 border-b">{selectedThread.content}</p>
 
                     <div className="space-y-4 mt-6">
-                        <h3 className="font-semibold">{replies.length} Replies</h3>
+                        <h3 className="font-semibold">{replies.length} Submissions</h3>
                         {loadingReplies ? <Loader2 className="animate-spin" /> : replies.map(reply => (
                             <div key={reply.id} className="flex items-start gap-3">
                                 <Avatar className="h-8 w-8">
@@ -133,16 +136,16 @@ export function DiscussionForum({ courseId }: DiscussionForumProps) {
                     </div>
 
                     <div className="mt-8 pt-6 border-t">
-                        <h3 className="font-semibold mb-2">Post a Reply</h3>
+                        <h3 className="font-semibold mb-2">Submit Your Findings</h3>
                         <Textarea
                             value={newReplyContent}
                             onChange={(e) => setNewReplyContent(e.target.value)}
-                            placeholder="Share your thoughts..."
+                            placeholder="Share your thoughts and findings here..."
                             className="mb-2"
                         />
                         <Button onClick={handleCreateReply} disabled={isSubmitting || !newReplyContent.trim()}>
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                            Post Reply
+                            Post Submission
                         </Button>
                     </div>
                 </CardContent>
@@ -154,30 +157,32 @@ export function DiscussionForum({ courseId }: DiscussionForumProps) {
         <Card>
             <CardHeader>
                 <CardTitle>Discussion Forum</CardTitle>
-                <CardDescription>Ask questions, share insights, and learn with your peers.</CardDescription>
+                <CardDescription>Engage with topics set by your instructor and share your findings with peers.</CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="p-4 border rounded-lg mb-6">
-                    <h3 className="font-semibold mb-2">Create a New Thread</h3>
-                    <Input
-                        value={newThreadTitle}
-                        onChange={(e) => setNewThreadTitle(e.target.value)}
-                        placeholder="Thread Title"
-                        className="mb-2"
-                    />
-                    <Textarea
-                        value={newThreadContent}
-                        onChange={(e) => setNewThreadContent(e.target.value)}
-                        placeholder="Start the discussion..."
-                        className="mb-2"
-                    />
-                    <Button onClick={handleCreateThread} disabled={isSubmitting || !newThreadTitle.trim() || !newThreadContent.trim()}>
-                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                        Start Thread
-                    </Button>
-                </div>
+                {isAdmin && (
+                    <div className="p-4 border rounded-lg mb-6 bg-secondary/50">
+                        <h3 className="font-semibold mb-2">Create a New Discussion Topic</h3>
+                        <Input
+                            value={newThreadTitle}
+                            onChange={(e) => setNewThreadTitle(e.target.value)}
+                            placeholder="Topic Title"
+                            className="mb-2"
+                        />
+                        <Textarea
+                            value={newThreadContent}
+                            onChange={(e) => setNewThreadContent(e.target.value)}
+                            placeholder="Start the discussion..."
+                            className="mb-2"
+                        />
+                        <Button onClick={handleCreateThread} disabled={isSubmitting || !newThreadTitle.trim() || !newThreadContent.trim()}>
+                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                            Start Topic
+                        </Button>
+                    </div>
+                )}
 
-                <h3 className="font-semibold mb-4">All Threads</h3>
+                <h3 className="font-semibold mb-4">Discussion Topics</h3>
                 {loadingThreads ? <Loader2 className="animate-spin" /> : (
                     <div className="space-y-2">
                         {threads.length > 0 ? threads.map(thread => (
@@ -188,13 +193,13 @@ export function DiscussionForum({ courseId }: DiscussionForumProps) {
                                         <AvatarImage src={thread.authorAvatar} />
                                         <AvatarFallback>{getInitials(thread.authorName)}</AvatarFallback>
                                     </Avatar>
-                                    <span>{thread.authorName}</span>
+                                    <span>Posted by {thread.authorName}</span>
                                     <span>&bull;</span>
                                     <span>{formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}</span>
                                 </div>
                             </button>
                         )) : (
-                            <p className="text-sm text-muted-foreground text-center py-4">No discussions yet. Be the first to start one!</p>
+                            <p className="text-sm text-muted-foreground text-center py-4">No discussion topics posted for this course yet.</p>
                         )}
                     </div>
                 )}
