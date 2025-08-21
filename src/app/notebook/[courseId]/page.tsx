@@ -23,6 +23,15 @@ import { format } from 'date-fns';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
+const GoogleDriveIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" {...props}>
+        <path d="M330.2 284.4l-15.1 26.2-70.2-121.5L200 81l130.2 203.4z" fill="#ffc107"/>
+        <path d="M117.9 284.4L73 368.8l102.3-177.2L219.7 121l-101.8 163.4z" fill="#03a9f4"/>
+        <path d="M375.1 368.8L440 256H199.3l-47.5 82.3 223.3.5z" fill="#4caf50"/>
+    </svg>
+);
+
+
 export default function NotebookPage() {
   const router = useRouter();
   const params = useParams<{ courseId: string }>();
@@ -119,6 +128,13 @@ export default function NotebookPage() {
     pdf.save(`MkenyaSkilled_Notes_${course.title.replace(/\s+/g, '_')}.pdf`);
     setIsDownloading(false);
   };
+  
+   const handleSaveToDrive = () => {
+    toast({
+      title: 'Feature Coming Soon',
+      description: 'Saving notes to Google Drive is not yet implemented.',
+    });
+  };
 
   if (authLoading || isLoading) {
     return <div className="flex justify-center items-center h-screen"><Loader2 className="h-8 w-8 animate-spin" /></div>;
@@ -150,10 +166,16 @@ export default function NotebookPage() {
                             </CardTitle>
                             <CardDescription>Notes for: {course.title}</CardDescription>
                         </div>
-                        <Button variant="outline" size="sm" onClick={handleDownload} disabled={isDownloading}>
-                            {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                            Download PDF
-                        </Button>
+                        <div className="flex gap-2">
+                             <Button variant="outline" size="sm" onClick={handleDownload} disabled={isDownloading}>
+                                {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                                Download PDF
+                            </Button>
+                             <Button variant="outline" size="sm" onClick={handleSaveToDrive}>
+                                <GoogleDriveIcon className="mr-2 h-4 w-4" />
+                                Save to Drive
+                            </Button>
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent className="flex-grow overflow-hidden p-2">
