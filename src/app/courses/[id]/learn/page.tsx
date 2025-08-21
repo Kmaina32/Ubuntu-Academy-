@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -328,7 +329,7 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
             <audio ref={audioRef} className="hidden" />
             <Sheet>
                 <SheetTrigger asChild>
-                    <Button className="fixed bottom-6 right-24 h-14 w-14 rounded-full shadow-lg">
+                    <Button className="fixed bottom-24 right-6 h-14 w-14 rounded-full shadow-lg">
                         <MessageSquare className="h-7 w-7" />
                     </Button>
                 </SheetTrigger>
@@ -828,7 +829,7 @@ export default function CoursePlayerPage() {
               )}
             </main>
 
-            {/* <AiTutor course={course} lesson={currentLesson} settings={tutorSettings} /> */}
+            <AiTutor course={course} lesson={currentLesson} settings={tutorSettings} />
             <NotesSheet course={course} />
           </div>
         </div>
