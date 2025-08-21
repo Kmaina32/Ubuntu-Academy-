@@ -13,6 +13,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
 
 const GenerateCourseContentInputSchema = z.object({
   courseTitle: z.string().describe('The title of the course to be generated.'),
@@ -80,6 +81,7 @@ export async function generateCourseContent(
 
 const prompt = ai.definePrompt({
   name: 'generateCourseContentPrompt',
+  model: googleAI.model('gemini-1.5-flash'),
   input: {schema: GenerateCourseContentInputSchema},
   output: {schema: GenerateCourseContentOutputSchema},
   prompt: `You are an expert curriculum developer for an online learning platform in Kenya. Your task is to generate a complete course structure based on a given title and context.
@@ -123,4 +125,5 @@ const generateCourseContentFlow = ai.defineFlow(
     return output!;
   }
 );
+
 
