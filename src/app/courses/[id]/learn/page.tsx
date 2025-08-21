@@ -9,13 +9,13 @@ import { getCourseById, updateUserCourseProgress, getUserCourses, saveTutorHisto
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit, FileText, Sparkles, Pencil, VolumeX, Link as LinkIcon, Notebook as NotebookIcon, Download } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit, FileText, Sparkles, Pencil, VolumeX, Link as LinkIcon, Notebook as NotebookIcon, Download, Gem } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
-import { isWeekend } from 'date-fns';
+import { format as formatDate, isWeekend } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -447,7 +447,7 @@ function NotesSheet({ course }: { course: Course }) {
     const [notes, setNotes] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
-    const notesRef = useRef<HTMLDivElement>(null);
+    const pdfRef = useRef<HTMLDivElement>(null);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
@@ -461,34 +461,33 @@ function NotesSheet({ course }: { course: Course }) {
     }, [user, course]);
     
     const handleDownload = async () => {
-        if (!notesRef.current) return;
+        if (!pdfRef.current) return;
         setIsDownloading(true);
 
+        const canvas = await html2canvas(pdfRef.current, { scale: 2, backgroundColor: null });
+        const imgData = canvas.toDataURL('image/png');
+        
         const pdf = new jsPDF('p', 'pt', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
-        
-        // Header
-        const headerCanvas = await html2canvas(document.getElementById('pdf-header')!, { scale: 2 });
-        const headerImgData = headerCanvas.toDataURL('image/png');
-        const headerHeight = (headerCanvas.height * pdfWidth) / headerCanvas.width;
-        pdf.addImage(headerImgData, 'PNG', 0, 0, pdfWidth, headerHeight);
 
-        // Body
-        const bodyCanvas = await html2canvas(notesRef.current, { scale: 2 });
-        const bodyImgData = bodyCanvas.toDataURL('image/png');
-        const bodyHeight = (bodyCanvas.height * (pdfWidth - 80)) / bodyCanvas.width;
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = imgWidth / imgHeight;
+
+        let finalWidth = pdfWidth - 80; // with margins
+        let finalHeight = finalWidth / ratio;
         
-        if (headerHeight + bodyHeight < pdfHeight) {
-            pdf.addImage(bodyImgData, 'PNG', 40, headerHeight + 20, pdfWidth - 80, bodyHeight);
-        } else {
-             // Handle content overflow (simple split, could be improved)
-            pdf.addPage();
-            pdf.addImage(bodyImgData, 'PNG', 40, 40, pdfWidth - 80, bodyHeight);
+        if (finalHeight > pdfHeight - 80) {
+            finalHeight = pdfHeight - 80;
+            finalWidth = finalHeight * ratio;
         }
-        
-        pdf.save(`MkenyaSkilled_Notes_${course.title.replace(/\s+/g, '_')}.pdf`);
 
+        const x = (pdfWidth - finalWidth) / 2;
+        const y = (pdfHeight - finalHeight) / 2;
+        
+        pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
+        pdf.save(`MkenyaSkilled_Notes_${course.title.replace(/\s+/g, '_')}.pdf`);
         setIsDownloading(false);
     };
 
@@ -543,13 +542,26 @@ function NotesSheet({ course }: { course: Course }) {
                 </div>
 
                 {/* Hidden div for PDF generation */}
-                <div className="absolute -left-[9999px] top-0 opacity-0" aria-hidden="true">
-                    <div id="pdf-header" className="p-10 bg-background w-[595px]">
-                        <h1 className="text-2xl font-bold font-headline">{course.title} Notes</h1>
-                        <p className="text-muted-foreground">From Mkenya Skilled</p>
-                    </div>
-                    <div ref={notesRef} className="p-10 bg-white w-[595px]">
-                         <pre className="whitespace-pre-wrap font-body">{notes}</pre>
+                <div className="absolute -left-[9999px] top-0 opacity-0 text-black" aria-hidden="true">
+                    <div ref={pdfRef} className="p-10 bg-white w-[595px]">
+                        <div className="border-b-2 border-black pb-4 mb-4 flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <Gem className="h-8 w-8 text-primary" />
+                                <span className="font-bold text-xl font-headline">Mkenya Skilled</span>
+                            </div>
+                            <div className="text-right text-xs">
+                                <p className="font-semibold">{user?.displayName}</p>
+                                <p>{formatDate(new Date(), 'PPP')}</p>
+                            </div>
+                        </div>
+                        <h1 className="text-2xl font-bold font-headline mb-2">{course.title}</h1>
+                        <h2 className="text-lg text-gray-600 mb-6">My Personal Notes</h2>
+                        <div className="bg-gray-50 p-4 rounded-md border min-h-[600px]">
+                            <pre className="whitespace-pre-wrap font-body text-sm">{notes || 'No notes taken for this course.'}</pre>
+                        </div>
+                         <p className="text-center text-xs text-gray-400 mt-6">
+                            &copy; {new Date().getFullYear()} Mkenya Skilled. All rights reserved.
+                        </p>
                     </div>
                 </div>
 
@@ -828,7 +840,7 @@ export default function CoursePlayerPage() {
                 </div>
               )}
             </main>
-
+            
             <AiTutor course={course} lesson={currentLesson} settings={tutorSettings} />
             <NotesSheet course={course} />
           </div>
