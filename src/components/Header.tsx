@@ -54,60 +54,75 @@ function NotificationsPopover() {
             let combinedNotifications: Notification[] = [];
 
             // 1. Fetch DB notifications
-            const dbNotifications = await getAllNotifications();
-            dbNotifications.forEach((n: DbNotification) => {
-                combinedNotifications.push({
+            try {
+                const dbNotifications = await getAllNotifications();
+                const formattedDbNotifications = dbNotifications.map((n: DbNotification) => ({
                     id: `db-${n.id}`,
                     icon: BellRing,
                     title: n.title,
                     description: n.body,
                     href: n.link || '#',
                     date: n.createdAt
-                });
-            });
+                }));
+                combinedNotifications.push(...formattedDbNotifications);
+            } catch (error) {
+                console.error("Failed to fetch DB notifications", error);
+            }
 
             // 2. Welcome Message
-            const creationTime = user.metadata.creationTime ? new Date(user.metadata.creationTime) : new Date();
-            if (differenceInDays(new Date(), creationTime) <= 1) {
-                combinedNotifications.push({
-                    id: 'welcome',
-                    icon: PartyPopper,
-                    title: 'Welcome to Mkenya Skilled!',
-                    description: 'We are glad to have you here. Explore our courses.',
-                    href: '/',
-                    date: creationTime.toISOString()
-                });
+            try {
+                const creationTime = user.metadata.creationTime ? new Date(user.metadata.creationTime) : new Date();
+                if (differenceInDays(new Date(), creationTime) <= 1) {
+                    combinedNotifications.push({
+                        id: 'welcome',
+                        icon: PartyPopper,
+                        title: 'Welcome to Mkenya Skilled!',
+                        description: 'We are glad to have you here. Explore our courses.',
+                        href: '/',
+                        date: creationTime.toISOString()
+                    });
+                }
+            } catch (error) {
+                console.error("Failed to generate welcome notification", error);
             }
 
             // 3. New Course Alerts
-            const courses = await getAllCourses();
-            const recentCourses = courses.filter(course =>
-                course.createdAt && differenceInDays(new Date(), new Date(course.createdAt)) <= 7
-            );
-            recentCourses.forEach(course => {
-                combinedNotifications.push({
-                    id: `new-course-${course.id}`,
-                    icon: Sparkles,
-                    title: `New Course: ${course.title}`,
-                    description: 'Check out this new course we just added.',
-                    href: `/courses/${course.id}`,
-                    date: course.createdAt
+            try {
+                const courses = await getAllCourses();
+                const recentCourses = courses.filter(course =>
+                    course.createdAt && differenceInDays(new Date(), new Date(course.createdAt)) <= 7
+                );
+                recentCourses.forEach(course => {
+                    combinedNotifications.push({
+                        id: `new-course-${course.id}`,
+                        icon: Sparkles,
+                        title: `New Course: ${course.title}`,
+                        description: 'Check out this new course we just added.',
+                        href: `/courses/${course.id}`,
+                        date: course.createdAt
+                    });
                 });
-            });
-
+            } catch (error) {
+                console.error("Failed to generate new course notifications", error);
+            }
+            
             // 4. Upcoming Events
-            const events = await getAllCalendarEvents();
-            const todayEvents = events.filter(event => isToday(parseISO(event.date)));
-            todayEvents.forEach(event => {
-                 combinedNotifications.push({
-                    id: `event-${event.id}`,
-                    icon: Calendar,
-                    title: `Today: ${event.title}`,
-                    description: 'An event is scheduled for today. Check your calendar.',
-                    href: '/calendar',
-                    date: event.date
+            try {
+                const events = await getAllCalendarEvents();
+                const todayEvents = events.filter(event => isToday(parseISO(event.date)));
+                todayEvents.forEach(event => {
+                     combinedNotifications.push({
+                        id: `event-${event.id}`,
+                        icon: Calendar,
+                        title: `Today: ${event.title}`,
+                        description: 'An event is scheduled for today. Check your calendar.',
+                        href: '/calendar',
+                        date: event.date
+                    });
                 });
-            });
+            } catch (error) {
+                console.error("Failed to generate event notifications", error);
+            }
             
             // Sort all notifications by date, descending
             combinedNotifications.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
