@@ -76,6 +76,15 @@ export default function ExamPage() {
     }
   }, [params.id, user, form]);
 
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    toast({
+        title: "Pasting is disabled",
+        description: "Please type your own answer.",
+        variant: "destructive"
+    });
+  }
+
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!course?.exam || !user) return;
@@ -155,7 +164,7 @@ export default function ExamPage() {
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                        {course.exam.map((question, index) => (
                            <div key={question.id} className="space-y-4 p-4 border rounded-lg">
-                               <p className="font-semibold">{index + 1}. {question.question}</p>
+                               <p className="font-semibold select-none">{index + 1}. {question.question}</p>
                                {question.type === 'short-answer' ? (
                                    <FormField
                                     control={form.control}
@@ -164,7 +173,12 @@ export default function ExamPage() {
                                         <FormItem>
                                             <FormLabel>Your Answer</FormLabel>
                                             <FormControl>
-                                                <Textarea {...field} value={typeof field.value === 'string' ? field.value : ''} placeholder="Type your detailed answer here (min. 20 characters)..." />
+                                                <Textarea 
+                                                    {...field}
+                                                    onPaste={handlePaste}
+                                                    value={typeof field.value === 'string' ? field.value : ''} 
+                                                    placeholder="Type your detailed answer here (min. 20 characters)..." 
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -175,7 +189,7 @@ export default function ExamPage() {
                                     control={form.control}
                                     name={`answers.${index}.answer`}
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="select-none">
                                             <FormLabel>Select One Answer</FormLabel>
                                             <FormControl>
                                                 <RadioGroup
