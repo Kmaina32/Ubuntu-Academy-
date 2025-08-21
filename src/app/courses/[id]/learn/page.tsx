@@ -24,6 +24,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { courseTutor } from '@/ai/flows/course-tutor';
 import { speechToText } from '@/ai/flows/speech-to-text';
+import { textToSpeech } from '@/ai/flows/text-to-speech';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRecorder } from '@/hooks/use-recorder';
 import { cn } from '@/lib/utils';
@@ -181,7 +182,7 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
     const [messages, setMessages] = useState<TutorMessage[]>([]);
     const [question, setQuestion] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [isVoiceMode, setIsVoiceMode] = useState(true);
+    const [isGeneratingAudio, setIsGeneratingAudio] = useState<string | null>(null);
     const audioRef = useRef<HTMLAudioElement>(null);
     const { isRecording, startRecording, stopRecording } = useRecorder();
 
@@ -229,6 +230,30 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
             audioRef.current.play().catch(e => console.error("Audio playback failed:", e));
         }
     };
+
+    const handlePlayAudio = async (messageIndex: number, text: string) => {
+        setIsGeneratingAudio(String(messageIndex));
+        try {
+            const audioResponse = await textToSpeech({
+                text: text,
+                voice: settings?.voice,
+            });
+
+            if (audioResponse.media) {
+                const updatedMessages = [...messages];
+                updatedMessages[messageIndex].audioUrl = audioResponse.media;
+                setMessages(updatedMessages);
+                playAudio(audioResponse.media);
+            } else {
+                throw new Error("No audio data received.");
+            }
+        } catch (error) {
+            console.error("TTS failed:", error);
+            toast({ title: 'Error', description: 'Could not generate audio.', variant: 'destructive'});
+        } finally {
+            setIsGeneratingAudio(null);
+        }
+    };
     
     const sendTutorRequest = async (currentQuestion?: string, action?: 'summarize' | 'quiz') => {
         if (!lesson || !user || !course) return;
@@ -254,23 +279,18 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
                 voice: settings?.voice,
                 speed: settings?.speed
             });
-
-            const audioToPlay = (isVoiceMode && result.answerAudio) ? result.answerAudio : undefined;
-
+            
             const tutorMessage: TutorMessage = { 
                 role: 'assistant', 
                 content: result.answer, 
-                audioUrl: audioToPlay,
                 suggestions: result.suggestions
             };
+
             const finalMessages = [...newMessages, tutorMessage];
             setMessages(finalMessages);
             
             await saveTutorHistory(user.uid, course.id, lesson.id, finalMessages);
 
-            if(audioToPlay) {
-                playAudio(audioToPlay);
-            }
         } catch (error) {
             console.error("AI Tutor failed:", error);
             toast({ title: 'Error', description: 'The AI Tutor is currently unavailable. Please try again later.', variant: 'destructive'});
@@ -313,18 +333,6 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
                                     Your AI tutor for this lesson.
                                 </SheetDescription>
                             </div>
-                             <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button variant="outline" size="icon" onClick={() => setIsVoiceMode(!isVoiceMode)}>
-                                            {isVoiceMode ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>{isVoiceMode ? 'Disable Voice' : 'Enable Voice'}</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
                         </div>
                     </SheetHeader>
                     <ScrollArea className="flex-grow p-6">
@@ -355,9 +363,15 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
                                         )}
                                         <div className={`rounded-lg px-3 py-2 max-w-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
                                             <Markdown content={message.content} />
-                                            {message.role === 'assistant' && message.audioUrl && (
-                                                <Button variant="ghost" size="icon" className="h-7 w-7 mt-1" onClick={() => playAudio(message.audioUrl!)}>
-                                                    <Volume2 className="h-4 w-4" />
+                                            {message.role === 'assistant' && (
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    className="h-7 w-7 mt-1" 
+                                                    onClick={() => message.audioUrl ? playAudio(message.audioUrl) : handlePlayAudio(index, message.content)}
+                                                    disabled={isGeneratingAudio === String(index)}
+                                                >
+                                                    {isGeneratingAudio === String(index) ? <Loader2 className="h-4 w-4 animate-spin"/> : <Volume2 className="h-4 w-4" />}
                                                 </Button>
                                             )}
                                         </div>
@@ -676,5 +690,3 @@ export default function CoursePlayerPage() {
     </SidebarProvider>
   );
 }
-
-    

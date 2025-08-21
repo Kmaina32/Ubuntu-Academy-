@@ -91,23 +91,10 @@ const courseTutorFlow = ai.defineFlow(
     if (!output) {
       throw new Error('Failed to generate a text answer.');
     }
-
-    // Do not generate audio for quizzes to avoid reading out the answers.
-    if (input.action === 'quiz') {
-      return {
-        answer: output.answer,
-        suggestions: output.suggestions,
-      };
-    }
-
-    const audioResponse = await textToSpeech({
-        text: output.answer,
-        voice: input.voice,
-    });
     
+    // By default, only return text. Audio is handled on-demand by the client.
     return {
         answer: output.answer,
-        answerAudio: audioResponse.media,
         suggestions: output.suggestions,
     };
   }
