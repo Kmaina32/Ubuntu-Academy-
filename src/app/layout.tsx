@@ -3,7 +3,6 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/hooks/use-auth';
-import { getHeroData } from '@/lib/firebase-service';
 
 export const metadata: Metadata = {
   title: 'Mkenya Skilled',
@@ -15,11 +14,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const heroData = await getHeroData();
-  const activeTheme = heroData.theme || 'default';
-
   return (
-    <html lang="en" suppressHydrationWarning={true} className={activeTheme !== 'default' ? `theme-${activeTheme}` : ''}>
+    <html lang="en" suppressHydrationWarning={true}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -36,6 +32,10 @@ export default async function RootLayout({
                 document.documentElement.style.colorScheme = theme;
                 if (theme === 'dark') {
                   document.documentElement.classList.add('dark');
+                }
+                const activeTheme = localStorage.getItem('mkenya-skilled-theme');
+                if (activeTheme && activeTheme !== 'default') {
+                    document.documentElement.classList.add('theme-' + activeTheme);
                 }
               })();
             `,

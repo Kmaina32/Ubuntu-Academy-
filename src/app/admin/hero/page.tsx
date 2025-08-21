@@ -81,6 +81,14 @@ export default function AdminHeroPage() {
     fetchHeroData();
   }, [form, toast]);
 
+  const applyTheme = (theme: string) => {
+    // Remove all theme classes
+    document.documentElement.classList.remove('theme-valentines', 'theme-christmas', 'theme-new-year', 'theme-eid');
+    if (theme !== 'default') {
+      document.documentElement.classList.add(`theme-${theme}`);
+    }
+  }
+
   const onSubmit = async (values: z.infer<typeof heroFormSchema>) => {
     setIsLoading(true);
     try {
@@ -93,6 +101,12 @@ export default function AdminHeroPage() {
       // Save other settings to the database
       const { title, subtitle, ...dbValues } = values;
       await saveHeroData(dbValues);
+
+      // Apply theme on client-side
+      if (values.theme) {
+        localStorage.setItem('mkenya-skilled-theme', values.theme);
+        applyTheme(values.theme);
+      }
       
       toast({
         title: 'Success!',
