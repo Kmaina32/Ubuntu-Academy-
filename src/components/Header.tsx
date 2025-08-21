@@ -52,18 +52,21 @@ function NotificationsPopover() {
         const generateNotifications = async () => {
             setLoading(true);
             let combinedNotifications: Notification[] = [];
+            const userCreationTime = user.metadata.creationTime ? new Date(user.metadata.creationTime) : new Date(0);
 
             // 1. Fetch DB notifications
             try {
                 const dbNotifications = await getAllNotifications();
-                const formattedDbNotifications = dbNotifications.map((n: DbNotification) => ({
-                    id: `db-${n.id}`,
-                    icon: BellRing,
-                    title: n.title,
-                    description: n.body,
-                    href: n.link || '#',
-                    date: n.createdAt
-                }));
+                const formattedDbNotifications = dbNotifications
+                    .filter(n => new Date(n.createdAt) > userCreationTime)
+                    .map((n: DbNotification) => ({
+                        id: `db-${n.id}`,
+                        icon: BellRing,
+                        title: n.title,
+                        description: n.body,
+                        href: n.link || '#',
+                        date: n.createdAt
+                    }));
                 combinedNotifications.push(...formattedDbNotifications);
             } catch (error) {
                 console.error("Failed to fetch DB notifications", error);
@@ -71,15 +74,14 @@ function NotificationsPopover() {
 
             // 2. Welcome Message
             try {
-                const creationTime = user.metadata.creationTime ? new Date(user.metadata.creationTime) : new Date();
-                if (differenceInDays(new Date(), creationTime) <= 1) {
+                if (differenceInDays(new Date(), userCreationTime) <= 1) {
                     combinedNotifications.push({
                         id: 'welcome',
                         icon: PartyPopper,
                         title: 'Welcome to Mkenya Skilled!',
                         description: 'We are glad to have you here. Explore our courses.',
                         href: '/',
-                        date: creationTime.toISOString()
+                        date: userCreationTime.toISOString()
                     });
                 }
             } catch (error) {
@@ -90,7 +92,7 @@ function NotificationsPopover() {
             try {
                 const courses = await getAllCourses();
                 const recentCourses = courses.filter(course =>
-                    course.createdAt && differenceInDays(new Date(), new Date(course.createdAt)) <= 7
+                    course.createdAt && new Date(course.createdAt) > userCreationTime
                 );
                 recentCourses.forEach(course => {
                     combinedNotifications.push({
@@ -109,13 +111,13 @@ function NotificationsPopover() {
             // 4. Upcoming Events
             try {
                 const events = await getAllCalendarEvents();
-                const todayEvents = events.filter(event => isToday(parseISO(event.date)));
-                todayEvents.forEach(event => {
+                const upcomingEvents = events.filter(event => new Date(event.date) > userCreationTime);
+                upcomingEvents.forEach(event => {
                      combinedNotifications.push({
                         id: `event-${event.id}`,
                         icon: Calendar,
-                        title: `Today: ${event.title}`,
-                        description: 'An event is scheduled for today. Check your calendar.',
+                        title: `Upcoming: ${event.title}`,
+                        description: 'An event is scheduled. Check your calendar.',
                         href: '/calendar',
                         date: event.date
                     });
