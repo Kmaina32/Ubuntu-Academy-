@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/hooks/use-auth';
 import { ThemeEffects } from '@/components/ThemeEffects';
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: 'Mkenya Skilled',
@@ -48,6 +49,7 @@ export default async function RootLayout({
         <AuthProvider>
             <ThemeEffects />
             {children}
+            <Analytics />
         </AuthProvider>
         <Toaster />
       </body>
