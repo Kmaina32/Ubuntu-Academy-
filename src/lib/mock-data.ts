@@ -12,7 +12,7 @@ export interface GoogleDriveLink {
 
 export interface Lesson {
   id: string;
-  title: string;
+  title:string;
   duration: string;
   content: string;
   youtubeLinks?: YoutubeLink[];
@@ -76,6 +76,7 @@ export interface Course {
   price: number;
   imageUrl: string;
   duration: string; // e.g., "5 Weeks"
+  dripFeed: 'daily' | 'weekly' | 'off';
   modules: Module[];
   exam: ExamQuestion[];
   createdAt: string; // ISO string

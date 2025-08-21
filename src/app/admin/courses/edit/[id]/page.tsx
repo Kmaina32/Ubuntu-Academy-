@@ -19,6 +19,7 @@ import { getCourseById, updateCourse } from '@/lib/firebase-service';
 import type { Course } from '@/lib/mock-data';
 import { CourseReviewModal } from '@/components/CourseReviewModal';
 import { GenerateCourseContentOutput } from '@/ai/flows/generate-course-content';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const courseFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -29,6 +30,7 @@ const courseFormSchema = z.object({
   description: z.string().min(20, 'Short description is required'),
   longDescription: z.string().min(100, 'Long description must be at least 100 characters'),
   imageUrl: z.string().url('Must be a valid image URL'),
+  dripFeed: z.enum(['daily', 'weekly', 'off']),
 });
 
 type CourseFormValues = z.infer<typeof courseFormSchema>;
@@ -63,7 +65,8 @@ export default function EditCoursePage() {
             duration: fetchedCourse.duration || '',
             description: fetchedCourse.description || '',
             longDescription: fetchedCourse.longDescription || '',
-            imageUrl: fetchedCourse.imageUrl || ''
+            imageUrl: fetchedCourse.imageUrl || '',
+            dripFeed: fetchedCourse.dripFeed || 'daily',
         });
       } catch (error) {
         console.error("Failed to fetch course data:", error);
@@ -268,6 +271,28 @@ export default function EditCoursePage() {
                           <FormMessage />
                         </FormItem>
                       )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="dripFeed"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Content Drip Schedule</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a schedule..." />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="daily">Unlock lessons daily</SelectItem>
+                                <SelectItem value="weekly">Unlock lessons weekly</SelectItem>
+                                <SelectItem value="off">Unlock all at once</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
                     />
                     <div className="flex justify-end gap-2">
                       <Button type="button" variant="outline" onClick={() => router.push('/admin')}>

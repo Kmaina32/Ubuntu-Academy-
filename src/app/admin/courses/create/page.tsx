@@ -19,6 +19,7 @@ import { createCourse } from '@/lib/firebase-service';
 import type { Course } from '@/lib/mock-data';
 import { generateCourseContent, GenerateCourseContentOutput } from '@/ai/flows/generate-course-content';
 import { CourseReviewModal } from '@/components/CourseReviewModal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const courseFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -27,6 +28,7 @@ const courseFormSchema = z.object({
   price: z.coerce.number().min(0, 'Price cannot be negative'),
   duration: z.string().min(3, 'Duration is required (e.g., 5 Weeks)'),
   courseContext: z.string().optional(),
+  dripFeed: z.enum(['daily', 'weekly', 'off']),
 });
 
 type CourseFormValues = z.infer<typeof courseFormSchema>;
@@ -48,6 +50,7 @@ export default function CreateCoursePage() {
       price: 0,
       duration: '',
       courseContext: '',
+      dripFeed: 'daily',
     },
   });
 
@@ -98,6 +101,7 @@ export default function CreateCoursePage() {
             imageUrl: 'https://placehold.co/600x400',
             modules: editedContent.modules,
             exam: editedContent.exam,
+            dripFeed: courseDetails.dripFeed,
         }
         await createCourse(courseData);
         toast({
@@ -221,6 +225,28 @@ export default function CreateCoursePage() {
                       )}
                     />
                   </div>
+                  <FormField
+                    control={form.control}
+                    name="dripFeed"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Content Drip Schedule</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a schedule..." />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="daily">Unlock lessons daily</SelectItem>
+                                <SelectItem value="weekly">Unlock lessons weekly</SelectItem>
+                                <SelectItem value="off">Unlock all at once</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
                   <div className="flex justify-end gap-2">
                     <Button type="button" variant="outline" onClick={() => router.push('/admin')}>
                       Cancel

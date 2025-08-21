@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Course, Lesson, Module, TutorMessage } from '@/lib/mock-data';
 import { getCourseById, updateUserCourseProgress, getUserCourses, saveTutorHistory, getTutorHistory, getTutorSettings, TutorSettings, getUserNotes, saveUserNotes } from '@/lib/firebase-service';
@@ -15,7 +15,7 @@ import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
-import { format as formatDate, isWeekend } from 'date-fns';
+import { format as formatDate, isWeekend, differenceInDays, differenceInWeeks } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -615,24 +615,27 @@ export default function CoursePlayerPage() {
             setCompletedLessons(new Set(currentUserCourse.completedLessons));
           }
           
-          if (currentUserCourse?.enrollmentDate) {
+            const allLessons = fetchedCourse.modules?.flatMap(m => m.lessons) || [];
+
+            if (currentUserCourse?.enrollmentDate && fetchedCourse.dripFeed !== 'off') {
               const enrollmentDate = new Date(currentUserCourse.enrollmentDate);
               const today = new Date();
-              const unlockedDays = getWeekdayCount(enrollmentDate, today);
-              setUnlockedLessonsCount(unlockedDays);
-              
-              const allLessons = fetchedCourse.modules?.flatMap(m => m.lessons) || [];
-              if (allLessons.length > 0) {
-                 setCurrentLesson(allLessons[0]);
-              }
+              let unlockedLessons = 0;
 
-          } else {
-              const allLessons = fetchedCourse.modules?.flatMap(m => m.lessons) || [];
-              setUnlockedLessonsCount(allLessons.length);
-              if (allLessons.length > 0) {
-                 setCurrentLesson(allLessons[0]);
+              if (fetchedCourse.dripFeed === 'daily') {
+                unlockedLessons = getWeekdayCount(enrollmentDate, today);
+              } else if (fetchedCourse.dripFeed === 'weekly') {
+                 unlockedLessons = differenceInWeeks(today, enrollmentDate) + 1;
               }
-          }
+              setUnlockedLessonsCount(Math.min(unlockedLessons, allLessons.length));
+              
+            } else {
+              setUnlockedLessonsCount(allLessons.length);
+            }
+            
+            if (allLessons.length > 0) {
+                setCurrentLesson(allLessons[0]);
+            }
         }
         setLoading(false);
     }
@@ -715,7 +718,7 @@ export default function CoursePlayerPage() {
      <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-         {isMobile && (
+         {isMobile ? (
            <Header>
               <div className="flex items-center gap-2">
                  <button onClick={() => router.back()} className="p-2">
@@ -747,10 +750,9 @@ export default function CoursePlayerPage() {
                  </Sheet>
               </div>
            </Header>
-         )}
-         {!isMobile && <Header />}
+         ) : <Header />}
 
-        <div className="flex flex-col h-[calc(100vh-4rem)] bg-secondary">
+        <div className="flex flex-col min-h-[calc(100vh-4rem)]">
           <div className="flex-grow flex flex-col md:flex-row overflow-hidden relative">
             {!isMobile && (
               <aside className="w-full md:w-80 lg:w-96 bg-background border-r flex-shrink-0 overflow-y-auto">
@@ -766,7 +768,7 @@ export default function CoursePlayerPage() {
               </aside>
             )}
 
-            <main className="flex-grow p-6 md:p-8 overflow-y-auto">
+            <main className="flex-grow p-6 md:p-8 overflow-y-auto bg-secondary">
               {currentLesson ? (
                 <div>
                   <h1 className="text-3xl font-bold mb-4 font-headline">{currentLesson.title}</h1>

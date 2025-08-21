@@ -75,7 +75,8 @@ export async function createCourse(courseData: Omit<Course, 'id'>): Promise<stri
         createdAt: new Date().toISOString(), // Add creation timestamp
         modules: courseData.modules || [],
         exam: courseData.exam || [],
-        imageUrl: courseData.imageUrl || 'https://placehold.co/600x400'
+        imageUrl: courseData.imageUrl || 'https://placehold.co/600x400',
+        dripFeed: courseData.dripFeed || 'daily',
     };
     await set(newCourseRef, dataToSave);
     return newCourseRef.key!;
@@ -167,34 +168,34 @@ export async function deleteUser(userId: string): Promise<void> {
 
 // Hero Section Functions
 export async function getHeroData(): Promise<HeroData> {
-    const heroRef = ref(db, 'hero');
-    const snapshot = await get(heroRef);
-    const defaults: Omit<HeroData, 'title' | 'subtitle'> = {
-        imageUrl: 'https://placehold.co/1200x400.png',
-        loginImageUrl: 'https://placehold.co/1200x900.png',
-        signupImageUrl: 'https://placehold.co/1200x900.png',
-        slideshowSpeed: 5,
-        imageBrightness: 60,
-        recaptchaEnabled: true,
-        theme: 'default',
-    };
-    
-    const dbData = snapshot.exists() ? snapshot.val() : {};
+  const heroRef = ref(db, 'hero');
+  const snapshot = await get(heroRef);
+  const defaults: Omit<HeroData, 'title' | 'subtitle'> = {
+    imageUrl: 'https://placehold.co/1200x400.png',
+    loginImageUrl: 'https://placehold.co/1200x900.png',
+    signupImageUrl: 'https://placehold.co/1200x900.png',
+    slideshowSpeed: 5,
+    imageBrightness: 60,
+    recaptchaEnabled: true,
+    theme: 'default',
+  };
 
-    // Fetch remote config values only on the client
-    let remoteData = { title: 'Unlock Your Potential.', subtitle: 'Quality, affordable courses designed for the Kenyan market.'};
-    if (typeof window !== 'undefined') {
-        const remoteConfig = getRemoteConfig(app);
-        try {
-            await fetchAndActivate(remoteConfig);
-            remoteData.title = getString(remoteConfig, 'hero_title') || remoteData.title;
-            remoteData.subtitle = getString(remoteConfig, 'hero_subtitle') || remoteData.subtitle;
-        } catch (e) {
-            console.error("Remote Config fetch failed, using defaults", e);
-        }
+  const dbData = snapshot.exists() ? snapshot.val() : {};
+  let remoteData = { title: 'Unlock Your Potential.', subtitle: 'Quality, affordable courses designed for the Kenyan market.' };
+
+  // Only run remote config on client
+  if (typeof window !== 'undefined') {
+    try {
+      const remoteConfig = getRemoteConfig(app);
+      await fetchAndActivate(remoteConfig);
+      remoteData.title = getString(remoteConfig, 'hero_title') || remoteData.title;
+      remoteData.subtitle = getString(remoteConfig, 'hero_subtitle') || remoteData.subtitle;
+    } catch (error) {
+      console.error("Remote Config fetch failed, using defaults", error);
     }
-    
-    return { ...defaults, ...dbData, ...remoteData };
+  }
+
+  return { ...defaults, ...dbData, ...remoteData };
 }
 
 export async function saveHeroData(data: Partial<HeroData>): Promise<void> {
