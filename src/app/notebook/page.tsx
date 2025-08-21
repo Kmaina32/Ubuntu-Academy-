@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 
 type EnrolledCourse = UserCourse & Partial<Course>;
 
-export default function NotebookPage() {
+export default function NotebooksListPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [courses, setCourses] = useState<EnrolledCourse[]>([]);
@@ -86,7 +86,7 @@ export default function NotebookPage() {
                       {courses.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {courses.map((course) => (
-                                <Link key={course.courseId} href={`/courses/${course.courseId}/learn`} passHref>
+                                <Link key={course.courseId} href={`/notebook/${course.courseId}`} passHref>
                                     <Card className="hover:bg-secondary/50 transition-colors h-full">
                                         <CardHeader>
                                             <CardTitle className="text-lg">{course.title}</CardTitle>
@@ -114,4 +114,3 @@ export default function NotebookPage() {
     </SidebarProvider>
   );
 }
-
