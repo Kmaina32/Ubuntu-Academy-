@@ -83,6 +83,15 @@ export interface Course {
   createdAt: string; // ISO string
 }
 
+export interface Program {
+  id: string;
+  title: string;
+  description: string;
+  courseIds: string[];
+  certificateImageUrl: string;
+}
+
+
 export const user = {
     name: 'Jomo Kenyatta',
     purchasedCourses: [
