@@ -8,7 +8,7 @@ import { getCourseById, updateUserCourseProgress, getUserCourses, saveTutorHisto
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit, FileText, Sparkles, Pencil, VolumeX, Link as LinkIcon, Notebook, Download } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit, FileText, Sparkles, Pencil, VolumeX, Link as LinkIcon, Notebook as NotebookIcon, Download } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -441,7 +441,7 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
     )
 }
 
-function Notebook({ course }: { course: Course }) {
+function NotesSheet({ course }: { course: Course }) {
     const { user } = useAuth();
     const [notes, setNotes] = useState('');
     const [isSaving, setIsSaving] = useState(false);
@@ -513,7 +513,7 @@ function Notebook({ course }: { course: Course }) {
         <Sheet>
             <SheetTrigger asChild>
                 <Button className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg">
-                    <Notebook className="h-7 w-7" />
+                    <NotebookIcon className="h-7 w-7" />
                 </Button>
             </SheetTrigger>
             <SheetContent className="w-full sm:w-[520px] flex flex-col p-0 rounded-l-lg">
@@ -829,7 +829,7 @@ export default function CoursePlayerPage() {
             </main>
 
             {/* <AiTutor course={course} lesson={currentLesson} settings={tutorSettings} /> */}
-            <Notebook course={course} />
+            <NotesSheet course={course} />
           </div>
         </div>
       </SidebarInset>
