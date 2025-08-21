@@ -542,8 +542,8 @@ function NotesSheet({ course }: { course: Course }) {
                 </div>
 
                 {/* Hidden div for PDF generation */}
-                <div className="absolute -left-[9999px] top-0 opacity-0 text-black" aria-hidden="true">
-                    <div ref={pdfRef} className="p-10 bg-white w-[595px]">
+                <div className="absolute -left-[9999px] top-0 opacity-0" aria-hidden="true">
+                    <div ref={pdfRef} className="p-10 bg-white w-[595px] text-black">
                         <div className="border-b-2 border-black pb-4 mb-4 flex justify-between items-center">
                             <div className="flex items-center gap-2">
                                 <Gem className="h-8 w-8 text-primary" />
