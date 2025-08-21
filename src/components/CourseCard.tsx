@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { Course } from '@/lib/mock-data';
-import { Check } from 'lucide-react';
+import { Check, ArrowRight } from 'lucide-react';
 
 interface CourseCardProps {
   course: Course;
@@ -17,14 +17,16 @@ export function CourseCard({ course, isEnrolled, aiHint }: CourseCardProps) {
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
       <CardHeader className="p-0">
-        <Image
-          src={course.imageUrl}
-          alt={course.title}
-          width={600}
-          height={400}
-          className="w-full h-48 object-cover"
-          data-ai-hint={aiHint}
-        />
+        <Link href={isEnrolled ? `/courses/${course.id}/learn` : `/courses/${course.id}`}>
+          <Image
+            src={course.imageUrl}
+            alt={course.title}
+            width={600}
+            height={400}
+            className="w-full h-48 object-cover"
+            data-ai-hint={aiHint}
+          />
+        </Link>
       </CardHeader>
       <CardContent className="p-6 flex-grow">
         <Badge variant="secondary" className="mb-2">{course.category}</Badge>
@@ -36,9 +38,11 @@ export function CourseCard({ course, isEnrolled, aiHint }: CourseCardProps) {
           {course.price > 0 ? `Ksh ${course.price.toLocaleString()}` : 'Free'}
         </p>
         {isEnrolled ? (
-            <Button disabled variant="outline">
-                <Check className="mr-2 h-4 w-4" />
-                Enrolled
+            <Button asChild variant="outline">
+                <Link href={`/courses/${course.id}/learn`}>
+                    Go to Course
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
             </Button>
         ) : (
             <Button asChild>

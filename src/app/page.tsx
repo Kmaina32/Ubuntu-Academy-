@@ -14,6 +14,7 @@ import { AppSidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
+import { Separator } from '@/components/ui/separator';
 
 export default function Home() {
   const { user } = useAuth();
@@ -46,14 +47,24 @@ export default function Home() {
     };
     fetchData();
   }, [user]);
-
-  const filteredCourses = useMemo(() => {
-    return courses.filter(course =>
-      course.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [courses, searchQuery]);
-
+  
   const enrolledCourseIds = useMemo(() => new Set(userCourses.map(c => c.courseId)), [userCourses]);
+
+  const { ongoingCourses, featuredCourses } = useMemo(() => {
+    const ongoing = courses.filter(course => enrolledCourseIds.has(course.id));
+    const featured = courses.filter(course => !enrolledCourseIds.has(course.id));
+    
+    if (searchQuery) {
+        const lowercasedQuery = searchQuery.toLowerCase();
+        return {
+            ongoingCourses: ongoing.filter(c => c.title.toLowerCase().includes(lowercasedQuery)),
+            featuredCourses: featured.filter(c => c.title.toLowerCase().includes(lowercasedQuery)),
+        }
+    }
+
+    return { ongoingCourses: ongoing, featuredCourses: featured };
+  }, [courses, enrolledCourseIds, searchQuery]);
+
 
   const courseAiHints: Record<string, string> = {
     'digital-marketing-101': 'marketing computer',
@@ -97,12 +108,13 @@ export default function Home() {
           <section className="py-8 md:py-12 bg-background">
             <div className="container mx-auto px-4 md:px-6">
               <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold font-headline">Featured Courses</h2>
+                <h2 className="text-3xl font-bold font-headline">Find Your Next Course</h2>
+                 <p className="text-muted-foreground mt-2">Explore our growing catalog of courses.</p>
                 <div className="relative w-full max-w-md mx-auto mt-4">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="search"
-                    placeholder="Search courses..."
+                    placeholder="Search all courses..."
                     className="pl-8"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -117,22 +129,46 @@ export default function Home() {
                   <p className="ml-2">Loading courses...</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredCourses.map((course) => (
-                    <CourseCard 
-                        key={course.id} 
-                        course={course} 
-                        isEnrolled={enrolledCourseIds.has(course.id)}
-                        aiHint={courseAiHints[course.id] || 'course placeholder'} 
-                    />
-                  ))}
+                <>
+                  {user && ongoingCourses.length > 0 && (
+                     <div className="mb-16">
+                        <h3 className="text-2xl font-bold font-headline text-center mb-8">My Ongoing Courses</h3>
+                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                           {ongoingCourses.map((course) => (
+                                <CourseCard 
+                                    key={course.id} 
+                                    course={course} 
+                                    isEnrolled={true}
+                                    aiHint={courseAiHints[course.id] || 'course placeholder'} 
+                                />
+                            ))}
+                         </div>
+                     </div>
+                  )}
 
-                  {filteredCourses.length === 0 && (
-                    <div className="md:col-span-2 lg:col-span-3 text-center text-muted-foreground py-10">
-                      <p>No courses found that match your search.</p>
+                  {featuredCourses.length > 0 && (
+                     <div>
+                        {user && ongoingCourses.length > 0 && <Separator className="my-12"/>}
+                        <h3 className="text-2xl font-bold font-headline text-center mb-8">Featured Courses</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {featuredCourses.map((course) => (
+                                <CourseCard 
+                                    key={course.id} 
+                                    course={course} 
+                                    isEnrolled={false}
+                                    aiHint={courseAiHints[course.id] || 'course placeholder'} 
+                                />
+                            ))}
+                        </div>
+                     </div>
+                  )}
+
+                  {ongoingCourses.length === 0 && featuredCourses.length === 0 && (
+                    <div className="text-center text-muted-foreground py-10">
+                      <p>No courses found{searchQuery ? ` that match "${searchQuery}"` : ''}.</p>
                     </div>
                   )}
-                </div>
+                </>
               )}
             </div>
           </section>
