@@ -32,60 +32,58 @@ export default function StudentLivePage() {
             router.push('/login');
         }
     }, [user, authLoading, router]);
-    
-    useEffect(() => {
-        const getCameraPermission = async () => {
-        try {
-            // In a real app, this would be a remote stream. For demo, we use local camera.
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            setHasCameraPermission(true);
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-            }
-            streamRef.current = stream;
-        } catch (error) {
-            console.error('Error accessing camera:', error);
-            setHasCameraPermission(false);
-            toast({
-                variant: 'destructive',
-                title: 'Camera Access Denied',
-                description: 'Please enable camera permissions in your browser settings to view the live session.',
-            });
-        }
-        };
-
-        getCameraPermission();
-
-        return () => {
-             if (streamRef.current) {
-                streamRef.current.getTracks().forEach(track => track.stop());
-            }
-        }
-    }, [toast]);
-
 
     useEffect(() => {
-        setIsLoading(true);
         const sessionRef = ref(db, 'liveSession');
 
         const unsubscribe = onValue(sessionRef, (snapshot) => {
-            if (snapshot.exists()) {
-                const sessionData = snapshot.val();
-                setSession(sessionData);
-
-                if (!sessionData.isActive && streamRef.current) {
-                    streamRef.current.getTracks().forEach(track => track.stop());
-                     if(videoRef.current) videoRef.current.srcObject = null;
-                }
-
-            } else {
-                setSession(null);
-            }
+            const sessionData = snapshot.exists() ? snapshot.val() : null;
+            setSession(sessionData);
             setIsLoading(false);
         });
 
         return () => unsubscribe();
     }, []);
+
+    useEffect(() => {
+        const getCameraPermission = async () => {
+            try {
+                // In a real app, this would be a remote stream. For demo, we use local camera.
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                setHasCameraPermission(true);
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                }
+                streamRef.current = stream;
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                setHasCameraPermission(false);
+                toast({
+                    variant: 'destructive',
+                    title: 'Camera Access Denied',
+                    description: 'Please enable camera permissions in your browser settings to view the live session.',
+                });
+            }
+        };
+
+        if (session?.isActive) {
+            getCameraPermission();
+        } else {
+             if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+                streamRef.current = null;
+            }
+            if (videoRef.current) {
+                videoRef.current.srcObject = null;
+            }
+        }
+        
+        return () => {
+             if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+            }
+        }
+    }, [session, toast]);
 
     return (
         <SidebarProvider>
@@ -112,7 +110,7 @@ export default function StudentLivePage() {
                                             <span>Connecting to live session...</span>
                                         </div>
                                     ) : session?.isActive ? (
-                                        <video ref={videoRef} className="w-full h-full rounded-lg" autoPlay muted playsInline />
+                                        <video ref={videoRef} className="w-full h-full rounded-lg bg-black" autoPlay muted playsInline />
                                     ) : (
                                         <div className="flex flex-col items-center gap-2">
                                             <VideoOff className="h-12 w-12" />
