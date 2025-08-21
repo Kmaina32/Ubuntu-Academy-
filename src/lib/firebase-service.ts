@@ -181,29 +181,15 @@ export async function getHeroData(): Promise<HeroData> {
         theme: 'default',
     };
     
-    // Fetch remote config values
-    const remoteConfig = getRemoteConfig(app);
-    await fetchAndActivate(remoteConfig);
-
-    const remoteTitle = getString(remoteConfig, 'hero_title');
-    const remoteSubtitle = getString(remoteConfig, 'hero_subtitle');
-
-
     if (snapshot.exists()) {
         const data = snapshot.val();
         return {
             ...defaults,
             ...data,
-            title: remoteTitle || data.title,
-            subtitle: remoteSubtitle || data.subtitle,
         };
     }
 
-    return {
-        ...defaults,
-        title: remoteTitle || defaults.title,
-        subtitle: remoteSubtitle || defaults.subtitle,
-    };
+    return defaults;
 }
 
 export async function saveHeroData(data: Partial<HeroData>): Promise<void> {
