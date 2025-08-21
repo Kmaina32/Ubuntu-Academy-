@@ -19,6 +19,8 @@ import { getHeroData } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { Separator } from '@/components/ui/separator';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { auth } from '@/lib/firebase';
+import { RecaptchaVerifier } from 'firebase/auth';
 
 const formSchema = z.object({
   firstName: z.string().min(1, { message: 'First name is required.' }),
@@ -47,7 +49,7 @@ export default function SignupPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [siteSettings, setSiteSettings] = useState<HeroData | null>(null);
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -56,6 +58,16 @@ export default function SignupPage() {
     }
     fetchSettings();
   }, []);
+
+  useEffect(() => {
+    if (recaptchaRef.current) {
+        // @ts-ignore
+        auth.recaptchaVerifier = new RecaptchaVerifier(auth, recaptchaRef.current, {
+            'size': 'invisible'
+        });
+    }
+  }, [siteSettings]);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -193,12 +205,12 @@ export default function SignupPage() {
                       />
                        {siteSettings?.recaptchaEnabled && (
                             <ReCAPTCHA
-                                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
-                                onChange={(token) => setRecaptchaToken(token)}
-                                onExpired={() => setRecaptchaToken(null)}
+                                ref={recaptchaRef}
+                                sitekey='6LfuW60rAAAAAOcEjJnu9RjystAt0-9V_enKNkhw'
+                                size="invisible"
                             />
                        )}
-                      <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading || (siteSettings?.recaptchaEnabled && !recaptchaToken)}>
+                      <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
                       {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Create Account'}
                       </Button>
                   </form>
@@ -238,3 +250,5 @@ export default function SignupPage() {
     </div>
   );
 }
+
+    
