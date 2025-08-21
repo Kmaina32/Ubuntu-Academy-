@@ -471,9 +471,9 @@ export async function getProgramById(id: string): Promise<Program | null> {
     return null;
 }
 
-export async function updateProgram(id: string, data: Partial<Program>): Promise<void> {
+export async function updateProgram(id: string, programData: Partial<Program>): Promise<void> {
     const programRef = ref(db, `programs/${id}`);
-    await update(programRef, data);
+    await update(programRef, programData);
 }
 
 export async function deleteProgram(id: string): Promise<void> {
