@@ -13,7 +13,6 @@ const firebaseConfig = {
   storageBucket: "mkenya-skilled.appspot.com",
   messagingSenderId: "971829599240",
   appId: "1:971829599240:web:c7ae181183e385219dc5bd",
-  measurementId: "G-MEASUREMENT_ID",
 };
 
 // Initialize Firebase
