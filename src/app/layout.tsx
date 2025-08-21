@@ -3,19 +3,23 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/hooks/use-auth';
+import { getHeroData } from '@/lib/firebase-service';
 
 export const metadata: Metadata = {
   title: 'Mkenya Skilled',
   description: 'Online courses for Kenyans, by Kenyans.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const heroData = await getHeroData();
+  const activeTheme = heroData.theme || 'default';
+
   return (
-    <html lang="en" suppressHydrationWarning={true}>
+    <html lang="en" suppressHydrationWarning={true} className={activeTheme !== 'default' ? `theme-${activeTheme}` : ''}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />

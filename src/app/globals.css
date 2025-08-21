@@ -64,6 +64,84 @@
     --sidebar-border: 275 15% 20%;
     --sidebar-ring: 275 69% 54%;
   }
+
+  .theme-christmas {
+    --background: 120 60% 95%;
+    --foreground: 120 60% 10%;
+    --primary: 0 63% 44%; /* Red */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 120 60% 90%;
+    --secondary-foreground: 120 60% 20%;
+    --accent: 120 40% 40%; /* Green */
+    --accent-foreground: 0 0% 100%;
+  }
+
+  .dark.theme-christmas {
+    --background: 120 20% 5%;
+    --foreground: 120 10% 95%;
+    --primary: 0 70% 55%; /* Red */
+    --secondary: 120 20% 10%;
+    --accent: 120 40% 50%; /* Green */
+  }
+
+  .theme-valentines {
+    --background: 350 100% 97%;
+    --foreground: 350 50% 20%;
+    --primary: 340 82% 61%; /* Pink */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 350 100% 95%;
+    --secondary-foreground: 340 82% 40%;
+    --accent: 0 72% 51%; /* Red */
+    --accent-foreground: 0 0% 100%;
+  }
+  
+  .dark.theme-valentines {
+    --background: 340 15% 8%;
+    --foreground: 340 10% 95%;
+    --primary: 340 82% 61%; /* Pink */
+    --secondary: 340 15% 15%;
+    --accent: 0 72% 51%; /* Red */
+  }
+
+  .theme-new-year {
+    --background: 0 0% 98%;
+    --foreground: 0 0% 10%;
+    --primary: 45 100% 51%; /* Gold */
+    --primary-foreground: 0 0% 10%;
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 20%;
+    --accent: 0 0% 13%; /* Black */
+    --accent-foreground: 0 0% 98%;
+  }
+
+  .dark.theme-new-year {
+    --background: 0 0% 8%;
+    --foreground: 0 0% 98%;
+    --primary: 45 100% 51%; /* Gold */
+    --primary-foreground: 0 0% 10%;
+    --secondary: 0 0% 15%;
+    --accent: 0 0% 85%; /* Light gray instead of black on dark*/
+    --accent-foreground: 0 0% 10%;
+  }
+
+  .theme-eid {
+    --background: 140 50% 98%;
+    --foreground: 140 50% 10%;
+    --primary: 150 54% 42%; /* Dark Green */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 140 50% 95%;
+    --secondary-foreground: 150 54% 22%;
+    --accent: 45 86% 61%; /* Gold */
+    --accent-foreground: 140 50% 10%;
+  }
+
+  .dark.theme-eid {
+    --background: 140 20% 8%;
+    --foreground: 140 10% 95%;
+    --primary: 150 54% 52%; /* Dark Green */
+    --secondary: 140 20% 15%;
+    --accent: 45 86% 61%; /* Gold */
+  }
 }
 
 @layer base {

@@ -12,13 +12,14 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Loader2, Shield, Rss } from 'lucide-react';
+import { ArrowLeft, Loader2, Shield, Rss, Palette } from 'lucide-react';
 import { getHeroData, saveHeroData, getRemoteConfigValues, saveRemoteConfigValues } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const heroFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -29,6 +30,7 @@ const heroFormSchema = z.object({
   slideshowSpeed: z.coerce.number().min(1, 'Speed must be at least 1 second.'),
   imageBrightness: z.coerce.number().min(0).max(100),
   recaptchaEnabled: z.boolean(),
+  theme: z.string().optional(),
 });
 
 export default function AdminHeroPage() {
@@ -47,6 +49,7 @@ export default function AdminHeroPage() {
       slideshowSpeed: 5,
       imageBrightness: 60,
       recaptchaEnabled: true,
+      theme: 'default',
     },
   });
 
@@ -61,6 +64,7 @@ export default function AdminHeroPage() {
           ...dbData,
           title: remoteData.hero_title || dbData.title,
           subtitle: remoteData.hero_subtitle || dbData.subtitle,
+          theme: dbData.theme || 'default',
         });
 
       } catch (error) {
@@ -117,7 +121,7 @@ export default function AdminHeroPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Manage Site Settings</CardTitle>
-                    <CardDescription>Update the content and images for key areas of the website.</CardDescription>
+                    <CardDescription>Update the content, appearance, and images for key areas of the website.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {isFetching ? (
@@ -127,12 +131,46 @@ export default function AdminHeroPage() {
                     </div>
                   ) : (
                     <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                         
-                        <h3 className="text-lg font-semibold flex items-center gap-2"><Rss /> Homepage Content (Remotely Configured)</h3>
-                        <p className="text-sm text-muted-foreground -mt-4">
-                            These values can be updated instantly for all users without needing to redeploy the app.
-                        </p>
+                        <div>
+                            <h3 className="text-lg font-semibold flex items-center gap-2"><Palette /> Appearance</h3>
+                            <Separator className="mt-2" />
+                        </div>
+                        
+                        <FormField
+                            control={form.control}
+                            name="theme"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Active Theme</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a theme..." />
+                                    </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="default">Default</SelectItem>
+                                        <SelectItem value="valentines">Valentine's Day</SelectItem>
+                                        <SelectItem value="christmas">Christmas</SelectItem>
+                                        <SelectItem value="new-year">New Year</SelectItem>
+                                        <SelectItem value="eid">Eid</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+
+                        <div>
+                            <h3 className="text-lg font-semibold flex items-center gap-2"><Rss /> Homepage Content (Remotely Configured)</h3>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                These values can be updated instantly for all users without needing to redeploy the app.
+                            </p>
+                            <Separator className="mt-2" />
+                        </div>
                         <FormField
                           control={form.control}
                           name="title"
@@ -160,9 +198,10 @@ export default function AdminHeroPage() {
                           )}
                         />
                         
-                        <Separator />
-
-                        <h3 className="text-lg font-semibold">Homepage Hero</h3>
+                        <div>
+                            <h3 className="text-lg font-semibold">Homepage Hero</h3>
+                             <Separator className="mt-2" />
+                        </div>
                         <FormField
                           control={form.control}
                           name="imageUrl"
@@ -178,9 +217,10 @@ export default function AdminHeroPage() {
                           )}
                         />
 
-                        <Separator />
-
-                         <h3 className="text-lg font-semibold">Homepage Slideshow</h3>
+                        <div>
+                            <h3 className="text-lg font-semibold">Homepage Slideshow</h3>
+                            <Separator className="mt-2" />
+                        </div>
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                            <FormField
                               control={form.control}
@@ -216,9 +256,10 @@ export default function AdminHeroPage() {
                             />
                          </div>
 
-                        <Separator />
-
-                        <h3 className="text-lg font-semibold">Authentication Pages</h3>
+                        <div>
+                            <h3 className="text-lg font-semibold">Authentication Pages</h3>
+                            <Separator className="mt-2" />
+                        </div>
                          <FormField
                           control={form.control}
                           name="loginImageUrl"
@@ -248,9 +289,10 @@ export default function AdminHeroPage() {
                           )}
                         />
 
-                        <Separator />
-                        
-                        <h3 className="text-lg font-semibold flex items-center gap-2"><Shield /> Security Settings</h3>
+                        <div>
+                            <h3 className="text-lg font-semibold flex items-center gap-2"><Shield /> Security Settings</h3>
+                            <Separator className="mt-2" />
+                        </div>
                         <FormField
                           control={form.control}
                           name="recaptchaEnabled"

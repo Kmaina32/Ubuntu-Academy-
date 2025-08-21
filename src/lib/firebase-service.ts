@@ -24,6 +24,7 @@ export interface HeroData {
     slideshowSpeed: number;
     imageBrightness: number;
     recaptchaEnabled: boolean;
+    theme?: string;
 }
 
 export interface TutorSettings {
@@ -177,6 +178,7 @@ export async function getHeroData(): Promise<HeroData> {
         slideshowSpeed: 5,
         imageBrightness: 60, // Represents 60% brightness (40% overlay opacity)
         recaptchaEnabled: true,
+        theme: 'default',
     };
     
     // Fetch remote config values

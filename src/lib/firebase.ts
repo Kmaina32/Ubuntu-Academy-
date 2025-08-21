@@ -16,16 +16,20 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
 const auth = getAuth(app);
 const db = getDatabase(app);
 const storage = getStorage(app);
-const remoteConfig = getRemoteConfig(app);
 
-// You can set default values for Remote Config here
-remoteConfig.defaultConfig = {
-    "hero_title": "Unlock Your Potential.",
-    "hero_subtitle": "Quality, affordable courses designed for the Kenyan market."
-};
+let remoteConfig: any;
+if (typeof window !== 'undefined') {
+    remoteConfig = getRemoteConfig(app);
+    remoteConfig.defaultConfig = {
+        "hero_title": "Unlock Your Potential.",
+        "hero_subtitle": "Quality, affordable courses designed for the Kenyan market."
+    };
+}
+
 
 export { app, auth, db, storage, remoteConfig };
