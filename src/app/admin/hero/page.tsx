@@ -12,12 +12,13 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Shield } from 'lucide-react';
 import { getHeroData, saveHeroData } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 
 const heroFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -27,6 +28,7 @@ const heroFormSchema = z.object({
   signupImageUrl: z.string().url('Please enter a valid URL for the signup page image.'),
   slideshowSpeed: z.coerce.number().min(1, 'Speed must be at least 1 second.'),
   imageBrightness: z.coerce.number().min(0).max(100),
+  recaptchaEnabled: z.boolean(),
 });
 
 export default function AdminHeroPage() {
@@ -44,6 +46,7 @@ export default function AdminHeroPage() {
       signupImageUrl: '',
       slideshowSpeed: 5,
       imageBrightness: 60,
+      recaptchaEnabled: true,
     },
   });
 
@@ -217,6 +220,31 @@ export default function AdminHeroPage() {
                               </FormControl>
                                <p className="text-sm text-muted-foreground">Background image for the signup page. Recommended size: 1200x900 pixels.</p>
                               <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <Separator />
+                        
+                        <h3 className="text-lg font-semibold flex items-center gap-2"><Shield /> Security Settings</h3>
+                        <FormField
+                          control={form.control}
+                          name="recaptchaEnabled"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                              <div className="space-y-0.5">
+                                <FormLabel>Enable reCAPTCHA</FormLabel>
+                                <FormMessage />
+                                 <p className="text-sm text-muted-foreground">
+                                    Helps protect your site from spam and abuse on the signup page.
+                                </p>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
                             </FormItem>
                           )}
                         />

@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, Gem } from 'lucide-react';
 import { getHeroData } from '@/lib/firebase-service';
+import type { HeroData } from '@/lib/firebase-service';
 import { Separator } from '@/components/ui/separator';
 import ReCAPTCHA from 'react-google-recaptcha';
 
@@ -45,15 +46,15 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [imageUrl, setImageUrl] = useState('');
+  const [siteSettings, setSiteSettings] = useState<HeroData | null>(null);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchImage = async () => {
+    const fetchSettings = async () => {
       const data = await getHeroData();
-      setImageUrl(data.signupImageUrl);
+      setSiteSettings(data);
     }
-    fetchImage();
+    fetchSettings();
   }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -190,12 +191,14 @@ export default function SignupPage() {
                           </FormItem>
                       )}
                       />
-                       <ReCAPTCHA
-                          sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
-                          onChange={(token) => setRecaptchaToken(token)}
-                          onExpired={() => setRecaptchaToken(null)}
-                        />
-                      <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading || !recaptchaToken}>
+                       {siteSettings?.recaptchaEnabled && (
+                            <ReCAPTCHA
+                                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+                                onChange={(token) => setRecaptchaToken(token)}
+                                onExpired={() => setRecaptchaToken(null)}
+                            />
+                       )}
+                      <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading || (siteSettings?.recaptchaEnabled && !recaptchaToken)}>
                       {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Create Account'}
                       </Button>
                   </form>
@@ -223,7 +226,7 @@ export default function SignupPage() {
         </div>
       </div>
         <div className="hidden bg-muted lg:flex items-center justify-center p-8">
-         <div className="w-full h-full bg-cover bg-center rounded-lg" style={{backgroundImage: `url('${imageUrl}')`}} data-ai-hint="learning online">
+         <div className="w-full h-full bg-cover bg-center rounded-lg" style={{backgroundImage: `url('${siteSettings?.signupImageUrl}')`}} data-ai-hint="learning online">
             <div className="w-full h-full bg-black/50 rounded-lg flex items-end p-8 text-white">
                 <div>
                     <h2 className="text-4xl font-bold font-headline">Start Your Journey</h2>

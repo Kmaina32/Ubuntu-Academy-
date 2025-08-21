@@ -20,6 +20,7 @@ export interface HeroData {
     signupImageUrl: string;
     slideshowSpeed: number;
     imageBrightness: number;
+    recaptchaEnabled: boolean;
 }
 
 export interface TutorSettings {
@@ -172,6 +173,7 @@ export async function getHeroData(): Promise<HeroData> {
         signupImageUrl: 'https://placehold.co/1200x900.png',
         slideshowSpeed: 5,
         imageBrightness: 60, // Represents 60% brightness (40% overlay opacity)
+        recaptchaEnabled: true,
     };
 
     if (snapshot.exists()) {
