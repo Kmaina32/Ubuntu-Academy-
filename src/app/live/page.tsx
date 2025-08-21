@@ -84,13 +84,9 @@ export default function StudentLivePage() {
                                             <span>Connecting to live session...</span>
                                         </div>
                                     ) : session?.isActive ? (
-                                        // This video tag would be used by WebRTC to display the stream
-                                        <video ref={videoRef} className="w-full h-full rounded-lg bg-black" autoPlay playsInline>
-                                            {/* For demo purposes, we show a placeholder inside the video tag which won't be visible if a stream is active */}
-                                            <div className="w-full h-full flex items-center justify-center text-white">
-                                                <p>Live stream would appear here.</p>
-                                            </div>
-                                        </video>
+                                        <div className="w-full h-full flex items-center justify-center bg-black text-white rounded-lg">
+                                            <p>Live stream would appear here.</p>
+                                        </div>
                                     ) : (
                                         <div className="flex flex-col items-center gap-2">
                                             <VideoOff className="h-12 w-12" />
