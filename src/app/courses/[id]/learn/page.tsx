@@ -1,14 +1,14 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Course, Lesson, Module, TutorMessage } from '@/lib/mock-data';
-import { getCourseById, updateUserCourseProgress, getUserCourses, saveTutorHistory, getTutorHistory, getTutorSettings, TutorSettings } from '@/lib/firebase-service';
+import { getCourseById, updateUserCourseProgress, getUserCourses, saveTutorHistory, getTutorHistory, getTutorSettings, TutorSettings, getUserNotes, saveUserNotes } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit, FileText, Sparkles, Pencil, VolumeX, Link as LinkIcon } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit, FileText, Sparkles, Pencil, VolumeX, Link as LinkIcon, Notebook, Download } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -19,17 +19,16 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { courseTutor } from '@/ai/flows/course-tutor';
 import { speechToText } from '@/ai/flows/speech-to-text';
 import { textToSpeech } from '@/ai/flows/text-to-speech';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useRecorder } from '@/hooks/use-recorder';
-import { cn } from '@/lib/utils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 function getYouTubeEmbedUrl(url: string | undefined): string | null {
   if (!url) return null;
@@ -329,7 +328,7 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
             <audio ref={audioRef} className="hidden" />
             <Sheet>
                 <SheetTrigger asChild>
-                    <Button className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg">
+                    <Button className="fixed bottom-6 right-24 h-14 w-14 rounded-full shadow-lg">
                         <MessageSquare className="h-7 w-7" />
                     </Button>
                 </SheetTrigger>
@@ -439,6 +438,122 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
                 </SheetContent>
             </Sheet>
         </>
+    )
+}
+
+function Notebook({ course }: { course: Course }) {
+    const { user } = useAuth();
+    const [notes, setNotes] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const notesRef = useRef<HTMLDivElement>(null);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        const fetchNotes = async () => {
+            if (user && course) {
+                const savedNotes = await getUserNotes(user.uid, course.id);
+                setNotes(savedNotes);
+            }
+        };
+        fetchNotes();
+    }, [user, course]);
+    
+    const handleDownload = async () => {
+        if (!notesRef.current) return;
+        setIsDownloading(true);
+
+        const pdf = new jsPDF('p', 'pt', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        
+        // Header
+        const headerCanvas = await html2canvas(document.getElementById('pdf-header')!, { scale: 2 });
+        const headerImgData = headerCanvas.toDataURL('image/png');
+        const headerHeight = (headerCanvas.height * pdfWidth) / headerCanvas.width;
+        pdf.addImage(headerImgData, 'PNG', 0, 0, pdfWidth, headerHeight);
+
+        // Body
+        const bodyCanvas = await html2canvas(notesRef.current, { scale: 2 });
+        const bodyImgData = bodyCanvas.toDataURL('image/png');
+        const bodyHeight = (bodyCanvas.height * (pdfWidth - 80)) / bodyCanvas.width;
+        
+        if (headerHeight + bodyHeight < pdfHeight) {
+            pdf.addImage(bodyImgData, 'PNG', 40, headerHeight + 20, pdfWidth - 80, bodyHeight);
+        } else {
+             // Handle content overflow (simple split, could be improved)
+            pdf.addPage();
+            pdf.addImage(bodyImgData, 'PNG', 40, 40, pdfWidth - 80, bodyHeight);
+        }
+        
+        pdf.save(`MkenyaSkilled_Notes_${course.title.replace(/\s+/g, '_')}.pdf`);
+
+        setIsDownloading(false);
+    };
+
+
+    const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const newNotes = e.target.value;
+        setNotes(newNotes);
+        
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+
+        setIsSaving(true);
+        timeoutRef.current = setTimeout(async () => {
+            if (user && course) {
+                await saveUserNotes(user.uid, course.id, newNotes);
+                setIsSaving(false);
+            }
+        }, 1500); // Debounce save
+    };
+    
+    return (
+        <Sheet>
+            <SheetTrigger asChild>
+                <Button className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg">
+                    <Notebook className="h-7 w-7" />
+                </Button>
+            </SheetTrigger>
+            <SheetContent className="w-full sm:w-[520px] flex flex-col p-0 rounded-l-lg">
+                <SheetHeader className="p-6 pb-2 border-b flex-row justify-between items-center">
+                    <div>
+                        <SheetTitle>My Notebook</SheetTitle>
+                        <SheetDescription>
+                            Your notes for: {course.title}
+                        </SheetDescription>
+                    </div>
+                     <Button variant="outline" size="sm" onClick={handleDownload} disabled={isDownloading}>
+                        {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                        PDF
+                    </Button>
+                </SheetHeader>
+                <div className="flex-grow p-1 overflow-hidden">
+                    <Textarea
+                        value={notes}
+                        onChange={handleNotesChange}
+                        placeholder="Start typing your notes here..."
+                        className="w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base"
+                    />
+                </div>
+                 <div className="p-2 border-t text-xs text-muted-foreground text-right h-8 flex items-center justify-end">
+                    {isSaving ? 'Saving...' : 'Saved'}
+                </div>
+
+                {/* Hidden div for PDF generation */}
+                <div className="absolute -left-[9999px] top-0 opacity-0" aria-hidden="true">
+                    <div id="pdf-header" className="p-10 bg-background w-[595px]">
+                        <h1 className="text-2xl font-bold font-headline">{course.title} Notes</h1>
+                        <p className="text-muted-foreground">From Mkenya Skilled</p>
+                    </div>
+                    <div ref={notesRef} className="p-10 bg-white w-[595px]">
+                         <pre className="whitespace-pre-wrap font-body">{notes}</pre>
+                    </div>
+                </div>
+
+            </SheetContent>
+        </Sheet>
     )
 }
 
@@ -713,7 +828,8 @@ export default function CoursePlayerPage() {
               )}
             </main>
 
-            <AiTutor course={course} lesson={currentLesson} settings={tutorSettings} />
+            {/* <AiTutor course={course} lesson={currentLesson} settings={tutorSettings} /> */}
+            <Notebook course={course} />
           </div>
         </div>
       </SidebarInset>

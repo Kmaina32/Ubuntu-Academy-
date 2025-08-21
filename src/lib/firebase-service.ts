@@ -4,7 +4,7 @@ import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification } from './mock-data';
-import { getRemoteConfig, fetchAndActivate, getString, getValue } from 'firebase/remote-config';
+import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
 
@@ -169,27 +169,32 @@ export async function deleteUser(userId: string): Promise<void> {
 export async function getHeroData(): Promise<HeroData> {
     const heroRef = ref(db, 'hero');
     const snapshot = await get(heroRef);
-    const defaults: HeroData = {
-        title: 'Unlock Your Potential.',
-        subtitle: 'Quality, affordable courses designed for the Kenyan market. Learn valuable skills to advance your career.',
+    const defaults: Omit<HeroData, 'title' | 'subtitle'> = {
         imageUrl: 'https://placehold.co/1200x400.png',
         loginImageUrl: 'https://placehold.co/1200x900.png',
         signupImageUrl: 'https://placehold.co/1200x900.png',
         slideshowSpeed: 5,
-        imageBrightness: 60, // Represents 60% brightness (40% overlay opacity)
+        imageBrightness: 60,
         recaptchaEnabled: true,
         theme: 'default',
     };
     
-    if (snapshot.exists()) {
-        const data = snapshot.val();
-        return {
-            ...defaults,
-            ...data,
-        };
-    }
+    const dbData = snapshot.exists() ? snapshot.val() : {};
 
-    return defaults;
+    // Fetch remote config values only on the client
+    let remoteData = { title: 'Unlock Your Potential.', subtitle: 'Quality, affordable courses designed for the Kenyan market.'};
+    if (typeof window !== 'undefined') {
+        const remoteConfig = getRemoteConfig(app);
+        try {
+            await fetchAndActivate(remoteConfig);
+            remoteData.title = getString(remoteConfig, 'hero_title') || remoteData.title;
+            remoteData.subtitle = getString(remoteConfig, 'hero_subtitle') || remoteData.subtitle;
+        } catch (e) {
+            console.error("Remote Config fetch failed, using defaults", e);
+        }
+    }
+    
+    return { ...defaults, ...dbData, ...remoteData };
 }
 
 export async function saveHeroData(data: Partial<HeroData>): Promise<void> {
@@ -316,7 +321,10 @@ export async function getTutorSettings(): Promise<TutorSettings> {
 // Remote Config Functions
 export async function getRemoteConfigValues(keys: string[]): Promise<Record<string, string>> {
     const remoteConfig = getRemoteConfig(app);
-    await fetchAndActivate(remoteConfig);
+    // Ensure this is only called on the client
+    if (typeof window !== 'undefined') {
+        await fetchAndActivate(remoteConfig);
+    }
     
     const configValues: Record<string, string> = {};
     keys.forEach(key => {
@@ -324,6 +332,7 @@ export async function getRemoteConfigValues(keys: string[]): Promise<Record<stri
     });
     return configValues;
 }
+
 
 export async function saveRemoteConfigValues(data: Record<string, string>): Promise<void> {
     // Note: This is a client-side mock. In a real app, you'd use the Admin SDK on a server.
@@ -351,10 +360,26 @@ export async function getAllNotifications(): Promise<Notification[]> {
     const snapshot = await get(notificationsRef);
     if (snapshot.exists()) {
         const notificationsData = snapshot.val();
-        return Object.keys(notificationsData).map(key => ({
+        const notifications = Object.keys(notificationsData).map(key => ({
             id: key,
             ...notificationsData[key]
         }));
+        return notifications.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
     return [];
+}
+
+// User Notes Functions
+export async function saveUserNotes(userId: string, courseId: string, notes: string): Promise<void> {
+    const notesRef = ref(db, `userNotes/${userId}/${courseId}`);
+    await set(notesRef, { notes });
+}
+
+export async function getUserNotes(userId: string, courseId: string): Promise<string> {
+    const notesRef = ref(db, `userNotes/${userId}/${courseId}/notes`);
+    const snapshot = await get(notesRef);
+    if (snapshot.exists()) {
+        return snapshot.val();
+    }
+    return '';
 }
