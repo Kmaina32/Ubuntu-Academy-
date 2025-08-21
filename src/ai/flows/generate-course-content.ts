@@ -8,7 +8,7 @@
  *
  * - generateCourseContent - A function that handles the course generation process.
  * - GenerateCourseContentInput - The input type for the generateCourseContent function.
- * - GenerateCourseContentOutput - The return type for the generateCourseContent function.
+ * - GenerateCourseContentOutput - The return type for the generateCourseContentOutput function.
  */
 
 import {ai} from '@/ai/genkit';
@@ -105,8 +105,8 @@ Please generate the following content:
 2.  **Duration**: The estimated total duration of the course.
 3.  **Modules**: A list of exactly 2 modules. Each module must have a unique ID, a title, and its list of lessons.
 4.  **Lessons**: Distribute at least 5 lessons between the modules. Each lesson must have a unique ID, title, duration (e.g., "5 min"), and full, extensive lesson content. 
-    - For youtubeLinks, extract relevant YouTube links from the context. If none are found, provide an EMPTY array.
-    - For googleDriveLinks, ALWAYS provide an EMPTY array.
+    - For **youtubeLinks**, you MUST ONLY include a link if a valid, full 'https://' URL is found in the context. If no valid URL is present, you MUST provide an EMPTY array. Do not invent URLs.
+    - For **googleDriveLinks**, ALWAYS provide an EMPTY array.
 5.  **Exam**: A final exam with an array of exactly 5 questions. This exam must contain three (3) 'multiple-choice' questions and two (2) 'short-answer' questions. Each question needs a unique ID, type, text, max points (always 10), and the correct answer details (referenceAnswer for short-answer, options array and correctAnswer index for multiple-choice).
 
 Generate the full course structure now.`,
@@ -123,3 +123,4 @@ const generateCourseContentFlow = ai.defineFlow(
     return output!;
   }
 );
+
