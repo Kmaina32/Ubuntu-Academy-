@@ -22,6 +22,7 @@ import { useEffect, useState, useMemo } from 'react';
 import type { Course, CalendarEvent } from '@/lib/mock-data';
 import { getAllCourses, getAllCalendarEvents } from '@/lib/firebase-service';
 import { differenceInDays, isToday, parseISO } from 'date-fns';
+import { usePathname, useRouter } from 'next/navigation';
 
 type Notification = {
     id: string;
@@ -211,6 +212,15 @@ function ThemeToggle() {
 export function Header({ children }: { children?: React.ReactNode }) {
   const { user, logout, loading } = useAuth();
   const { isMobile, openMobile } = useSidebar();
+  const router = useRouter();
+  const pathname = usePathname();
+
+
+  useEffect(() => {
+      if (!loading && user && !user.emailVerified && pathname !== '/unverified') {
+          router.push('/unverified');
+      }
+  }, [user, loading, pathname, router]);
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';

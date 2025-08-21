@@ -18,9 +18,12 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
   sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup,
+  sendEmailVerification,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { RegisteredUser, saveUser } from '@/lib/firebase-service';
+import { RegisteredUser, saveUser, getUserById } from '@/lib/firebase-service';
 
 interface AuthContextType {
   user: User | null;
@@ -30,6 +33,8 @@ interface AuthContextType {
   signup: (email: string, pass: string, name: string) => Promise<any>;
   logout: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  sendVerificationEmail: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -72,20 +77,58 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Save the complete user object to the Realtime Database
     await saveUser(newUser);
+
+    // Send verification email
+    await sendEmailVerification(userCredential.user);
     
     // Manually update the local user state to reflect the displayName immediately
+    await userCredential.user.reload();
     setUser(auth.currentUser);
     
     return userCredential;
   };
+  
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      // Check if user exists in our database
+      const dbUser = await getUserById(user.uid);
+      
+      if (!dbUser) {
+        // If user is new, save to database
+        const newUser: RegisteredUser = {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+        };
+        await saveUser(newUser);
+      }
+      setUser(user);
+    } catch (error) {
+      console.error("Google Sign-In Error", error);
+      throw error;
+    }
+  };
+  
+  const sendVerificationEmail = async () => {
+      if(auth.currentUser){
+          await sendEmailVerification(auth.currentUser);
+      } else {
+          throw new Error("No user is currently signed in.");
+      }
+  }
+
 
   const logout = () => {
-    return firebaseSignOut(auth)
+    return firebaseSignOut(auth);
   };
   
   const sendPasswordReset = (email: string) => {
     return sendPasswordResetEmail(auth, email);
-  }
+  };
 
   const value = {
     user,
@@ -95,6 +138,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signup,
     logout,
     sendPasswordReset,
+    signInWithGoogle,
+    sendVerificationEmail,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

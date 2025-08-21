@@ -101,6 +101,16 @@ export async function saveUser(user: RegisteredUser): Promise<void> {
     await set(userRef, userData);
 }
 
+export async function getUserById(uid: string): Promise<RegisteredUser | null> {
+    const userRef = ref(db, `users/${uid}`);
+    const snapshot = await get(userRef);
+    if (snapshot.exists()) {
+        return snapshot.val() as RegisteredUser;
+    }
+    return null;
+}
+
+
 export async function enrollUserInCourse(userId: string, courseId: string): Promise<void> {
     const enrollmentRef = ref(db, `users/${userId}/purchasedCourses/${courseId}`);
     await set(enrollmentRef, {
