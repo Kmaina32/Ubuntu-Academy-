@@ -23,9 +23,6 @@ export default function StudentLivePage() {
     const { toast } = useToast();
     const [session, setSession] = useState<LiveSession | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const streamRef = useRef<MediaStream | null>(null);
 
      useEffect(() => {
         if (!authLoading && !user) {
@@ -44,46 +41,6 @@ export default function StudentLivePage() {
 
         return () => unsubscribe();
     }, []);
-
-    useEffect(() => {
-        const getCameraPermission = async () => {
-            try {
-                // In a real app, this would be a remote stream. For demo, we use local camera.
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                setHasCameraPermission(true);
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                }
-                streamRef.current = stream;
-            } catch (error) {
-                console.error('Error accessing camera:', error);
-                setHasCameraPermission(false);
-                toast({
-                    variant: 'destructive',
-                    title: 'Camera Access Denied',
-                    description: 'Please enable camera permissions in your browser settings to view the live session.',
-                });
-            }
-        };
-
-        if (session?.isActive) {
-            getCameraPermission();
-        } else {
-             if (streamRef.current) {
-                streamRef.current.getTracks().forEach(track => track.stop());
-                streamRef.current = null;
-            }
-            if (videoRef.current) {
-                videoRef.current.srcObject = null;
-            }
-        }
-        
-        return () => {
-             if (streamRef.current) {
-                streamRef.current.getTracks().forEach(track => track.stop());
-            }
-        }
-    }, [session, toast]);
 
     return (
         <SidebarProvider>
@@ -110,7 +67,9 @@ export default function StudentLivePage() {
                                             <span>Connecting to live session...</span>
                                         </div>
                                     ) : session?.isActive ? (
-                                        <video ref={videoRef} className="w-full h-full rounded-lg bg-black" autoPlay muted playsInline />
+                                        <div className="w-full h-full rounded-lg bg-black flex items-center justify-center">
+                                            <p className="text-white">Instructor's video stream would appear here.</p>
+                                        </div>
                                     ) : (
                                         <div className="flex flex-col items-center gap-2">
                                             <VideoOff className="h-12 w-12" />
@@ -119,14 +78,6 @@ export default function StudentLivePage() {
                                         </div>
                                     )}
                                 </div>
-                                 {hasCameraPermission === false && (
-                                    <Alert variant="destructive">
-                                        <AlertTitle>Camera Access Required</AlertTitle>
-                                        <AlertDescription>
-                                            Please allow camera access in your browser to view the live session.
-                                        </AlertDescription>
-                                    </Alert>
-                                )}
                             </CardContent>
                         </Card>
                     </div>
