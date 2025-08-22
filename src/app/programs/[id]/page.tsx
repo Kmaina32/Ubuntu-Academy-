@@ -5,13 +5,13 @@ import { useState, useEffect } from 'react';
 import { notFound, useParams } from "next/navigation";
 import Image from "next/image";
 import Link from 'next/link';
-import type { Program, Course } from "@/lib/mock-data";
-import { getProgramById, getAllCourses } from '@/lib/firebase-service';
+import type { Program, Course, UserCourse } from "@/lib/mock-data";
+import { getProgramById, getAllCourses, getUserCourses } from '@/lib/firebase-service';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, ArrowRight, BookOpen, Layers, CheckCircle } from "lucide-react";
+import { Loader2, ArrowRight, BookOpen, Layers, CheckCircle, Award } from "lucide-react";
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -23,28 +23,31 @@ export default function ProgramDetailPage() {
 
   const [program, setProgram] = useState<Program | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [userCourses, setUserCourses] = useState<UserCourse[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProgramDetails = async () => {
         setLoading(true);
         try {
-            const [programData, allCoursesData] = await Promise.all([
-                getProgramById(params.id),
-                getAllCourses()
-            ]);
-
+            const programData = await getProgramById(params.id);
             if (!programData) {
                 notFound();
                 return;
             }
 
+            const allCoursesData = await getAllCourses();
             const programCourses = allCoursesData.filter(course =>
                 programData.courseIds.includes(course.id)
             );
             
             setProgram(programData);
             setCourses(programCourses);
+
+            if(user) {
+                const fetchedUserCourses = await getUserCourses(user.uid);
+                setUserCourses(fetchedUserCourses);
+            }
 
         } catch (error) {
             console.error("Failed to fetch program details:", error);
@@ -53,8 +56,10 @@ export default function ProgramDetailPage() {
         }
     }
     fetchProgramDetails();
-  }, [params.id]);
+  }, [params.id, user]);
 
+  const completedCourseIds = new Set(userCourses.filter(c => c.completed || c.certificateAvailable).map(c => c.courseId));
+  const allProgramCoursesCompleted = courses.length > 0 && courses.every(c => completedCourseIds.has(c.id));
 
   if (loading || authLoading) {
     return (
@@ -98,7 +103,7 @@ export default function ProgramDetailPage() {
                     </p>
                 </div>
              </section>
-             <div className="container mx-auto px-4 md:px-6 py-12 -mt-12 relative z-10">
+             <div className="container mx-auto px-4 md:px-6 py-12 -mt-16 md:-mt-20 relative z-10">
                 <Card className="max-w-4xl mx-auto shadow-xl">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -123,7 +128,15 @@ export default function ProgramDetailPage() {
                                         />
                                         <div className="flex-grow">
                                             <h3 className="font-semibold text-lg">{course.title}</h3>
-                                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{course.description}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <p className="text-sm text-muted-foreground line-clamp-2">{course.description}</p>
+                                                {completedCourseIds.has(course.id) && (
+                                                    <Badge variant="secondary" className="flex-shrink-0 bg-green-100 text-green-800">
+                                                        <CheckCircle className="h-3 w-3 mr-1"/>
+                                                        Completed
+                                                    </Badge>
+                                                )}
+                                            </div>
                                         </div>
                                         <Button asChild className="w-full md:w-auto flex-shrink-0">
                                             <Link href={`/courses/${course.id}`}>
@@ -134,6 +147,17 @@ export default function ProgramDetailPage() {
                                     </Card>
                                 </div>
                             ))}
+                             <div className="text-center pt-6">
+                                <Button size="lg" disabled={!allProgramCoursesCompleted}>
+                                    <Award className="mr-2 h-5 w-5" />
+                                    Claim Your Certificate
+                                </Button>
+                                {!allProgramCoursesCompleted && (
+                                    <p className="text-sm text-muted-foreground mt-2">
+                                        Complete all courses in the program to unlock your certificate.
+                                    </p>
+                                )}
+                             </div>
                         </div>
                     </CardContent>
                 </Card>
