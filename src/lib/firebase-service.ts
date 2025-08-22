@@ -3,7 +3,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program } from './mock-data';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle } from './mock-data';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -479,4 +479,44 @@ export async function updateProgram(id: string, programData: Partial<Program>): 
 export async function deleteProgram(id: string): Promise<void> {
     const programRef = ref(db, `programs/${id}`);
     await remove(programRef);
+}
+
+// Bundle Functions
+export async function createBundle(bundleData: Omit<Bundle, 'id'>): Promise<string> {
+    const bundlesRef = ref(db, 'bundles');
+    const newBundleRef = push(bundlesRef);
+    await set(newBundleRef, bundleData);
+    return newBundleRef.key!;
+}
+
+export async function getAllBundles(): Promise<Bundle[]> {
+    const bundlesRef = ref(db, 'bundles');
+    const snapshot = await get(bundlesRef);
+    if (snapshot.exists()) {
+        const bundlesData = snapshot.val();
+        return Object.keys(bundlesData).map(key => ({
+            id: key,
+            ...bundlesData[key]
+        }));
+    }
+    return [];
+}
+
+export async function getBundleById(id: string): Promise<Bundle | null> {
+    const bundleRef = ref(db, `bundles/${id}`);
+    const snapshot = await get(bundleRef);
+    if (snapshot.exists()) {
+        return { id, ...snapshot.val() };
+    }
+    return null;
+}
+
+export async function updateBundle(id: string, bundleData: Partial<Bundle>): Promise<void> {
+    const bundleRef = ref(db, `bundles/${id}`);
+    await update(bundleRef, bundleData);
+}
+
+export async function deleteBundle(id: string): Promise<void> {
+    const bundleRef = ref(db, `bundles/${id}`);
+    await remove(bundleRef);
 }

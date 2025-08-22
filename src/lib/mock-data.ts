@@ -1,6 +1,5 @@
 
 
-
 export interface YoutubeLink {
   title: string;
   url: string;
@@ -89,6 +88,15 @@ export interface Program {
   description: string;
   courseIds: string[];
   certificateImageUrl: string;
+}
+
+export interface Bundle {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  courseIds: string[];
+  imageUrl: string;
 }
 
 
