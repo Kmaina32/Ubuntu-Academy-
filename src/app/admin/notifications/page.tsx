@@ -50,11 +50,13 @@ export default function AdminNotificationsPage() {
   const onSubmit = async (values: z.infer<typeof notificationSchema>) => {
     setIsLoading(true);
     try {
-      const dataToSend = {
+      const dataToSend: { title: string; body: string; link?: string; cohort?: string } = {
           title: values.title,
           body: values.body,
           link: values.link,
-          cohort: values.cohort === 'all' ? undefined : values.cohort,
+      };
+      if (values.cohort && values.cohort !== 'all') {
+          dataToSend.cohort = values.cohort;
       }
       await createNotification(dataToSend);
       toast({
