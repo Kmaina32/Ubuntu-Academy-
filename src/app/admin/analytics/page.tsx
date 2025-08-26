@@ -33,8 +33,9 @@ export default function AdminAnalyticsPage() {
       console.error("Content strategy flow failed:", error);
       toast({
         title: 'Error',
-        description: 'Failed to generate new content. Please check the logs.',
+        description: 'An error occurred during content generation. Please check the server logs for details.',
         variant: 'destructive',
+        duration: 10000,
       });
     } finally {
       setIsLoading(false);

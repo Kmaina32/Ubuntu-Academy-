@@ -36,9 +36,13 @@ const BundleSuggestionSchema = z.object({
 });
 
 
-export const runContentStrategy = ai.defineFlow(
+export async function runContentStrategy(): Promise<ContentStrategyOutput> {
+  return runContentStrategyFlow();
+}
+
+const runContentStrategyFlow = ai.defineFlow(
   {
-    name: 'runContentStrategy',
+    name: 'runContentStrategyFlow',
     inputSchema: z.void(),
     outputSchema: ContentStrategyOutputSchema,
   },
@@ -68,7 +72,7 @@ export const runContentStrategy = ai.defineFlow(
           ...idea,
           ...content,
           price: Math.floor(Math.random() * 5000) + 1000, // Random price
-          description: content.longDescription.substring(0, 150) + '...',
+          description: content.longDescription ? content.longDescription.substring(0, 150) + '...' : 'New course available now!',
           dripFeed: 'daily' as const,
           imageUrl: 'https://placehold.co/600x400'
         };
