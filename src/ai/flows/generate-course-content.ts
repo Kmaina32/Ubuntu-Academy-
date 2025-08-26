@@ -106,7 +106,8 @@ Please generate the following content:
 1.  **Long Description**: A detailed description of what the course is about, who it's for, and what students will learn. Minimum 100 characters.
 2.  **Duration**: The estimated total duration of the course.
 3.  **Modules**: A list of exactly 2 modules. Each module must have a unique ID, a title, and its list of lessons.
-4.  **Lessons**: Distribute at least 5 lessons between the modules. Each lesson must have a unique ID, title, duration (e.g., "5 min"), and full, extensive lesson content. 
+4.  **Lessons**: Distribute at least 5 lessons between the modules. Each lesson must have a unique ID, title, duration (e.g., "5 min"), and full, extensive lesson content.
+    - For **content**, you MUST write full, extensive, and detailed content for the lesson text. It should be comprehensive and provide in-depth information, not just a brief summary.
     - For **youtubeLinks**, you MUST ONLY include a link if a valid, full 'https://' URL is found in the context. If no valid URL is present, you MUST provide an EMPTY array. Do not invent URLs.
     - For **googleDriveLinks**, ALWAYS provide an EMPTY array.
 5.  **Exam**: A final exam with an array of exactly 5 questions. This exam must contain three (3) 'multiple-choice' questions and two (2) 'short-answer' questions. Each question needs a unique ID, type, text, max points (always 10), and the correct answer details (referenceAnswer for short-answer, options array and correctAnswer index for multiple-choice).
@@ -125,4 +126,5 @@ const generateCourseContentFlow = ai.defineFlow(
     return output!;
   }
 );
+
 
