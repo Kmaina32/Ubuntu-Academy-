@@ -1,5 +1,7 @@
 
 
+import { z } from 'zod';
+
 export interface YoutubeLink {
   title: string;
   url: string;
@@ -166,3 +168,10 @@ export interface UserContent {
     description: string;
     status: 'draft' | 'published';
 }
+
+export const ContentStrategyOutputSchema = z.object({
+  coursesCreated: z.number(),
+  programTitle: z.string(),
+  bundleTitle: z.string(),
+});
+export type ContentStrategyOutput = z.infer<typeof ContentStrategyOutputSchema>;

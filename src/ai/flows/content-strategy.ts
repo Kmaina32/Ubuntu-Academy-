@@ -9,6 +9,7 @@ import { ai } from '@/ai/genkit';
 import { generateCourseContent } from './generate-course-content';
 import { createCourse, createProgram, createBundle } from '@/lib/firebase-service';
 import { z } from 'zod';
+import { ContentStrategyOutputSchema } from '@/lib/mock-data';
 
 // Schema for generating course ideas
 const CourseIdeasSchema = z.object({
@@ -33,14 +34,6 @@ const BundleSuggestionSchema = z.object({
     bundlePrice: z.number().describe('A suggested price for the bundle in Kenyan Shillings (Ksh).'),
     courseIndices: z.array(z.number()).min(2).max(4).describe('An array of indices (from the list of 10 new courses, 0-9) to include in this bundle.'),
 });
-
-
-export const ContentStrategyOutputSchema = z.object({
-  coursesCreated: z.number(),
-  programTitle: z.string(),
-  bundleTitle: z.string(),
-});
-export type ContentStrategyOutput = z.infer<typeof ContentStrategyOutputSchema>;
 
 
 export const runContentStrategy = ai.defineFlow(

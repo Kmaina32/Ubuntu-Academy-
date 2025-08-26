@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { runContentStrategy } from '@/ai/flows/content-strategy';
+import type { ContentStrategyOutput } from '@/lib/mock-data';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 export default function AdminAnalyticsPage() {
@@ -22,7 +23,7 @@ export default function AdminAnalyticsPage() {
       description: 'The AI is generating new courses, a program, and a bundle. This may take a minute or two.',
     });
     try {
-      const result = await runContentStrategy();
+      const result: ContentStrategyOutput = await runContentStrategy();
       toast({
         title: 'Content Strategy Complete!',
         description: `Successfully created ${result.coursesCreated} courses, the "${result.programTitle}" program, and the "${result.bundleTitle}" bundle.`,
