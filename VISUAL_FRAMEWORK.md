@@ -17,7 +17,7 @@ graph TD
         A --> G[Sign Up];
     end
 
-    subgraph Student Area (Authenticated)
+    subgraph Student Area
         H[Dashboard] --> I[Course Player /learn];
         H --> J[My Exams /assignments];
         H --> K[My Notebooks /notebook];
@@ -28,7 +28,7 @@ graph TD
         O --> I;
     end
     
-    subgraph Admin Area (Authenticated)
+    subgraph Admin Area
         P[Admin Dashboard /admin] --> Q[Create Course];
         P --> R[Edit Course];
         P --> S[Manage Assignments];
