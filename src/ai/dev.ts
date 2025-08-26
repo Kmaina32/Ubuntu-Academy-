@@ -8,3 +8,6 @@ import '@/ai/flows/course-tutor.ts';
 import '@/ai/flows/text-to-speech.ts';
 import '@/ai/flows/speech-to-text.ts';
 import '@/ai/flows/mpesa-payment.ts';
+import '@/ai/flows/career-coach.ts';
+import '@/ai/tools/course-catalog.ts';
+
