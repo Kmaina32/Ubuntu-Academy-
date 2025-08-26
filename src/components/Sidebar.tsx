@@ -14,7 +14,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from './ui/separator';
 import { version } from '../../package.json';
@@ -37,10 +37,10 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-        <SidebarHeader>
+        <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
                 <Gem className="h-6 w-6 text-primary" />
-                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Mkenya Skilled</span>
+                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">SkillSet Academy</span>
             </div>
         </SidebarHeader>
         <SidebarContent>
@@ -52,6 +52,14 @@ export function AppSidebar() {
                                 <Link href="/">
                                     <Book />
                                     <span>Browse Courses</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/programs')} tooltip="Certificate Programs" onClick={onLinkClick}>
+                                <Link href="/programs">
+                                    <Library />
+                                    <span>Programs</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -152,6 +160,14 @@ export function AppSidebar() {
                                 <Link href="/">
                                     <Home />
                                     <span>Courses</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/programs')} tooltip="Certificate Programs" onClick={onLinkClick}>
+                                <Link href="/programs">
+                                    <Library />
+                                    <span>Programs</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

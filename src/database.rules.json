@@ -6,6 +6,14 @@
       ".read": true,
       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
+    "bundles": {
+       ".read": true,
+       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "programs": {
+        ".read": true,
+        ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
     "hero": {
       ".read": true,
       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
@@ -44,7 +52,7 @@
       "threads": {
         "$courseId": {
           ".read": "auth != null",
-          ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+          ".write": "auth != null",
           ".indexOn": "createdAt"
         }
       },
@@ -67,6 +75,17 @@
                 ".write": "auth.uid === $userId"
             }
         }
+    },
+    "analytics": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "userContent": {
+        "$userId": {
+            ".read": "auth.uid === $userId",
+            ".write": "auth.uid === $userId"
+        }
     }
   }
 }
+

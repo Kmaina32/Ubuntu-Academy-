@@ -577,7 +577,7 @@ function NotesSheet({ course }: { course: Course }) {
                     <div className="border-b-2 border-black pb-4 mb-4 flex justify-between items-center">
                         <div className="flex items-center gap-2">
                             <Gem className="h-8 w-8 text-primary" />
-                            <span className="font-bold text-xl font-headline">Mkenya Skilled</span>
+                            <span className="font-bold text-xl font-headline">SkillSet Academy</span>
                         </div>
                         <div className="text-right text-xs">
                             <p className="font-semibold">{user?.displayName}</p>
@@ -590,7 +590,7 @@ function NotesSheet({ course }: { course: Course }) {
                         <pre className="whitespace-pre-wrap font-body text-sm">{notes || 'No notes taken for this course.'}</pre>
                     </div>
                         <p className="text-center text-xs text-gray-400 mt-6">
-                        &copy; {new Date().getFullYear()} Mkenya Skilled. All rights reserved.
+                        &copy; {new Date().getFullYear()} SkillSet Academy. All rights reserved.
                     </p>
                 </div>
             </div>

@@ -126,4 +126,3 @@ const generateCourseContentFlow = ai.defineFlow(
   }
 );
 
-

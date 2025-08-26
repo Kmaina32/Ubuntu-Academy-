@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Download, Gem, NotebookIcon } from 'lucide-react';
+import { ArrowLeft, Loader2, Download, Gem, NotebookIcon, UploadCloud } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -22,6 +22,8 @@ import type { Course } from '@/lib/mock-data';
 import { format } from 'date-fns';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { saveAs } from 'file-saver';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 const GoogleDriveIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" {...props}>
@@ -130,10 +132,12 @@ export default function NotebookPage() {
   };
   
    const handleSaveToDrive = () => {
-    toast({
-      title: 'Feature Coming Soon',
-      description: 'Saving notes to Google Drive is not yet implemented.',
-    });
+        if (!course) return;
+        const blob = new Blob([notes], { type: 'text/plain;charset=utf-8' });
+        saveAs(blob, `${course.title}_notes.txt`);
+        // We can't automatically open the local file in the Google Drive tab,
+        // but we can open the upload page for them to drag-and-drop.
+        window.open('https://drive.google.com/drive/my-drive', '_blank');
   };
 
   if (authLoading || isLoading) {
@@ -171,10 +175,34 @@ export default function NotebookPage() {
                                 {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
                                 Download PDF
                             </Button>
-                             <Button variant="outline" size="sm" onClick={handleSaveToDrive}>
-                                <GoogleDriveIcon className="mr-2 h-4 w-4" />
-                                Save to Drive
-                            </Button>
+                             <Dialog>
+                                <DialogTrigger asChild>
+                                     <Button variant="outline" size="sm">
+                                        <GoogleDriveIcon className="mr-2 h-4 w-4" />
+                                        Save to Drive
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Save to Google Drive</DialogTitle>
+                                        <DialogDescription>
+                                            Follow these steps to save your notes to your Google Drive.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-4 text-sm">
+                                        <p>
+                                            <strong className='font-semibold'>Step 1:</strong> A text file of your notes (`{course.title}_notes.txt`) will be downloaded to your computer.
+                                        </p>
+                                         <p>
+                                            <strong className='font-semibold'>Step 2:</strong> A new tab will open to your Google Drive. Simply drag the downloaded file into the Google Drive window to upload it.
+                                        </p>
+                                    </div>
+                                    <Button onClick={handleSaveToDrive} className="w-full">
+                                        <UploadCloud className="mr-2 h-4 w-4" />
+                                        Continue
+                                    </Button>
+                                </DialogContent>
+                            </Dialog>
                         </div>
                     </div>
                 </CardHeader>
@@ -208,7 +236,7 @@ export default function NotebookPage() {
             <div className="border-b-2 border-black pb-4 mb-4 flex justify-between items-center">
                 <div className="flex items-center gap-2">
                     <Gem className="h-8 w-8 text-primary" />
-                    <span className="font-bold text-xl font-headline">Mkenya Skilled</span>
+                    <span className="font-bold text-xl font-headline">SkillSet Academy</span>
                 </div>
                 <div className="text-right text-xs">
                     <p className="font-semibold">{user?.displayName}</p>
@@ -221,7 +249,7 @@ export default function NotebookPage() {
                 <pre className="whitespace-pre-wrap font-body text-sm">{notes || 'No notes taken for this course.'}</pre>
             </div>
                 <p className="text-center text-xs text-gray-400 mt-6">
-                &copy; {new Date().getFullYear()} Mkenya Skilled. All rights reserved.
+                &copy; {new Date().getFullYear()} SkillSet Academy. All rights reserved.
             </p>
         </div>
     </div>

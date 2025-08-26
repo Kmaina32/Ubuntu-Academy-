@@ -1,6 +1,5 @@
 
 
-
 export interface YoutubeLink {
   title: string;
   url: string;
@@ -82,6 +81,24 @@ export interface Course {
   exam: ExamQuestion[];
   createdAt: string; // ISO string
 }
+
+export interface Program {
+  id: string;
+  title: string;
+  description: string;
+  courseIds: string[];
+  certificateImageUrl: string;
+}
+
+export interface Bundle {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  courseIds: string[];
+  imageUrl: string;
+}
+
 
 export const user = {
     name: 'Jomo Kenyatta',

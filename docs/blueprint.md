@@ -1,4 +1,4 @@
-# **App Name**: Mkenya Skilled
+# **App Name**: SkillSet Academy
 
 ## Core Features:
 

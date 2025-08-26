@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library } from 'lucide-react';
 import { version } from '../../package.json';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
@@ -29,10 +29,10 @@ export function AdminSidebar() {
 
   return (
     <Sidebar>
-        <SidebarHeader>
+        <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
                 <Gem className="h-6 w-6 text-primary" />
-                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Mkenya Skilled</span>
+                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">SkillSet Academy</span>
             </div>
         </SidebarHeader>
         <SidebarContent>
@@ -53,6 +53,14 @@ export function AdminSidebar() {
                         <Link href="/admin/assignments">
                             <ListTodo />
                             <span>Assignments</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/admin/programs')} tooltip="Programs">
+                        <Link href="/admin/programs">
+                            <Library />
+                            <span>Programs</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
