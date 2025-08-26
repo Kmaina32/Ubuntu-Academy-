@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/hooks/use-auth';
 import { ThemeEffects } from '@/components/ThemeEffects';
 import { Analytics } from "@vercel/analytics/next"
+import { CookieConsent } from '@/components/CookieConsent';
 
 export const metadata: Metadata = {
   title: 'SkillSet Academy',
@@ -52,6 +53,7 @@ export default async function RootLayout({
             <Analytics />
         </AuthProvider>
         <Toaster />
+        <CookieConsent />
       </body>
     </html>
   );
