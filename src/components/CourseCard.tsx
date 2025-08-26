@@ -10,7 +10,7 @@ import { Check, ArrowRight } from 'lucide-react';
 interface CourseCardProps {
   course: Course;
   isEnrolled: boolean;
-  aiHint: string;
+  aiHint?: string;
 }
 
 export function CourseCard({ course, isEnrolled, aiHint }: CourseCardProps) {

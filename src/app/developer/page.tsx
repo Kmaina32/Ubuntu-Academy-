@@ -4,6 +4,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
@@ -29,6 +32,18 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+
+const generateKeySchema = z.object({
+    keyName: z.string().min(3, { message: "Key name must be at least 3 characters."}),
+    terms: z.literal(true, {
+        errorMap: () => ({ message: "You must accept the terms and conditions."}),
+    }),
+});
 
 function ApiKeyRow({ apiKey, onRevoke }: { apiKey: ApiKey; onRevoke: (keyId: string) => void; }) {
   const [isVisible, setIsVisible] = useState(false);
@@ -50,19 +65,19 @@ function ApiKeyRow({ apiKey, onRevoke }: { apiKey: ApiKey; onRevoke: (keyId: str
                 </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-                Created on {format(new Date(apiKey.createdAt), 'PPP')}
+                Created on {format(new Date(apiKey.createdAt), 'PPP p')}
             </p>
         </div>
         <div className="flex items-center gap-2 self-end md:self-center">
-            <Button variant="ghost" size="icon" onClick={() => setIsVisible(!isVisible)}>
+            <Button variant="ghost" size="icon" onClick={() => setIsVisible(!isVisible)} title={isVisible ? 'Hide key' : 'Show key'}>
                 {isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
-            <Button variant="ghost" size="icon" onClick={copyToClipboard}>
+            <Button variant="ghost" size="icon" onClick={copyToClipboard} title="Copy key">
                 <Copy className="h-4 w-4" />
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" title="Revoke key">
                     <Trash2 className="h-4 w-4" />
                 </Button>
               </AlertDialogTrigger>
@@ -84,6 +99,96 @@ function ApiKeyRow({ apiKey, onRevoke }: { apiKey: ApiKey; onRevoke: (keyId: str
   )
 }
 
+function GenerateKeyDialog({ onGenerate }: { onGenerate: (keyName: string) => Promise<void> }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
+    
+    const form = useForm<z.infer<typeof generateKeySchema>>({
+        resolver: zodResolver(generateKeySchema),
+        defaultValues: {
+            keyName: '',
+            terms: false,
+        },
+    });
+
+    const onSubmit = async (values: z.infer<typeof generateKeySchema>) => {
+        setIsGenerating(true);
+        await onGenerate(values.keyName);
+        setIsGenerating(false);
+        setIsOpen(false);
+        form.reset();
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+                <Button>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Generate New Key
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Generate New API Key</DialogTitle>
+                    <DialogDescription>
+                        Provide a name for your key and agree to the terms of use.
+                    </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <FormField
+                            control={form.control}
+                            name="keyName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Key Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="e.g., My Mobile App" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <div className="p-4 border rounded-md max-h-32 overflow-y-auto bg-secondary/50">
+                            <h4 className="font-semibold text-sm mb-2">Terms of Use</h4>
+                            <p className="text-xs text-muted-foreground">
+                                By generating an API key, you agree not to misuse the API. Misuse includes, but is not limited to, exceeding rate limits, attempting to access unauthorized data, or using the API for any illegal activities. Violation of these terms may result in immediate revocation of your API keys and potential suspension of your account. All API usage is logged and monitored.
+                            </p>
+                        </div>
+                        <FormField
+                            control={form.control}
+                            name="terms"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                    <FormControl>
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
+                                    </FormControl>
+                                    <div className="space-y-1 leading-none">
+                                        <FormLabel>
+                                            I have read and agree to the terms and conditions.
+                                        </FormLabel>
+                                        <FormMessage />
+                                    </div>
+                                </FormItem>
+                            )}
+                        />
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+                             <Button type="submit" disabled={isGenerating}>
+                                {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                Generate Key
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
 export default function DeveloperPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -91,14 +196,13 @@ export default function DeveloperPage() {
   
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [loadingKeys, setLoadingKeys] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [newlyGeneratedKey, setNewlyGeneratedKey] = useState<ApiKey | null>(null);
 
   const fetchKeys = async () => {
     if (!user) return;
     setLoadingKeys(true);
     const keys = await getUserApiKeys(user.uid);
-    setApiKeys(keys);
+    setApiKeys(keys.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
     setLoadingKeys(false);
   };
 
@@ -112,19 +216,17 @@ export default function DeveloperPage() {
     }
   }, [user, authLoading, router]);
 
-  const handleGenerateKey = async () => {
+  const handleGenerateKey = async (keyName: string) => {
     if (!user) return;
-    setIsGenerating(true);
     setNewlyGeneratedKey(null);
     try {
-        const result = await generateApiKey({ userId: user.uid, keyName: "My New Key" });
+        const result = await generateApiKey({ userId: user.uid, keyName });
         setNewlyGeneratedKey(result);
+        toast({ title: 'Success!', description: `API key "${result.name}" has been generated.` });
         await fetchKeys(); // Refresh the list
     } catch(error) {
         console.error("Failed to generate API key:", error);
         toast({ title: 'Error', description: 'Could not generate a new API key.', variant: 'destructive'});
-    } finally {
-        setIsGenerating(false);
     }
   }
 
@@ -166,10 +268,7 @@ export default function DeveloperPage() {
                                 </CardTitle>
                                 <CardDescription>Manage your API keys for programmatic access.</CardDescription>
                              </div>
-                              <Button onClick={handleGenerateKey} disabled={isGenerating}>
-                                {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
-                                Generate New Key
-                            </Button>
+                             <GenerateKeyDialog onGenerate={handleGenerateKey} />
                         </div>
                     </CardHeader>
                     <CardContent>
@@ -201,3 +300,4 @@ export default function DeveloperPage() {
     </SidebarProvider>
   );
 }
+
