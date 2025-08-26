@@ -53,7 +53,7 @@ export function ThemeEffects() {
                 document.documentElement.classList.add(`theme-${activeTheme}`);
             }
             
-            setTheme(activeTheme);
+            setTheme(`theme-${activeTheme}`);
             setAnimationsEnabled(animationsOn);
             localStorage.setItem('mkenya-skilled-theme', activeTheme);
             localStorage.setItem('mkenya-skilled-animations', String(animationsOn));

@@ -86,7 +86,7 @@ export default function AdminHeroPage() {
 
   const applyTheme = (theme: string) => {
     // Remove all theme classes
-    document.documentElement.classList.remove('theme-valentines', 'theme-christmas', 'theme-new-year', 'theme-eid');
+    document.documentElement.classList.remove('theme-valentines', 'theme-christmas', 'theme-new-year', 'theme-eid', 'theme-jamhuri');
     if (theme !== 'default') {
       document.documentElement.classList.add(`theme-${theme}`);
     }
@@ -170,6 +170,7 @@ export default function AdminHeroPage() {
                                     </FormControl>
                                     <SelectContent>
                                         <SelectItem value="default">Default</SelectItem>
+                                        <SelectItem value="jamhuri">Jamhuri (Kenyan Holiday)</SelectItem>
                                         <SelectItem value="valentines">Valentine's Day</SelectItem>
                                         <SelectItem value="christmas">Christmas</SelectItem>
                                         <SelectItem value="new-year">New Year</SelectItem>
