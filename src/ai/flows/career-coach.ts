@@ -12,6 +12,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { listCoursesTool } from '../tools/course-catalog';
+import { googleAI } from '@genkit-ai/googleai';
 
 const LearningPathInputSchema = z.object({
   careerGoal: z.string().describe('The user\'s stated career goal.'),
@@ -39,6 +40,7 @@ export async function getLearningPath(
 
 const prompt = ai.definePrompt({
   name: 'careerCoachPrompt',
+  model: googleAI.model('gemini-1.5-flash'),
   tools: [listCoursesTool],
   input: { schema: LearningPathInputSchema },
   output: { schema: LearningPathOutputSchema },
