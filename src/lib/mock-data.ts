@@ -130,6 +130,7 @@ export interface Notification {
     body: string;
     link?: string;
     createdAt: string;
+    cohort?: string;
 }
 
 export interface DiscussionReply {

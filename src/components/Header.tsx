@@ -20,7 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Separator } from './ui/separator';
 import { useEffect, useState, useMemo } from 'react';
 import type { Course, CalendarEvent, Notification as DbNotification } from '@/lib/mock-data';
-import { getAllCourses, getAllCalendarEvents, getAllNotifications } from '@/lib/firebase-service';
+import { getAllCourses, getAllCalendarEvents, getAllNotifications, getUserById } from '@/lib/firebase-service';
 import { differenceInDays, isToday, parseISO } from 'date-fns';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -53,12 +53,16 @@ function NotificationsPopover() {
             setLoading(true);
             let combinedNotifications: Notification[] = [];
             const userCreationTime = user.metadata.creationTime ? new Date(user.metadata.creationTime) : new Date(0);
+            const userProfile = await getUserById(user.uid);
+            const userCohort = userProfile?.cohort;
 
             // 1. Fetch DB notifications
             try {
                 const dbNotifications = await getAllNotifications();
                 const formattedDbNotifications = dbNotifications
                     .filter(n => new Date(n.createdAt) > userCreationTime)
+                     // Filter based on cohort
+                    .filter(n => !n.cohort || n.cohort === userCohort)
                     .map((n: DbNotification) => ({
                         id: `db-${n.id}`,
                         icon: BellRing,
