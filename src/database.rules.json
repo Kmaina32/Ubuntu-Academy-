@@ -80,18 +80,21 @@
         ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
         ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
-    "userContent": {
-        "$userId": {
-            ".read": "auth.uid === $userId",
-            ".write": "auth.uid === $userId"
-        }
-    },
     "apiKeys": {
         "$userId": {
             ".read": "auth != null && auth.uid === $userId",
             ".write": "auth != null && auth.uid === $userId"
         }
+    },
+    "apiUsage": {
+      "$userId": {
+        // API usage logs can only be written by a trusted process (e.g., server with admin rights)
+        ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+        // Users can't read the detailed log of other users
+        ".read": "auth != null && auth.uid === $userId"
+      }
     }
   }
 }
+
 
