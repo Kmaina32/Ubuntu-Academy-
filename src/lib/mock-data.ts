@@ -175,3 +175,11 @@ export const ContentStrategyOutputSchema = z.object({
   bundleTitle: z.string(),
 });
 export type ContentStrategyOutput = z.infer<typeof ContentStrategyOutputSchema>;
+
+export interface ApiKey {
+    id: string;
+    name: string;
+    key: string;
+    createdAt: string; // ISO String
+    userId: string;
+}

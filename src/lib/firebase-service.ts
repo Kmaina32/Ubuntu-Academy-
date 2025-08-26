@@ -3,7 +3,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle } from './mock-data';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey } from './mock-data';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -519,4 +519,27 @@ export async function updateBundle(id: string, bundleData: Partial<Bundle>): Pro
 export async function deleteBundle(id: string): Promise<void> {
     const bundleRef = ref(db, `bundles/${id}`);
     await remove(bundleRef);
+}
+
+// API Key Functions
+export async function createApiKey(userId: string, keyData: Omit<ApiKey, 'id'>): Promise<string> {
+    const keysRef = ref(db, `apiKeys/${userId}`);
+    const newKeyRef = push(keysRef);
+    await set(newKeyRef, keyData);
+    return newKeyRef.key!;
+}
+
+export async function getUserApiKeys(userId: string): Promise<ApiKey[]> {
+    const keysRef = ref(db, `apiKeys/${userId}`);
+    const snapshot = await get(keysRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        return Object.keys(data).map(key => ({ id: key, ...data[key] }));
+    }
+    return [];
+}
+
+export async function deleteApiKey(userId: string, keyId: string): Promise<void> {
+    const keyRef = ref(db, `apiKeys/${userId}/${keyId}`);
+    await remove(keyRef);
 }

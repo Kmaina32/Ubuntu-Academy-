@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { User, LogOut, Bell, Calendar, Sparkles, PartyPopper, Gem, Moon, Sun, BellRing } from 'lucide-react';
+import { User, LogOut, Bell, Calendar, Sparkles, PartyPopper, Gem, Moon, Sun, BellRing, Code } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger, useSidebar } from './ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
@@ -318,6 +318,12 @@ export function Header({ children }: { children?: React.ReactNode }) {
                             <Link href="/profile">
                             <User className="mr-2 h-4 w-4" />
                             <span>Profile</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/developer">
+                            <Code className="mr-2 h-4 w-4" />
+                            <span>Developer</span>
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
