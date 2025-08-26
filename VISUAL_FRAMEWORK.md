@@ -9,7 +9,7 @@ This diagram shows the main pages of the application and how they are interconne
 ```mermaid
 graph TD
     subgraph Public Area
-        A[Home Page /] --> B{Courses};
+        A[Home Page /] --> B[Courses];
         A --> C[About Us];
         A --> D[Contact];
         A --> E[Help];
@@ -23,7 +23,7 @@ graph TD
         H --> K[My Notebooks /notebook];
         H --> L[Calendar];
         H --> M[Profile];
-        I --> N[Take Exam /exam];
+        I --> N[Take Final Exam /exam];
         B --> O[Course Detail Page];
         O --> I;
     end
@@ -79,8 +79,9 @@ graph TD
     Start((Start)) --> Enroll{Enroll in Course};
     Enroll -->|Free or Paid| Learn[Enter Course Player];
     Learn --> Lesson{View Lesson & Video};
-    Lesson --> Complete["Mark as Complete"];
-    Complete --> Next{More Lessons?};
+    Lesson -- Interaction --> Tutor(Ask Gina - AI Tutor)
+    Tutor -- Back to Lesson --> Lesson
+    Lesson -- Mark as Complete --> Next{More Lessons?};
     Next -- Yes --> Lesson;
     Next -- No --> Exam{Take Final Exam};
     Exam --> Submit[Submit for Grading];
@@ -109,4 +110,39 @@ sequenceDiagram
     GeminiModel-->>GenkitFlow: Returns formatted answer/quiz
     GenkitFlow-->>TutorUI: Returns answer to display
     TutorUI-->>Student: Shows Gina's response
+```
+
+## 5. Roles & Permissions Overview
+
+This diagram provides a high-level view of what different user roles can access and do within the application.
+
+```mermaid
+graph LR
+    subgraph Guest
+        direction LR
+        A[Browse Courses]
+        B[View Public Pages]
+        A & B --> C{Sign Up / Login}
+    end
+
+    subgraph Student
+        direction LR
+        D[Access Dashboard]
+        E[Take Courses]
+        F[Submit Exams]
+        G[Chat with AI Tutor]
+        H[Manage Profile]
+    end
+
+    subgraph Admin
+        direction LR
+        I[Full Course Mgmt]
+        J[Grade Submissions]
+        K[Manage Users]
+        L[Manage Site Settings]
+        M[View All Data]
+    end
+
+    C -- Authenticates to --> Student
+    Student -- Is Admin UID --> Admin
 ```
