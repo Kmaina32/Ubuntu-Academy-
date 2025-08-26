@@ -70,7 +70,7 @@ export default function AdminBundlesPage() {
               <Layers className="h-8 w-8" />
               <div>
                 <h1 className="text-3xl font-bold font-headline">Course Bundles</h1>
-                <p className="text-muted-foreground">Group multiple courses into a single purchasable package.</p>
+                <p className="text-muted-foreground">Sell multiple courses together as a single, priced package.</p>
               </div>
             </div>
             <Button asChild>

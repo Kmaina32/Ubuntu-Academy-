@@ -70,7 +70,7 @@ export default function AdminProgramsPage() {
               <Library className="h-8 w-8" />
               <div>
                 <h1 className="text-3xl font-bold font-headline">Certificate Programs</h1>
-                <p className="text-muted-foreground">Group courses together into a structured learning program.</p>
+                <p className="text-muted-foreground">Create structured learning paths that award a program-level certificate.</p>
               </div>
             </div>
             <Button asChild>
