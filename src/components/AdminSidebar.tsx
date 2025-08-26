@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library, Layers } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library, Layers, BarChart3 } from 'lucide-react';
 import { version } from '../../package.json';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
@@ -109,6 +109,14 @@ export function AdminSidebar() {
                         <Link href="/admin/payments">
                             <CreditCard />
                             <span>Payments</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/admin/analytics')} tooltip="Analytics">
+                        <Link href="/admin/analytics">
+                            <BarChart3 />
+                            <span>Analytics</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

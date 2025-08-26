@@ -158,3 +158,11 @@ export interface LiveSession {
     streamData: string; // This would hold the WebRTC signaling data
     startedAt: string; // ISO string
 }
+
+export interface UserContent {
+    id: string;
+    type: 'course' | 'program' | 'bundle';
+    title: string;
+    description: string;
+    status: 'draft' | 'published';
+}
