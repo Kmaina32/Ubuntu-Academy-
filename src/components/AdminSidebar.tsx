@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library, Layers } from 'lucide-react';
 import { version } from '../../package.json';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
@@ -61,6 +61,14 @@ export function AdminSidebar() {
                         <Link href="/admin/programs">
                             <Library />
                             <span>Programs</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/admin/bundles')} tooltip="Bundles">
+                        <Link href="/admin/bundles">
+                            <Layers />
+                            <span>Bundles</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
