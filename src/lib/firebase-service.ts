@@ -12,6 +12,7 @@ export interface RegisteredUser {
     uid: string;
     email: string | null;
     displayName: string | null;
+    createdAt?: string; // ISO String
     cohort?: string;
     purchasedCourses?: Record<string, Omit<UserCourse, 'courseId'>>;
     plan?: 'free' | 'basic' | 'pro';
@@ -99,26 +100,26 @@ export async function deleteCourse(courseId: string): Promise<void> {
 
 
 // User Functions
-export async function saveUser(user: RegisteredUser): Promise<void> {
-    const userRef = ref(db, `users/${user.uid}`);
+export async function saveUser(uid: string, userData: Omit<RegisteredUser, 'uid'>): Promise<void> {
+    const userRef = ref(db, `users/${uid}`);
     // We only want to store non-sensitive, profile-related info
-    const userData = {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        cohort: user.cohort || null,
-        purchasedCourses: user.purchasedCourses || {},
-        plan: user.plan || 'free',
-        apiCallCount: user.apiCallCount || 0,
+    const dataToSave = {
+        email: userData.email,
+        displayName: userData.displayName,
+        createdAt: userData.createdAt,
+        cohort: userData.cohort || null,
+        purchasedCourses: userData.purchasedCourses || {},
+        plan: userData.plan || 'free',
+        apiCallCount: userData.apiCallCount || 0,
     };
-    await set(userRef, userData);
+    await set(userRef, dataToSave);
 }
 
 export async function getUserById(uid: string): Promise<RegisteredUser | null> {
     const userRef = ref(db, `users/${uid}`);
     const snapshot = await get(userRef);
     if (snapshot.exists()) {
-        return snapshot.val() as RegisteredUser;
+        return { uid, ...snapshot.val() };
     }
     return null;
 }
@@ -168,6 +169,8 @@ export async function getAllUsers(): Promise<RegisteredUser[]> {
 }
 
 export async function deleteUser(userId: string): Promise<void> {
+    // This function only deletes the database record, not the auth user.
+    // Full user deletion would require a Firebase Cloud Function with Admin SDK.
     const userRef = ref(db, `users/${userId}`);
     await remove(userRef);
 }

@@ -62,7 +62,10 @@ export default function AdminAnalyticsPage() {
               }
             })
           }
-          const signupDate = user.uid.length > 20 ? new Date(parseInt(user.uid.substring(0, 8), 16) * 1000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]; // A bit of a hack for firebase UIDs
+           // Use the stored creation date, with a fallback for older users
+          const signupDate = user.createdAt
+            ? new Date(user.createdAt).toISOString().split('T')[0]
+            : new Date().toISOString().split('T')[0];
           userSignupCounts[signupDate] = (userSignupCounts[signupDate] || 0) + 1;
         });
 

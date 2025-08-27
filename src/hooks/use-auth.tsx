@@ -67,16 +67,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await updateProfile(userCredential.user, {
       displayName: displayName,
     });
-    
+
     // Now that the profile is updated, create the object for our DB
-    const newUser: RegisteredUser = {
-      uid: userCredential.user.uid,
+    const newUser: Omit<RegisteredUser, 'uid'> = {
       email: userCredential.user.email,
       displayName: displayName,
+      createdAt: userCredential.user.metadata.creationTime,
     };
 
     // Save the complete user object to the Realtime Database
-    await saveUser(newUser);
+    await saveUser(userCredential.user.uid, newUser);
 
     // Send verification email
     await sendEmailVerification(userCredential.user);
@@ -99,12 +99,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (!dbUser) {
         // If user is new, save to database
-        const newUser: RegisteredUser = {
-          uid: user.uid,
+        const newUser: Omit<RegisteredUser, 'uid'> = {
           email: user.email,
           displayName: user.displayName,
+          createdAt: user.metadata.creationTime,
         };
-        await saveUser(newUser);
+        await saveUser(user.uid, newUser);
       }
       setUser(user);
     } catch (error) {
