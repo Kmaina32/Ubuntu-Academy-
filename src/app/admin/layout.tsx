@@ -14,6 +14,8 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { getUserById } from '@/lib/firebase-service';
 
+const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
+
 function AdminAccessDenied() {
     return (
         <div className="flex flex-col min-h-screen">
@@ -53,25 +55,31 @@ export default function AdminLayout({
   useEffect(() => {
     const checkAdminStatus = async () => {
       if (user) {
-        const userProfile = await getUserById(user.uid);
-        if (userProfile?.isAdmin) {
-            // Check for expiration
-            if (userProfile.adminExpiresAt) {
-                const expirationDate = new Date(userProfile.adminExpiresAt);
-                if (expirationDate > new Date()) {
-                    setIsAdmin(true);
+        // First, check if the logged-in user is the designated permanent admin
+        if (user.uid === ADMIN_UID) {
+            setIsAdmin(true);
+        } else {
+            // If not, check for temporary admin status in the database
+            const userProfile = await getUserById(user.uid);
+            if (userProfile?.isAdmin) {
+                // Check for expiration
+                if (userProfile.adminExpiresAt) {
+                    const expirationDate = new Date(userProfile.adminExpiresAt);
+                    if (expirationDate > new Date()) {
+                        setIsAdmin(true);
+                    } else {
+                        setIsAdmin(false); // Access expired
+                    }
                 } else {
-                    setIsAdmin(false);
+                    // Permanent admin flag in DB
+                    setIsAdmin(true);
                 }
             } else {
-                // Permanent admin
-                setIsAdmin(true);
+              setIsAdmin(false); // Not an admin
             }
-        } else {
-          setIsAdmin(false);
         }
       } else {
-          setIsAdmin(false);
+          setIsAdmin(false); // No user logged in
       }
       setCheckingAdmin(false);
     };
