@@ -29,7 +29,7 @@ export default function AboutPage() {
                   </CardHeader>
                   <CardContent className='flex flex-col items-center gap-6 text-left'>
                     <p className="text-foreground">
-                      SkillSet Academy is a premier online learning platform dedicated to providing high-quality, affordable, and accessible education tailored for the Kenyan market. We believe in the power of knowledge to transform lives and drive economic growth. Our mission is to equip individuals with the practical skills needed to thrive in today's dynamic job market.
+                      Ubuntu Academy is a premier online learning platform dedicated to providing high-quality, affordable, and accessible education tailored for the Kenyan market. We believe in the power of knowledge to transform lives and drive economic growth. Our mission is to equip individuals with the practical skills needed to thrive in today's dynamic job market.
                     </p>
                     <Separator />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">

@@ -1,6 +1,6 @@
-# SkillSet Academy - Application Framework Document
+# Ubuntu Academy - Application Framework Document
 
-This document provides a technical overview of the SkillSet Academy application, including its architecture, data models, AI integrations, and key operational flows.
+This document provides a technical overview of the Ubuntu Academy application, including its architecture, data models, AI integrations, and key operational flows.
 
 ## 1. Core Architecture
 

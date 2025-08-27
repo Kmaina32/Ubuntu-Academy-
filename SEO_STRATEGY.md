@@ -1,4 +1,4 @@
-# SkillSet Academy - Global SEO Strategy
+# Ubuntu Academy - Global SEO Strategy
 
 This document outlines a comprehensive Search Engine Optimization (SEO) strategy to scale SkillSet Academy's online presence from a local Kenyan audience to a worldwide audience.
 

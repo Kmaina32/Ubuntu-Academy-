@@ -19,7 +19,7 @@ const CourseSchema = z.object({
 export const listCoursesTool = ai.defineTool(
   {
     name: 'listCourses',
-    description: 'Get a list of all available courses in the SkillSet Academy catalog to help with student requests.',
+    description: 'Get a list of all available courses in the Ubuntu Academy catalog to help with student requests.',
     inputSchema: z.object({}),
     outputSchema: z.array(CourseSchema),
   },

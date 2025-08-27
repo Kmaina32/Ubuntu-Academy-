@@ -1,10 +1,10 @@
-# SkillSet Academy - API Documentation
+# Ubuntu Academy - API Documentation
 
-Welcome to the SkillSet Academy API documentation. This document provides all the information you need to interact with our platform programmatically.
+Welcome to the Ubuntu Academy API documentation. This document provides all the information you need to interact with our platform programmatically.
 
 ## 1. Introduction
 
-The SkillSet Academy API provides access to our course catalog and other platform features. It follows RESTful principles and uses standard HTTP response codes and JSON-formatted responses.
+The Ubuntu Academy API provides access to our course catalog and other platform features. It follows RESTful principles and uses standard HTTP response codes and JSON-formatted responses.
 
 ### Base URL
 
