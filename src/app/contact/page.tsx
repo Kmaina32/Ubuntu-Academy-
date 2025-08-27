@@ -44,7 +44,7 @@ export default function ContactPage() {
                         </div>
                         <div>
                             <h3 className="font-semibold">Email Us</h3>
-                            <p className="text-muted-foreground">For support or inquiries, email us at <a href="mailto:info@skillset.com" className="text-primary underline">info@skillset.com</a>.</p>
+                            <p className="text-muted-foreground">For support or inquiries, email us at <a href="mailto:info@ubuntuacademy.com. className="text-primary underline">info@ubuntuacademy.com./a>.</p>
                         </div>
                     </div>
                      <div className="flex items-start gap-4">
