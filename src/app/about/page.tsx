@@ -24,7 +24,7 @@ export default function AboutPage() {
                       <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
                           <Users className="h-10 w-10 text-primary" />
                       </div>
-                    <CardTitle className="text-3xl font-headline">About SkillSet Academy</CardTitle>
+                    <CardTitle className="text-3xl font-headline">About UbuntuAcademy</CardTitle>
                     <CardDescription className="text-lg text-muted-foreground">Empowering Kenyans with modern, practical skills.</CardDescription>
                   </CardHeader>
                   <CardContent className='flex flex-col items-center gap-6 text-left'>

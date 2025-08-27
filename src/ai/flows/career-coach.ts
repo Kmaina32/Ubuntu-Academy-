@@ -44,7 +44,7 @@ const prompt = ai.definePrompt({
   tools: [listCoursesTool],
   input: { schema: LearningPathInputSchema },
   output: { schema: LearningPathOutputSchema },
-  prompt: `You are an expert AI Career Coach for SkillSet Academy. Your task is to create a personalized learning path for a student based on their stated career goal.
+  prompt: `You are an expert AI Career Coach for UbuntuAcademy. Your task is to create a personalized learning path for a student based on their stated career goal.
 
 You have access to a tool called \`listCourses\` which provides the full catalog of available courses. You MUST use this tool to see which courses are available to recommend.
 

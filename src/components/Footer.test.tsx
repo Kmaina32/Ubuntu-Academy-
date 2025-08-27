@@ -6,12 +6,12 @@ describe('Footer', () => {
     render(<Footer />)
 
     // Check for the company name
-    const companyName = screen.getByText(/SkillSet Academy/i)
+    const companyName = screen.getByText(/UbuntuAcademy/i)
     expect(companyName).toBeInTheDocument()
 
     // Check for the copyright notice
     const currentYear = new Date().getFullYear()
-    const copyrightNotice = screen.getByText(`© ${currentYear} SkillSet Academy. All rights reserved.`)
+    const copyrightNotice = screen.getByText(`© ${currentYear} UbuntuAcademy. All rights reserved.`)
     expect(copyrightNotice).toBeInTheDocument()
 
     // Check for the navigation links

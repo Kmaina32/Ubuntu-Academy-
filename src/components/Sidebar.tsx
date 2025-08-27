@@ -40,7 +40,7 @@ export function AppSidebar() {
         <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
                 <Gem className="h-6 w-6 text-primary" />
-                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">SkillSet Academy</span>
+                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">UbuntuAcademy</span>
             </div>
         </SidebarHeader>
         <SidebarContent>
