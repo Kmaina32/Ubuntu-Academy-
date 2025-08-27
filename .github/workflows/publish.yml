@@ -22,12 +22,16 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Sanitize repository name
+        id: sanitize
+        run: echo "repo_name=$(echo ${{ github.repository }} | sed 's/-$//' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/${{ steps.sanitize.outputs.repo_name }}
           tags: |
             type=sha,prefix=
             type=ref,event=branch
