@@ -18,8 +18,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { createNotification, getAllUsers } from '@/lib/firebase-service';
-import type { RegisteredUser } from '@/lib/mock-data';
+import { createNotification } from '@/lib/firebase-service';
 import { LiveChat } from '@/components/LiveChat';
 
 const liveSessionSchema = z.object({
@@ -110,25 +109,21 @@ export default function AdminLivePage() {
             body: values.description || 'A live session has started. Join now!',
             link: '/live',
             cohort: values.target === 'cohort' ? values.cohort : undefined,
-            // Note: Targeting specific students would require more logic here
         });
         toast({ title: 'Notifications Sent!', description: 'Targeted students have been notified about the live session.'});
 
-
-        // This peer connection is only to create the offer, not for connecting.
         const offerPc = new RTCPeerConnection(ICE_SERVERS);
         stream.getTracks().forEach(track => offerPc.addTrack(track, stream));
         const offer = await offerPc.createOffer();
         await offerPc.setLocalDescription(offer);
         
         await set(offerRef, { sdp: offer.sdp, type: offer.type, ...values });
-        offerPc.close(); // We don't need this peer connection anymore
+        offerPc.close();
 
         setIsLive(true);
         setIsLoading(false);
         toast({ title: 'You are now live!', description: 'Your video stream has started. Waiting for students to join.' });
 
-        // Listen for answers from students
         onChildAdded(answersRef, async (snapshot) => {
             const studentId = snapshot.key;
             if (!studentId || peerConnectionsRef.current.has(studentId)) return;
@@ -136,26 +131,21 @@ export default function AdminLivePage() {
             const studentAnswer = snapshot.val();
             toast({ title: 'Student Joined', description: `A new student has connected to the stream.` });
             
-            // Create a new, dedicated peer connection for this specific student
             const peerConnection = new RTCPeerConnection(ICE_SERVERS);
             peerConnectionsRef.current.set(studentId, peerConnection);
 
-            // Add local media stream tracks to the new connection
             localStreamRef.current?.getTracks().forEach(track => {
                 peerConnection.addTrack(track, localStreamRef.current!);
             });
 
-            // Set the remote description (the student's answer)
             await peerConnection.setRemoteDescription(new RTCSessionDescription(studentAnswer));
             
-            // Handle ICE candidates for this specific connection
             peerConnection.onicecandidate = event => {
                 if (event.candidate) {
                     set(ref(db, `webrtc-candidates/live-session/admin/${studentId}/${Date.now()}`), event.candidate.toJSON());
                 }
             };
             
-             // Listen for ICE candidates from this specific student
             onChildAdded(ref(db, `webrtc-candidates/live-session/student/${studentId}`), (candidateSnapshot) => {
                 const candidate = candidateSnapshot.val();
                 if (candidate) {
@@ -184,7 +174,7 @@ export default function AdminLivePage() {
             remove(answersRef),
             remove(adminIceCandidatesRef),
             remove(studentIceCandidatesRef),
-            remove(ref(db, 'liveChat/live-session')) // Clear chat
+            remove(ref(db, 'liveChat/live-session'))
         ]);
 
         setIsLive(false);
@@ -208,8 +198,9 @@ export default function AdminLivePage() {
                                     <CardDescription>Start or stop a live video session for all students.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
-                                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+                                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center relative">
                                         <video ref={videoRef} className="w-full h-full rounded-lg" autoPlay muted playsInline />
+                                        {isLive && <LiveChat sessionId="live-session" />}
                                     </div>
                                     
                                     {hasCameraPermission === false && (
@@ -225,13 +216,10 @@ export default function AdminLivePage() {
                         </div>
                         <div className="lg:col-span-1">
                              {isLive ? (
-                                <div className="space-y-6">
-                                    <LiveChat sessionId="live-session" />
-                                    <Button size="lg" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="w-full">
-                                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <VideoOff className="mr-2 h-4 w-4" />}
-                                        Stop Live Session
-                                    </Button>
-                                </div>
+                                <Button size="lg" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="w-full">
+                                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <VideoOff className="mr-2 h-4 w-4" />}
+                                    Stop Live Session
+                                </Button>
                             ) : (
                                 <Card>
                                     <CardHeader>
