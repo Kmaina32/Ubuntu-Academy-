@@ -14,7 +14,7 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library, Layers, BarChart3, Tag } from 'lucide-react';
-import { version } from '../../package.json';
+import pkg from '../../package.json';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 
@@ -158,7 +158,7 @@ export function AdminSidebar() {
         <SidebarFooter>
             <div className="flex items-center gap-2 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
                 <Tag className="h-3 w-3" />
-                <span>v{version}</span>
+                <span>v{pkg.version}</span>
             </div>
         </SidebarFooter>
     </Sidebar>

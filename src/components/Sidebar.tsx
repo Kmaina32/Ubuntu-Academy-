@@ -17,7 +17,7 @@ import {
 import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library, Briefcase, Tag } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from './ui/separator';
-import { version } from '../../package.json';
+import pkg from '../../package.json';
 
 const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
 
@@ -210,7 +210,7 @@ export function AppSidebar() {
         <SidebarFooter>
              <div className="flex items-center gap-2 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
                 <Tag className="h-3 w-3" />
-                <span>v{version}</span>
+                <span>v{pkg.version}</span>
             </div>
         </SidebarFooter>
     </Sidebar>
