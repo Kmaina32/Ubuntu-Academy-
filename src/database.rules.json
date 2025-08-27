@@ -117,6 +117,12 @@
             }
           }
         }
+    },
+    "liveChat": {
+        "$sessionId": {
+            ".read": "auth != null",
+            ".write": "auth != null"
+        }
     }
   }
 }

@@ -11,6 +11,28 @@ import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
 import { ref, onValue, set, remove, onChildAdded, get } from 'firebase/database';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { createNotification, getAllUsers } from '@/lib/firebase-service';
+import type { RegisteredUser } from '@/lib/mock-data';
+import { LiveChat } from '@/components/LiveChat';
+
+const liveSessionSchema = z.object({
+    title: z.string().min(5, 'Title must be at least 5 characters.'),
+    description: z.string().optional(),
+    speakers: z.string().optional(),
+    target: z.enum(['all', 'cohort', 'students']),
+    cohort: z.string().optional(),
+    studentIds: z.string().optional(),
+}).refine(data => {
+    if (data.target === 'cohort' && !data.cohort) return false;
+    return true;
+}, { message: 'Cohort name is required.', path: ['cohort']});
 
 const ICE_SERVERS = {
     iceServers: [
@@ -32,7 +54,16 @@ export default function AdminLivePage() {
     const answersRef = ref(db, 'webrtc-answers/live-session');
     const adminIceCandidatesRef = ref(db, 'webrtc-candidates/live-session/admin');
     const studentIceCandidatesRef = ref(db, 'webrtc-candidates/live-session/student');
-
+    
+     const form = useForm<z.infer<typeof liveSessionSchema>>({
+        resolver: zodResolver(liveSessionSchema),
+        defaultValues: {
+            title: '',
+            description: '',
+            speakers: '',
+            target: 'all',
+        },
+    });
 
     useEffect(() => {
         // Cleanup on component unmount
@@ -65,7 +96,7 @@ export default function AdminLivePage() {
     };
 
 
-    const handleGoLive = async () => {
+    const handleGoLive = async (values: z.infer<typeof liveSessionSchema>) => {
         setIsLoading(true);
         const stream = await getCameraPermission();
         if (!stream) {
@@ -73,13 +104,24 @@ export default function AdminLivePage() {
             return;
         }
 
+        // Send notification
+        await createNotification({
+            title: `🔴 Live Now: ${values.title}`,
+            body: values.description || 'A live session has started. Join now!',
+            link: '/live',
+            cohort: values.target === 'cohort' ? values.cohort : undefined,
+            // Note: Targeting specific students would require more logic here
+        });
+        toast({ title: 'Notifications Sent!', description: 'Targeted students have been notified about the live session.'});
+
+
         // This peer connection is only to create the offer, not for connecting.
         const offerPc = new RTCPeerConnection(ICE_SERVERS);
         stream.getTracks().forEach(track => offerPc.addTrack(track, stream));
         const offer = await offerPc.createOffer();
         await offerPc.setLocalDescription(offer);
         
-        await set(offerRef, { sdp: offer.sdp, type: offer.type });
+        await set(offerRef, { sdp: offer.sdp, type: offer.type, ...values });
         offerPc.close(); // We don't need this peer connection anymore
 
         setIsLive(true);
@@ -141,7 +183,8 @@ export default function AdminLivePage() {
             remove(offerRef),
             remove(answersRef),
             remove(adminIceCandidatesRef),
-            remove(studentIceCandidatesRef)
+            remove(studentIceCandidatesRef),
+            remove(ref(db, 'liveChat/live-session')) // Clear chat
         ]);
 
         setIsLive(false);
@@ -151,49 +194,94 @@ export default function AdminLivePage() {
 
     return (
         <div className="flex flex-col min-h-screen">
-        <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
-            <div className="max-w-4xl mx-auto">
-                <Link href="/admin" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to Admin Dashboard
-                </Link>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Live Classroom</CardTitle>
-                        <CardDescription>Start or stop a live video session for all students.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                            <video ref={videoRef} className="w-full h-full rounded-lg" autoPlay muted playsInline />
+            <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
+                <div className="max-w-6xl mx-auto">
+                    <Link href="/admin" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to Admin Dashboard
+                    </Link>
+                    <div className="grid lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-2">
+                             <Card>
+                                <CardHeader>
+                                    <CardTitle>Live Classroom</CardTitle>
+                                    <CardDescription>Start or stop a live video session for all students.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+                                        <video ref={videoRef} className="w-full h-full rounded-lg" autoPlay muted playsInline />
+                                    </div>
+                                    
+                                    {hasCameraPermission === false && (
+                                        <Alert variant="destructive">
+                                            <AlertTitle>Camera Access Required</AlertTitle>
+                                            <AlertDescription>
+                                                Please allow camera access in your browser to use this feature.
+                                            </AlertDescription>
+                                        </Alert>
+                                    )}
+                                </CardContent>
+                            </Card>
                         </div>
-                        
-                        {hasCameraPermission === false && (
-                            <Alert variant="destructive">
-                                <AlertTitle>Camera Access Required</AlertTitle>
-                                <AlertDescription>
-                                    Please allow camera access in your browser to use this feature.
-                                </AlertDescription>
-                            </Alert>
-                        )}
-                        
-                        <div className="flex justify-center">
-                            {isLive ? (
-                                <Button size="lg" variant="destructive" onClick={handleStopLive} disabled={isLoading}>
-                                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <VideoOff className="mr-2 h-4 w-4" />}
-                                    Stop Live Session
-                                </Button>
+                        <div className="lg:col-span-1">
+                             {isLive ? (
+                                <div className="space-y-6">
+                                    <LiveChat sessionId="live-session" />
+                                    <Button size="lg" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="w-full">
+                                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <VideoOff className="mr-2 h-4 w-4" />}
+                                        Stop Live Session
+                                    </Button>
+                                </div>
                             ) : (
-                                <Button size="lg" onClick={handleGoLive} disabled={isLoading}>
-                                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Video className="mr-2 h-4 w-4" />}
-                                    Go Live
-                                </Button>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Start a New Session</CardTitle>
+                                        <CardDescription>Configure and start your live broadcast.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <Form {...form}>
+                                            <form onSubmit={form.handleSubmit(handleGoLive)} className="space-y-4">
+                                                <FormField control={form.control} name="title" render={({ field }) => (
+                                                    <FormItem><FormLabel>Session Title</FormLabel><FormControl><Input placeholder="e.g., Marketing Q&A" {...field} /></FormControl><FormMessage /></FormItem>
+                                                )}/>
+                                                <FormField control={form.control} name="description" render={({ field }) => (
+                                                    <FormItem><FormLabel>Description (for notification)</FormLabel><FormControl><Textarea placeholder="Join us for a live Q&A session..." {...field} /></FormControl><FormMessage /></FormItem>
+                                                )}/>
+                                                <FormField control={form.control} name="speakers" render={({ field }) => (
+                                                    <FormItem><FormLabel>Keynote Speakers (Optional)</FormLabel><FormControl><Input placeholder="e.g., Jane Doe, John Smith" {...field} /></FormControl><FormMessage /></FormItem>
+                                                )}/>
+                                                 <FormField control={form.control} name="target" render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Target Audience</FormLabel>
+                                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                            <FormControl><SelectTrigger><SelectValue placeholder="Select who to notify..." /></SelectTrigger></FormControl>
+                                                            <SelectContent>
+                                                                <SelectItem value="all">All Students</SelectItem>
+                                                                <SelectItem value="cohort">Specific Cohort</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}/>
+                                                {form.watch('target') === 'cohort' && (
+                                                    <FormField control={form.control} name="cohort" render={({ field }) => (
+                                                        <FormItem><FormLabel>Cohort Name</FormLabel><FormControl><Input placeholder="e.g., Sept-2024-FT" {...field} /></FormControl><FormMessage /></FormItem>
+                                                    )}/>
+                                                )}
+                                                <Button size="lg" type="submit" disabled={isLoading} className="w-full">
+                                                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Video className="mr-2 h-4 w-4" />}
+                                                    Go Live
+                                                </Button>
+                                            </form>
+                                        </Form>
+                                    </CardContent>
+                                </Card>
                             )}
                         </div>
-                    </CardContent>
-                </Card>
-            </div>
-        </main>
-        <Footer />
+                    </div>
+                </div>
+            </main>
+            <Footer />
         </div>
     );
 }

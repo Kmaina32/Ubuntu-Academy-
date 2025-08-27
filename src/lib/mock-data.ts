@@ -157,8 +157,13 @@ export interface DiscussionThread {
 
 export interface LiveSession {
     isActive: boolean;
-    streamData: string; // This would hold the WebRTC signaling data
-    startedAt: string; // ISO string
+    streamData: any; // This would hold the WebRTC signaling data
+    title: string;
+    description?: string;
+    speakers?: string;
+    target: 'all' | 'cohort' | 'students';
+    cohort?: string;
+    studentIds?: string[];
 }
 
 export interface UserContent {
@@ -182,4 +187,17 @@ export interface ApiKey {
     key: string;
     createdAt: string; // ISO String
     userId: string;
+}
+
+export interface RegisteredUser {
+    uid: string;
+    email: string | null;
+    displayName: string | null;
+    createdAt?: string; // ISO String
+    cohort?: string;
+    purchasedCourses?: Record<string, Omit<UserCourse, 'courseId'>>;
+    plan?: 'free' | 'basic' | 'pro';
+    apiCallCount?: number;
+    isAdmin?: boolean;
+    adminExpiresAt?: string | null;
 }
