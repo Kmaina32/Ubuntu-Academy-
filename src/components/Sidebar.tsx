@@ -14,7 +14,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library, Briefcase } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library, Briefcase, Tag } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from './ui/separator';
 import { version } from '../../package.json';
@@ -208,8 +208,9 @@ export function AppSidebar() {
             </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
-             <div className="text-left text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-                Beta Version: v{version}
+             <div className="flex items-center gap-2 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+                <Tag className="h-3 w-3" />
+                <span>v{version}</span>
             </div>
         </SidebarFooter>
     </Sidebar>
