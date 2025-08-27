@@ -17,7 +17,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
 import type { ApiKey } from '@/lib/mock-data';
 import { getUserApiKeys, deleteApiKey } from '@/lib/firebase-service';
-import { generateApiKey } from '@/ai/flows/generate-api-key';
+import { generateApiKey } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import {
@@ -300,4 +300,5 @@ export default function DeveloperPage() {
     </SidebarProvider>
   );
 }
+
 

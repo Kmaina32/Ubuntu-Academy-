@@ -14,7 +14,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/Sidebar';
-import { studentHelp } from '@/ai/flows/student-help';
+import { studentHelp } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

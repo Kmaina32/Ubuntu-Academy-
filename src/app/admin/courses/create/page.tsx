@@ -17,7 +17,7 @@ import Link from 'next/link';
 import { ArrowLeft, Loader2, Sparkles } from 'lucide-react';
 import { createCourse } from '@/lib/firebase-service';
 import type { Course } from '@/lib/mock-data';
-import { generateCourseContent, GenerateCourseContentOutput } from '@/ai/flows/generate-course-content';
+import { generateCourseContent, GenerateCourseContentOutput } from '@/app/actions';
 import { CourseReviewModal } from '@/components/CourseReviewModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { getSubmissionById, getCourseById, updateSubmission, updateUserCourseProgress } from '@/lib/firebase-service';
 import type { Submission, Course, ExamQuestion, ShortAnswerQuestion } from '@/lib/mock-data';
-import { gradeShortAnswerExam, GradeShortAnswerExamOutput } from '@/ai/flows/grade-short-answer-exam';
+import { gradeShortAnswerExam, GradeShortAnswerExamOutput } from '@/app/actions';
 
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";

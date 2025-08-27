@@ -22,9 +22,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
-import { courseTutor } from '@/ai/flows/course-tutor';
-import { speechToText } from '@/ai/flows/speech-to-text';
-import { textToSpeech } from '@/ai/flows/text-to-speech';
+import { courseTutor, speechToText, textToSpeech } from '@/app/actions';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useRecorder } from '@/hooks/use-recorder';
 import { Separator } from '@/components/ui/separator';

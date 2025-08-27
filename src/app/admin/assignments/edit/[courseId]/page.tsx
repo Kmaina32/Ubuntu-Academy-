@@ -18,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ArrowLeft, Loader2, PlusCircle, Trash2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import { generateExam } from '@/ai/flows/generate-exam';
+import { generateExam } from '@/app/actions';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const shortAnswerSchema = z.object({
