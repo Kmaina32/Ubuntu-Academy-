@@ -37,7 +37,7 @@ const prompt = ai.definePrompt({
 
   Use the following information about the student journey to answer their question comprehensively and in detail.
 
-  **Platform Overview: UbuntuAcademy**
+  **Platform Overview: Ubuntu Academy**
   Ubuntu Academy is an online learning platform for Kenyan users. It features courses created and managed by an admin. Students can enroll, learn, take exams, and earn certificates.
 
   **The Student Journey**

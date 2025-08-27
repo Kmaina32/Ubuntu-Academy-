@@ -50,7 +50,7 @@ const runContentStrategyFlow = ai.defineFlow(
     // Step 1: Generate 10 course ideas
     console.log('Generating course ideas...');
     const ideasResponse = await ai.generate({
-      prompt: `You are a Content Strategist for UbuntuAcademy, an online learning platform for a Kenyan audience. Your task is to brainstorm 10 highly relevant and marketable course ideas that would appeal to students looking to upskill. Provide a title, a category, and a plausible instructor name for each.`,
+      prompt: `You are a Content Strategist for Ubuntu Academy, an online learning platform for a Kenyan audience. Your task is to brainstorm 10 highly relevant and marketable course ideas that would appeal to students looking to upskill. Provide a title, a category, and a plausible instructor name for each.`,
       model: 'googleai/gemini-1.5-flash',
       output: {
         schema: CourseIdeasSchema,

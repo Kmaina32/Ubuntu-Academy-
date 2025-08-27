@@ -8,7 +8,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { CookieConsent } from '@/components/CookieConsent';
 
 export const metadata: Metadata = {
-  title: 'UbuntuAcademy',
+  title: 'Ubuntu Academy',
   description: 'Online courses for Kenyans, by Kenyans.',
 };
 

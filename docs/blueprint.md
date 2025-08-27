@@ -1,4 +1,4 @@
-# **App Name**: UbuntuAcademy
+# **App Name**: Ubuntu Academy
 
 ## Core Features:
 
