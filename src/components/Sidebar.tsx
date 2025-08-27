@@ -19,11 +19,9 @@ import { useAuth } from '@/hooks/use-auth';
 import { Separator } from './ui/separator';
 import pkg from '../../package.json';
 
-const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
-
 export function AppSidebar() {
     const pathname = usePathname();
-    const { user } = useAuth();
+    const { user, isAdmin } = useAuth();
     const { setOpenMobile } = useSidebar();
 
     const isActive = (path: string) => {
@@ -150,7 +148,7 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         
-                        {user.uid === ADMIN_UID && (
+                        {isAdmin && (
                              <SidebarMenuItem>
                                 <SidebarMenuButton asChild isActive={isActive('/admin')} tooltip="Admin Dashboard" onClick={onLinkClick}>
                                     <Link href="/admin">

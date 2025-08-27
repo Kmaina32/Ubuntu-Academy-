@@ -11,10 +11,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { AlertTriangle, Home, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { getUserById } from '@/lib/firebase-service';
-
-const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
 
 function AdminAccessDenied() {
     return (
@@ -48,49 +44,9 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [checkingAdmin, setCheckingAdmin] = useState(true);
-
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (user) {
-        // First, check if the logged-in user is the designated permanent admin
-        if (user.uid === ADMIN_UID) {
-            setIsAdmin(true);
-        } else {
-            // If not, check for temporary admin status in the database
-            const userProfile = await getUserById(user.uid);
-            if (userProfile?.isAdmin) {
-                // Check for expiration
-                if (userProfile.adminExpiresAt) {
-                    const expirationDate = new Date(userProfile.adminExpiresAt);
-                    if (expirationDate > new Date()) {
-                        setIsAdmin(true);
-                    } else {
-                        setIsAdmin(false); // Access expired
-                    }
-                } else {
-                    // Permanent admin flag in DB
-                    setIsAdmin(true);
-                }
-            } else {
-              setIsAdmin(false); // Not an admin
-            }
-        }
-      } else {
-          setIsAdmin(false); // No user logged in
-      }
-      setCheckingAdmin(false);
-    };
-
-    if (!loading) {
-      checkAdminStatus();
-    }
-  }, [user, loading]);
+  const { user, loading, isAdmin } = useAuth();
   
-
-  if (loading || checkingAdmin) {
+  if (loading) {
      return (
         <div className="flex h-screen items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin" />
@@ -99,7 +55,7 @@ export default function AdminLayout({
      )
   }
 
-  if (!isAdmin) {
+  if (!user || !isAdmin) {
       return <AdminAccessDenied />;
   }
 

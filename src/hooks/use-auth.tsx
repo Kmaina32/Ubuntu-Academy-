@@ -22,13 +22,17 @@ import {
   signInWithPopup,
   sendEmailVerification,
 } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { RegisteredUser, saveUser, getUserById } from '@/lib/firebase-service';
+import { ref, onValue } from 'firebase/database';
+
+const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
 
 interface AuthContextType {
   user: User | null;
   setUser: Dispatch<SetStateAction<User | null>>;
   loading: boolean;
+  isAdmin: boolean;
   login: (email: string, pass: string) => Promise<any>;
   signup: (email: string, pass: string, name: string) => Promise<any>;
   logout: () => Promise<any>;
@@ -42,6 +46,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -51,6 +56,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+        setIsAdmin(false);
+        return;
+    }
+    
+    // Listen for real-time changes to the user's record in the database
+    const userRef = ref(db, `users/${user.uid}`);
+    const unsubscribe = onValue(userRef, (snapshot) => {
+        if (user.uid === ADMIN_UID) {
+            setIsAdmin(true);
+            return;
+        }
+
+        if (snapshot.exists()) {
+            const userProfile = snapshot.val();
+            if (userProfile.isAdmin) {
+                if (userProfile.adminExpiresAt) {
+                    const expirationDate = new Date(userProfile.adminExpiresAt);
+                    setIsAdmin(expirationDate > new Date());
+                } else {
+                    setIsAdmin(true); // Permanent admin
+                }
+            } else {
+                setIsAdmin(false);
+            }
+        } else {
+            setIsAdmin(false);
+        }
+    });
+
+    // Cleanup the listener when the user changes or component unmounts
+    return () => unsubscribe();
+
+  }, [user]);
 
   const login = (email: string, pass: string) => {
     return signInWithEmailAndPassword(auth, email, pass);
@@ -134,6 +175,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     setUser,
     loading,
+    isAdmin,
     login,
     signup,
     logout,
