@@ -47,18 +47,23 @@ export default function StudentLivePage() {
                 setIsLive(true);
                 setIsLoading(false);
                 
+                // Close any existing connection before starting a new one
+                if (peerConnectionRef.current) {
+                    peerConnectionRef.current.close();
+                }
+                
                 const offerDescription = snapshot.val();
                 const pc = new RTCPeerConnection(ICE_SERVERS);
                 peerConnectionRef.current = pc;
 
                 pc.onicecandidate = (event) => {
                     if (event.candidate) {
-                        set(ref(db, `webrtc-candidates/live-session/student/${user.uid}/${event.candidate.sdpMid}_${event.candidate.sdpMLineIndex}`), event.candidate.toJSON());
+                        set(ref(db, `webrtc-candidates/live-session/student/${user.uid}/${Date.now()}`), event.candidate.toJSON());
                     }
                 };
 
                 pc.ontrack = (event) => {
-                    if (videoRef.current) {
+                    if (videoRef.current && event.streams[0]) {
                         videoRef.current.srcObject = event.streams[0];
                     }
                 };
@@ -75,7 +80,9 @@ export default function StudentLivePage() {
                 // Listen for ICE candidates from the admin for this student
                 onChildAdded(ref(db, `webrtc-candidates/live-session/admin/${user.uid}`), (candidateSnapshot) => {
                     const candidate = candidateSnapshot.val();
-                    pc.addIceCandidate(new RTCIceCandidate(candidate));
+                    if(candidate) {
+                        pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(e => console.error("Error adding ICE candidate:", e));
+                    }
                 });
 
 
@@ -97,6 +104,11 @@ export default function StudentLivePage() {
             unsubscribe();
              if (peerConnectionRef.current) {
                 peerConnectionRef.current.close();
+            }
+            if (user) {
+                // Clean up student's answer and candidates when they leave
+                remove(ref(db, `webrtc-answers/live-session/${user.uid}`));
+                remove(ref(db, `webrtc-candidates/live-session/student/${user.uid}`));
             }
         };
 

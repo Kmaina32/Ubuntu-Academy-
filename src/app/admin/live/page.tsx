@@ -73,24 +73,15 @@ export default function AdminLivePage() {
             return;
         }
 
-        const peerConnection = new RTCPeerConnection(ICE_SERVERS);
-
-        // This single "master" peer connection is used to generate the offer.
-        // We will create individual connections for each student later.
-        peerConnection.onicecandidate = async (event) => {
-            if (event.candidate) {
-                await set(ref(db, `webrtc-candidates/live-session/admin/${event.candidate.sdpMid}_${event.candidate.sdpMLineIndex}`), event.candidate.toJSON());
-            }
-        };
-
-        stream.getTracks().forEach(track => {
-            peerConnection.addTrack(track, stream);
-        });
-
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
+        // This peer connection is only to create the offer, not for connecting.
+        const offerPc = new RTCPeerConnection(ICE_SERVERS);
+        stream.getTracks().forEach(track => offerPc.addTrack(track, stream));
+        const offer = await offerPc.createOffer();
+        await offerPc.setLocalDescription(offer);
         
         await set(offerRef, { sdp: offer.sdp, type: offer.type });
+        offerPc.close(); // We don't need this peer connection anymore
+
         setIsLive(true);
         setIsLoading(false);
         toast({ title: 'You are now live!', description: 'Your video stream has started. Waiting for students to join.' });
@@ -98,31 +89,36 @@ export default function AdminLivePage() {
         // Listen for answers from students
         onChildAdded(answersRef, async (snapshot) => {
             const studentId = snapshot.key;
-            if (!studentId) return;
+            if (!studentId || peerConnectionsRef.current.has(studentId)) return;
 
             const studentAnswer = snapshot.val();
             toast({ title: 'Student Joined', description: `A new student has connected to the stream.` });
             
-            // Create a new peer connection for this specific student
-            const newPeerConnection = new RTCPeerConnection(ICE_SERVERS);
-            peerConnectionsRef.current.set(studentId, newPeerConnection);
+            // Create a new, dedicated peer connection for this specific student
+            const peerConnection = new RTCPeerConnection(ICE_SERVERS);
+            peerConnectionsRef.current.set(studentId, peerConnection);
 
+            // Add local media stream tracks to the new connection
             localStreamRef.current?.getTracks().forEach(track => {
-                newPeerConnection.addTrack(track, localStreamRef.current!);
+                peerConnection.addTrack(track, localStreamRef.current!);
             });
 
-            newPeerConnection.onicecandidate = event => {
+            // Set the remote description (the student's answer)
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(studentAnswer));
+            
+            // Handle ICE candidates for this specific connection
+            peerConnection.onicecandidate = event => {
                 if (event.candidate) {
-                    set(ref(db, `webrtc-candidates/live-session/admin/${studentId}/${event.candidate.sdpMid}_${event.candidate.sdpMLineIndex}`), event.candidate.toJSON());
+                    set(ref(db, `webrtc-candidates/live-session/admin/${studentId}/${Date.now()}`), event.candidate.toJSON());
                 }
             };
             
-            await newPeerConnection.setRemoteDescription(new RTCSessionDescription(studentAnswer));
-
              // Listen for ICE candidates from this specific student
             onChildAdded(ref(db, `webrtc-candidates/live-session/student/${studentId}`), (candidateSnapshot) => {
                 const candidate = candidateSnapshot.val();
-                newPeerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                if (candidate) {
+                   peerConnection.addIceCandidate(new RTCIceCandidate(candidate)).catch(e => console.error("Error adding ICE candidate:", e));
+                }
             });
         });
     };
@@ -135,6 +131,7 @@ export default function AdminLivePage() {
 
         if (localStreamRef.current) {
             localStreamRef.current.getTracks().forEach(track => track.stop());
+            localStreamRef.current = null;
         }
         if (videoRef.current) {
             videoRef.current.srcObject = null;
