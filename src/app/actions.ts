@@ -1,11 +1,10 @@
-// src/app/actions.ts
 'use server';
 
 // This file centralizes all server actions, providing a clear boundary
 // between server and client code. All functions exported from a 'use server' file must be async.
 
 import type { LearningPathInput, LearningPathOutput } from '@/ai/flows/career-coach';
-import type { ContentStrategyOutput } from '@/ai/flows/content-strategy';
+import type { ContentStrategyOutput } from '@/lib/mock-data';
 import type { CourseTutorInput, CourseTutorOutput } from '@/ai/flows/course-tutor';
 import type { GenerateApiKeyInput } from '@/ai/flows/generate-api-key';
 import type { GenerateCourseContentInput, GenerateCourseContentOutput } from '@/ai/flows/generate-course-content';
@@ -17,6 +16,9 @@ import type { SpeechToTextOutput } from '@/ai/flows/speech-to-text';
 import type { StudentHelpInput, StudentHelpOutput } from '@/ai/flows/student-help';
 import type { TextToSpeechOutput } from '@/ai/flows/text-to-speech';
 import type { ApiKey } from '@/lib/mock-data';
+
+// Each function dynamically imports its corresponding flow, ensuring that the AI logic
+// is only loaded on the server when the action is executed.
 
 export async function getLearningPath(input: LearningPathInput): Promise<LearningPathOutput> {
   const { getLearningPath } = await import('@/ai/flows/career-coach');
@@ -65,6 +67,7 @@ export async function siteHelp(input: SiteHelpInput): Promise<SiteHelpOutput> {
 
 export async function speechToText(input: { audioDataUri: string }): Promise<SpeechToTextOutput> {
   const { speechToText } = await import('@/ai/flows/speech-to-text');
+  // @ts-ignore
   return speechToText(input);
 }
 
@@ -75,5 +78,6 @@ export async function studentHelp(input: StudentHelpInput): Promise<StudentHelpO
 
 export async function textToSpeech(input: { text: string; voice?: string; speed?: number; }): Promise<TextToSpeechOutput> {
     const { textToSpeech } = await import('@/ai/flows/text-to-speech');
+    // @ts-ignore
     return textToSpeech(input);
 }

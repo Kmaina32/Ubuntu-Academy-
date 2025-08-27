@@ -300,5 +300,3 @@ export default function DeveloperPage() {
     </SidebarProvider>
   );
 }
-
-
