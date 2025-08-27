@@ -8,26 +8,41 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, Video, VideoOff } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-import { updateLiveSession, getLiveSession } from '@/lib/firebase-service';
+import { db } from '@/lib/firebase';
+import { ref, onValue, set, remove, onChildAdded, get } from 'firebase/database';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+
+const ICE_SERVERS = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+    ],
+};
 
 export default function AdminLivePage() {
     const { toast } = useToast();
     const [isLive, setIsLive] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
-    const streamRef = useRef<MediaStream | null>(null);
+    const localStreamRef = useRef<MediaStream | null>(null);
+    const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
+
+    const offerRef = ref(db, 'webrtc-offers/live-session');
+    const answersRef = ref(db, 'webrtc-answers/live-session');
+    const adminIceCandidatesRef = ref(db, 'webrtc-candidates/live-session/admin');
+    const studentIceCandidatesRef = ref(db, 'webrtc-candidates/live-session/student');
+
 
     useEffect(() => {
-        const fetchSessionStatus = async () => {
-            const session = await getLiveSession();
-            setIsLive(session?.isActive || false);
-            setIsLoading(false);
+        // Cleanup on component unmount
+        return () => {
+            if(isLive) {
+                handleStopLive();
+            }
         };
-        fetchSessionStatus();
-    }, []);
-
+    }, [isLive]);
+    
     const getCameraPermission = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -35,7 +50,7 @@ export default function AdminLivePage() {
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
             }
-            streamRef.current = stream;
+            localStreamRef.current = stream;
             return stream;
         } catch (error) {
             console.error('Error accessing camera:', error);
@@ -49,35 +64,90 @@ export default function AdminLivePage() {
         }
     };
 
+
     const handleGoLive = async () => {
         setIsLoading(true);
         const stream = await getCameraPermission();
-        if (stream) {
-            // In a real app, you would set up WebRTC here and send the stream data.
-            // For this demo, we'll just mark the session as active.
-            await updateLiveSession({
-                isActive: true,
-                streamData: "simulated_stream_data", // Placeholder
-                startedAt: new Date().toISOString()
-            });
-            setIsLive(true);
-            toast({ title: 'You are now live!', description: 'Your video stream has started.' });
+        if (!stream) {
+            setIsLoading(false);
+            return;
         }
+
+        const peerConnection = new RTCPeerConnection(ICE_SERVERS);
+
+        // This single "master" peer connection is used to generate the offer.
+        // We will create individual connections for each student later.
+        peerConnection.onicecandidate = async (event) => {
+            if (event.candidate) {
+                await set(ref(db, `webrtc-candidates/live-session/admin/${event.candidate.sdpMid}_${event.candidate.sdpMLineIndex}`), event.candidate.toJSON());
+            }
+        };
+
+        stream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, stream);
+        });
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        
+        await set(offerRef, { sdp: offer.sdp, type: offer.type });
+        setIsLive(true);
         setIsLoading(false);
+        toast({ title: 'You are now live!', description: 'Your video stream has started. Waiting for students to join.' });
+
+        // Listen for answers from students
+        onChildAdded(answersRef, async (snapshot) => {
+            const studentId = snapshot.key;
+            if (!studentId) return;
+
+            const studentAnswer = snapshot.val();
+            toast({ title: 'Student Joined', description: `A new student has connected to the stream.` });
+            
+            // Create a new peer connection for this specific student
+            const newPeerConnection = new RTCPeerConnection(ICE_SERVERS);
+            peerConnectionsRef.current.set(studentId, newPeerConnection);
+
+            localStreamRef.current?.getTracks().forEach(track => {
+                newPeerConnection.addTrack(track, localStreamRef.current!);
+            });
+
+            newPeerConnection.onicecandidate = event => {
+                if (event.candidate) {
+                    set(ref(db, `webrtc-candidates/live-session/admin/${studentId}/${event.candidate.sdpMid}_${event.candidate.sdpMLineIndex}`), event.candidate.toJSON());
+                }
+            };
+            
+            await newPeerConnection.setRemoteDescription(new RTCSessionDescription(studentAnswer));
+
+             // Listen for ICE candidates from this specific student
+            onChildAdded(ref(db, `webrtc-candidates/live-session/student/${studentId}`), (candidateSnapshot) => {
+                const candidate = candidateSnapshot.val();
+                newPeerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+            });
+        });
     };
 
     const handleStopLive = async () => {
         setIsLoading(true);
-        await updateLiveSession({ isActive: false, streamData: "" });
-        setIsLive(false);
+        
+        peerConnectionsRef.current.forEach(pc => pc.close());
+        peerConnectionsRef.current.clear();
 
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
+        if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach(track => track.stop());
         }
         if (videoRef.current) {
             videoRef.current.srcObject = null;
         }
-        
+
+        await Promise.all([
+            remove(offerRef),
+            remove(answersRef),
+            remove(adminIceCandidatesRef),
+            remove(studentIceCandidatesRef)
+        ]);
+
+        setIsLive(false);
         toast({ title: 'Stream Ended', description: 'You have stopped the live session.' });
         setIsLoading(false);
     };
