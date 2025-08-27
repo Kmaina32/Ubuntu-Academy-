@@ -11,7 +11,7 @@
  * - GenerateCourseContentOutput - The return type for the generateCourseContentOutput function.
  */
 
-import {ai} from '@/ai/genkit';
+import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
 

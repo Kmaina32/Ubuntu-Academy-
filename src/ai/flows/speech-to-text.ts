@@ -6,7 +6,7 @@
  * - speechToText - A function that transcribes audio into text.
  */
 
-import {ai} from '@/ai/genkit';
+import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
 
 const SpeechToTextInputSchema = z.object({

@@ -10,7 +10,7 @@
  * - GradeShortAnswerExamOutput - The return type for the gradeShortAnswerExam function.
  */
 
-import {ai} from '@/ai/genkit';
+import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
 
 const GradeShortAnswerExamInputSchema = z.object({

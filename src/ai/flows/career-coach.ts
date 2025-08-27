@@ -9,7 +9,7 @@
  * - LearningPathOutput - The return type for the getLearningPath function.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai } from '@/ai/genkit-instance';
 import { z } from 'zod';
 import { listCoursesTool } from '../tools/course-catalog';
 import { googleAI } from '@genkit-ai/googleai';

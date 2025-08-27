@@ -6,7 +6,7 @@
  * - listCoursesTool - A tool that fetches all available courses.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai } from '@/ai/genkit-instance';
 import { getAllCourses } from '@/lib/firebase-service';
 import { z } from 'zod';
 

@@ -6,7 +6,7 @@
  * - textToSpeech - A function that converts a string of text into an audio data URI.
  */
 
-import {ai} from '@/ai/genkit';
+import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
 import wav from 'wav';
 import {googleAI} from '@genkit-ai/googleai';

@@ -1,16 +1,12 @@
-import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/googleai';
+// This is a "safe" entry point for Genkit that can be imported by client components.
+// It should not initialize any plugins that have server-side dependencies.
 
-const plugins = [];
+// We export the type and a flag to check if AI features are configured.
+// The actual AI instance is created in a separate, server-only file.
 
-if (process.env.GEMINI_API_KEY) {
-    plugins.push(googleAI());
-} else {
-    console.warn("GEMINI_API_KEY is not set. Genkit Google AI plugin will be disabled.");
-}
+import { genkit } from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
 
-export const ai = genkit({
-  plugins,
-});
+export const isConfigured = !!process.env.GEMINI_API_KEY;
 
-export const isConfigured = plugins.length > 0;
+export type AI = ReturnType<typeof genkit<any>>;

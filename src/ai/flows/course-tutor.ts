@@ -9,7 +9,7 @@
  * - CourseTutorOutput - The return type for the courseTutor function.
  */
 
-import {ai} from '@/ai/genkit';
+import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
 import { textToSpeech } from './text-to-speech';
 
