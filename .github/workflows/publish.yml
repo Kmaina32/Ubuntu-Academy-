@@ -25,7 +25,7 @@ jobs:
       
       - name: Sanitize repository name
         id: sanitize
-        run: echo "repo_name=$(echo ${{ github.repository }} | sed 's/-$//' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+        run: echo "repo_name=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]' | sed 's/-$//')" >> $GITHUB_OUTPUT
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
