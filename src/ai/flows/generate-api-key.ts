@@ -7,11 +7,11 @@
  * - generateApiKey - Creates a new API key for a user.
  */
 
-import { ai } from '@/ai/genkit';
-import { z } from 'zod';
 import { createApiKey } from '@/lib/firebase-service';
 import type { ApiKey } from '@/lib/mock-data';
 import { randomBytes } from 'crypto';
+import { z } from 'zod';
+
 
 const GenerateApiKeyInputSchema = z.object({
   userId: z.string().describe('The UID of the user requesting the key.'),
@@ -19,27 +19,11 @@ const GenerateApiKeyInputSchema = z.object({
 });
 export type GenerateApiKeyInput = z.infer<typeof GenerateApiKeyInputSchema>;
 
-const GenerateApiKeyOutputSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    key: z.string(),
-    createdAt: z.string(),
-});
-
 export async function generateApiKey(
     input: GenerateApiKeyInput
 ): Promise<ApiKey> {
-  return generateApiKeyFlow(input);
-}
-
-
-const generateApiKeyFlow = ai.defineFlow(
-  {
-    name: 'generateApiKeyFlow',
-    inputSchema: GenerateApiKeyInputSchema,
-    outputSchema: GenerateApiKeyOutputSchema,
-  },
-  async ({ userId, keyName }) => {
+    const { userId, keyName } = GenerateApiKeyInputSchema.parse(input);
+    
     // Generate a secure, random string for the key
     const key = `sk_live_${randomBytes(24).toString('hex')}`;
     
@@ -57,5 +41,4 @@ const generateApiKeyFlow = ai.defineFlow(
         ...newKeyData,
         id: keyId,
     };
-  }
-);
+}

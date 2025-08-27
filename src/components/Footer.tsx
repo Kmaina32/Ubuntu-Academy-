@@ -1,4 +1,6 @@
 
+'use client';
+
 import Link from 'next/link';
 import { Gem, Twitter, Facebook, Linkedin } from 'lucide-react';
 import { Button } from './ui/button';
