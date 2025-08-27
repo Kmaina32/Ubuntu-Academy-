@@ -21,7 +21,13 @@
     "users": {
       "$uid": {
         ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true",
-        ".write": "$uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true"
+        ".write": "$uid === auth.uid",
+        "isAdmin": {
+           ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+        },
+        "adminExpiresAt": {
+             ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+        }
       },
       ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
@@ -96,6 +102,3 @@
     }
   }
 }
-
-
-

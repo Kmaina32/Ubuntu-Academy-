@@ -7,8 +7,8 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { getAllUsers, RegisteredUser, deleteUser } from '@/lib/firebase-service';
-import { ArrowLeft, Loader2, Trash2, User as UserIcon, Users2 } from "lucide-react";
+import { getAllUsers, RegisteredUser, deleteUser, saveUser } from '@/lib/firebase-service';
+import { ArrowLeft, Loader2, Trash2, Users2, ShieldCheck, ShieldOff } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
 import { CohortManager } from '@/components/CohortManager';
+import { AdminAccessManager } from '@/components/AdminAccessManager';
 
 
 export default function AdminUsersPage() {
@@ -30,6 +31,7 @@ export default function AdminUsersPage() {
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [selectedUser, setSelectedUser] = useState<RegisteredUser | null>(null);
   const [isCohortModalOpen, setIsCohortModalOpen] = useState(false);
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const { toast } = useToast();
 
   const fetchUsers = async () => {
@@ -64,12 +66,25 @@ export default function AdminUsersPage() {
       setSelectedUser(user);
       setIsCohortModalOpen(true);
   }
+  
+  const handleOpenAdminManager = (user: RegisteredUser) => {
+      setSelectedUser(user);
+      setIsAdminModalOpen(true);
+  }
 
-  const handleCohortUpdate = () => {
-    fetchUsers(); // Re-fetch users to show updated cohort
+  const handleModalSuccess = () => {
+    fetchUsers(); // Re-fetch users to show updated data
     setIsCohortModalOpen(false);
+    setIsAdminModalOpen(false);
     setSelectedUser(null);
   }
+
+  const handleModalClose = () => {
+      setIsCohortModalOpen(false);
+      setIsAdminModalOpen(false);
+      setSelectedUser(null);
+  }
+
 
   return (
     <>
@@ -97,7 +112,7 @@ export default function AdminUsersPage() {
                                     <TableRow>
                                     <TableHead>Name</TableHead>
                                     <TableHead>Email</TableHead>
-                                    <TableHead>Cohort</TableHead>
+                                    <TableHead>Status</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -108,15 +123,17 @@ export default function AdminUsersPage() {
                                         <TableCell className="font-medium">{user.displayName}</TableCell>
                                         <TableCell>{user.email}</TableCell>
                                         <TableCell>
-                                            {user.cohort ? (
-                                                <Badge variant="secondary">{user.cohort}</Badge>
-                                            ) : (
-                                                <span className="text-muted-foreground text-xs">N/A</span>
-                                            )}
+                                            <div className="flex flex-col items-start gap-1">
+                                                {user.cohort && <Badge variant="secondary">{user.cohort}</Badge>}
+                                                {user.isAdmin && <Badge variant="destructive" className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">Admin</Badge>}
+                                            </div>
                                         </TableCell>
                                         <TableCell className="text-right">
                                         <Button variant="ghost" size="icon" className="mr-2" title="Manage Cohort" onClick={() => handleOpenCohortManager(user)}>
                                             <Users2 className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" className="mr-2" title="Manage Admin Access" onClick={() => handleOpenAdminManager(user)}>
+                                            <ShieldCheck className="h-4 w-4" />
                                         </Button>
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
@@ -158,12 +175,20 @@ export default function AdminUsersPage() {
         </div>
         
         {selectedUser && (
-            <CohortManager
-                user={selectedUser}
-                isOpen={isCohortModalOpen}
-                onClose={() => setIsCohortModalOpen(false)}
-                onSuccess={handleCohortUpdate}
-            />
+            <>
+                <CohortManager
+                    user={selectedUser}
+                    isOpen={isCohortModalOpen}
+                    onClose={handleModalClose}
+                    onSuccess={handleModalSuccess}
+                />
+                 <AdminAccessManager
+                    user={selectedUser}
+                    isOpen={isAdminModalOpen}
+                    onClose={handleModalClose}
+                    onSuccess={handleModalSuccess}
+                />
+            </>
         )}
     </>
   );

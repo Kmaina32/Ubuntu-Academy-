@@ -87,7 +87,7 @@ export default function DashboardPage() {
             </div>
             
             {/* Summary Cards */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 mb-8">
+            <div className="grid gap-6 sm:grid-cols-2 mb-8">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Courses in Progress</CardTitle>

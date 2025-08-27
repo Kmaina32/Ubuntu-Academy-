@@ -177,8 +177,7 @@ export default function ProfilePage() {
         });
 
         // Update the user record in the Realtime Database
-        await saveUser({
-            uid: user.uid,
+        await saveUser(user.uid, {
             email: user.email,
             displayName: newDisplayName
         });
@@ -232,7 +231,7 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden"/>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                        <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
                             <Upload className="mr-2 h-4 w-4" />
                             Upload Image
@@ -278,7 +277,7 @@ export default function ProfilePage() {
                                 <Label htmlFor='email'>Email Address</Label>
                                 <Input id='email' value={user.email || ''} readOnly disabled />
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                                 <FormField
                                 control={form.control}
                                 name="firstName"

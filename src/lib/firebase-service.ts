@@ -17,6 +17,8 @@ export interface RegisteredUser {
     purchasedCourses?: Record<string, Omit<UserCourse, 'courseId'>>;
     plan?: 'free' | 'basic' | 'pro';
     apiCallCount?: number;
+    isAdmin?: boolean;
+    adminExpiresAt?: string | null;
 }
 
 export interface HeroData {
@@ -100,19 +102,10 @@ export async function deleteCourse(courseId: string): Promise<void> {
 
 
 // User Functions
-export async function saveUser(uid: string, userData: Omit<RegisteredUser, 'uid'>): Promise<void> {
+export async function saveUser(uid: string, userData: Partial<Omit<RegisteredUser, 'uid'>>): Promise<void> {
     const userRef = ref(db, `users/${uid}`);
-    // We only want to store non-sensitive, profile-related info
-    const dataToSave = {
-        email: userData.email,
-        displayName: userData.displayName,
-        createdAt: userData.createdAt,
-        cohort: userData.cohort || null,
-        purchasedCourses: userData.purchasedCourses || {},
-        plan: userData.plan || 'free',
-        apiCallCount: userData.apiCallCount || 0,
-    };
-    await set(userRef, dataToSave);
+    // Use update to avoid overwriting existing data when only partial data is provided
+    await update(userRef, userData);
 }
 
 export async function getUserById(uid: string): Promise<RegisteredUser | null> {

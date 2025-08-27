@@ -11,11 +11,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { AlertTriangle, Home, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-
-const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
+import { useEffect, useState } from 'react';
+import { getUserById } from '@/lib/firebase-service';
 
 function AdminAccessDenied() {
-    const router = useRouter();
     return (
         <div className="flex flex-col min-h-screen">
              <main className="flex-grow flex items-center justify-center bg-secondary/50">
@@ -42,17 +41,48 @@ function AdminAccessDenied() {
     )
 }
 
-
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const router = useRouter();
   const { user, loading } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingAdmin, setCheckingAdmin] = useState(true);
 
-  if (loading) {
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (user) {
+        const userProfile = await getUserById(user.uid);
+        if (userProfile?.isAdmin) {
+            // Check for expiration
+            if (userProfile.adminExpiresAt) {
+                const expirationDate = new Date(userProfile.adminExpiresAt);
+                if (expirationDate > new Date()) {
+                    setIsAdmin(true);
+                } else {
+                    setIsAdmin(false);
+                }
+            } else {
+                // Permanent admin
+                setIsAdmin(true);
+            }
+        } else {
+          setIsAdmin(false);
+        }
+      } else {
+          setIsAdmin(false);
+      }
+      setCheckingAdmin(false);
+    };
+
+    if (!loading) {
+      checkAdminStatus();
+    }
+  }, [user, loading]);
+  
+
+  if (loading || checkingAdmin) {
      return (
         <div className="flex h-screen items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin" />
@@ -61,11 +91,11 @@ export default function AdminLayout({
      )
   }
 
-  if (!user || user.uid !== ADMIN_UID) {
+  if (!isAdmin) {
       return <AdminAccessDenied />;
   }
 
-  // If we are here, user is the admin.
+  // If we are here, user is an admin.
   return (
     <SidebarProvider>
         <AdminSidebar />
