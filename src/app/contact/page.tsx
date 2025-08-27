@@ -35,7 +35,7 @@ export default function ContactPage() {
                         </div>
                         <div>
                             <h3 className="font-semibold">Our Office</h3>
-                            <p className="text-muted-foreground">123 Mama Ngina Street, Nairobi, Kenya</p>
+                            <p className="text-muted-foreground">Runda Mall Nairobi along Kiambu Road</p>
                         </div>
                     </div>
                      <div className="flex items-start gap-4">
@@ -44,7 +44,7 @@ export default function ContactPage() {
                         </div>
                         <div>
                             <h3 className="font-semibold">Email Us</h3>
-                            <p className="text-muted-foreground">For support or inquiries, email us at <a href="mailto:support@mkenyaskilled.com" className="text-primary underline">support@mkenyaskilled.com</a>.</p>
+                            <p className="text-muted-foreground">For support or inquiries, email us at <a href="mailto:info@skillset.com" className="text-primary underline">info@skillset.com</a>.</p>
                         </div>
                     </div>
                      <div className="flex items-start gap-4">
@@ -53,7 +53,7 @@ export default function ContactPage() {
                         </div>
                         <div>
                             <h3 className="font-semibold">Call Us</h3>
-                            <p className="text-muted-foreground">Reach our support team Mon-Fri, 9am-5pm at +254 712 345 678.</p>
+                            <p className="text-muted-foreground">Reach our support team Mon-Fri, 9am-5pm at 0747079034.</p>
                         </div>
                     </div>
                      <Separator />
