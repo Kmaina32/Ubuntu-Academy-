@@ -24,7 +24,7 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { RegisteredUser, saveUser, getUserById } from '@/lib/firebase-service';
-import { ref, onValue, onDisconnect, set, serverTimestamp } from 'firebase/database';
+import { ref, onValue, onDisconnect, set, serverTimestamp, update } from 'firebase/database';
 import { useToast } from './use-toast';
 
 const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
@@ -67,13 +67,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     // Set up Firebase Realtime Database presence
     const userStatusRef = ref(db, `/users/${user.uid}`);
-    const isOnlineRef = ref(db, `/users/${user.uid}/isOnline`);
-    const lastSeenRef = ref(db, `/users/${user.uid}/lastSeen`);
-
+    
     const connectedRef = ref(db, '.info/connected');
-    onValue(connectedRef, (snap) => {
+    const unsubscribePresence = onValue(connectedRef, (snap) => {
       if (snap.val() === true) {
-        set(isOnlineRef, true);
+        update(userStatusRef, { isOnline: true });
+        
         onDisconnect(userStatusRef).update({
           isOnline: false,
           lastSeen: serverTimestamp(),
@@ -109,9 +108,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Cleanup the listener when the user changes or component unmounts
     return () => {
       unsubscribeAdminCheck();
+      unsubscribePresence();
       // On manual logout, set offline status
-      set(userStatusRef, { 
-          ...user,
+      update(userStatusRef, { 
           isOnline: false, 
           lastSeen: serverTimestamp() 
       });
