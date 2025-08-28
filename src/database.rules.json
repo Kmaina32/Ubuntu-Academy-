@@ -20,7 +20,7 @@
     },
     "users": {
       "$uid": {
-        ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true",
+        ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || root.child('users').child($uid).child('portfolio').child('public').val() === true",
         ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
       },
       ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
@@ -123,6 +123,20 @@
             ".read": "auth != null",
             ".write": "auth != null"
         }
+    },
+    "reviews": {
+        ".read": true,
+        "$courseId": {
+            ".write": "auth != null"
+        }
+    },
+    "projects": {
+       ".read": true,
+       "$courseId": {
+           "$userId": {
+               ".write": "auth != null && auth.uid === $userId"
+           }
+       }
     }
   }
 }

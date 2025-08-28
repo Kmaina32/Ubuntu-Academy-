@@ -101,7 +101,6 @@ export interface Bundle {
   imageUrl: string;
 }
 
-
 export const user = {
     name: 'Jomo Kenyatta',
     purchasedCourses: [
@@ -189,6 +188,44 @@ export interface ApiKey {
     userId: string;
 }
 
+export interface Portfolio {
+    summary?: string;
+    socialLinks?: {
+        github?: string;
+        linkedin?: string;
+        twitter?: string;
+    };
+}
+
+export interface LearningGoal {
+    id: string;
+    text: string;
+    completed: boolean;
+    createdAt: string;
+}
+
+export interface Review {
+    id: string;
+    userId: string;
+    userName: string;
+    userAvatar: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+}
+
+export interface Project {
+    id: string;
+    userId: string;
+    userName: string;
+    userAvatar: string;
+    title: string;
+    description: string;
+    projectUrl: string;
+    imageUrl: string;
+    createdAt: string;
+}
+
 export interface RegisteredUser {
     uid: string;
     email: string | null;
@@ -202,4 +239,6 @@ export interface RegisteredUser {
     adminExpiresAt?: string | null;
     isOnline?: boolean;
     lastSeen?: string | number;
+    portfolio?: Portfolio;
+    learningGoals?: Record<string, LearningGoal>;
 }

@@ -3,7 +3,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey } from './mock-data';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Review, Project, LearningGoal } from './mock-data';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -556,4 +556,45 @@ export async function logApiCall(userId: string, endpoint: string): Promise<void
         endpoint,
         timestamp: new Date().toISOString(),
     });
+}
+
+// Student social features
+export async function getReviewsForCourse(courseId: string): Promise<Review[]> {
+    const reviewsRef = query(ref(db, `reviews/${courseId}`), orderByChild('createdAt'));
+    const snapshot = await get(reviewsRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        const reviews = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        return reviews.reverse();
+    }
+    return [];
+}
+
+export async function createReview(courseId: string, reviewData: Omit<Review, 'id'>): Promise<string> {
+    const reviewRef = ref(db, `reviews/${courseId}`);
+    const newReviewRef = push(reviewRef);
+    await set(newReviewRef, reviewData);
+    return newReviewRef.key!;
+}
+
+export async function getProjectsForCourse(courseId: string): Promise<Project[]> {
+    const projectsRef = ref(db, `projects/${courseId}`);
+    const snapshot = await get(projectsRef);
+     if (snapshot.exists()) {
+        const data = snapshot.val();
+        return Object.keys(data).map(key => ({ id: key, ...data[key] }));
+    }
+    return [];
+}
+
+export async function createProject(courseId: string, userId: string, projectData: Omit<Project, 'id'>): Promise<string> {
+    const projectRef = ref(db, `projects/${courseId}/${userId}`);
+    const newProjectRef = push(projectRef);
+    await set(newProjectRef, projectData);
+    return newProjectRef.key!;
+}
+
+export async function saveLearningGoals(userId: string, goals: Record<string, LearningGoal>): Promise<void> {
+    const goalsRef = ref(db, `users/${userId}/learningGoals`);
+    await set(goalsRef, goals);
 }

@@ -1,15 +1,17 @@
 
+
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, User as UserIcon, Camera, Upload } from 'lucide-react';
+import { ArrowLeft, Loader2, User as UserIcon, Camera, Upload, Eye } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -321,6 +323,14 @@ export default function ProfilePage() {
                                     />
                              </div>
                              <p className="text-xs text-muted-foreground pt-2">Please ensure this is your full, correct name as it will be used on your certificates.</p>
+                              <div className="mt-6">
+                                <Button asChild variant="outline" className="w-full">
+                                    <Link href={`/portfolio/${user.uid}`}>
+                                        <Eye className="mr-2 h-4 w-4" />
+                                        View My Public Portfolio
+                                    </Link>
+                                </Button>
+                             </div>
                              <CardFooter className="flex justify-between px-0 pt-6">
                                 <Button variant="outline" onClick={handleLogout}>Logout</Button>
                                 <Button type="submit" disabled={isLoading}>
