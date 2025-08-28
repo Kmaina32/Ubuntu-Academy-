@@ -196,14 +196,16 @@ export default function ExamPage() {
                                                     onValueChange={(val) => field.onChange(parseInt(val, 10))}
                                                     className="flex flex-col space-y-2"
                                                 >
-                                                    {question.options.map((option, optionIndex) => (
+                                                    {question.options && Array.isArray(question.options) ? (
+                                                        question.options.map((option, optionIndex) => (
                                                         <FormItem key={optionIndex} className="flex items-center space-x-3 space-y-0">
                                                             <FormControl>
                                                                 <RadioGroupItem value={String(optionIndex)} />
                                                             </FormControl>
                                                             <FormLabel className="font-normal">{option}</FormLabel>
                                                         </FormItem>
-                                                    ))}
+                                                    ))
+                                                    ) : <p className="text-destructive text-sm">This question is missing its options.</p>}
                                                 </RadioGroup>
                                             </FormControl>
                                              <FormMessage />
@@ -248,3 +250,4 @@ export default function ExamPage() {
     </SidebarProvider>
   );
 }
+
