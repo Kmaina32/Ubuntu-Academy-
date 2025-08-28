@@ -46,14 +46,14 @@ export default function StudentLivePage() {
 
         const unsubscribe = onValue(offerRef, async (snapshot) => {
             if (snapshot.exists()) {
+                 // Prevent re-initializing if connection already exists and is stable
+                if (peerConnectionRef.current && peerConnectionRef.current.connectionState !== 'closed') {
+                    return;
+                }
                 const sessionData = snapshot.val();
                 setLiveSessionDetails(sessionData);
                 setIsLive(true);
                 setIsLoading(false);
-                
-                if (peerConnectionRef.current) {
-                    peerConnectionRef.current.close();
-                }
                 
                 const offerDescription = sessionData;
                 const pc = new RTCPeerConnection(ICE_SERVERS);
@@ -83,7 +83,11 @@ export default function StudentLivePage() {
                 onChildAdded(ref(db, `webrtc-candidates/live-session/admin/${user.uid}`), (candidateSnapshot) => {
                     const candidate = candidateSnapshot.val();
                     if(candidate) {
-                        pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(e => console.error("Error adding ICE candidate:", e));
+                       try {
+                           pc.addIceCandidate(new RTCIceCandidate(candidate));
+                       } catch (e) {
+                           console.error("Error adding ICE candidate:", e);
+                       }
                     }
                 });
 
