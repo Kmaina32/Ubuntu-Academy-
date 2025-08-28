@@ -29,7 +29,7 @@ interface LiveChatProps {
 const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
     const names = name.split(' ');
-    return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}` : names[0]?.[0] || 'U';
+    return names.length > 1 ? `${'names[0][0]'}${names[names.length - 1][0]}` : names[0]?.[0] || 'U';
 };
 
 export function LiveChat({ sessionId }: LiveChatProps) {
