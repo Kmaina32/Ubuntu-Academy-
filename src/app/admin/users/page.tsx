@@ -24,6 +24,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { CohortManager } from '@/components/CohortManager';
 import { AdminAccessManager } from '@/components/AdminAccessManager';
+import { formatDistanceToNowStrict } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 
 export default function AdminUsersPage() {
@@ -120,7 +122,20 @@ export default function AdminUsersPage() {
                                     {users.length > 0 ? (
                                     users.map((user) => (
                                     <TableRow key={user.uid}>
-                                        <TableCell className="font-medium">{user.displayName}</TableCell>
+                                        <TableCell className="font-medium">
+                                          <div className="flex items-center gap-2">
+                                            <span className={cn(
+                                                "h-2 w-2 rounded-full",
+                                                user.isOnline ? "bg-green-500" : "bg-gray-400"
+                                            )}></span>
+                                            <span>{user.displayName}</span>
+                                          </div>
+                                           {!user.isOnline && user.lastSeen && (
+                                              <p className="text-xs text-muted-foreground pl-4">
+                                                Last seen {formatDistanceToNowStrict(new Date(user.lastSeen), { addSuffix: true })}
+                                              </p>
+                                            )}
+                                        </TableCell>
                                         <TableCell>{user.email}</TableCell>
                                         <TableCell>
                                             <div className="flex flex-col items-start gap-1">

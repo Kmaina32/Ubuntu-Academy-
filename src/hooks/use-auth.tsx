@@ -24,7 +24,7 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { RegisteredUser, saveUser, getUserById } from '@/lib/firebase-service';
-import { ref, onValue } from 'firebase/database';
+import { ref, onValue, onDisconnect, set, serverTimestamp } from 'firebase/database';
 
 const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
 
@@ -63,9 +63,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
     }
     
+    // Set up Firebase Realtime Database presence
+    const userStatusRef = ref(db, `/users/${user.uid}`);
+    const isOnlineRef = ref(db, `/users/${user.uid}/isOnline`);
+    const lastSeenRef = ref(db, `/users/${user.uid}/lastSeen`);
+
+    const connectedRef = ref(db, '.info/connected');
+    onValue(connectedRef, (snap) => {
+      if (snap.val() === true) {
+        set(isOnlineRef, true);
+        onDisconnect(userStatusRef).update({
+          isOnline: false,
+          lastSeen: serverTimestamp(),
+        });
+      }
+    });
+
     // Listen for real-time changes to the user's record in the database
     const userRef = ref(db, `users/${user.uid}`);
-    const unsubscribe = onValue(userRef, (snapshot) => {
+    const unsubscribeAdminCheck = onValue(userRef, (snapshot) => {
         if (user.uid === ADMIN_UID) {
             setIsAdmin(true);
             return;
@@ -89,7 +105,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     // Cleanup the listener when the user changes or component unmounts
-    return () => unsubscribe();
+    return () => {
+      unsubscribeAdminCheck();
+      // On manual logout, set offline status
+      set(userStatusRef, { 
+          ...user,
+          isOnline: false, 
+          lastSeen: serverTimestamp() 
+      });
+    };
 
   }, [user]);
 

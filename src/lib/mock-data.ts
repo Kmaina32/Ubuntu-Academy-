@@ -200,4 +200,6 @@ export interface RegisteredUser {
     apiCallCount?: number;
     isAdmin?: boolean;
     adminExpiresAt?: string | null;
+    isOnline?: boolean;
+    lastSeen?: string | number;
 }
