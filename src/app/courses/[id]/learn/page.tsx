@@ -599,9 +599,28 @@ function NotesSheet({ course }: { course: Course }) {
 function LessonContent({ lesson, onComplete }: { lesson: Lesson | null; onComplete: () => void }) {
   const [currentPage, setCurrentPage] = useState(0);
 
-  const paragraphs = useMemo(() => {
+  const pages = useMemo(() => {
     if (!lesson?.content) return [];
-    return lesson.content.split('\n').filter(p => p.trim() !== '');
+    
+    // Split by newlines first
+    const paragraphs = lesson.content.split('\n').filter(p => p.trim() !== '');
+    
+    // Then split long paragraphs by word count
+    const MAX_WORDS_PER_PAGE = 50;
+    const finalPages: string[] = [];
+
+    paragraphs.forEach(paragraph => {
+      const words = paragraph.split(' ');
+      if (words.length <= MAX_WORDS_PER_PAGE) {
+        finalPages.push(paragraph);
+      } else {
+        for (let i = 0; i < words.length; i += MAX_WORDS_PER_PAGE) {
+          finalPages.push(words.slice(i, i + MAX_WORDS_PER_PAGE).join(' '));
+        }
+      }
+    });
+
+    return finalPages;
   }, [lesson]);
 
   useEffect(() => {
@@ -611,8 +630,8 @@ function LessonContent({ lesson, onComplete }: { lesson: Lesson | null; onComple
 
   if (!lesson) return null;
 
-  const totalPages = paragraphs.length;
-  const isLastPage = currentPage === totalPages - 1;
+  const totalPages = pages.length;
+  const isLastPage = totalPages === 0 || currentPage === totalPages - 1;
 
   return (
     <div>
@@ -635,22 +654,24 @@ function LessonContent({ lesson, onComplete }: { lesson: Lesson | null; onComple
       </div>
 
       <div className="prose max-w-none text-foreground/90 mb-6">
-        <p>{paragraphs[currentPage]}</p>
+        <p>{totalPages > 0 ? pages[currentPage] : lesson.content}</p>
       </div>
 
-      <div className="flex justify-between items-center mt-6">
-        <Button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 0} variant="outline">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Previous
-        </Button>
-        {totalPages > 1 && (
-            <span className="text-sm text-muted-foreground">
-                Page {currentPage + 1} of {totalPages}
-            </span>
-        )}
-        <Button onClick={() => setCurrentPage(p => p + 1)} disabled={isLastPage} variant="outline">
-          Next <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </div>
+       {totalPages > 0 && (
+         <div className="flex justify-between items-center mt-6">
+            <Button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 0} variant="outline">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+            </Button>
+            {totalPages > 1 && (
+                <span className="text-sm text-muted-foreground">
+                    Page {currentPage + 1} of {totalPages}
+                </span>
+            )}
+            <Button onClick={() => setCurrentPage(p => p + 1)} disabled={isLastPage} variant="outline">
+            Next <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+        </div>
+       )}
 
       {isLastPage && (
         <Button size="lg" className="bg-accent hover:bg-accent/90 mt-8 w-full" onClick={onComplete}>
