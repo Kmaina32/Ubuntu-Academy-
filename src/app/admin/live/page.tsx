@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Video, VideoOff } from 'lucide-react';
+import { ArrowLeft, Loader2, Video, VideoOff, PhoneOff } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
@@ -117,6 +117,8 @@ export default function AdminLivePage() {
 
         if (values.target === 'cohort' && values.cohort) {
             notificationPayload.cohort = values.cohort;
+        } else {
+             delete notificationPayload.cohort;
         }
 
         await createNotification(notificationPayload);
@@ -210,7 +212,16 @@ export default function AdminLivePage() {
                                 <CardContent className="space-y-6">
                                     <div className="aspect-video bg-muted rounded-lg flex items-center justify-center relative">
                                         <video ref={videoRef} className="w-full h-full rounded-lg" autoPlay muted playsInline />
-                                        {isLive && <LiveChat sessionId="live-session" />}
+                                        {isLive && (
+                                            <>
+                                                <LiveChat sessionId="live-session" />
+                                                <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20">
+                                                    <Button size="icon" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="rounded-full h-12 w-12 shadow-lg">
+                                                        {isLoading ? <Loader2 className="h-6 w-6 animate-spin"/> : <PhoneOff className="h-6 w-6" />}
+                                                    </Button>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                     
                                     {hasCameraPermission === false && (
@@ -225,12 +236,7 @@ export default function AdminLivePage() {
                             </Card>
                         </div>
                         <div className="lg:col-span-1">
-                             {isLive ? (
-                                <Button size="lg" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="w-full">
-                                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <VideoOff className="mr-2 h-4 w-4" />}
-                                    Stop Live Session
-                                </Button>
-                            ) : (
+                             {!isLive && (
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Start a New Session</CardTitle>
