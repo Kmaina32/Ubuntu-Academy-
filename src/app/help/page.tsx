@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Header } from "@/components/Header";
-import { HelpCircle, Loader2, Send, UserCircle, Bot, BookQuestion } from "lucide-react";
+import { HelpCircle, Loader2, Send, UserCircle, Bot, BookText } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
@@ -186,7 +186,7 @@ export default function HelpPage() {
                        <Tabs defaultValue="faq" className="w-full">
                           <TabsList className="grid w-full grid-cols-2">
                             <TabsTrigger value="faq">
-                                <BookQuestion className="mr-2 h-4 w-4" />
+                                <BookText className="mr-2 h-4 w-4" />
                                 FAQ
                             </TabsTrigger>
                             <TabsTrigger value="ai-assistant">
