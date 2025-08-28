@@ -2,14 +2,14 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Course, Lesson, Module, TutorMessage } from '@/lib/mock-data';
 import { getCourseById, updateUserCourseProgress, getUserCourses, saveTutorHistory, getTutorHistory, getTutorSettings, TutorSettings, getUserNotes, saveUserNotes } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit, FileText, Sparkles, Pencil, VolumeX, Link as LinkIcon, Notebook as NotebookIcon, Download, Gem, MessageCircle } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit, FileText, Sparkles, Pencil, VolumeX, Link as LinkIcon, Notebook as NotebookIcon, Download, Gem, MessageCircle, ArrowRight } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -596,6 +596,93 @@ function NotesSheet({ course }: { course: Course }) {
     )
 }
 
+function LessonContent({ lesson, onComplete }: { lesson: Lesson | null; onComplete: () => void }) {
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const paragraphs = useMemo(() => {
+    if (!lesson?.content) return [];
+    return lesson.content.split('\n').filter(p => p.trim() !== '');
+  }, [lesson]);
+
+  useEffect(() => {
+    // Reset to the first page when the lesson changes
+    setCurrentPage(0);
+  }, [lesson]);
+
+  if (!lesson) return null;
+
+  const totalPages = paragraphs.length;
+  const isLastPage = currentPage === totalPages - 1;
+
+  return (
+    <div>
+      <h1 className="text-3xl font-bold mb-4 font-headline">{lesson.title}</h1>
+      <div className="aspect-video bg-black rounded-lg mb-6">
+        {getYouTubeEmbedUrl(lesson.youtubeLinks?.[0]?.url) ? (
+          <iframe
+            className="w-full h-full rounded-lg"
+            src={getYouTubeEmbedUrl(lesson.youtubeLinks?.[0]?.url)!}
+            title={lesson.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-muted rounded-lg">
+            <Video className="h-16 w-16 text-muted-foreground/50" />
+            <p className="ml-4 text-muted-foreground">Video coming soon.</p>
+          </div>
+        )}
+      </div>
+
+      <div className="prose max-w-none text-foreground/90 mb-6">
+        <p>{paragraphs[currentPage]}</p>
+      </div>
+
+      <div className="flex justify-between items-center mt-6">
+        <Button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 0} variant="outline">
+          <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+        </Button>
+        {totalPages > 1 && (
+            <span className="text-sm text-muted-foreground">
+                Page {currentPage + 1} of {totalPages}
+            </span>
+        )}
+        <Button onClick={() => setCurrentPage(p => p + 1)} disabled={isLastPage} variant="outline">
+          Next <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
+      </div>
+
+      {isLastPage && (
+        <Button size="lg" className="bg-accent hover:bg-accent/90 mt-8 w-full" onClick={onComplete}>
+          Mark as Completed &amp; Continue
+        </Button>
+      )}
+
+      {lesson.googleDriveLinks && lesson.googleDriveLinks.length > 0 && (
+        <div className="mt-8">
+          <Separator />
+          <h3 className="text-lg font-semibold my-4">Lesson Resources</h3>
+          <div className="space-y-2">
+            {lesson.googleDriveLinks.map(link => (
+              <a
+                href={link.url}
+                key={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-3 bg-background border rounded-md hover:bg-secondary transition-colors"
+              >
+                <GoogleDriveIcon className="h-6 w-6 flex-shrink-0" />
+                <span className="text-sm font-medium text-primary">{link.title}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 export default function CoursePlayerPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
@@ -725,7 +812,6 @@ export default function CoursePlayerPage() {
   };
 
   const progress = allLessons.length > 0 ? (completedLessons.size / allLessons.length) * 100 : 0;
-  const currentVideoUrl = getYouTubeEmbedUrl(currentLesson?.youtubeLinks?.[0]?.url);
 
   if (loading || authLoading) {
     return (
@@ -808,55 +894,7 @@ export default function CoursePlayerPage() {
                   </TabsList>
                   <TabsContent value="lesson">
                      {currentLesson ? (
-                        <div>
-                        <h1 className="text-3xl font-bold mb-4 font-headline">{currentLesson.title}</h1>
-                        <div className="aspect-video bg-black rounded-lg mb-6">
-                            {currentVideoUrl ? (
-                                <iframe
-                                    className="w-full h-full rounded-lg"
-                                    src={currentVideoUrl}
-                                    title={currentLesson.title}
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                ></iframe>
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-muted rounded-lg">
-                                    <Video className="h-16 w-16 text-muted-foreground/50" />
-                                    <p className="ml-4 text-muted-foreground">Video coming soon.</p>
-                                </div>
-                            )}
-                        </div>
-                        <div className="prose max-w-none text-foreground/90">
-                            <p>{currentLesson.content}</p>
-                        </div>
-                        
-                        {currentLesson.googleDriveLinks && currentLesson.googleDriveLinks.length > 0 && (
-                            <div className="mt-8">
-                                <Separator />
-                                <h3 className="text-lg font-semibold my-4">Lesson Resources</h3>
-                                <div className="space-y-2">
-                                    {currentLesson.googleDriveLinks.map(link => (
-                                        <a 
-                                            href={link.url} 
-                                            key={link.url}
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="flex items-center gap-3 p-3 bg-background border rounded-md hover:bg-secondary transition-colors"
-                                        >
-                                            <GoogleDriveIcon className="h-6 w-6 flex-shrink-0" />
-                                            <span className="text-sm font-medium text-primary">{link.title}</span>
-                                        </a>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {!completedLessons.has(currentLesson.id) && (
-                            <Button size="lg" className="bg-accent hover:bg-accent/90 mt-8" onClick={handleCompleteLesson}>
-                            Mark as Completed &amp; Continue
-                            </Button>
-                        )}
-                        </div>
+                        <LessonContent lesson={currentLesson} onComplete={handleCompleteLesson} />
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full text-center">
                             {progress >= 100 ? (
