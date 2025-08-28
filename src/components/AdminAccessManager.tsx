@@ -16,10 +16,11 @@ import {
 } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, ShieldCheck, ShieldOff } from 'lucide-react';
+import { Loader2, ShieldCheck, ShieldOff, KeyRound } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RegisteredUser, saveUser } from '@/lib/firebase-service';
 import { add } from 'date-fns';
+import { Input } from './ui/input';
 
 const accessFormSchema = z.object({
   duration: z.string().min(1, 'Please select a duration.'),
@@ -32,15 +33,21 @@ interface AdminAccessManagerProps {
   onSuccess: () => void;
 }
 
+const ADMIN_PIN = '38448674K.mG';
+
 export function AdminAccessManager({ user, isOpen, onClose, onSuccess }: AdminAccessManagerProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [pinStep, setPinStep] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
+  const [actionToConfirm, setActionToConfirm] = useState<'grant' | 'revoke' | null>(null);
 
   const form = useForm<z.infer<typeof accessFormSchema>>({
     resolver: zodResolver(accessFormSchema),
   });
 
-  const onSubmit = async (values: z.infer<typeof accessFormSchema>) => {
+  const handleGrant = async (values: z.infer<typeof accessFormSchema>) => {
     setIsLoading(true);
     try {
       let expirationDate: string | null = null;
@@ -69,6 +76,7 @@ export function AdminAccessManager({ user, isOpen, onClose, onSuccess }: AdminAc
       });
     } finally {
       setIsLoading(false);
+      resetState();
     }
   };
 
@@ -94,29 +102,58 @@ export function AdminAccessManager({ user, isOpen, onClose, onSuccess }: AdminAc
       });
     } finally {
       setIsLoading(false);
+      resetState();
     }
   }
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Manage Admin Access</DialogTitle>
-          <DialogDescription>
-            Grant or revoke admin privileges for {user.displayName}.
-          </DialogDescription>
-        </DialogHeader>
-        {user.isAdmin ? (
-            <div className="space-y-4 py-4">
+  const prepareForPin = (action: 'grant' | 'revoke') => {
+    setPinError('');
+    setActionToConfirm(action);
+    setPinStep(true);
+  }
+
+  const handlePinConfirm = () => {
+    if (pinInput !== ADMIN_PIN) {
+        setPinError('Incorrect PIN. Please try again.');
+        return;
+    }
+    
+    if (actionToConfirm === 'grant') {
+        handleGrant(form.getValues());
+    } else if (actionToConfirm === 'revoke') {
+        handleRevoke();
+    }
+  }
+  
+  const resetState = () => {
+      setPinStep(false);
+      setPinInput('');
+      setPinError('');
+      setActionToConfirm(null);
+      form.reset();
+  }
+  
+  const handleDialogClose = () => {
+      resetState();
+      onClose();
+  }
+
+
+  const renderInitialContent = () => {
+      if (user.isAdmin) {
+          return (
+             <div className="space-y-4 py-4">
                 <p>This user currently has admin privileges.</p>
-                <Button variant="destructive" className="w-full" onClick={handleRevoke} disabled={isLoading}>
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldOff className="mr-2 h-4 w-4" />}
+                <Button variant="destructive" className="w-full" onClick={() => prepareForPin('revoke')}>
+                    <ShieldOff className="mr-2 h-4 w-4" />
                     Revoke Admin Access
                 </Button>
             </div>
-        ) : (
-            <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          )
+      }
+      return (
+         <Form {...form}>
+            <form id="grant-form" onSubmit={form.handleSubmit(() => prepareForPin('grant'))} className="space-y-8">
                 <FormField
                 control={form.control}
                 name="duration"
@@ -139,18 +176,61 @@ export function AdminAccessManager({ user, isOpen, onClose, onSuccess }: AdminAc
                     </FormItem>
                 )}
                 />
-                <DialogFooter>
-                <Button type="button" variant="outline" onClick={onClose}>
-                    Cancel
-                </Button>
-                <Button type="submit" disabled={isLoading}>
+            </form>
+        </Form>
+      )
+  }
+
+  const renderPinContent = () => (
+      <div className="space-y-4 py-4">
+          <p className="text-sm text-muted-foreground">For security, please enter your admin PIN to confirm this action.</p>
+           <div className="space-y-2">
+            <Label htmlFor="admin-pin">Admin PIN</Label>
+            <Input 
+                id="admin-pin"
+                type="password"
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value)}
+                placeholder="Enter your PIN"
+            />
+            {pinError && <p className="text-sm font-medium text-destructive">{pinError}</p>}
+          </div>
+      </div>
+  )
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleDialogClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Manage Admin Access</DialogTitle>
+          <DialogDescription>
+            Grant or revoke admin privileges for {user.displayName}.
+          </DialogDescription>
+        </DialogHeader>
+        
+        {pinStep ? renderPinContent() : renderInitialContent()}
+        
+        <DialogFooter>
+          {pinStep ? (
+              <>
+                 <Button type="button" variant="outline" onClick={() => setPinStep(false)}>Back</Button>
+                 <Button onClick={handlePinConfirm} disabled={isLoading}>
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4"/>}
+                    Confirm Action
+                 </Button>
+              </>
+          ) : (
+             <>
+                <Button type="button" variant="outline" onClick={handleDialogClose}>Cancel</Button>
+                {!user.isAdmin && (
+                  <Button type="submit" form="grant-form" disabled={isLoading}>
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4"/>}
                     Grant Access
-                </Button>
-                </DialogFooter>
-            </form>
-            </Form>
-        )}
+                  </Button>
+                )}
+             </>
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
