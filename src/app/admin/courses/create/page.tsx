@@ -72,7 +72,7 @@ export default function CreateCoursePage() {
       if (values.duration && !content.duration) {
         content.duration = values.duration;
       }
-      form.setValue('duration', content.duration || values.duration);
+      form.setValue('duration', content.duration || values.duration || '');
 
       setIsModalOpen(true);
     } catch (error) {
