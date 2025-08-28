@@ -1,3 +1,4 @@
+
 # Ubuntu Academy - Visual Framework
 
 This document provides a graphical overview of the application's structure and key operational flows using Mermaid syntax. These diagrams can be rendered by GitHub or compatible Markdown editors.
@@ -15,6 +16,7 @@ graph TD
         A --> E[Help];
         A --> F[Login];
         A --> G[Sign Up];
+        A --> SP[Public Portfolio /portfolio/id];
     end
 
     subgraph Student Area
@@ -27,15 +29,21 @@ graph TD
         B --> O[Course Detail Page];
         O --> I;
     end
+
+    subgraph "Student Portfolio & Social"
+        M --> P[Edit Portfolio];
+        O --> Q[View/Add Reviews];
+        O --> R[View/Add Projects to Gallery];
+    end
     
     subgraph Admin Area
-        P[Admin Dashboard /admin] --> Q[Create Course];
-        P --> R[Edit Course];
-        P --> S[Manage Assignments];
-        P --> T[Grade Submission];
-        P --> U[Manage Users];
-        P --> V[Site Settings];
-        P --> W[Admin Help];
+        S[Admin Dashboard /admin] --> T[Create Course];
+        S --> U[Edit Course];
+        S --> V[Manage Assignments];
+        S --> W[Grade Submission];
+        S --> X[Manage Users];
+        S --> Y[Site Settings];
+        S --> Z[Admin Help];
     end
 
     F --> H;
