@@ -18,6 +18,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { enrollUserInCourse } from '@/lib/firebase-service';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { processMpesaPayment } from '@/app/actions';
 
 
 interface MpesaModalProps {
@@ -61,23 +62,26 @@ export function MpesaModal({
     setPaymentStep('processing');
 
     try {
-        // Simulate STK push and payment processing
-        await new Promise(resolve => setTimeout(resolve, 3000));
+      const result = await processMpesaPayment({
+        phoneNumber,
+        amount: 1, // Using 1 for sandbox environment
+        courseId,
+      });
 
-        // Enroll user in the course in Firebase
+      if (result.success) {
+        // You could poll a callback or just assume success for demo
         await enrollUserInCourse(user.uid, courseId);
-
         setIsLoading(false);
         setPaymentStep('success');
-
-        // Wait a bit on the success message before redirecting
         await new Promise(resolve => setTimeout(resolve, 2000));
-        
         onPaymentSuccess();
+      } else {
+        throw new Error(result.message);
+      }
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Payment or enrollment failed:", error);
-        toast({ title: 'Error', description: 'Something went wrong. Please try again.', variant: 'destructive'});
+        toast({ title: 'Payment Failed', description: error.message || 'Something went wrong. Please try again.', variant: 'destructive'});
         setIsLoading(false);
         setPaymentStep('form');
     }
