@@ -12,13 +12,14 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
-import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen, Clock, Check } from "lucide-react";
+import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen, Clock, Check, MessageSquare, Star } from "lucide-react";
 import { MpesaModal } from '@/components/MpesaModal';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolled }: { course: Course, onEnrollFree: () => void, onPurchase: () => void, isEnrolling: boolean, isEnrolled: boolean }) {
     return (
@@ -188,9 +189,6 @@ export default function CourseDetailPage() {
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 font-headline break-words overflow-wrap-anywhere leading-tight">
                   {course.title}
                 </h1>
-                <p className="text-muted-foreground text-sm sm:text-base lg:text-lg mb-6 break-words overflow-wrap-anywhere leading-relaxed">
-                  {course.longDescription}
-                </p>
                 
                 {/* Purchase Card for Mobile View */}
                 <div className="lg:hidden mb-6 sm:mb-8">
@@ -203,49 +201,77 @@ export default function CourseDetailPage() {
                     />
                 </div>
 
-                <h2 className="text-xl sm:text-2xl font-bold mb-4 font-headline">Course Content</h2>
-                <Accordion type="single" collapsible className="w-full">
-                  {course.modules && course.modules.map((module) => (
-                    <AccordionItem value={module.id} key={module.id}>
-                      <AccordionTrigger className="text-base sm:text-lg font-semibold break-words overflow-wrap-anywhere text-left pr-2">
-                        {module.title}
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <ul className="space-y-3 p-2 sm:p-4">
-                          {module.lessons.map((lesson) => (
-                            <li key={lesson.id} className="flex items-start sm:items-center justify-between gap-2">
-                              <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
-                                <PlayCircle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0 mt-0.5 sm:mt-0" />
-                                <span className="text-sm sm:text-base break-words overflow-wrap-anywhere">
-                                  {lesson.title}
-                                </span>
+                 <Tabs defaultValue="overview" className="w-full">
+                  <TabsList>
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="reviews">
+                      <Star className="mr-2 h-4 w-4" />
+                      Reviews
+                    </TabsTrigger>
+                     <TabsTrigger value="projects">
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        Projects
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="overview" className="pt-6">
+                     <h2 className="text-xl sm:text-2xl font-bold mb-4 font-headline">Course Description</h2>
+                      <p className="text-muted-foreground text-sm sm:text-base lg:text-lg mb-6 break-words overflow-wrap-anywhere leading-relaxed">
+                        {course.longDescription}
+                      </p>
+                      
+                      <h2 className="text-xl sm:text-2xl font-bold mb-4 font-headline">Course Content</h2>
+                      <Accordion type="single" collapsible className="w-full">
+                        {course.modules && course.modules.map((module) => (
+                          <AccordionItem value={module.id} key={module.id}>
+                            <AccordionTrigger className="text-base sm:text-lg font-semibold break-words overflow-wrap-anywhere text-left pr-2">
+                              {module.title}
+                            </AccordionTrigger>
+                            <AccordionContent>
+                              <ul className="space-y-3 p-2 sm:p-4">
+                                {module.lessons.map((lesson) => (
+                                  <li key={lesson.id} className="flex items-start sm:items-center justify-between gap-2">
+                                    <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                                      <PlayCircle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0 mt-0.5 sm:mt-0" />
+                                      <span className="text-sm sm:text-base break-words overflow-wrap-anywhere">
+                                        {lesson.title}
+                                      </span>
+                                    </div>
+                                    <span className="text-xs sm:text-sm text-muted-foreground flex-shrink-0 whitespace-nowrap">
+                                      {lesson.duration}
+                                    </span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </AccordionContent>
+                          </AccordionItem>
+                        ))}
+                        {(!course.modules || course.modules.length === 0) && 
+                          <p className="text-muted-foreground p-4 text-sm sm:text-base">Course content coming soon!</p>
+                        }
+                        <AccordionItem value="exam">
+                            <AccordionTrigger className="text-base sm:text-lg font-semibold text-left pr-2">
+                              Final Exam
+                            </AccordionTrigger>
+                            <AccordionContent>
+                              <div className="flex items-center gap-3 p-2 sm:p-4">
+                                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
+                                  <span className="text-sm sm:text-base break-words">
+                                    Test your knowledge to earn your certificate.
+                                  </span>
                               </div>
-                              <span className="text-xs sm:text-sm text-muted-foreground flex-shrink-0 whitespace-nowrap">
-                                {lesson.duration}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                  {(!course.modules || course.modules.length === 0) && 
-                    <p className="text-muted-foreground p-4 text-sm sm:text-base">Course content coming soon!</p>
-                  }
-                  <AccordionItem value="exam">
-                      <AccordionTrigger className="text-base sm:text-lg font-semibold text-left pr-2">
-                        Final Exam
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="flex items-center gap-3 p-2 sm:p-4">
-                            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
-                            <span className="text-sm sm:text-base break-words">
-                              Test your knowledge to earn your certificate.
-                            </span>
-                        </div>
-                      </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+                            </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                  </TabsContent>
+                  <TabsContent value="reviews" className="pt-6">
+                    <h2 className="text-xl sm:text-2xl font-bold mb-4 font-headline">Reviews</h2>
+                    <p className="text-muted-foreground">Student reviews will be shown here.</p>
+                  </TabsContent>
+                   <TabsContent value="projects" className="pt-6">
+                    <h2 className="text-xl sm:text-2xl font-bold mb-4 font-headline">Student Projects</h2>
+                    <p className="text-muted-foreground">A gallery of projects from students who have completed this course.</p>
+                  </TabsContent>
+                </Tabs>
               </div>
               
               {/* Purchase Card for Desktop View */}
