@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Video, VideoOff, PhoneOff } from 'lucide-react';
+import { ArrowLeft, Loader2, Video, VideoOff, PhoneOff, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
@@ -19,8 +19,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { createNotification } from '@/lib/firebase-service';
+import { createNotification, getUserById } from '@/lib/firebase-service';
 import { LiveChat } from '@/components/LiveChat';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const liveSessionSchema = z.object({
     title: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -39,6 +40,68 @@ const ICE_SERVERS = {
         { urls: 'stun:stun1.l.google.com:19302' },
     ],
 };
+
+function ViewerList() {
+    const [viewers, setViewers] = useState<Map<string, string>>(new Map());
+
+    useEffect(() => {
+        const answersRef = ref(db, 'webrtc-answers/live-session');
+
+        const unsubscribe = onChildAdded(answersRef, async (snapshot) => {
+            const studentId = snapshot.key;
+            if (studentId) {
+                const user = await getUserById(studentId);
+                setViewers(prev => new Map(prev).set(studentId, user?.displayName || 'Anonymous'));
+            }
+        });
+        
+        // A simple way to handle disconnects without complex presence system for this specific feature
+        const allAnswersUnsubscribe = onValue(answersRef, (snapshot) => {
+            if (!snapshot.exists()) {
+                setViewers(new Map());
+                return;
+            }
+            const connectedIds = Object.keys(snapshot.val());
+            setViewers(prev => {
+                const newViewers = new Map<string, string>();
+                connectedIds.forEach(id => {
+                    if (prev.has(id)) {
+                        newViewers.set(id, prev.get(id)!);
+                    }
+                });
+                return newViewers;
+            });
+        });
+
+        return () => {
+            unsubscribe();
+            allAnswersUnsubscribe();
+        };
+    }, []);
+
+    const viewerList = Array.from(viewers.values());
+
+    return (
+         <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm pointer-events-auto">
+                        <Users className="h-4 w-4" />
+                        <span>{viewerList.length}</span>
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                   {viewerList.length > 0 ? (
+                    <ul className="text-sm">
+                        {viewerList.map(name => <li key={name}>{name}</li>)}
+                    </ul>
+                   ) : <p>No viewers yet.</p>}
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+    )
+}
+
 
 export default function AdminLivePage() {
     const { toast } = useToast();
@@ -103,7 +166,6 @@ export default function AdminLivePage() {
             return;
         }
 
-        // Send notification
         const notificationPayload: {
             title: string;
             body: string;
@@ -117,8 +179,6 @@ export default function AdminLivePage() {
 
         if (values.target === 'cohort' && values.cohort) {
             notificationPayload.cohort = values.cohort;
-        } else {
-             delete notificationPayload.cohort;
         }
 
         await createNotification(notificationPayload);
@@ -214,6 +274,7 @@ export default function AdminLivePage() {
                                         <video ref={videoRef} className="w-full h-full rounded-lg" autoPlay muted playsInline />
                                         {isLive && (
                                             <>
+                                                <ViewerList />
                                                 <LiveChat sessionId="live-session" />
                                                 <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20">
                                                     <Button size="icon" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="rounded-full h-12 w-12 shadow-lg">

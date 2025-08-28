@@ -24,6 +24,8 @@ const ICE_SERVERS = {
     ],
 };
 
+type ConnectionState = 'new' | 'connecting' | 'connected' | 'failed' | 'closed';
+
 export default function StudentLivePage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
@@ -32,13 +34,14 @@ export default function StudentLivePage() {
     const [isLoading, setIsLoading] = useState(true);
     const videoRef = useRef<HTMLVideoElement>(null);
     const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+    const connectionStateRef = useRef<ConnectionState>('new');
 
     useEffect(() => {
         if (!authLoading && !user) {
             router.push('/login');
         }
     }, [user, authLoading, router]);
-
+    
     useEffect(() => {
         if (!user) return;
 
@@ -46,10 +49,11 @@ export default function StudentLivePage() {
 
         const unsubscribe = onValue(offerRef, async (snapshot) => {
             if (snapshot.exists()) {
-                 // Prevent re-initializing if connection already exists and is stable
-                if (peerConnectionRef.current && peerConnectionRef.current.connectionState !== 'closed') {
-                    return;
+                 if (connectionStateRef.current !== 'new' && connectionStateRef.current !== 'closed') {
+                    return; // Already connecting or connected
                 }
+                connectionStateRef.current = 'connecting';
+                
                 const sessionData = snapshot.val();
                 setLiveSessionDetails(sessionData);
                 setIsLive(true);
@@ -70,6 +74,12 @@ export default function StudentLivePage() {
                         videoRef.current.srcObject = event.streams[0];
                     }
                 };
+                
+                pc.onconnectionstatechange = () => {
+                    if(pc.connectionState === 'connected') {
+                        connectionStateRef.current = 'connected';
+                    }
+                }
                 
                 await pc.setRemoteDescription(new RTCSessionDescription(offerDescription));
                 const answerDescription = await pc.createAnswer();
@@ -100,9 +110,10 @@ export default function StudentLivePage() {
                     peerConnectionRef.current.close();
                     peerConnectionRef.current = null;
                 }
-                 if (videoRef.current) {
+                if (videoRef.current) {
                     videoRef.current.srcObject = null;
                 }
+                connectionStateRef.current = 'closed';
             }
         });
 
@@ -115,6 +126,7 @@ export default function StudentLivePage() {
                 remove(ref(db, `webrtc-answers/live-session/${user.uid}`));
                 remove(ref(db, `webrtc-candidates/live-session/student/${user.uid}`));
             }
+            connectionStateRef.current = 'closed';
         };
 
     }, [user]);
