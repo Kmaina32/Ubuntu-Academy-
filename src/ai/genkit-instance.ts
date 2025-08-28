@@ -10,8 +10,13 @@ const plugins = [];
 if (process.env.GEMINI_API_KEY) {
     plugins.push(googleAI());
 } else {
-    // This warning will appear in the server console during development
-    console.warn("GEMINI_API_KEY is not set. Genkit Google AI plugin will be disabled.");
+    if (process.env.NODE_ENV === 'production') {
+        // In production, we should fail hard if the key is missing.
+        throw new Error("GEMINI_API_KEY is not set. AI features will be disabled. Please set this environment variable in your Vercel project settings.");
+    } else {
+        // In development, a warning is sufficient.
+        console.warn("GEMINI_API_KEY is not set. Genkit Google AI plugin will be disabled.");
+    }
 }
 
 export const ai = genkit({
