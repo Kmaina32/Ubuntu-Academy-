@@ -22,7 +22,7 @@ export default function PrivacyPage() {
                           <Lock className="h-10 w-10 text-primary" />
                       </div>
                     <CardTitle className="text-3xl font-headline text-center">Privacy Policy</CardTitle>
-                    <CardDescription className="text-lg text-muted-foreground text-center">Last updated: August 27, 2024</CardDescription>
+                    <CardDescription className="text-lg text-muted-foreground text-center">Last updated: August 27, 2025</CardDescription>
                   </CardHeader>
                   <CardContent className='space-y-6'>
                     <div className="space-y-4 prose max-w-none">
@@ -40,7 +40,7 @@ export default function PrivacyPage() {
                       <h2 className="font-semibold text-xl">4. Security</h2>
                       <p>The security of your personal information is important to us, but remember that no method of transmission over the Internet, or method of electronic storage, is 100% secure. While we strive to use commercially acceptable means to protect your personal information, we cannot guarantee its absolute security.</p>
                       
-                      <p className="pt-4 text-center text-muted-foreground">This is a placeholder document. Please replace it with your own Privacy Policy.</p>
+                      <p className="pt-4 text-center text-muted-foreground">Terms & Conditions Apply</p>
                     </div>
                   </CardContent>
                 </Card>

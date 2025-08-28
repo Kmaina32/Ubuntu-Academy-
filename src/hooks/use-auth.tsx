@@ -25,6 +25,7 @@ import {
 import { auth, db } from '@/lib/firebase';
 import { RegisteredUser, saveUser, getUserById } from '@/lib/firebase-service';
 import { ref, onValue, onDisconnect, set, serverTimestamp } from 'firebase/database';
+import { useToast } from './use-toast';
 
 const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
 
@@ -47,6 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -172,8 +174,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await saveUser(user.uid, newUser);
       }
       setUser(user);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Google Sign-In Error", error);
+      if (error.code === 'auth/internal-error') {
+          toast({
+              title: "Google Sign-In Error",
+              description: "Could not sign in with Google. Please ensure it is enabled in your Firebase project and the OAuth consent screen is configured.",
+              variant: "destructive",
+              duration: 10000,
+          });
+      }
       throw error;
     }
   };

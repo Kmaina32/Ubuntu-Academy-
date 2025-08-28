@@ -22,7 +22,7 @@ export default function TermsPage() {
                           <Shield className="h-10 w-10 text-primary" />
                       </div>
                     <CardTitle className="text-3xl font-headline text-center">Terms of Service</CardTitle>
-                    <CardDescription className="text-lg text-muted-foreground text-center">Last updated: August 27, 2024</CardDescription>
+                    <CardDescription className="text-lg text-muted-foreground text-center">Last updated: August 27, 2025</CardDescription>
                   </CardHeader>
                   <CardContent className='space-y-6'>
                     <div className="space-y-4 prose max-w-none">
