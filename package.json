@@ -54,7 +54,7 @@
     "framer-motion": "^11.2.10",
     "genkit": "1.17.1",
     "html2canvas": "^1.4.1",
-    "jspdf": "^2.5.1",
+    "jspdf": "^3.0.2",
     "lucide-react": "^0.475.0",
     "next": "14.2.4",
     "react": "^18.3.1",
