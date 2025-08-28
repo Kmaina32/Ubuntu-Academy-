@@ -197,7 +197,7 @@ export default function HelpPage() {
                           <TabsContent value="faq">
                               <FaqComponent />
                           </TabsContent>
-                          <TabsContent value="ai-assistant" className="h-[60vh]">
+                          <TabsContent value="ai-assistant" className="h-[60vh] flex flex-col">
                              <AiAssistant />
                           </TabsContent>
                         </Tabs>

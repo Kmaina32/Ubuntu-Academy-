@@ -12,6 +12,7 @@
 
 import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
 
 const SiteHelpInputSchema = z.object({
   question: z.string().describe('The question the user is asking about the site.'),
@@ -31,6 +32,7 @@ export async function siteHelp(
 
 const prompt = ai.definePrompt({
   name: 'siteHelpPrompt',
+  model: googleAI.model('gemini-1.5-flash'),
   input: {schema: SiteHelpInputSchema},
   output: {schema: SiteHelpOutputSchema},
   prompt: `You are Gina, an expert support agent for the Ubuntu Academy online learning platform. Your tone is friendly, helpful, and professional. An administrator is asking you a question about how the platform works.

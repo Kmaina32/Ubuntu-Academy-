@@ -12,6 +12,7 @@
 
 import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
 
 const GradeShortAnswerExamInputSchema = z.object({
   question: z.string().describe('The exam question.'),
@@ -41,6 +42,7 @@ export async function gradeShortAnswerExam(
 
 const prompt = ai.definePrompt({
   name: 'gradeShortAnswerExamPrompt',
+  model: googleAI.model('gemini-1.5-flash'),
   input: {schema: GradeShortAnswerExamInputSchema},
   output: {schema: GradeShortAnswerExamOutputSchema},
   prompt: `You are an AI exam grader. Grade the following answer to the question below. Provide detailed feedback and the number of points awarded.
