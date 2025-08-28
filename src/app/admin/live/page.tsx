@@ -27,7 +27,6 @@ const liveSessionSchema = z.object({
     speakers: z.string().optional(),
     target: z.enum(['all', 'cohort', 'students']),
     cohort: z.string().optional(),
-    studentIds: z.string().optional(),
 }).refine(data => {
     if (data.target === 'cohort' && !data.cohort) return false;
     return true;
@@ -104,12 +103,22 @@ export default function AdminLivePage() {
         }
 
         // Send notification
-        await createNotification({
+        const notificationPayload: {
+            title: string;
+            body: string;
+            link: string;
+            cohort?: string;
+        } = {
             title: `🔴 Live Now: ${values.title}`,
             body: values.description || 'A live session has started. Join now!',
             link: '/live',
-            cohort: values.target === 'cohort' ? values.cohort : undefined,
-        });
+        };
+
+        if (values.target === 'cohort' && values.cohort) {
+            notificationPayload.cohort = values.cohort;
+        }
+
+        await createNotification(notificationPayload);
         toast({ title: 'Notifications Sent!', description: 'Targeted students have been notified about the live session.'});
 
         const offerPc = new RTCPeerConnection(ICE_SERVERS);
