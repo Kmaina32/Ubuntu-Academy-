@@ -73,7 +73,7 @@ function Markdown({ content }: { content: string }) {
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
         .replace(/\n/g, '<br />');
-    return <p className="text-sm" dangerouslySetInnerHTML={{ __html: html }} />;
+    return <p className="text-sm whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
 const GoogleDriveIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -371,7 +371,7 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
                                                 <Bot className="h-5 w-5 m-1.5" />
                                             </Avatar>
                                         )}
-                                        <div className={`rounded-lg px-3 py-2 max-w-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+                                        <div className={`rounded-lg px-3 py-2 max-w-md ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
                                             <Markdown content={message.content} />
                                             {message.role === 'assistant' && (
                                                 <Button 
