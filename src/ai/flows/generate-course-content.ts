@@ -68,7 +68,7 @@ const ExamQuestionSchema = z.union([ShortAnswerQuestionSchema, MultipleChoiceQue
 const GenerateCourseContentOutputSchema = z.object({
   longDescription: z.string().min(100).describe('A detailed, comprehensive description of the entire course.'),
   duration: z.string().describe("The estimated total duration of the course, e.g., '4 Weeks' or '6 Weeks'."),
-  modules: z.array(ModuleSchema).min(2).describe('An array of modules for the course. Should contain at least 2 modules.'),
+  modules: z.array(ModuleSchema).length(2).describe('An array of exactly 2 modules for the course.'),
   exam: z.array(ExamQuestionSchema).min(5).describe('The final exam for the course, containing at least five questions, with a mix of short-answer and multiple-choice questions.'),
 });
 export type GenerateCourseContentOutput = z.infer<typeof GenerateCourseContentOutputSchema>;
@@ -126,5 +126,6 @@ const generateCourseContentFlow = ai.defineFlow(
     return output!;
   }
 );
+
 
 
