@@ -19,7 +19,10 @@ The platform is divided into two main user experiences: the student-facing appli
 - **Discussion Forums:** Engage in discussions with instructors and peers on course-specific topics.
 - **Comprehensive Final Exams:** Take multi-part final exams with a mix of multiple-choice and short-answer questions. Pasting is disabled to encourage original work.
 - **Automated Certification:** Automatically receive a downloadable and printable certificate upon successfully passing a course final exam.
-- **Profile Management:** Students can update their personal details and profile picture, which are reflected on their certificates.
+- **Profile Management & Public Portfolios:** Students can update their personal details and profile picture. They can also create a public, shareable portfolio page showcasing their completed courses and certificates.
+- **Course Reviews & Ratings:** Leave star ratings and written reviews on completed courses, helping other students make informed decisions.
+- **Project Galleries:** For project-based courses, students can submit their work to a public gallery, creating a showcase of practical skills.
+- **Learning Goals:** Set and track personal learning goals directly from the dashboard to stay motivated.
 
 ### Admin Experience
 - **Secure Admin Dashboard:** A protected section of the site accessible only to a designated administrator, with a dedicated sidebar for easy navigation.

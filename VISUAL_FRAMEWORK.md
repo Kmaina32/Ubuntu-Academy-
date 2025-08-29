@@ -10,30 +10,31 @@ This diagram shows the main pages of the application and how they are interconne
 ```mermaid
 graph TD
     subgraph Public Area
-        A[Home Page /] --> B[Courses];
-        A --> C[About Us];
-        A --> D[Contact];
-        A --> E[Help];
-        A --> F[Login];
-        A --> G[Sign Up];
-        A --> SP[Public Portfolio /portfolio/id];
+        A[Home Page /] --> B[Courses /];
+        A --> C[About Us /about];
+        A --> D[Contact /contact];
+        A --> E[Help /help];
+        A --> F[Login /login];
+        A --> G[Sign Up /signup];
+        A --> SP[Public Portfolio /portfolio/userId];
     end
 
     subgraph Student Area
-        H[Dashboard] --> I[Course Player /learn];
+        H[Dashboard /dashboard] --> I[Course Player /courses/id/learn];
         H --> J[My Exams /assignments];
         H --> K[My Notebooks /notebook];
-        H --> L[Calendar];
-        H --> M[Profile];
-        I --> N[Take Final Exam /exam];
-        B --> O[Course Detail Page];
+        H --> L[Calendar /calendar];
+        H --> M[Profile /profile];
+        I --> N[Take Final Exam /courses/id/exam];
+        B --> O[Course Detail Page /courses/id];
         O --> I;
+        M --> SP;
     end
 
-    subgraph "Student Portfolio & Social"
-        M --> P[Edit Portfolio];
+    subgraph "Student Social Features"
         O --> Q[View/Add Reviews];
         O --> R[View/Add Projects to Gallery];
+        M --> P[Edit Portfolio];
     end
     
     subgraph Admin Area
