@@ -51,7 +51,7 @@ export async function generateExam(
 
 const prompt = ai.definePrompt({
   name: 'generateExamPrompt',
-  model: googleAI.model('gemini-1.5-flash'),
+  model: googleAI.model('gemini-1.5-pro'),
   input: {schema: GenerateExamInputSchema},
   output: {schema: GenerateExamOutputSchema},
   prompt: `You are an expert curriculum developer. Your task is to generate a final exam for an online course based on its title and description.

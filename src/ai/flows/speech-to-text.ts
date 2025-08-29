@@ -8,6 +8,7 @@
 
 import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
 
 const SpeechToTextInputSchema = z.object({
     audioDataUri: z
@@ -39,7 +40,7 @@ export const speechToText = ai.defineFlow(
           text: 'Transcribe the following audio recording. The user is asking a question for an online learning platform. Please provide only the transcribed text, with no additional commentary or conversational filler.',
         },
       ],
-      model: 'googleai/gemini-2.0-flash', // A model that supports audio input
+      model: googleAI.model('gemini-1.5-flash'), // A model that supports audio input
     });
     
     return {

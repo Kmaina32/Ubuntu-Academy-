@@ -81,7 +81,7 @@ export async function generateCourseContent(
 
 const prompt = ai.definePrompt({
   name: 'generateCourseContentPrompt',
-  model: googleAI.model('gemini-1.5-flash'),
+  model: googleAI.model('gemini-1.5-pro'),
   input: {schema: GenerateCourseContentInputSchema},
   output: {schema: GenerateCourseContentOutputSchema},
   prompt: `You are an expert curriculum developer for an online learning platform in Kenya. Your task is to generate a complete course structure based on a given title and context.
@@ -92,7 +92,7 @@ It MUST include:
 - An estimated total duration (e.g., "4 Weeks").
 - Exactly two (2) modules.
 - A total of at least five (5) lessons distributed across the two modules.
-- A final exam with exactly five (5) questions: three (3) multiple-choice questions and two (2) short-answer questions.
+- A final exam with exactly five (5) questions: three (3) 'multiple-choice' questions and two (2) 'short-answer' questions.
 
 Course Title: {{{courseTitle}}}
 

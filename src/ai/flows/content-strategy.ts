@@ -10,6 +10,7 @@ import { generateCourseContent } from './generate-course-content';
 import { createCourse, createProgram, createBundle } from '@/lib/firebase-service';
 import { z } from 'zod';
 import { ContentStrategyOutputSchema } from '@/lib/mock-data';
+import { googleAI } from '@genkit-ai/googleai';
 
 // Schema for generating course ideas
 const CourseIdeasSchema = z.object({
@@ -51,7 +52,7 @@ const runContentStrategyFlow = ai.defineFlow(
     console.log('Generating course ideas...');
     const ideasResponse = await ai.generate({
       prompt: `You are a Content Strategist for Ubuntu Academy, an online learning platform for a Kenyan audience. Your task is to brainstorm 10 highly relevant and marketable course ideas that would appeal to students looking to upskill. Provide a title, a category, and a plausible instructor name for each.`,
-      model: 'googleai/gemini-1.5-flash',
+      model: googleAI.model('gemini-1.5-pro'),
       output: {
         schema: CourseIdeasSchema,
       },
@@ -94,7 +95,7 @@ const runContentStrategyFlow = ai.defineFlow(
     console.log('Generating program suggestion...');
     const programResponse = await ai.generate({
         prompt: `Based on the following list of newly created courses, create a compelling Certificate Program that groups a logical subset of them together. The courses are: ${generatedCourseTitles.join(', ')}`,
-        model: 'googleai/gemini-1.5-flash',
+        model: googleAI.model('gemini-1.5-pro'),
         output: {
             schema: ProgramSuggestionSchema,
         },
@@ -116,7 +117,7 @@ const runContentStrategyFlow = ai.defineFlow(
     console.log('Generating bundle suggestion...');
     const bundleResponse = await ai.generate({
         prompt: `Based on the following list of newly created courses, create a compelling Course Bundle for marketing purposes that groups a logical subset of them together. The courses are: ${generatedCourseTitles.join(', ')}`,
-        model: 'googleai/gemini-1.5-flash',
+        model: googleAI.model('gemini-1.5-pro'),
         output: {
             schema: BundleSuggestionSchema,
         },
