@@ -3,7 +3,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Review, Project, LearningGoal } from './mock-data';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback } from './mock-data';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -559,22 +559,14 @@ export async function logApiCall(userId: string, endpoint: string): Promise<void
 }
 
 // Student social features
-export async function getReviewsForCourse(courseId: string): Promise<Review[]> {
-    const reviewsRef = query(ref(db, `reviews/${courseId}`), orderByChild('createdAt'));
-    const snapshot = await get(reviewsRef);
-    if (snapshot.exists()) {
-        const data = snapshot.val();
-        const reviews = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-        return reviews.reverse();
-    }
-    return [];
-}
-
-export async function createReview(courseId: string, reviewData: Omit<Review, 'id'>): Promise<string> {
-    const reviewRef = ref(db, `reviews/${courseId}`);
-    const newReviewRef = push(reviewRef);
-    await set(newReviewRef, reviewData);
-    return newReviewRef.key!;
+export async function createCourseFeedback(courseId: string, feedbackData: Omit<CourseFeedback, 'id' | 'courseId' | 'createdAt'>): Promise<string> {
+    const feedbackRef = ref(db, `courseFeedback/${courseId}`);
+    const newFeedbackRef = push(feedbackRef);
+    await set(newFeedbackRef, {
+        ...feedbackData,
+        createdAt: new Date().toISOString(),
+    });
+    return newFeedbackRef.key!;
 }
 
 export async function getProjectsForCourse(courseId: string): Promise<Project[]> {

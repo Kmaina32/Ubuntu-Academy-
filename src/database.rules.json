@@ -124,10 +124,10 @@
             ".write": "auth != null"
         }
     },
-    "reviews": {
-        ".read": true,
+    "courseFeedback": {
         "$courseId": {
-            ".write": "auth != null"
+          ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+          ".write": "auth != null"
         }
     },
     "projects": {

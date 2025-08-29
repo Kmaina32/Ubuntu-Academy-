@@ -116,6 +116,7 @@ export interface UserCourse {
     certificateAvailable: boolean;
     enrollmentDate: string; // ISO String
     completedLessons?: string[];
+    feedbackSubmitted?: boolean;
 }
 
 export type TutorMessage = {
@@ -204,11 +205,11 @@ export interface LearningGoal {
     createdAt: string;
 }
 
-export interface Review {
+export interface CourseFeedback {
     id: string;
+    courseId: string;
     userId: string;
     userName: string;
-    userAvatar: string;
     rating: number;
     comment: string;
     createdAt: string;
