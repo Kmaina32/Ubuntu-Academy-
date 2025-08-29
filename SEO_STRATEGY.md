@@ -70,11 +70,11 @@ This is the most critical component for global scaling.
 -   To tell Google about localized versions of a page, we must use `hreflang` tags.
 -   **Example:** If we create a Spanish version of the homepage, the `<head>` of both the English and Spanish pages should contain:
     ```html
-    <link rel="alternate" hreflang="en" href="https://skillset.com/" />
-    <link rel="alternate" hreflang="es" href="https://skillset.com/es/" />
-    <link rel="alternate" hreflang="x-default" href="https://skillset.com/" />
+    <link rel="alternate" hreflang="en" href="https://ubuntuacademy.com/" />
+    <link rel="alternate" hreflang="es" href="https://ubuntuacademy.com/es/" />
+    <link rel="alternate" hreflang="x-default" href="https://ubuntuacademy.com/" />
     ```
--   This requires a URL structure that supports localization (e.g., `skillset.com/es/` for Spanish).
+-   This requires a URL structure that supports localization (e.g., `ubuntuacademy.com/es/` for Spanish).
 
 #### 5.4. XML Sitemap:
 -   Ensure the sitemap is always up-to-date and includes all public pages. If we implement `hreflang`, the sitemap must also include the alternate versions of each URL.
