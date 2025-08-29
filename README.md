@@ -40,6 +40,15 @@ The platform is divided into two main user experiences: the student-facing appli
 - **Admin Help Center:** An AI assistant specifically trained on the platform's features to help the administrator.
 - **Event Scheduling:** An admin-only calendar to create and manage events for students.
 
+## Autonomous Operation
+
+The platform features an autonomous AI agent that can manage content creation without human input. A secure API endpoint (`/api/cron/content-strategy`) triggers an AI flow that:
+1.  Brainstorms 10 new, relevant course ideas.
+2.  Generates the full content for all 10 courses.
+3.  Creates a new certificate program from a subset of the new courses.
+4.  Creates a new marketing bundle from another subset.
+This process can be automated by setting up a cron job to call the API endpoint on a schedule (e.g., daily).
+
 ## Tech Stack
 
 - **Framework:** [Next.js](https://nextjs.org/) (with App Router)
@@ -78,3 +87,23 @@ To get the application running locally, follow these steps:
     Navigate to `http://localhost:9002` in your browser to see the application in action.
 
 **Admin Access:** To access the admin dashboard, log in with the designated admin account.
+
+---
+## Setting Up Autonomous Content Generation (Optional)
+
+To make the AI agent run automatically, you need to set up a cron job to call the secure API endpoint.
+
+1.  **Set Environment Variables:**
+    -   Add `CRON_SECRET=your_secret_key` to your `.env` file. Replace `your_secret_key` with a long, random string.
+    -   When deploying to a platform like Vercel, set this as a production environment variable.
+
+2.  **Use a Cron Job Service:**
+    -   Sign up for a free cron job service like [cron-job.org](https://cron-job.org/).
+    -   Create a new cron job with the following settings:
+        -   **URL:** `https://your-production-domain.com/api/cron/content-strategy` (Replace with your app's domain)
+        -   **Method:** `POST`
+        -   **Schedule:** Choose a schedule (e.g., once per day).
+        -   **Custom Headers:** Add an `Authorization` header.
+            -   **Name:** `Authorization`
+            -   **Value:** `Bearer your_secret_key` (Use the same secret key from your `.env` file)
+    -   Save the cron job. It will now automatically trigger your AI content agent on the schedule you set.
