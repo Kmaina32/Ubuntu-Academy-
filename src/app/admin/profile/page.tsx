@@ -250,7 +250,7 @@ export default function ProfilePage() {
                                     <DialogDescription>
                                         Center your face in the frame and click capture.
                                     </DialogDescription>
-                               </DialogHeader>
+                               </Header>
                                 <div className="flex justify-center items-center my-4">
                                    <video ref={videoRef} className="w-full aspect-video rounded-md bg-muted" autoPlay muted />
                                 </div>
