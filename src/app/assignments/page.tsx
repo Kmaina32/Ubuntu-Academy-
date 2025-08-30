@@ -9,7 +9,7 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ListTodo, Loader2, Edit, Star } from 'lucide-react';
+import { ArrowLeft, ListTodo, Loader2, Edit, Star, Briefcase } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -17,19 +17,20 @@ import { useAuth } from '@/hooks/use-auth';
 import type { Course, Submission } from '@/lib/mock-data';
 import { getUserCourses, getSubmissionsByUserId, getAllCourses } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
+import { slugify } from '@/lib/utils';
 
-type UserAssignment = Course & {
+type UserProject = Course & {
     submission?: Submission;
 };
 
-export default function AssignmentsPage() {
+export default function ProjectsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [assignments, setAssignments] = useState<UserAssignment[]>([]);
+  const [projects, setProjects] = useState<UserProject[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAssignments = async () => {
+    const fetchProjects = async () => {
       if (!user) {
         setLoading(false);
         return;
@@ -44,17 +45,17 @@ export default function AssignmentsPage() {
           getSubmissionsByUserId(user.uid)
         ]);
         
-        const userAssignments = allCourses
-            .filter(course => enrolledCourseIds.has(course.id))
+        const userProjects = allCourses
+            .filter(course => enrolledCourseIds.has(course.id) && course.project)
             .map(course => {
                 const submission = userSubmissions.find(s => s.courseId === course.id);
                 return { ...course, submission };
             })
             .sort((a, b) => a.title.localeCompare(b.title));
         
-        setAssignments(userAssignments);
+        setProjects(userProjects);
       } catch (err) {
-        console.error("Failed to fetch assignments:", err);
+        console.error("Failed to fetch projects:", err);
       } finally {
         setLoading(false);
       }
@@ -62,18 +63,17 @@ export default function AssignmentsPage() {
 
     if (!authLoading) {
       if (user) {
-        fetchAssignments();
+        fetchProjects();
       } else {
         router.push('/login');
       }
     }
   }, [user, authLoading, router]);
 
-  const getSubmissionStatus = (assignment: UserAssignment) => {
-    if (!assignment.submission) return <Badge variant="secondary">Not Submitted</Badge>;
-    if (assignment.submission.graded) {
-        const maxPoints = assignment.exam.reduce((acc, q) => acc + q.maxPoints, 0);
-        return <Badge>Graded: {assignment.submission.pointsAwarded}/{maxPoints}</Badge>
+  const getSubmissionStatus = (project: UserProject) => {
+    if (!project.submission) return <Badge variant="secondary">Not Submitted</Badge>;
+    if (project.submission.graded) {
+        return <Badge>Graded: {project.submission.grade}/10</Badge>
     }
     return <Badge variant="outline">Submitted for Grading</Badge>
   }
@@ -97,52 +97,37 @@ export default function AssignmentsPage() {
                 <Card>
                     <CardHeader className="text-center">
                         <div className="mx-auto bg-secondary p-3 rounded-full w-fit">
-                            <ListTodo className="h-8 w-8 text-secondary-foreground" />
+                            <Briefcase className="h-8 w-8 text-secondary-foreground" />
                         </div>
-                        <CardTitle className="mt-4 text-2xl font-headline">My Final Exams</CardTitle>
-                        <CardDescription>View and complete your course final exams.</CardDescription>
+                        <CardTitle className="mt-4 text-2xl font-headline">My Projects</CardTitle>
+                        <CardDescription>View and complete your course final projects.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      {assignments.length > 0 ? (
+                      {projects.length > 0 ? (
                         <Table>
                           <TableHeader>
                             <TableRow>
                               <TableHead>Course</TableHead>
-                              <TableHead>Exam</TableHead>
+                              <TableHead>Project</TableHead>
                               <TableHead>Status</TableHead>
                               <TableHead className="text-right">Action</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {assignments.map((assignment) => (
-                              <TableRow key={assignment.id}>
-                                <TableCell className="font-medium">{assignment.title}</TableCell>
-                                <TableCell>Final Exam</TableCell>
+                            {projects.map((project) => (
+                              <TableRow key={project.id}>
+                                <TableCell className="font-medium">{project.title}</TableCell>
+                                <TableCell>{project.project?.title}</TableCell>
                                 <TableCell>
-                                  {getSubmissionStatus(assignment)}
+                                  {getSubmissionStatus(project)}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                  {!assignment.submission && (
-                                    <Button asChild size="sm">
-                                      <Link href={`/courses/${assignment.id}/exam`}>
+                                  <Button asChild size="sm">
+                                      <Link href={`/courses/${slugify(project.title)}/project`}>
                                           <Edit className="mr-2 h-4 w-4" />
-                                          Take Exam
+                                          {project.submission ? 'View Project' : 'Start Project'}
                                       </Link>
                                     </Button>
-                                  )}
-                                   {(assignment.submission && assignment.submission.graded) && (
-                                    <Button asChild size="sm" variant="outline">
-                                      <Link href={`/admin/assignments/grade/${assignment.submission.id}`}>
-                                          <Star className="mr-2 h-4 w-4" />
-                                          View Results
-                                      </Link>
-                                    </Button>
-                                  )}
-                                  {(assignment.submission && !assignment.submission.graded) && (
-                                     <Button size="sm" variant="secondary" disabled>
-                                        Pending Grade
-                                     </Button>
-                                  )}
                                 </TableCell>
                               </TableRow>
                             ))}
@@ -150,7 +135,7 @@ export default function AssignmentsPage() {
                         </Table>
                       ) : (
                         <div className="text-center text-muted-foreground py-10">
-                          <p>You are not enrolled in any courses with assignments.</p>
+                          <p>You are not enrolled in any courses with projects.</p>
                         </div>
                       )}
                     </CardContent>

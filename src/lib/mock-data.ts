@@ -27,24 +27,11 @@ export interface Module {
   lessons: Lesson[];
 }
 
-export interface ShortAnswerQuestion {
-  id: string;
-  type: 'short-answer';
-  question: string;
-  referenceAnswer: string;
-  maxPoints: number;
+export interface Project {
+  title: string;
+  description: string;
+  submissionType: 'url' | 'text' | 'code';
 }
-
-export interface MultipleChoiceQuestion {
-  id: string;
-  type: 'multiple-choice';
-  question: string;
-  options: string[];
-  correctAnswer: number; // index of the correct answer
-  maxPoints: number;
-}
-
-export type ExamQuestion = ShortAnswerQuestion | MultipleChoiceQuestion;
 
 
 export interface Submission {
@@ -55,9 +42,11 @@ export interface Submission {
     userEmail: string;
     courseTitle: string;
     submittedAt: string; // ISO String
-    answers: { questionId: string, answer: string | number }[]; // string for short-answer, number for mcq index
+    projectTitle: string;
+    projectUrl?: string;
+    projectContent?: string;
     graded: boolean;
-    pointsAwarded?: number;
+    grade?: number;
     feedback?: string;
 }
 
@@ -80,7 +69,7 @@ export interface Course {
   duration: string; // e.g., "5 Weeks"
   dripFeed: 'daily' | 'weekly' | 'off';
   modules: Module[];
-  exam: ExamQuestion[];
+  project?: Project;
   createdAt: string; // ISO string
 }
 
@@ -216,17 +205,6 @@ export interface CourseFeedback {
     createdAt: string;
 }
 
-export interface Project {
-    id: string;
-    userId: string;
-    userName: string;
-    userAvatar: string;
-    title: string;
-    description: string;
-    projectUrl: string;
-    imageUrl: string;
-    createdAt: string;
-}
 
 export interface RegisteredUser {
     uid: string;
