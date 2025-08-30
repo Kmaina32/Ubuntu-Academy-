@@ -106,45 +106,44 @@ export default function Home() {
       <SidebarInset>
         <Header />
         <main className="flex-grow">
-          <section className="relative py-12 md:py-16 bg-secondary/50">
-            <div className="container mx-auto px-4 md:px-6">
-              <Carousel
-                opts={{ loop: true }}
-                plugins={[autoplayPlugin.current]}
-                className="w-full"
-              >
-                <CarouselContent>
-                  {featuredCourses.map((course) => (
-                    <CarouselItem key={course.id}>
-                       <div
-                          className="relative rounded-xl overflow-hidden min-h-[400px] flex items-center justify-center text-center"
-                        >
-                          <Image
-                              src={course.imageUrl}
-                              alt={course.title}
-                              fill
-                              className="object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/50"></div>
-                          <div className="relative z-10 h-full flex flex-col items-center justify-center text-white p-4">
-                              <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight font-headline break-words">
-                                {course.title}
-                              </h1>
-                              <p className="text-lg md:text-xl max-w-3xl mx-auto break-words">
-                                {course.description}
-                              </p>
-                              <Button asChild className="mt-6">
-                                <Link href={`/courses/${course.id}`}>
-                                  Go to Course
-                                </Link>
-                              </Button>
-                          </div>
-                        </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-              </Carousel>
-            </div>
+          <section className="relative h-screen bg-secondary/50 overflow-hidden">
+            <Carousel
+              opts={{ loop: true }}
+              plugins={[autoplayPlugin.current]}
+              className="w-full h-full"
+            >
+              <CarouselContent>
+                {featuredCourses.map((course) => (
+                  <CarouselItem key={course.id}>
+                    <div className="relative w-full h-full flex items-center justify-center text-center">
+                      <Image
+                        src={course.imageUrl}
+                        alt={course.title}
+                        fill
+                        className="object-cover"
+                        priority
+                      />
+                      <div className="absolute inset-0 bg-black/50"></div>
+          
+                      
+                      <div className="relative z-10 flex flex-col items-center justify-center text-white px-6 sm:px-12 max-w-4xl mx-auto">
+                        <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-4 leading-tight break-words">
+                          {course.title}
+                        </h1>
+                        <p className="text-base sm:text-lg md:text-xl mb-6 break-words">
+                          {course.description}
+                        </p>
+                        <Button asChild size="lg">
+                          <Link href={`/courses/${course.id}`}>
+                            Go to Course
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
           </section>
 
           <section className="py-8 md:py-12 bg-background">
