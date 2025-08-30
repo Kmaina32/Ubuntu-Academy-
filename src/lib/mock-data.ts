@@ -245,3 +245,15 @@ export interface RegisteredUser {
     learningGoals?: Record<string, LearningGoal>;
     photoURL?: string;
 }
+
+export interface PermissionRequest {
+    id: string;
+    requesterId: string;
+    requesterName: string;
+    action: 'delete_course' | 'delete_program' | 'delete_bundle';
+    itemId: string;
+    itemName: string;
+    status: 'pending' | 'approved' | 'denied';
+    createdAt: string; // ISO String
+    resolvedAt?: string; // ISO String
+}

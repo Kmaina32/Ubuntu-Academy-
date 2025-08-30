@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -34,6 +35,7 @@ interface AuthContextType {
   setUser: Dispatch<SetStateAction<User | null>>;
   loading: boolean;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   login: (email: string, pass: string) => Promise<any>;
   signup: (email: string, pass: string, name: string) => Promise<any>;
   logout: () => Promise<any>;
@@ -48,11 +50,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
+      setIsSuperAdmin(user?.uid === ADMIN_UID);
       setLoading(false);
     });
 
@@ -65,6 +69,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
     }
     
+    // Set super admin status immediately
+    setIsSuperAdmin(user.uid === ADMIN_UID);
+
     // Set up Firebase Realtime Database presence
     const userStatusRef = ref(db, `/users/${user.uid}`);
     
@@ -83,11 +90,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Listen for real-time changes to the user's record in the database
     const userRef = ref(db, `users/${user.uid}`);
     const unsubscribeAdminCheck = onValue(userRef, (snapshot) => {
-        if (user.uid === ADMIN_UID) {
-            setIsAdmin(true);
-            return;
-        }
-
         if (snapshot.exists()) {
             const userProfile = snapshot.val();
             if (userProfile.isAdmin) {
@@ -211,6 +213,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser,
     loading,
     isAdmin,
+    isSuperAdmin,
     login,
     signup,
     logout,

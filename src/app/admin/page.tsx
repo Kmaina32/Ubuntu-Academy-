@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Course } from "@/lib/mock-data";
-import { getAllCourses, deleteCourse } from '@/lib/firebase-service';
+import { getAllCourses, deleteCourse, createPermissionRequest } from '@/lib/firebase-service';
 import { FilePlus2, Pencil, Trash2, Loader2, Search } from "lucide-react";
 import Link from "next/link";
 import { useToast } from '@/hooks/use-toast';
@@ -23,8 +24,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/use-auth';
+import { Dialog } from '@/components/ui/dialog';
 
 export default function AdminPage() {
+  const { user, isSuperAdmin } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,13 +60,31 @@ export default function AdminPage() {
   }, [courses, searchQuery]);
 
   const handleDelete = async (course: Course) => {
-    try {
-      await deleteCourse(course.id);
-      toast({ title: "Success", description: `Course "${course.title}" has been deleted.` });
-      fetchCourses(); // Refresh the list
-    } catch (error) {
-      console.error("Failed to delete course:", error);
-      toast({ title: "Error", description: "Failed to delete course.", variant: "destructive" });
+    if (!user) return;
+
+    if (isSuperAdmin) {
+        try {
+            await deleteCourse(course.id);
+            toast({ title: "Success", description: `Course "${course.title}" has been deleted.` });
+            fetchCourses(); // Refresh the list
+        } catch (error) {
+            console.error("Failed to delete course:", error);
+            toast({ title: "Error", description: "Failed to delete course.", variant: "destructive" });
+        }
+    } else {
+        try {
+            await createPermissionRequest({
+                requesterId: user.uid,
+                requesterName: user.displayName || 'Unknown Admin',
+                action: 'delete_course',
+                itemId: course.id,
+                itemName: course.title,
+            });
+            toast({ title: "Request Sent", description: "Your request to delete this course has been sent to the super admin for approval."});
+        } catch (error) {
+            console.error("Failed to create permission request:", error);
+            toast({ title: "Error", description: "Could not send deletion request.", variant: "destructive" });
+        }
     }
   };
 
@@ -137,12 +159,17 @@ export default function AdminPage() {
                                   <AlertDialogHeader>
                                       <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                       <AlertDialogDescription>
-                                          This action cannot be undone. This will permanently delete the course "{course.title}" and all its associated data.
+                                         {isSuperAdmin 
+                                            ? `This action cannot be undone. This will permanently delete the course "${course.title}" and all its associated data.`
+                                            : `You are requesting to delete the course "${course.title}". This will send a request to the super admin for approval.`
+                                         }
                                       </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
                                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction onClick={() => handleDelete(course)}>Continue</AlertDialogAction>
+                                      <AlertDialogAction onClick={() => handleDelete(course)}>
+                                        {isSuperAdmin ? 'Yes, delete it' : 'Yes, send request'}
+                                      </AlertDialogAction>
                                   </AlertDialogFooter>
                               </AlertDialogContent>
                           </AlertDialog>

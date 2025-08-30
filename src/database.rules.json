@@ -137,6 +137,16 @@
                ".write": "auth != null && auth.uid === $userId"
            }
        }
+    },
+    "permissionRequests": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+      "$requestId": {
+          "status": {
+             // Only the super admin can change the status
+            ".write": "auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2'"
+          }
+      }
     }
   }
 }

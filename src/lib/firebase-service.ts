@@ -3,7 +3,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio } from './mock-data';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest } from './mock-data';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -593,4 +593,37 @@ export async function createProject(courseId: string, userId: string, projectDat
 export async function saveLearningGoals(userId: string, goals: Record<string, LearningGoal>): Promise<void> {
     const goalsRef = ref(db, `users/${userId}/learningGoals`);
     await set(goalsRef, goals);
+}
+
+
+// Super Admin Permission Requests
+export async function createPermissionRequest(requestData: Omit<PermissionRequest, 'id' | 'createdAt' | 'status'>): Promise<string> {
+    const requestsRef = ref(db, 'permissionRequests');
+    const newRequestRef = push(requestsRef);
+    const dataToSave: Omit<PermissionRequest, 'id'> = {
+        ...requestData,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+    };
+    await set(newRequestRef, dataToSave);
+    return newRequestRef.key!;
+}
+
+export async function getPermissionRequests(): Promise<PermissionRequest[]> {
+    const requestsRef = ref(db, 'permissionRequests');
+    const snapshot = await get(requestsRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        const requests = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        return requests.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+    return [];
+}
+
+export async function updatePermissionRequestStatus(id: string, status: 'approved' | 'denied'): Promise<void> {
+    const requestRef = ref(db, `permissionRequests/${id}`);
+    await update(requestRef, {
+        status,
+        resolvedAt: new Date().toISOString(),
+    });
 }
