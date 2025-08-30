@@ -8,7 +8,7 @@ import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import type { Course, UserCourse } from "@/lib/mock-data";
 import { getAllCourses, getHeroData, getUserCourses } from '@/lib/firebase-service';
-import { Loader2, Search, ArrowLeft, ArrowRight, BookOpen } from 'lucide-react';
+import { Loader2, Search, ArrowLeft, ArrowRight } from 'lucide-react';
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
@@ -16,8 +16,6 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
-import Autoplay from 'embla-carousel-autoplay';
 
 const COURSES_PER_PAGE = 6;
 
@@ -25,15 +23,11 @@ export default function Home() {
   const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [userCourses, setUserCourses] = useState<UserCourse[]>([]);
-  const [heroData, setHeroData] = useState({ title: '', subtitle: '', imageUrl: '', slideshowSpeed: 8 });
+  const [heroData, setHeroData] = useState({ title: '', subtitle: '', imageUrl: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-
-  const autoplayPlugin = useRef(
-    Autoplay({ delay: (heroData.slideshowSpeed || 8) * 1000, stopOnInteraction: true })
-  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -59,10 +53,6 @@ export default function Home() {
   }, [user]);
   
   const enrolledCourseIds = useMemo(() => new Set(userCourses.map(c => c.courseId)), [userCourses]);
-
-  const featuredCourses = useMemo(() => {
-    return courses.slice(0, 5); // Take the first 5 courses as featured
-  }, [courses]);
 
   const filteredCourses = useMemo(() => {
     return courses.filter(course => 
@@ -106,44 +96,31 @@ export default function Home() {
       <SidebarInset>
         <Header />
         <main className="flex-grow">
-          <section className="relative h-screen bg-secondary/50 overflow-hidden">
-            <Carousel
-              opts={{ loop: true }}
-              plugins={[autoplayPlugin.current]}
-              className="w-full h-full"
-            >
-              <CarouselContent>
-                {featuredCourses.map((course) => (
-                  <CarouselItem key={course.id}>
-                    <div className="relative w-full h-full flex items-center justify-center text-center">
-                      <Image
-                        src={course.imageUrl}
-                        alt={course.title}
+          <section className="relative py-12 md:py-16 bg-secondary/50">
+            <div className="container mx-auto px-4 md:px-6">
+              <div
+                className="relative rounded-xl overflow-hidden min-h-[400px] flex items-center justify-center text-center"
+              >
+                {heroData.imageUrl && (
+                    <Image
+                        src={heroData.imageUrl}
+                        alt="Hero background"
                         fill
                         className="object-cover"
-                        priority
-                      />
-                      <div className="absolute inset-0 bg-black/50"></div>
-          
-                      
-                      <div className="relative z-10 flex flex-col items-center justify-center text-white px-6 sm:px-12 max-w-4xl mx-auto">
-                        <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-4 leading-tight break-words">
-                          {course.title}
-                        </h1>
-                        <p className="text-base sm:text-lg md:text-xl mb-6 break-words">
-                          {course.description}
-                        </p>
-                        <Button asChild size="lg">
-                          <Link href={`/courses/${course.id}`}>
-                            Go to Course
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-            </Carousel>
+                        data-ai-hint="abstract background"
+                    />
+                )}
+                <div className="absolute inset-0 bg-black/50"></div>
+                <div className="relative z-10 h-full flex flex-col items-center justify-center text-white p-4">
+                    <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight font-headline break-words">
+                    {heroData.title}
+                    </h1>
+                    <p className="text-lg md:text-xl max-w-3xl mx-auto break-words">
+                    {heroData.subtitle}
+                    </p>
+                </div>
+              </div>
+            </div>
           </section>
 
           <section className="py-8 md:py-12 bg-background">
