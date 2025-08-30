@@ -7,6 +7,6 @@
 import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
 
-export const isConfigured = !!process.env.GEMINI_API_KEY;
+export const isConfigured = !!process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
 export type AI = ReturnType<typeof genkit<any>>;
