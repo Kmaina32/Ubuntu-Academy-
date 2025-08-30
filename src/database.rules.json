@@ -21,7 +21,10 @@
     "users": {
       "$uid": {
         ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || root.child('users').child($uid).child('portfolio').child('public').val() === true",
-        ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+        ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+        "purchasedCourses": {
+            ".read": "auth != null && auth.uid === $uid"
+        }
       },
       ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
@@ -32,7 +35,7 @@
     "submissions": {
       ".read": "auth != null",
       ".write": "auth != null",
-      ".indexOn": "userId",
+      ".indexOn": ["userId"],
       "$submissionId": {
         ".read": "root.child('submissions').child($submissionId).child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true"
       }
@@ -150,3 +153,4 @@
     }
   }
 }
+
