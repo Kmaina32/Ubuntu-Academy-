@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,7 +7,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/hooks/use-auth';
 import type { Course, ExamQuestion } from '@/lib/mock-data';
-import { getCourseById, createSubmission, updateUserCourseProgress } from '@/lib/firebase-service';
+import { getCourseById, createSubmission, updateUserCourseProgress, getAllCourses } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -21,6 +20,7 @@ import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { slugify } from '@/lib/utils';
 
 const formSchema = z.object({
   answers: z.array(z.object({
@@ -35,7 +35,7 @@ const formSchema = z.object({
 
 export default function ExamPage() {
   const router = useRouter();
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>(); // This 'id' is the slug
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   
@@ -62,7 +62,15 @@ export default function ExamPage() {
     const fetchCourse = async () => {
         if (!user) return;
         setLoadingCourse(true);
-        const fetchedCourse = await getCourseById(params.id);
+        const allCourses = await getAllCourses();
+        const courseSlug = params.id;
+        const fetchedCourse = allCourses.find(c => slugify(c.title) === courseSlug);
+        
+        if (!fetchedCourse) {
+          notFound();
+          return;
+        }
+
         if(fetchedCourse?.exam) {
            form.reset({
              answers: fetchedCourse.exam.map(q => ({questionId: q.id, answer: q.type === 'short-answer' ? '' : -1}))
@@ -250,4 +258,3 @@ export default function ExamPage() {
     </SidebarProvider>
   );
 }
-

@@ -66,7 +66,13 @@ export default function LoginPage() {
       await login(values.email, values.password);
       router.push('/');
     } catch (e: any) {
-      setError(e.message || 'An error occurred. Please try again.');
+      if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') {
+        setError('Incorrect password. Please try again.');
+      } else if (e.code === 'auth/user-not-found') {
+        setError('No account found with this email.');
+      } else {
+        setError(e.message || 'An error occurred. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }

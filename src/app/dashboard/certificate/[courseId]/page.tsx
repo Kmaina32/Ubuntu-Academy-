@@ -1,9 +1,8 @@
-
 'use client'
 
 import { useState, useEffect } from 'react';
 import { notFound, useParams, useRouter } from "next/navigation";
-import { getCourseById } from "@/lib/firebase-service";
+import { getCourseById, getAllCourses } from "@/lib/firebase-service";
 import type { Course } from "@/lib/mock-data";
 import { Footer } from "@/components/Footer";
 import { Certificate } from "@/components/Certificate";
@@ -12,9 +11,10 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { slugify } from '@/lib/utils';
 
 export default function CertificatePage() {
-  const params = useParams<{ courseId: string }>();
+  const params = useParams<{ courseId: string }>(); // This 'courseId' is the slug
   const router = useRouter();
   const [course, setCourse] = useState<Course | null>(null);
   const [loadingCourse, setLoadingCourse] = useState(true);
@@ -32,8 +32,10 @@ export default function CertificatePage() {
     const fetchCourse = async () => {
         if (!user) return;
         setLoadingCourse(true);
-        const fetchedCourse = await getCourseById(params.courseId);
-        setCourse(fetchedCourse);
+        const allCourses = await getAllCourses();
+        const courseSlug = params.courseId;
+        const fetchedCourse = allCourses.find(c => slugify(c.title) === courseSlug);
+        setCourse(fetchedCourse || null);
         setLoadingCourse(false);
     }
     if(user) {

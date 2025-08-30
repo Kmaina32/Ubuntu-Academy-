@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
+import { slugify } from '@/lib/utils';
 
 type PurchasedCourseDetail = UserCourse & Partial<Course>;
 
@@ -123,7 +124,7 @@ export default function DashboardPage() {
                  {inProgressCourses.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {inProgressCourses.map((course) => (
-                            course.id && (
+                            course.id && course.title && (
                             <Card key={course.id} className="flex flex-col">
                                 <CardHeader>
                                 <CardTitle className="font-headline text-xl">{course.title}</CardTitle>
@@ -138,7 +139,7 @@ export default function DashboardPage() {
                                 </CardContent>
                                 <CardContent>
                                     <Button asChild className="w-full">
-                                        <Link href={`/courses/${course.id}/learn`}>
+                                        <Link href={`/courses/${slugify(course.title)}/learn`}>
                                             <BookOpen className="mr-2 h-4 w-4" />
                                             Jump Back In
                                         </Link>
@@ -174,7 +175,7 @@ export default function DashboardPage() {
                         <CardContent className="pt-6">
                              <ul className="space-y-4">
                                 {completedCourses.map((course, index) => (
-                                course.id && (
+                                course.id && course.title && (
                                     <li key={course.id}>
                                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                                              <div>
@@ -182,7 +183,7 @@ export default function DashboardPage() {
                                                 <p className="text-sm text-muted-foreground">Completed on {new Date().toLocaleDateString()}</p>
                                              </div>
                                              <Button asChild variant="outline" className="mt-2 sm:mt-0">
-                                                <Link href={`/dashboard/certificate/${course.id}`}>
+                                                <Link href={`/dashboard/certificate/${slugify(course.title)}`}>
                                                     <Award className="mr-2 h-4 w-4" />
                                                     View Certificate
                                                  </Link>

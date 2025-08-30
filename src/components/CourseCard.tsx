@@ -1,4 +1,3 @@
-
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { Course } from '@/lib/mock-data';
 import { Check, ArrowRight } from 'lucide-react';
+import { slugify } from '@/lib/utils';
 
 interface CourseCardProps {
   course: Course;
@@ -14,10 +14,13 @@ interface CourseCardProps {
 }
 
 export function CourseCard({ course, isEnrolled, aiHint }: CourseCardProps) {
+  const courseUrl = `/courses/${slugify(course.title)}`;
+  const learnUrl = `${courseUrl}/learn`;
+
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
       <CardHeader className="p-0">
-        <Link href={isEnrolled ? `/courses/${course.id}/learn` : `/courses/${course.id}`}>
+        <Link href={isEnrolled ? learnUrl : courseUrl}>
           <Image
             src={course.imageUrl}
             alt={course.title}
@@ -39,14 +42,14 @@ export function CourseCard({ course, isEnrolled, aiHint }: CourseCardProps) {
         </p>
         {isEnrolled ? (
             <Button asChild variant="outline">
-                <Link href={`/courses/${course.id}/learn`}>
+                <Link href={learnUrl}>
                     Go to Course
                     <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
             </Button>
         ) : (
             <Button asChild>
-                <Link href={`/courses/${course.id}`}>View Course</Link>
+                <Link href={courseUrl}>View Course</Link>
             </Button>
         )}
       </CardFooter>

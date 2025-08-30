@@ -1,11 +1,9 @@
-
-
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Course, Lesson, Module, TutorMessage } from '@/lib/mock-data';
-import { getCourseById, updateUserCourseProgress, getUserCourses, saveTutorHistory, getTutorHistory, getTutorSettings, TutorSettings, getUserNotes, saveUserNotes } from '@/lib/firebase-service';
+import { getCourseById, updateUserCourseProgress, getUserCourses, saveTutorHistory, getTutorHistory, getTutorSettings, TutorSettings, getUserNotes, saveUserNotes, getAllCourses } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -30,6 +28,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DiscussionForum } from '@/components/DiscussionForum';
+import { slugify } from '@/lib/utils';
 
 
 function getYouTubeEmbedUrl(url: string | undefined): string | null {
@@ -104,7 +103,7 @@ function CourseOutline({ course, progress, completedLessons, unlockedLessonsCoun
                     <SheetTitle>Course Outline</SheetTitle>
                 </SheetHeader>
             ) : (
-                <button onClick={() => router.push(`/courses/${course.id}`)} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+                <button onClick={() => router.push(`/courses/${slugify(course.title)}`)} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
                     <ArrowLeft className="h-4 w-4" />
                     Back to Course Details
                 </button>
@@ -706,7 +705,7 @@ function LessonContent({ lesson, onComplete }: { lesson: Lesson | null; onComple
 
 export default function CoursePlayerPage() {
   const router = useRouter();
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>(); // This is now a slug
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -733,10 +732,17 @@ export default function CoursePlayerPage() {
     const fetchCourseAndProgress = async () => {
         if (!user) return;
         setLoading(true);
-        const [fetchedCourse, fetchedTutorSettings] = await Promise.all([
-             getCourseById(params.id),
-             getTutorSettings()
-        ]);
+
+        const allCourses = await getAllCourses();
+        const courseSlug = params.id;
+        const fetchedCourse = allCourses.find(c => slugify(c.title) === courseSlug);
+        
+        if (!fetchedCourse) {
+            notFound();
+            return;
+        }
+        
+        const fetchedTutorSettings = await getTutorSettings();
         
         setCourse(fetchedCourse);
         setTutorSettings(fetchedTutorSettings);
@@ -795,7 +801,7 @@ export default function CoursePlayerPage() {
   }
 
   const handleExamClick = () => {
-    router.push(`/courses/${course!.id}/exam`);
+    router.push(`/courses/${slugify(course!.title)}/exam`);
     if (isMobile) {
         setIsSheetOpen(false);
     }
@@ -923,7 +929,7 @@ export default function CoursePlayerPage() {
                                     <CheckCircle className="h-24 w-24 text-green-500 mb-4" />
                                     <h1 className="text-3xl font-bold mb-2 font-headline">You've completed all lessons!</h1>
                                     <p className="text-muted-foreground mb-6">Great job. Now it's time to test your knowledge.</p>
-                                    <Button size="lg" onClick={() => router.push(`/courses/${course.id}/exam`)}>
+                                    <Button size="lg" onClick={() => router.push(`/courses/${slugify(course.title)}/exam`)}>
                                         Go to Final Exam
                                     </Button>
                                 </>
