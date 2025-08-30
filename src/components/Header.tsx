@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -36,7 +37,7 @@ type Notification = {
 };
 
 function NotificationsPopover() {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
     const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(new Set());
@@ -58,7 +59,12 @@ function NotificationsPopover() {
     }, []);
 
     useEffect(() => {
-        if (!user) return;
+        if (authLoading) return;
+        if (!user) {
+            setLoading(false);
+            setNotifications([]);
+            return;
+        };
 
         const generateNotifications = async () => {
             setLoading(true);
@@ -151,7 +157,7 @@ function NotificationsPopover() {
 
         generateNotifications();
 
-    }, [user]);
+    }, [user, authLoading]);
     
     const unreadNotifications = useMemo(() => notifications.filter(n => !readNotificationIds.has(n.id)), [notifications, readNotificationIds]);
 
