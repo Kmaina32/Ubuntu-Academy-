@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { RegisteredUser, saveUser } from '@/lib/firebase-service';
 import { add } from 'date-fns';
 import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 const accessFormSchema = z.object({
   duration: z.string().min(1, 'Please select a duration.'),
@@ -45,6 +46,9 @@ export function AdminAccessManager({ user, isOpen, onClose, onSuccess }: AdminAc
 
   const form = useForm<z.infer<typeof accessFormSchema>>({
     resolver: zodResolver(accessFormSchema),
+    defaultValues: {
+        duration: '10-minutes'
+    }
   });
 
   const handleGrant = async (values: z.infer<typeof accessFormSchema>) => {
@@ -53,7 +57,7 @@ export function AdminAccessManager({ user, isOpen, onClose, onSuccess }: AdminAc
       let expirationDate: string | null = null;
       if (values.duration !== 'permanent') {
         const [amount, unit] = values.duration.split('-');
-        expirationDate = add(new Date(), { [unit]: parseInt(amount, 10) }).toISOString();
+        expirationDate = add(new Date(), { [unit as any]: parseInt(amount, 10) }).toISOString();
       }
 
       await saveUser(user.uid, {

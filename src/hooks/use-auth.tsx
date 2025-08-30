@@ -110,10 +110,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       unsubscribeAdminCheck();
       unsubscribePresence();
       // On manual logout, set offline status
-      update(userStatusRef, { 
-          isOnline: false, 
-          lastSeen: serverTimestamp() 
-      });
+      if (userStatusRef) {
+        update(userStatusRef, { 
+            isOnline: false, 
+            lastSeen: serverTimestamp() 
+        });
+      }
     };
 
   }, [user]);

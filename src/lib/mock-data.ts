@@ -196,6 +196,7 @@ export interface Portfolio {
         linkedin?: string;
         twitter?: string;
     };
+    public?: boolean;
 }
 
 export interface LearningGoal {
@@ -242,4 +243,5 @@ export interface RegisteredUser {
     lastSeen?: string | number;
     portfolio?: Portfolio;
     learningGoals?: Record<string, LearningGoal>;
+    photoURL?: string;
 }
