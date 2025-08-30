@@ -1,5 +1,3 @@
-
-
 'use client'
 
 import Link from 'next/link';
@@ -9,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import type { Course, UserCourse } from "@/lib/mock-data";
-import { getCourseById, getUserCourses } from '@/lib/firebase-service';
+import { getCourseById, getUserCourses, getAllCourses } from '@/lib/firebase-service';
 import { Award, BookOpen, User, Loader2, Trophy, BookCopy, ListTodo } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
@@ -22,38 +20,47 @@ type PurchasedCourseDetail = UserCourse & Partial<Course>;
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const [purchasedCourses, setPurchasedCourses] = useState<PurchasedCourseDetail[]>([]);
+  const [allCourses, setAllCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
-      if (!user) return;
       setLoadingCourses(true);
       
-      const userCourses = await getUserCourses(user.uid);
+      const allCoursesPromise = getAllCourses();
       
-      const courseDetailsPromises = userCourses.map(async (userCourse) => {
-          const courseDetails = await getCourseById(userCourse.courseId);
+      let userCoursesPromise: Promise<UserCourse[]> = Promise.resolve([]);
+      if (user) {
+        userCoursesPromise = getUserCourses(user.uid);
+      }
+
+      const [allCoursesData, userCoursesData] = await Promise.all([allCoursesPromise, userCoursesPromise]);
+      setAllCourses(allCoursesData);
+
+      const courseDetailsPromises = userCoursesData.map(async (userCourse) => {
+          const courseDetails = allCoursesData.find(c => c.id === userCourse.courseId);
           return {
               ...userCourse,
-              ...courseDetails, // Adds title, instructor, etc. to the object
+              ...courseDetails,
               id: userCourse.courseId,
           };
       });
 
       const detailedCourses = await Promise.all(courseDetailsPromises);
-      setPurchasedCourses(detailedCourses.filter(c => c.title)); // Filter out any courses that couldn't be fetched
+      setPurchasedCourses(detailedCourses.filter(c => c.title));
       setLoadingCourses(false);
     };
 
-    if (user) {
+    if (!authLoading) {
       fetchCourseDetails();
-    } else if (!authLoading) {
-      setLoadingCourses(false);
     }
   }, [user, authLoading]);
   
   const inProgressCourses = purchasedCourses.filter(c => !c.completed);
-  const completedCourses = purchasedCourses.filter(c => c.completed || c.certificateAvailable);
+
+  // Super admin logic: gmaina424@gmail.com's UID is 'YlyqSWedlPfEqI9LlGzjN7zlRtC2'
+  const isSuperAdmin = user?.email === 'gmaina424@gmail.com';
+  const completedCourses = isSuperAdmin ? allCourses : purchasedCourses.filter(c => c.completed || c.certificateAvailable);
 
 
   const renderContent = () => {

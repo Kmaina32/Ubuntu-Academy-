@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -13,15 +12,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
-import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen, Clock, Check, MessageSquare, Star, MessageCircleQuestion } from "lucide-react";
+import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen, Clock, Check, MessageSquare } from "lucide-react";
 import { MpesaModal } from '@/components/MpesaModal';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FeedbackForm, FeedbackSubmitted } from '@/components/FeedbackForm';
 
 function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolled }: { course: Course, onEnrollFree: () => void, onPurchase: () => void, isEnrolling: boolean, isEnrolled: boolean }) {
     return (
@@ -99,8 +96,6 @@ export default function CourseDetailPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(false);
-  const [userCourse, setUserCourse] = useState<UserCourse | null>(null);
-
 
    useEffect(() => {
     if (!authLoading && !user) {
@@ -108,25 +103,22 @@ export default function CourseDetailPage() {
     }
   }, [user, authLoading, router]);
 
-  const fetchCourseAndProgress = async () => {
-    if (!user) return;
-    setLoading(true);
-    const [fetchedCourse, userCourses] = await Promise.all([
-        getCourseById(params.id),
-        getUserCourses(user.uid)
-    ]);
-    
-    const currentUserCourse = userCourses.find(c => c.courseId === params.id);
-    if(currentUserCourse) {
-        setIsEnrolled(true);
-        setUserCourse(currentUserCourse);
-    }
-
-    setCourse(fetchedCourse);
-    setLoading(false);
-  }
-
   useEffect(() => {
+    const fetchCourseAndProgress = async () => {
+        if (!user) return;
+        setLoading(true);
+        const [fetchedCourse, userCourses] = await Promise.all([
+            getCourseById(params.id),
+            getUserCourses(user.uid)
+        ]);
+        
+        if(userCourses.some(c => c.courseId === params.id)) {
+            setIsEnrolled(true);
+        }
+
+        setCourse(fetchedCourse);
+        setLoading(false);
+    }
     if (user) {
       fetchCourseAndProgress();
     }
@@ -173,9 +165,6 @@ export default function CourseDetailPage() {
     }
   }
 
-  const isCourseCompleted = !!userCourse?.completed;
-  const hasSubmittedFeedback = !!userCourse?.feedbackSubmitted;
-
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -211,91 +200,54 @@ export default function CourseDetailPage() {
                     />
                 </div>
 
-                 <Tabs defaultValue="overview" className="w-full">
-                  <TabsList>
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="feedback">
-                        <MessageCircleQuestion className="mr-2 h-4 w-4" />
-                        Feedback
-                    </TabsTrigger>
-                     <TabsTrigger value="projects">
-                        <MessageSquare className="mr-2 h-4 w-4" />
-                        Projects
-                    </TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="overview" className="pt-6">
-                     <h2 className="text-xl sm:text-2xl font-bold mb-4 font-headline">Course Description</h2>
-                      <p className="text-muted-foreground text-sm sm:text-base lg:text-lg mb-6 break-words overflow-wrap-anywhere leading-relaxed">
-                        {course.longDescription}
-                      </p>
-                      
-                      <h2 className="text-xl sm:text-2xl font-bold mb-4 font-headline">Course Content</h2>
-                      <Accordion type="single" collapsible className="w-full">
-                        {course.modules && course.modules.map((module) => (
-                          <AccordionItem value={module.id} key={module.id}>
-                            <AccordionTrigger className="text-base sm:text-lg font-semibold break-words overflow-wrap-anywhere text-left pr-2">
-                              {module.title}
-                            </AccordionTrigger>
-                            <AccordionContent>
-                              <ul className="space-y-3 p-2 sm:p-4">
-                                {module.lessons.map((lesson) => (
-                                  <li key={lesson.id} className="flex items-start sm:items-center justify-between gap-2">
-                                    <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
-                                      <PlayCircle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0 mt-0.5 sm:mt-0" />
-                                      <span className="text-sm sm:text-base break-words overflow-wrap-anywhere">
-                                        {lesson.title}
-                                      </span>
-                                    </div>
-                                    <span className="text-xs sm:text-sm text-muted-foreground flex-shrink-0 whitespace-nowrap">
-                                      {lesson.duration}
-                                    </span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </AccordionContent>
-                          </AccordionItem>
-                        ))}
-                        {(!course.modules || course.modules.length === 0) && 
-                          <p className="text-muted-foreground p-4 text-sm sm:text-base">Course content coming soon!</p>
-                        }
-                        <AccordionItem value="exam">
-                            <AccordionTrigger className="text-base sm:text-lg font-semibold text-left pr-2">
-                              Final Exam
-                            </AccordionTrigger>
-                            <AccordionContent>
-                              <div className="flex items-center gap-3 p-2 sm:p-4">
-                                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
-                                  <span className="text-sm sm:text-base break-words">
-                                    Test your knowledge to earn your certificate.
-                                  </span>
+                <h2 className="text-xl sm:text-2xl font-bold mb-4 font-headline">Course Description</h2>
+                <p className="text-muted-foreground text-sm sm:text-base lg:text-lg mb-6 break-words overflow-wrap-anywhere leading-relaxed">
+                  {course.longDescription}
+                </p>
+                
+                <h2 className="text-xl sm:text-2xl font-bold mb-4 font-headline">Course Content</h2>
+                <Accordion type="single" collapsible className="w-full">
+                  {course.modules && course.modules.map((module) => (
+                    <AccordionItem value={module.id} key={module.id}>
+                      <AccordionTrigger className="text-base sm:text-lg font-semibold break-words overflow-wrap-anywhere text-left pr-2">
+                        {module.title}
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <ul className="space-y-3 p-2 sm:p-4">
+                          {module.lessons.map((lesson) => (
+                            <li key={lesson.id} className="flex items-start sm:items-center justify-between gap-2">
+                              <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                                <PlayCircle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0 mt-0.5 sm:mt-0" />
+                                <span className="text-sm sm:text-base break-words overflow-wrap-anywhere">
+                                  {lesson.title}
+                                </span>
                               </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-                  </TabsContent>
-                  <TabsContent value="feedback" className="pt-6">
-                     <h2 className="text-xl sm:text-2xl font-bold mb-4 font-headline">Course Feedback</h2>
-                      {isCourseCompleted ? (
-                        hasSubmittedFeedback ? (
-                            <FeedbackSubmitted />
-                        ) : (
-                            <FeedbackForm course={course} onSuccess={fetchCourseAndProgress} />
-                        )
-                      ) : (
-                          <Card className="text-center">
-                            <CardHeader>
-                                <CardDescription>
-                                You can submit feedback after you complete the course.
-                                </CardDescription>
-                            </CardHeader>
-                          </Card>
-                      )}
-                  </TabsContent>
-                   <TabsContent value="projects" className="pt-6">
-                    <h2 className="text-xl sm:text-2xl font-bold mb-4 font-headline">Student Projects</h2>
-                    <p className="text-muted-foreground">A gallery of projects from students who have completed this course.</p>
-                  </TabsContent>
-                </Tabs>
+                              <span className="text-xs sm:text-sm text-muted-foreground flex-shrink-0 whitespace-nowrap">
+                                {lesson.duration}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                  {(!course.modules || course.modules.length === 0) && 
+                    <p className="text-muted-foreground p-4 text-sm sm:text-base">Course content coming soon!</p>
+                  }
+                  <AccordionItem value="exam">
+                      <AccordionTrigger className="text-base sm:text-lg font-semibold text-left pr-2">
+                        Final Exam
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="flex items-center gap-3 p-2 sm:p-4">
+                            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
+                            <span className="text-sm sm:text-base break-words">
+                              Test your knowledge to earn your certificate.
+                            </span>
+                        </div>
+                      </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </div>
               
               {/* Purchase Card for Desktop View */}

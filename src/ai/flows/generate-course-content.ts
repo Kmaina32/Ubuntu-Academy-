@@ -1,4 +1,3 @@
-
 // This file is machine-generated - edit with care!
 
 'use server';
@@ -14,6 +13,7 @@
 import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
+import { listCoursesTool } from '../tools/course-catalog';
 
 const GenerateCourseContentInputSchema = z.object({
   courseTitle: z.string().describe('The title of the course to be generated.'),
@@ -82,11 +82,14 @@ export async function generateCourseContent(
 const prompt = ai.definePrompt({
   name: 'generateCourseContentPrompt',
   model: googleAI.model('gemini-1.5-pro'),
+  tools: [listCoursesTool],
   input: {schema: GenerateCourseContentInputSchema},
   output: {schema: GenerateCourseContentOutputSchema},
   prompt: `You are an expert curriculum developer for an online learning platform in Kenya. Your task is to generate a complete course structure based on a given title and context.
 
-The course must be comprehensive and well-structured.
+First, use the 'listCourses' tool to get a list of all existing courses in the catalog. You MUST NOT create a course that is a duplicate or very similar to an existing one. Your new course idea must be unique.
+
+The new course must be comprehensive and well-structured.
 It MUST include:
 - A detailed long description (minimum 100 characters).
 - An estimated total duration (e.g., "4 Weeks").
@@ -102,7 +105,7 @@ Course Context:
 {{{courseContext}}}
 {{/if}}
 
-Please generate the following content:
+Please generate the following content for the NEW, UNIQUE course:
 1.  **Long Description**: A detailed description of what the course is about, who it's for, and what students will learn. Minimum 100 characters.
 2.  **Duration**: The estimated total duration of the course.
 3.  **Modules**: A list of exactly 2 modules. Each module must have a unique ID, a title, and its list of lessons.
