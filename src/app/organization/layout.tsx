@@ -2,7 +2,7 @@
 'use client';
 
 import { useAuth } from '@/hooks/use-auth';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { OrganizationSidebar } from '@/components/OrganizationSidebar';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -45,6 +45,7 @@ export default function OrganizationLayout({
   children: React.ReactNode;
 }) {
   const { user, loading, isAdmin, isOrganizationAdmin } = useAuth();
+  const pathname = usePathname();
   
   if (loading) {
      return (
@@ -55,9 +56,16 @@ export default function OrganizationLayout({
      )
   }
 
-  if (!user || (!isOrganizationAdmin && !isAdmin)) {
-      return <OrgAccessDenied />;
+  // Allow access to the signup page for any logged-in user
+  if (pathname === '/organization/signup') {
+      if (!user) return <OrgAccessDenied />;
+  } else {
+    // For all other org pages, enforce admin/org admin role
+    if (!user || (!isOrganizationAdmin && !isAdmin)) {
+        return <OrgAccessDenied />;
+    }
   }
+
 
   return (
     <SidebarProvider>
