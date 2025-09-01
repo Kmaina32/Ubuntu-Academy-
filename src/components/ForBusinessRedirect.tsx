@@ -7,16 +7,18 @@ import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 
 export function ForBusinessRedirect() {
-  const { isOrganizationAdmin, loading } = useAuth();
+  const { isAdmin, isOrganizationAdmin, loading } = useAuth();
   const router = useRouter();
 
+  const shouldRedirect = isAdmin || isOrganizationAdmin;
+
   useEffect(() => {
-    if (!loading && isOrganizationAdmin) {
+    if (!loading && shouldRedirect) {
       router.replace('/organization/dashboard');
     }
-  }, [loading, isOrganizationAdmin, router]);
+  }, [loading, shouldRedirect, router]);
 
-  if (loading || isOrganizationAdmin) {
+  if (loading || shouldRedirect) {
     return (
       <div className="fixed inset-0 bg-background z-50 flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useAuth } from '@/hooks/use-auth';
@@ -43,7 +44,7 @@ export default function OrganizationLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading, isOrganizationAdmin } = useAuth();
+  const { user, loading, isAdmin, isOrganizationAdmin } = useAuth();
   
   if (loading) {
      return (
@@ -54,7 +55,7 @@ export default function OrganizationLayout({
      )
   }
 
-  if (!user || !isOrganizationAdmin) {
+  if (!user || (!isOrganizationAdmin && !isAdmin)) {
       return <OrgAccessDenied />;
   }
 
