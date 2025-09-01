@@ -1,5 +1,10 @@
+
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
+import { Loader2 } from 'lucide-react';
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { AppSidebar } from "@/components/Sidebar";
@@ -29,6 +34,23 @@ const features = [
 ];
 
 export default function ForBusinessPage() {
+  const { isOrganizationAdmin, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && isOrganizationAdmin) {
+      router.replace('/organization/dashboard');
+    }
+  }, [loading, isOrganizationAdmin, router]);
+
+  if (loading || isOrganizationAdmin) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
