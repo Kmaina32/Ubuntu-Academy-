@@ -152,6 +152,10 @@
             ".write": "auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2'"
           }
       }
+    },
+    "notifications": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     }
   }
 }
