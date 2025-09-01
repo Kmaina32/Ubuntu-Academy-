@@ -155,6 +155,13 @@
     "notifications": {
       ".read": "auth != null",
       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "organizations": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+        "$orgId": {
+            ".read": "root.child('organizations').child($orgId).child('ownerId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true",
+            ".write": "root.child('organizations').child($orgId).child('ownerId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true"
+        }
     }
   }
 }

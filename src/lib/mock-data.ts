@@ -205,6 +205,13 @@ export interface CourseFeedback {
     createdAt: string;
 }
 
+export interface Organization {
+    id: string;
+    name: string;
+    ownerId: string;
+    createdAt: string; // ISO String
+}
+
 
 export interface RegisteredUser {
     uid: string;
@@ -216,6 +223,8 @@ export interface RegisteredUser {
     plan?: 'free' | 'basic' | 'pro';
     apiCallCount?: number;
     isAdmin?: boolean;
+    isOrganizationAdmin?: boolean;
+    organizationId?: string;
     adminExpiresAt?: string | null;
     isOnline?: boolean;
     lastSeen?: string | number;

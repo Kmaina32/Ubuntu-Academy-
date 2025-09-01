@@ -3,7 +3,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest } from './mock-data';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization } from './mock-data';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -18,6 +18,8 @@ export interface RegisteredUser {
     plan?: 'free' | 'basic' | 'pro';
     apiCallCount?: number;
     isAdmin?: boolean;
+    isOrganizationAdmin?: boolean;
+    organizationId?: string;
     adminExpiresAt?: string | null;
     isOnline?: boolean;
     lastSeen?: number;
@@ -83,7 +85,7 @@ export async function createCourse(courseData: Omit<Course, 'id'>): Promise<stri
     const newCourseRef = push(coursesRef);
     const dataToSave = {
         ...courseData,
-        createdAt: new Date().toISOString(), // Add creation timestamp
+        createdAt: new Date().toISOString(),
         modules: courseData.modules || [],
         exam: courseData.project || null,
     };
@@ -106,7 +108,6 @@ export async function deleteCourse(courseId: string): Promise<void> {
 // User Functions
 export async function saveUser(uid: string, userData: Partial<Omit<RegisteredUser, 'uid'>>): Promise<void> {
     const userRef = ref(db, `users/${uid}`);
-    // Use update to avoid overwriting existing data when only partial data is provided
     await update(userRef, userData);
 }
 
@@ -127,7 +128,7 @@ export async function enrollUserInCourse(userId: string, courseId: string): Prom
         completed: false,
         certificateAvailable: false,
         completedLessons: [],
-        enrollmentDate: new Date().toISOString(), // Set enrollment date
+        enrollmentDate: new Date().toISOString(),
     });
 }
 
@@ -164,8 +165,6 @@ export async function getAllUsers(): Promise<RegisteredUser[]> {
 }
 
 export async function deleteUser(userId: string): Promise<void> {
-    // This function only deletes the database record, not the auth user.
-    // Full user deletion would require a Firebase Cloud Function with Admin SDK.
     const userRef = ref(db, `users/${userId}`);
     await remove(userRef);
 }
@@ -189,7 +188,6 @@ export async function getHeroData(): Promise<HeroData> {
   const dbData = snapshot.exists() ? snapshot.val() : {};
   let remoteData = { title: 'Unlock Your Potential.', subtitle: 'Quality, affordable courses designed for the Kenyan market.' };
 
-  // Only run remote config on client
   if (typeof window !== 'undefined') {
     try {
       const remoteConfig = getRemoteConfig(app);
@@ -328,7 +326,6 @@ export async function getTutorSettings(): Promise<TutorSettings> {
 // Remote Config Functions
 export async function getRemoteConfigValues(keys: string[]): Promise<Record<string, string>> {
     const remoteConfig = getRemoteConfig(app);
-    // Ensure this is only called on the client
     if (typeof window !== 'undefined') {
         await fetchAndActivate(remoteConfig);
     }
@@ -342,8 +339,6 @@ export async function getRemoteConfigValues(keys: string[]): Promise<Record<stri
 
 
 export async function saveRemoteConfigValues(data: Record<string, string>): Promise<void> {
-    // Note: This is a client-side mock. In a real app, you'd use the Admin SDK on a server.
-    // We will save to RTDB as a stand-in for this demo.
     const remoteConfigRef = ref(db, 'remoteConfig');
     await update(remoteConfigRef, data);
     console.log("Remote config values saved to RTDB for demo purposes:", data);
@@ -624,4 +619,12 @@ export async function updatePermissionRequestStatus(id: string, status: 'approve
         status,
         resolvedAt: new Date().toISOString(),
     });
+}
+
+// Organization Functions
+export async function createOrganization(orgData: Omit<Organization, 'id'>): Promise<string> {
+    const orgsRef = ref(db, 'organizations');
+    const newOrgRef = push(orgsRef);
+    await set(newOrgRef, orgData);
+    return newOrgRef.key!;
 }

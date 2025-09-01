@@ -23,7 +23,7 @@ import {
   sendEmailVerification,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { RegisteredUser, saveUser, getUserById } from '@/lib/firebase-service';
+import { RegisteredUser, saveUser, getUserById, createOrganization } from '@/lib/firebase-service';
 import { ref, onValue, onDisconnect, set, serverTimestamp, update } from 'firebase/database';
 import { useToast } from './use-toast';
 
@@ -36,7 +36,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isSuperAdmin: boolean;
   login: (email: string, pass: string) => Promise<any>;
-  signup: (email: string, pass: string, name: string) => Promise<any>;
+  signup: (email: string, pass: string, name: string, organizationName?: string) => Promise<any>;
   logout: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -68,10 +68,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
     }
     
-    // Set super admin status immediately
     setIsSuperAdmin(user.uid === ADMIN_UID);
 
-    // Set up Firebase Realtime Database presence
     const userStatusRef = ref(db, `/users/${user.uid}`);
     
     const connectedRef = ref(db, '.info/connected');
@@ -86,7 +84,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    // Listen for real-time changes to the user's record in the database
     const userRef = ref(db, `users/${user.uid}`);
     const unsubscribeAdminCheck = onValue(userRef, (snapshot) => {
         if (snapshot.exists()) {
@@ -96,7 +93,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     const expirationDate = new Date(userProfile.adminExpiresAt);
                     setIsAdmin(expirationDate > new Date());
                 } else {
-                    setIsAdmin(true); // Permanent admin
+                    setIsAdmin(true);
                 }
             } else {
                 setIsAdmin(false);
@@ -106,11 +103,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     });
 
-    // Cleanup the listener when the user changes or component unmounts
     return () => {
       unsubscribeAdminCheck();
       unsubscribePresence();
-      // On manual logout, set offline status
       if (userStatusRef) {
         update(userStatusRef, { 
             isOnline: false, 
@@ -125,32 +120,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return signInWithEmailAndPassword(auth, email, pass);
   };
 
-  const signup = async (email: string, pass: string, displayName: string) => {
+  const signup = async (email: string, pass: string, displayName: string, organizationName?: string) => {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       email,
       pass
     );
     
-    // First, update the user's profile in Firebase Auth
     await updateProfile(userCredential.user, {
       displayName: displayName,
     });
 
-    // Now that the profile is updated, create the object for our DB
-    const newUser: Omit<RegisteredUser, 'uid'> = {
+    const newUser: Partial<Omit<RegisteredUser, 'uid'>> = {
       email: userCredential.user.email,
       displayName: displayName,
       createdAt: userCredential.user.metadata.creationTime,
     };
+    
+    if (organizationName) {
+        const orgId = await createOrganization({
+            name: organizationName,
+            ownerId: userCredential.user.uid,
+            createdAt: new Date().toISOString(),
+        });
+        newUser.organizationId = orgId;
+        newUser.isOrganizationAdmin = true;
+    }
 
-    // Save the complete user object to the Realtime Database
     await saveUser(userCredential.user.uid, newUser);
 
-    // Send verification email
     await sendEmailVerification(userCredential.user);
     
-    // Manually update the local user state to reflect the displayName immediately
     await userCredential.user.reload();
     setUser(auth.currentUser);
     
@@ -163,11 +163,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
-      // Check if user exists in our database
       const dbUser = await getUserById(user.uid);
       
       if (!dbUser) {
-        // If user is new, save to database
         const newUser: Omit<RegisteredUser, 'uid'> = {
           email: user.email,
           displayName: user.displayName,
@@ -197,7 +195,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           throw new Error("No user is currently signed in.");
       }
   }
-
 
   const logout = () => {
     return firebaseSignOut(auth);
