@@ -85,9 +85,7 @@ export async function createCourse(courseData: Omit<Course, 'id'>): Promise<stri
         ...courseData,
         createdAt: new Date().toISOString(), // Add creation timestamp
         modules: courseData.modules || [],
-        exam: courseData.exam || [],
-        imageUrl: courseData.imageUrl || 'https://placehold.co/600x400',
-        dripFeed: courseData.dripFeed || 'daily',
+        exam: courseData.project || null,
     };
     await set(newCourseRef, dataToSave);
     return newCourseRef.key!;
