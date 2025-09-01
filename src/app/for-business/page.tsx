@@ -1,9 +1,5 @@
 
-import { auth } from '@/lib/firebase';
-import { getHeroData, getUserById } from '@/lib/firebase-service';
-import type { HeroData } from '@/lib/firebase-service';
-import { redirect } from 'next/navigation';
-import { onAuthStateChanged } from 'firebase/auth';
+import { getHeroData } from '@/lib/firebase-service';
 
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
@@ -14,11 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, BarChart, Building, Users } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
-import { Loader2 } from 'lucide-react';
+import { ForBusinessRedirect } from '@/components/ForBusinessRedirect';
 
 const features = [
     {
@@ -38,36 +30,13 @@ const features = [
     }
 ];
 
-function ForBusinessClientPage() {
-  'use client';
-  const { isOrganizationAdmin, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && isOrganizationAdmin) {
-      router.replace('/organization/dashboard');
-    }
-  }, [loading, isOrganizationAdmin, router]);
-
-  if (loading || isOrganizationAdmin) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  // This component doesn't render anything itself, it just handles the redirect logic.
-  // The actual page content is rendered by the Server Component.
-  return null;
-}
 
 export default async function ForBusinessPage() {
   const heroData = await getHeroData();
 
   return (
     <>
-      <ForBusinessClientPage />
+      <ForBusinessRedirect />
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
