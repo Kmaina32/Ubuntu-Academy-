@@ -31,7 +31,7 @@
       ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
     "calendarEvents": {
-      ".read": "auth != null",
+      ".read": true,
       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
     "submissions": {
@@ -148,7 +148,6 @@
       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
       "$requestId": {
           "status": {
-             // Only the super admin can change the status
             ".write": "auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2'"
           }
       }
