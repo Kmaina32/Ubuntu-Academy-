@@ -18,7 +18,7 @@ This document outlines the strategy for expanding Ubuntu Academy into the Busine
 ## 3. Core Features for Organizations
 
 The "Ubuntu for Business" portal will provide a dedicated dashboard for organization administrators with the following features:
-
+ 
 -   **User Management:**
     -   Invite employees to join the organization's portal via email.
     -   Remove users who have left the organization.
