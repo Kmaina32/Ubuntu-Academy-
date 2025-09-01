@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,16 +15,28 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { slugify } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 type PurchasedCourseDetail = UserCourse & Partial<Course>;
 
 export default function DashboardPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isOrganizationAdmin } = useAuth();
+  const router = useRouter();
   const [purchasedCourses, setPurchasedCourses] = useState<PurchasedCourseDetail[]>([]);
   const [allCourses, setAllCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
 
+  // Redirect organization admins to their specific dashboard
   useEffect(() => {
+    if (!authLoading && isOrganizationAdmin) {
+      router.replace('/organization/dashboard');
+    }
+  }, [authLoading, isOrganizationAdmin, router]);
+
+
+  useEffect(() => {
+    if (isOrganizationAdmin) return; // Don't fetch student data for org admins
+
     const fetchCourseDetails = async () => {
       setLoadingCourses(true);
       
@@ -55,7 +67,7 @@ export default function DashboardPage() {
     if (!authLoading) {
       fetchCourseDetails();
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, isOrganizationAdmin]);
   
   const inProgressCourses = purchasedCourses.filter(c => !c.completed);
 
@@ -65,7 +77,7 @@ export default function DashboardPage() {
 
 
   const renderContent = () => {
-    if (authLoading || (loadingCourses && user)) {
+    if (authLoading || (loadingCourses && user) || isOrganizationAdmin) {
         return (
             <div className="flex justify-center items-center py-10 h-full">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
