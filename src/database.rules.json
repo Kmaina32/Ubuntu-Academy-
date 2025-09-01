@@ -159,9 +159,12 @@
     "organizations": {
         ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
         "$orgId": {
-            ".read": "root.child('organizations').child($orgId).child('ownerId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true",
-            ".write": "root.child('organizations').child($orgId).child('ownerId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true"
-        }
+            // Allow the org owner or a site admin to read/write
+            ".read": "auth != null && (data.child('ownerId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+            ".write": "auth != null && (newData.child('ownerId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+        },
+         // Allow any authenticated user to create a new organization (on signup)
+        ".write": "auth != null"
     }
   }
 }

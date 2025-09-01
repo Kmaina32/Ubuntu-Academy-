@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Sidebar,
   SidebarHeader,
@@ -11,17 +11,25 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Gem, LayoutDashboard, Users, BookOpen, CreditCard, Settings, ExternalLink, Tag } from 'lucide-react';
+import { Gem, LayoutDashboard, Users, BookOpen, CreditCard, Settings, ExternalLink, Tag, LogOut } from 'lucide-react';
 import pkg from '../../package.json';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
+import { useAuth } from '@/hooks/use-auth';
 
 export function OrganizationSidebar() {
     const pathname = usePathname();
+    const router = useRouter();
+    const { logout } = useAuth();
 
     const isActive = (path: string) => {
         if (path === '/organization/dashboard') return pathname === path;
         return pathname.startsWith(path);
+    }
+    
+    const handleLogout = async () => {
+        await logout();
+        router.push('/');
     }
 
   return (
@@ -80,7 +88,13 @@ export function OrganizationSidebar() {
             </SidebarMenu>
              <div className="px-2 mt-auto">
                  <Separator className="my-2" />
-                 <Button asChild variant="outline" className="w-full justify-start group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:h-auto group-data-[collapsible=icon]:p-2">
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={handleLogout} tooltip="Logout">
+                        <LogOut />
+                        <span>Logout</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <Button asChild variant="outline" className="w-full justify-start group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:h-auto group-data-[collapsible=icon]:p-2 mt-2">
                     <Link href="/">
                         <ExternalLink />
                         <span className="group-data-[collapsible=icon]:hidden">Go to main site</span>

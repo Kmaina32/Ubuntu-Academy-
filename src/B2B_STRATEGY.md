@@ -38,7 +38,7 @@ The "Ubuntu for Business" portal will provide a dedicated dashboard for organiza
 
 ## 4. Proposed Pricing Model
 
-The pricing will be based on a per-seat, per-month model, billed annually.
+The pricing will be based on a per-seat, per-month model, with discounts for annual billing.
 
 | Tier        | Price (per user/month) | Target Audience            | Key Features                                                                   |
 | :---------- | :--------------------- | :------------------------- | :----------------------------------------------------------------------------- |
