@@ -10,9 +10,6 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, User as UserIcon, Camera, Upload } from 'lucide-react';
-import { AppSidebar } from '@/components/Sidebar';
-import { Header } from '@/components/Header';
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
@@ -205,139 +202,133 @@ export default function ProfilePage() {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <Header />
-        <div className="flex flex-col min-h-screen">
-          <main className="flex-grow container mx-auto px-4 md:px-6 py-12">
-            <div className="max-w-2xl mx-auto">
-              <button onClick={() => router.back()} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </button>
-              <Card>
-                <CardHeader className="items-center text-center">
-                    <div className="relative group">
-                        <Avatar className="h-24 w-24 mb-4">
-                            <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'User'}/>
-                            <AvatarFallback className="text-3xl">{getInitials(user?.displayName)}</AvatarFallback>
-                        </Avatar>
-                        <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            {isUploading ? <Loader2 className="h-8 w-8 animate-spin text-white" /> : <Camera className="h-8 w-8 text-white" />}
-                        </div>
+    <div className="flex flex-col min-h-screen">
+        <main className="flex-grow container mx-auto px-4 md:px-6 py-12">
+        <div className="max-w-2xl mx-auto">
+            <button onClick={() => router.back()} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+            <ArrowLeft className="h-4 w-4" />
+            Back
+            </button>
+            <Card>
+            <CardHeader className="items-center text-center">
+                <div className="relative group">
+                    <Avatar className="h-24 w-24 mb-4">
+                        <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'User'}/>
+                        <AvatarFallback className="text-3xl">{getInitials(user?.displayName)}</AvatarFallback>
+                    </Avatar>
+                    <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        {isUploading ? <Loader2 className="h-8 w-8 animate-spin text-white" /> : <Camera className="h-8 w-8 text-white" />}
                     </div>
-                  <CardTitle className="text-2xl font-headline">My Profile</CardTitle>
-                  <CardDescription>View and manage your account details.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden"/>
-                    <div className="grid grid-cols-2 gap-4">
-                       <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                            <Upload className="mr-2 h-4 w-4" />
-                            Upload Image
-                       </Button>
-                       <Dialog open={isCameraDialogOpen} onOpenChange={setIsCameraDialogOpen}>
-                           <DialogTrigger asChild>
-                                <Button variant="outline" disabled={isUploading}>
-                                    <Camera className="mr-2 h-4 w-4" />
-                                    Take Photo
-                                </Button>
-                           </DialogTrigger>
-                           <DialogContent>
-                               <DialogHeader>
-                                    <DialogTitle>Take a Profile Photo</DialogTitle>
-                                    <DialogDescription>
-                                        Center your face in the frame and click capture.
-                                    </DialogDescription>
-                               </Header>
-                                <div className="flex justify-center items-center my-4">
-                                   <video ref={videoRef} className="w-full aspect-video rounded-md bg-muted" autoPlay muted />
-                                </div>
-                                {hasCameraPermission === false && (
-                                     <Alert variant="destructive">
-                                        <AlertTitle>Camera Access Required</AlertTitle>
-                                        <AlertDescription>
-                                            Please allow camera access in your browser to use this feature.
-                                        </AlertDescription>
-                                    </Alert>
-                                )}
-                                <DialogFooter>
-                                    <DialogClose asChild>
-                                        <Button variant="outline">Cancel</Button>
-                                    </DialogClose>
-                                    <Button onClick={handleCapture} disabled={!hasCameraPermission}>Capture</Button>
-                                </DialogFooter>
-                           </DialogContent>
-                       </Dialog>
-                    </div>
+                </div>
+                <CardTitle className="text-2xl font-headline">My Profile</CardTitle>
+                <CardDescription>View and manage your account details.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden"/>
+                <div className="grid grid-cols-2 gap-4">
+                    <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload Image
+                    </Button>
+                    <Dialog open={isCameraDialogOpen} onOpenChange={setIsCameraDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" disabled={isUploading}>
+                                <Camera className="mr-2 h-4 w-4" />
+                                Take Photo
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Take a Profile Photo</DialogTitle>
+                                <DialogDescription>
+                                    Center your face in the frame and click capture.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="flex justify-center items-center my-4">
+                                <video ref={videoRef} className="w-full aspect-video rounded-md bg-muted" autoPlay muted />
+                            </div>
+                            {hasCameraPermission === false && (
+                                    <Alert variant="destructive">
+                                    <AlertTitle>Camera Access Required</AlertTitle>
+                                    <AlertDescription>
+                                        Please allow camera access in your browser to use this feature.
+                                    </AlertDescription>
+                                </Alert>
+                            )}
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button variant="outline">Cancel</Button>
+                                </DialogClose>
+                                <Button onClick={handleCapture} disabled={!hasCameraPermission}>Capture</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </div>
 
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)}>
-                             <div className='space-y-2 mt-6'>
-                                <Label htmlFor='email'>Email Address</Label>
-                                <Input id='email' value={user.email || ''} readOnly disabled />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                <FormField
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)}>
+                            <div className='space-y-2 mt-6'>
+                            <Label htmlFor='email'>Email Address</Label>
+                            <Input id='email' value={user.email || ''} readOnly disabled />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <FormField
+                            control={form.control}
+                            name="firstName"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>First Name</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Jomo" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                            <FormField
+                            control={form.control}
+                            name="lastName"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Last Name</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Kenyatta" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                        </div>
+                            <div className="mt-4">
+                            <FormField
                                 control={form.control}
-                                name="firstName"
+                                name="middleName"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>First Name</FormLabel>
+                                    <FormLabel>Middle Name (Optional)</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Jomo" {...field} />
+                                        <Input {...field} />
                                     </FormControl>
                                     <FormMessage />
                                     </FormItem>
                                 )}
                                 />
-                                <FormField
-                                control={form.control}
-                                name="lastName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Last Name</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Kenyatta" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                                />
                             </div>
-                             <div className="mt-4">
-                                <FormField
-                                    control={form.control}
-                                    name="middleName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                        <FormLabel>Middle Name (Optional)</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                        </FormItem>
-                                    )}
-                                    />
-                             </div>
-                             <p className="text-xs text-muted-foreground pt-2">Please ensure this is your full, correct name as it will be used on your certificates.</p>
-                             <CardFooter className="flex justify-between px-0 pt-6">
-                                <Button variant="outline" onClick={handleLogout}>Logout</Button>
-                                <Button type="submit" disabled={isLoading}>
-                                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                    Save Changes
-                                </Button>
-                            </CardFooter>
-                        </form>
-                    </Form>
-                </CardContent>
-              </Card>
-            </div>
-          </main>
-          <Footer />
+                            <p className="text-xs text-muted-foreground pt-2">Please ensure this is your full, correct name as it will be used on your certificates.</p>
+                            <CardFooter className="flex justify-between px-0 pt-6">
+                            <Button variant="outline" onClick={handleLogout}>Logout</Button>
+                            <Button type="submit" disabled={isLoading}>
+                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                Save Changes
+                            </Button>
+                        </CardFooter>
+                    </form>
+                </Form>
+            </CardContent>
+            </Card>
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+        </main>
+        <Footer />
+    </div>
   );
 }
