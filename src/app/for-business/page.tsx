@@ -1,6 +1,5 @@
 
 import { getHeroData } from '@/lib/firebase-service';
-
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { AppSidebar } from "@/components/Sidebar";
@@ -58,12 +57,19 @@ export default async function ForBusinessPage() {
                   <div className="container mx-auto px-4 md:px-6 text-center relative text-white py-10">
                       <h1 className="text-4xl md:text-5xl font-bold font-headline">{heroData.orgHeroTitle || 'Ubuntu Academy for Business'}</h1>
                       <p className="mt-4 text-lg md:text-xl max-w-3xl mx-auto">{heroData.orgHeroSubtitle || 'Empower your workforce with the skills they need to succeed.'}</p>
-                      <Button asChild size="lg" className="mt-8">
-                          <Link href="/organization/signup">
-                              Get Started
-                              <ArrowRight className="ml-2 h-5 w-5" />
-                          </Link>
-                      </Button>
+                      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+                         <Button asChild size="lg" className="w-full sm:w-auto">
+                            <Link href="/organization/signup">
+                                Get Started
+                                <ArrowRight className="ml-2 h-5 w-5" />
+                            </Link>
+                        </Button>
+                         <Button asChild size="lg" variant="outline" className="w-full sm:w-auto bg-transparent text-white border-white hover:bg-white hover:text-black">
+                            <Link href="/organization/login">
+                                Organization Login
+                            </Link>
+                        </Button>
+                      </div>
                   </div>
               </section>
               
