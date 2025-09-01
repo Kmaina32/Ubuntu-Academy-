@@ -46,7 +46,8 @@ export default function OrganizationLayout({
 }) {
   const { user, loading, isAdmin, isOrganizationAdmin } = useAuth();
   const pathname = usePathname();
-  
+  const router = useRouter();
+
   if (loading) {
      return (
         <div className="flex h-screen items-center justify-center">
@@ -58,21 +59,27 @@ export default function OrganizationLayout({
 
   const isPublicOrgPage = pathname === '/organization/login' || pathname === '/organization/signup';
 
-  if (!isPublicOrgPage && (!user || (!isOrganizationAdmin && !isAdmin))) {
+  // If on a public page (login/signup), render children without the dashboard layout
+  if (isPublicOrgPage) {
+    // If the user is already an org admin and tries to visit login/signup, redirect them
+    if (user && (isOrganizationAdmin || isAdmin)) {
+      router.replace('/organization/dashboard');
+      return (
+        <div className="flex h-screen items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p className="ml-2">Redirecting to dashboard...</p>
+        </div>
+      );
+    }
+    return <>{children}</>;
+  }
+
+  // For all other org pages, enforce authentication
+  if (!user || (!isOrganizationAdmin && !isAdmin)) {
     return <OrgAccessDenied />;
   }
 
-  // If on a public page but already an authorized user, redirect to dashboard
-  if (isPublicOrgPage && user && (isOrganizationAdmin || isAdmin)) {
-      useRouter().replace('/organization/dashboard');
-      return (
-         <div className="flex h-screen items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <p className="ml-2">Redirecting to dashboard...</p>
-        </div>
-      );
-  }
-
+  // Render the protected layout with sidebar
   return (
     <SidebarProvider>
         <OrganizationSidebar />
