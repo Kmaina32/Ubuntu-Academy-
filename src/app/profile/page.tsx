@@ -11,7 +11,7 @@ import { z } from 'zod';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, User as UserIcon, Camera, Upload, Eye } from 'lucide-react';
+import { ArrowLeft, Loader2, User as UserIcon, Camera, Upload, Eye, Building } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -47,7 +47,7 @@ const splitDisplayName = (displayName: string | null | undefined): {firstName: s
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, loading, logout, setUser } = useAuth();
+  const { user, loading, logout, setUser, isAdmin, isOrganizationAdmin } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -323,13 +323,21 @@ export default function ProfilePage() {
                                     />
                              </div>
                              <p className="text-xs text-muted-foreground pt-2">Please ensure this is your full, correct name as it will be used on your certificates.</p>
-                              <div className="mt-6">
+                              <div className="mt-6 space-y-2">
                                 <Button asChild variant="outline" className="w-full">
                                     <Link href={`/portfolio/${user.uid}`}>
                                         <Eye className="mr-2 h-4 w-4" />
                                         View My Public Portfolio
                                     </Link>
                                 </Button>
+                                {!isAdmin && !isOrganizationAdmin && (
+                                     <Button asChild variant="outline" className="w-full">
+                                        <Link href="/organization/signup">
+                                            <Building className="mr-2 h-4 w-4" />
+                                            Create an Organization
+                                        </Link>
+                                    </Button>
+                                )}
                              </div>
                              <CardFooter className="flex justify-between px-0 pt-6">
                                 <Button variant="outline" onClick={handleLogout}>Logout</Button>

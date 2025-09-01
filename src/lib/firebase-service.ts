@@ -38,6 +38,9 @@ export interface HeroData {
     recaptchaEnabled: boolean;
     theme?: string;
     animationsEnabled?: boolean;
+    orgHeroTitle?: string;
+    orgHeroSubtitle?: string;
+    orgHeroImageUrl?: string;
 }
 
 export interface TutorSettings {
@@ -174,7 +177,7 @@ export async function deleteUser(userId: string): Promise<void> {
 export async function getHeroData(): Promise<HeroData> {
   const heroRef = ref(db, 'hero');
   const snapshot = await get(heroRef);
-  const defaults: Omit<HeroData, 'title' | 'subtitle'> = {
+  const defaults = {
     imageUrl: 'https://placehold.co/1200x400.png',
     loginImageUrl: 'https://placehold.co/1200x900.png',
     signupImageUrl: 'https://placehold.co/1200x900.png',
@@ -183,6 +186,9 @@ export async function getHeroData(): Promise<HeroData> {
     recaptchaEnabled: true,
     theme: 'default',
     animationsEnabled: true,
+    orgHeroTitle: 'Ubuntu Academy for Business',
+    orgHeroSubtitle: 'Empower your workforce with the skills they need to succeed.',
+    orgHeroImageUrl: 'https://picsum.photos/1200/800',
   };
 
   const dbData = snapshot.exists() ? snapshot.val() : {};

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
@@ -14,6 +14,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, BarChart, Building, Users } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { getHeroData } from '@/lib/firebase-service';
+import type { HeroData } from '@/lib/firebase-service';
 
 const features = [
     {
@@ -34,14 +36,23 @@ const features = [
 ];
 
 export default function ForBusinessPage() {
-  const { isOrganizationAdmin, loading } = useAuth();
+  const { user, isOrganizationAdmin, loading } = useAuth();
   const router = useRouter();
+  const [heroData, setHeroData] = useState<Partial<HeroData>>({});
 
   useEffect(() => {
     if (!loading && isOrganizationAdmin) {
       router.replace('/organization/dashboard');
     }
   }, [loading, isOrganizationAdmin, router]);
+
+  useEffect(() => {
+    const fetchHero = async () => {
+        const data = await getHeroData();
+        setHeroData(data);
+    };
+    fetchHero();
+  }, []);
 
   if (loading || isOrganizationAdmin) {
     return (
@@ -59,18 +70,20 @@ export default function ForBusinessPage() {
         <main className="flex-grow">
             <section className="relative py-20 md:py-32 bg-secondary">
                  <div className="absolute inset-0">
-                    <Image
-                        src="https://picsum.photos/1200/800"
-                        alt="Professional team collaborating"
-                        fill
-                        className="object-cover"
-                        data-ai-hint="team collaboration"
-                    />
+                    {heroData.orgHeroImageUrl && (
+                        <Image
+                            src={heroData.orgHeroImageUrl}
+                            alt="Professional team collaborating"
+                            fill
+                            className="object-cover"
+                            data-ai-hint="team collaboration"
+                        />
+                    )}
                      <div className="absolute inset-0 bg-black/60"></div>
                 </div>
-                <div className="container mx-auto px-4 md:px-6 text-center relative text-white">
-                    <h1 className="text-4xl md:text-5xl font-bold font-headline">Ubuntu Academy for Business</h1>
-                    <p className="mt-4 text-lg md:text-xl max-w-3xl mx-auto">Empower your workforce with the skills they need to succeed. Simple, scalable, and effective training solutions.</p>
+                <div className="container mx-auto px-4 md:px-6 text-center relative text-white py-10">
+                    <h1 className="text-4xl md:text-5xl font-bold font-headline">{heroData.orgHeroTitle || 'Ubuntu Academy for Business'}</h1>
+                    <p className="mt-4 text-lg md:text-xl max-w-3xl mx-auto">{heroData.orgHeroSubtitle || 'Empower your workforce with the skills they need to succeed.'}</p>
                     <Button asChild size="lg" className="mt-8">
                         <Link href="/organization/signup">
                             Get Started
