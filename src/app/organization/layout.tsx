@@ -56,16 +56,22 @@ export default function OrganizationLayout({
      )
   }
 
-  // Allow access to the signup page for any logged-in user
-  if (pathname === '/organization/signup') {
-      if (!user) return <OrgAccessDenied />;
-  } else {
-    // For all other org pages, enforce admin/org admin role
-    if (!user || (!isOrganizationAdmin && !isAdmin)) {
-        return <OrgAccessDenied />;
-    }
+  const isPublicOrgPage = pathname === '/organization/login' || pathname === '/organization/signup';
+
+  if (!isPublicOrgPage && (!user || (!isOrganizationAdmin && !isAdmin))) {
+    return <OrgAccessDenied />;
   }
 
+  // If on a public page but already an authorized user, redirect to dashboard
+  if (isPublicOrgPage && user && (isOrganizationAdmin || isAdmin)) {
+      useRouter().replace('/organization/dashboard');
+      return (
+         <div className="flex h-screen items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <p className="ml-2">Redirecting to dashboard...</p>
+        </div>
+      );
+  }
 
   return (
     <SidebarProvider>
