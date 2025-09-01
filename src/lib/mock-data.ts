@@ -27,10 +27,19 @@ export interface Module {
   lessons: Lesson[];
 }
 
-export interface Project {
-  title: string;
-  description: string;
-  submissionType: 'url' | 'text' | 'code';
+export interface ExamQuestion {
+    id: string;
+    type: 'multiple-choice' | 'short-answer';
+    question: string;
+    options?: string[];
+    correctAnswer?: number;
+    referenceAnswer?: string;
+    maxPoints: number;
+}
+
+export interface ShortAnswerQuestion extends ExamQuestion {
+    type: 'short-answer';
+    referenceAnswer: string;
 }
 
 
@@ -42,10 +51,9 @@ export interface Submission {
     userEmail: string;
     courseTitle: string;
     submittedAt: string; // ISO String
-    projectTitle: string;
-    projectUrl?: string;
-    projectContent?: string;
+    answers: { questionId: string; answer: string | number }[];
     graded: boolean;
+    pointsAwarded?: number;
     grade?: number;
     feedback?: string;
 }
@@ -69,8 +77,9 @@ export interface Course {
   duration: string; // e.g., "5 Weeks"
   dripFeed: 'daily' | 'weekly' | 'off';
   modules: Module[];
-  project?: Project;
+  exam: ExamQuestion[];
   createdAt: string; // ISO string
+  project?: Project;
 }
 
 export interface Program {
@@ -203,6 +212,17 @@ export interface CourseFeedback {
     rating: number;
     comment: string;
     createdAt: string;
+}
+
+export interface Project {
+    id: string;
+    courseId: string;
+    userId: string;
+    title: string;
+    description: string;
+    url?: string;
+    content?: string;
+    submittedAt: string;
 }
 
 export interface Organization {

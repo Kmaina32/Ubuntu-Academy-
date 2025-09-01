@@ -35,6 +35,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   isSuperAdmin: boolean;
+  isOrganizationAdmin: boolean;
   login: (email: string, pass: string) => Promise<any>;
   signup: (email: string, pass: string, name: string, organizationName?: string) => Promise<any>;
   logout: () => Promise<any>;
@@ -50,6 +51,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isOrganizationAdmin, setIsOrganizationAdmin] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -65,7 +67,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!user) {
         setIsAdmin(false);
+        setIsOrganizationAdmin(false);
         return;
+    }
+    
+    // Hardcoded for development: Treat gmaina424@gmail.com as an org admin
+    if (user.email === 'gmaina424@gmail.com') {
+        setIsOrganizationAdmin(true);
     }
     
     setIsSuperAdmin(user.uid === ADMIN_UID);
@@ -98,8 +106,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             } else {
                 setIsAdmin(false);
             }
+            if (userProfile.isOrganizationAdmin) {
+                setIsOrganizationAdmin(true);
+            }
         } else {
             setIsAdmin(false);
+            // Don't reset org admin here if it was set by the hardcoded check
         }
     });
 
@@ -210,6 +222,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loading,
     isAdmin,
     isSuperAdmin,
+    isOrganizationAdmin,
     login,
     signup,
     logout,
