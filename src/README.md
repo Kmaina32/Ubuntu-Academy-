@@ -5,7 +5,7 @@ Welcome to Ubuntu Academy, a modern, AI-enhanced online learning platform built 
 
 ## Key Features
 
-The platform is divided into two main user experiences: the student-facing application and the comprehensive admin dashboard.
+The platform is divided into three main user experiences: the student-facing application, the B2B organization portal, and the comprehensive admin dashboard.
 
 ### Student Experience
 - **Course Discovery & Enrollment:** Browse a public catalog of featured courses and enroll with a single click for free courses or via a simulated M-Pesa payment flow for paid content.
@@ -24,6 +24,13 @@ The platform is divided into two main user experiences: the student-facing appli
 - **Project Galleries:** For project-based courses, students can submit their work to a public gallery, creating a showcase of practical skills.
 - **Learning Goals:** Set and track personal learning goals directly from the dashboard to stay motivated.
 
+### Organization Portal (B2B)
+- **Dedicated Dashboard:** A private portal for organizations to manage their team's learning and development.
+- **Member Management:** Invite employees to join the platform and manage their access.
+- **Bulk Course Enrollment:** Assign courses to individuals or entire teams with ease.
+- **Progress Tracking:** Monitor team-wide and individual learner progress with detailed analytics and reports.
+- **Centralized Billing:** Manage the organization's subscription and view billing history.
+
 ### Admin Experience
 - **Secure Admin Dashboard:** A protected section of the site accessible only to a designated administrator, with a dedicated sidebar for easy navigation.
 - **Full Course Management (CRUD):** Create, read, update, and delete courses in the catalog.
@@ -32,13 +39,23 @@ The platform is divided into two main user experiences: the student-facing appli
 - **Flexible Exam Management:** Manually create and manage exams with both multiple-choice and short-answer questions.
 - **AI-Assisted Grading:** Review student exam submissions. Multiple-choice questions are auto-graded, and an AI assistant provides suggested scores and feedback for short-answer questions.
 - **User & Cohort Management:** View a list of all registered users, manage their cohort assignments, and remove users.
+- **Organization Management:** View and manage all registered B2B organizations.
 - **Live Session Control:** Start and stop a live video broadcast for all students from the admin panel.
 - **Push Notifications:** Send platform-wide announcements to all users.
 - **Payment Transaction Overview:** A dedicated page to view (simulated) M-Pesa transaction history.
 - **Site & Theme Management:** Control the website's hero content, imagery, and active visual theme (e.g., Christmas, Valentine's Day) directly from the admin panel. Animations for themes can be toggled on or off globally.
 - **AI Tutor Configuration:** Customize the AI tutor's voice, speech speed, and welcome prompts.
-- **Admin Help Center:** A powerful AI assistant that can answer questions and automate tasks. It has access to the application's database to answer data-driven questions (e.g., "How many users signed up last week?") and can perform actions based on simple prompts.
+- **Admin Help Center:** An AI assistant specifically trained on the platform's features to help the administrator.
 - **Event Scheduling:** An admin-only calendar to create and manage events for students.
+
+## Autonomous Operation
+
+The platform features an autonomous AI agent that can manage content creation without human input. A secure API endpoint (`/api/cron/content-strategy`) triggers an AI flow that:
+1.  Brainstorms 10 new, relevant course ideas.
+2.  Generates the full content for all 10 courses.
+3.  Creates a new certificate program from a subset of the new courses.
+4.  Creates a new marketing bundle from another subset.
+This process can be automated by setting up a cron job to call the API endpoint on a schedule (e.g., daily).
 
 ## Tech Stack
 
@@ -78,3 +95,23 @@ To get the application running locally, follow these steps:
     Navigate to `http://localhost:9002` in your browser to see the application in action.
 
 **Admin Access:** To access the admin dashboard, log in with the designated admin account.
+
+---
+## Setting Up Autonomous Content Generation (Optional)
+
+To make the AI agent run automatically, you need to set up a cron job to call the secure API endpoint.
+
+1.  **Set Environment Variables:**
+    -   Add `CRON_SECRET=your_secret_key` to your `.env` file. Replace `your_secret_key` with a long, random string.
+    -   When deploying to a platform like Vercel, set this as a production environment variable.
+
+2.  **Use a Cron Job Service:**
+    -   Sign up for a free cron job service like [cron-job.org](https://cron-job.org/).
+    -   Create a new cron job with the following settings:
+        -   **URL:** `https://your-production-domain.com/api/cron/content-strategy` (Replace with your app's domain)
+        -   **Method:** `POST`
+        -   **Schedule:** Choose a schedule (e.g., once per day).
+        -   **Custom Headers:** Add an `Authorization` header.
+            -   **Name:** `Authorization`
+            -   **Value:** `Bearer your_secret_key` (Use the same secret key from your `.env` file)
+    -   Save the cron job. It will now automatically trigger your AI content agent on the schedule you set.
