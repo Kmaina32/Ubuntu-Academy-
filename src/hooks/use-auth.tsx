@@ -112,7 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                         subscriptionTier: 'free',
                         subscriptionExpiresAt: null, // Permanent
                     });
-                    saOrg = { id: orgId, name: SUPER_ADMIN_ORG_NAME, ownerId: user.uid, createdAt: new Date().toISOString() };
+                    saOrg = { id: orgId, name: SUPER_ADMIN_ORG_NAME, ownerId: user.uid, createdAt: new Date().toISOString(), subscriptionTier: 'free', subscriptionExpiresAt: null };
                  }
                  setOrganization(saOrg);
             } else if (userProfile.isOrganizationAdmin || userProfile.organizationId) {
