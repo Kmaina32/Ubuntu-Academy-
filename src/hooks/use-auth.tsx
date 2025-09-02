@@ -23,12 +23,12 @@ import {
   sendEmailVerification,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { RegisteredUser, saveUser, getUserById, createOrganization, getOrganizationByOwnerId } from '@/lib/firebase-service';
-import { ref, onValue, onDisconnect, set, serverTimestamp, update } from 'firebase/database';
+import { RegisteredUser, saveUser, getUserById, createOrganization, getOrganizationByOwnerId, Organization } from '@/lib/firebase-service';
+import { ref, onValue, onDisconnect, set, serverTimestamp, update, get } from 'firebase/database';
 import { useToast } from './use-toast';
-import type { Organization } from '@/lib/mock-data';
 
 const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
+const SUPER_ADMIN_ORG_NAME = "Ubuntu Academy";
 
 interface AuthContextType {
   user: User | null;
@@ -39,7 +39,7 @@ interface AuthContextType {
   isOrganizationAdmin: boolean;
   organization: Organization | null;
   login: (email: string, pass: string) => Promise<any>;
-  signup: (email: string, pass: string, name: string, organizationName?: string) => Promise<any>;
+  signup: (email: string, pass: string, name: string, organizationName?: string, inviteOrgId?: string) => Promise<any>;
   logout: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -60,7 +60,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      setIsSuperAdmin(user?.uid === ADMIN_UID);
+      const isSuper = user?.uid === ADMIN_UID;
+      setIsSuperAdmin(isSuper);
+      if(isSuper) setIsAdmin(true); // Super admin is always an admin
       setLoading(false);
     });
 
@@ -75,7 +77,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
     }
     
-    setIsSuperAdmin(user.uid === ADMIN_UID);
+    const isSuper = user.uid === ADMIN_UID;
+    setIsSuperAdmin(isSuper);
 
     const userStatusRef = ref(db, `/users/${user.uid}`);
     
@@ -94,18 +97,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const userRef = ref(db, `users/${user.uid}`);
     const unsubscribeAdminCheck = onValue(userRef, async (snapshot) => {
         if (snapshot.exists()) {
-            const userProfile = snapshot.val();
-            if (userProfile.isAdmin) {
-                if (userProfile.adminExpiresAt) {
-                    const expirationDate = new Date(userProfile.adminExpiresAt);
-                    setIsAdmin(expirationDate > new Date());
-                } else {
-                    setIsAdmin(true);
-                }
-            } else {
-                setIsAdmin(false);
-            }
-            if (userProfile.isOrganizationAdmin || userProfile.organizationId) {
+            const userProfile = snapshot.val() as RegisteredUser;
+            const currentIsAdmin = userProfile.isAdmin && (!userProfile.adminExpiresAt || new Date(userProfile.adminExpiresAt) > new Date());
+            setIsAdmin(isSuper || currentIsAdmin);
+
+            if (isSuper) {
+                 setIsOrganizationAdmin(true);
+                 let saOrg = await getOrganizationByOwnerId(user.uid);
+                 if (!saOrg) {
+                    const orgId = await createOrganization({
+                        name: SUPER_ADMIN_ORG_NAME,
+                        ownerId: user.uid,
+                        createdAt: new Date().toISOString(),
+                        subscriptionTier: 'free',
+                        subscriptionExpiresAt: null, // Permanent
+                    });
+                    saOrg = { id: orgId, name: SUPER_ADMIN_ORG_NAME, ownerId: user.uid, createdAt: new Date().toISOString() };
+                 }
+                 setOrganization(saOrg);
+            } else if (userProfile.isOrganizationAdmin || userProfile.organizationId) {
                 setIsOrganizationAdmin(true);
                 const orgData = await getOrganizationByOwnerId(user.uid);
                 setOrganization(orgData);
@@ -137,11 +147,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return signInWithEmailAndPassword(auth, email, pass);
   };
 
-  const signup = async (email: string, pass: string, displayName: string, organizationName?: string) => {
+  const signup = async (email: string, pass: string, displayName: string, organizationName?: string, inviteOrgId?: string) => {
     
-    const existingUser = await getUserById(email); // Check by email, not UID
-     if (existingUser) {
-        throw new Error('An account with this email already exists.');
+    const usersRef = ref(db, 'users');
+    const snapshot = await get(usersRef);
+    if(snapshot.exists()) {
+        const users = snapshot.val();
+        const emailExists = Object.values(users).some((u: any) => u.email === email);
+        if (emailExists) {
+             throw new Error('An account with this email already exists.');
+        }
     }
     
     const userCredential = await createUserWithEmailAndPassword(
@@ -166,10 +181,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             ownerId: userCredential.user.uid,
             createdAt: new Date().toISOString(),
             subscriptionTier: 'free',
-            subscriptionExpiresAt: null, // Permanent free tier
+            subscriptionExpiresAt: null, // Permanent free tier for simplicity
         });
         newUser.organizationId = orgId;
         newUser.isOrganizationAdmin = true;
+    } else if (inviteOrgId) {
+        newUser.organizationId = inviteOrgId;
+        newUser.isOrganizationAdmin = false;
     }
 
     await saveUser(userCredential.user.uid, newUser);
@@ -191,7 +209,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const dbUser = await getUserById(user.uid);
       
       if (!dbUser) {
-        const newUser: Omit<RegisteredUser, 'uid'> = {
+        const newUser: Partial<RegisteredUser> = {
           email: user.email,
           displayName: user.displayName,
           createdAt: user.metadata.creationTime,

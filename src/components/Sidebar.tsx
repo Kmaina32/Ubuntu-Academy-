@@ -22,7 +22,7 @@ import pkg from '../../package.json';
 
 export function AppSidebar() {
     const pathname = usePathname();
-    const { user, isAdmin } = useAuth();
+    const { user, isAdmin, isOrganizationAdmin } = useAuth();
     const { setOpenMobile } = useSidebar();
 
     const isActive = (path: string) => {
@@ -149,6 +149,17 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         
+                        {(isAdmin || isOrganizationAdmin) && (
+                            <SidebarMenuItem>
+                                <SidebarMenuButton asChild isActive={isActive('/organization')} tooltip="Manage Organization" onClick={onLinkClick}>
+                                    <Link href="/organization/dashboard">
+                                        <Building />
+                                        <span>Manage Organization</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        )}
+
                         {isAdmin && (
                              <SidebarMenuItem>
                                 <SidebarMenuButton asChild isActive={isActive('/admin')} tooltip="Admin Dashboard" onClick={onLinkClick}>

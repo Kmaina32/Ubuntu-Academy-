@@ -41,8 +41,8 @@ export default async function ForBusinessPage() {
         <SidebarInset>
           <Header />
           <main className="flex-grow">
-              <section className="relative py-20 md:py-32 bg-secondary">
-                   <div className="absolute inset-0">
+              <section className="relative py-20 md:py-32 bg-secondary p-4">
+                   <div className="absolute inset-4 rounded-xl overflow-hidden">
                       {heroData.orgHeroImageUrl && (
                           <Image
                               src={heroData.orgHeroImageUrl}
