@@ -106,6 +106,7 @@ export default function Home() {
                         src={heroData.imageUrl}
                         alt="Hero background"
                         fill
+                        priority
                         className="object-cover"
                         data-ai-hint="abstract background"
                     />
