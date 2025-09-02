@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,12 +15,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, Gem } from 'lucide-react';
-import { getHeroData } from '@/lib/firebase-service';
+import { getHeroData, getInvitation, deleteInvitation } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { Separator } from '@/components/ui/separator';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { auth } from '@/lib/firebase';
 import { RecaptchaVerifier } from 'firebase/auth';
+import { Invitation } from '@/lib/mock-data';
 
 const formSchema = z.object({
   firstName: z.string().min(1, { message: 'First name is required.' }),
@@ -46,12 +47,14 @@ const GoogleIcon = () => (
 
 export default function SignupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { signup, signInWithGoogle, user, loading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [siteSettings, setSiteSettings] = useState<HeroData | null>(null);
+  const [invitation, setInvitation] = useState<Invitation | null>(null);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   
   useEffect(() => {
@@ -60,6 +63,21 @@ export default function SignupPage() {
     }
   }, [user, loading, router]);
 
+  useEffect(() => {
+    const fetchInviteData = async () => {
+        const inviteId = searchParams.get('invite');
+        if (inviteId) {
+            const inviteData = await getInvitation(inviteId);
+            if (inviteData) {
+                setInvitation(inviteData);
+                form.setValue('email', inviteData.email);
+            } else {
+                 toast({ title: "Invalid Invitation", description: "This invitation link is either invalid or has expired.", variant: "destructive" });
+            }
+        }
+    }
+    fetchInviteData();
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -89,7 +107,15 @@ export default function SignupPage() {
     setError(null);
     try {
       const displayName = [values.firstName, values.middleName, values.lastName].filter(Boolean).join(' ');
-      await signup(values.email, values.password, displayName);
+      
+      const orgId = invitation ? invitation.organizationId : undefined;
+      
+      await signup(values.email, values.password, displayName, undefined, orgId);
+      
+      if (invitation) {
+          await deleteInvitation(invitation.id);
+      }
+
       toast({
         title: 'Account Created!',
         description: "A verification email has been sent. Please check your inbox.",
@@ -138,6 +164,14 @@ export default function SignupPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+                {invitation && (
+                    <Alert className="mb-4">
+                        <AlertTitle>You've been invited!</AlertTitle>
+                        <AlertDescription>
+                            You are joining the <strong>{invitation.organizationName}</strong> organization.
+                        </AlertDescription>
+                    </Alert>
+                )}
                <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                       {error && (
@@ -194,7 +228,7 @@ export default function SignupPage() {
                           <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                              <Input placeholder="jomo@example.com" {...field} />
+                              <Input placeholder="jomo@example.com" {...field} disabled={!!invitation} />
                           </FormControl>
                           <FormMessage />
                           </FormItem>

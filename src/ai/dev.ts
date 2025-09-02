@@ -18,6 +18,7 @@ import './flows/site-help';
 import './flows/speech-to-text';
 import './flows/student-help';
 import './flows/text-to-speech';
+import './flows/send-org-invite';
 
 // Tools are automatically registered when imported by a flow,
 // but you can also import them directly if needed.

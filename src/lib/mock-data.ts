@@ -264,3 +264,11 @@ export interface PermissionRequest {
     createdAt: string; // ISO String
     resolvedAt?: string; // ISO String
 }
+
+export interface Invitation {
+    id: string;
+    email: string;
+    organizationId: string;
+    organizationName: string;
+    createdAt: string; // ISO String
+}

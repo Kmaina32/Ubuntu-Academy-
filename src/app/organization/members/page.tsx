@@ -8,12 +8,98 @@ import { Badge } from '@/components/ui/badge';
 import { PlusCircle, Trash2, Mail, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useEffect, useState } from 'react';
-import { RegisteredUser, deleteUser } from '@/lib/firebase-service';
+import { RegisteredUser, deleteUser, getOrganizationMembers } from '@/lib/firebase-service';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { sendOrganizationInvite } from '@/app/actions';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+
+const inviteFormSchema = z.object({
+    email: z.string().email({ message: "Please enter a valid email address." }),
+});
+
+function InviteDialog() {
+    const { organization } = useAuth();
+    const { toast } = useToast();
+    const [isOpen, setIsOpen] = useState(false);
+    const [isSending, setIsSending] = useState(false);
+
+    const form = useForm<z.infer<typeof inviteFormSchema>>({
+        resolver: zodResolver(inviteFormSchema),
+        defaultValues: { email: '' },
+    });
+
+    const onSubmit = async (values: z.infer<typeof inviteFormSchema>) => {
+        if (!organization) return;
+        setIsSending(true);
+        try {
+            await sendOrganizationInvite({
+                email: values.email,
+                organizationId: organization.id,
+                organizationName: organization.name,
+            });
+            toast({
+                title: "Invitation Sent!",
+                description: `An invitation has been sent to ${values.email}.`
+            });
+            setIsOpen(false);
+            form.reset();
+        } catch (error) {
+            console.error(error);
+            toast({ title: "Error", description: "Could not send the invitation.", variant: 'destructive'});
+        } finally {
+            setIsSending(false);
+        }
+    }
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+                <Button>
+                    <Mail className="mr-2 h-4 w-4" />
+                    Invite Member
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Invite a new member</DialogTitle>
+                    <DialogDescription>
+                        Enter the email address of the person you want to invite. They will receive an email with instructions to join your organization.
+                    </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Email Address</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="name@company.com" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                         <DialogFooter>
+                            <Button type="submit" disabled={isSending}>
+                                {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                                Send Invitation
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+    )
+}
 
 
 export default function OrganizationMembersPage() {
@@ -24,23 +110,20 @@ export default function OrganizationMembersPage() {
 
     const fetchMembers = async () => {
         if (!organization) return;
-        // In a real app, you would fetch users where organizationId matches
-        // For now, we'll just mock this with the current user
-        if (user) {
-            setMembers([{...user, uid: user.uid, displayName: user.displayName || 'Admin'} as RegisteredUser]);
-        }
+        setLoading(true);
+        const fetchedMembers = await getOrganizationMembers(organization.id);
+        setMembers(fetchedMembers);
         setLoading(false);
     }
     
     useEffect(() => {
-        setLoading(true);
-        fetchMembers();
+        if (organization) {
+            fetchMembers();
+        }
     }, [organization]);
 
     const handleRemoveMember = async (memberId: string) => {
-        // This is a placeholder. In a real app, you would have more complex logic,
-        // likely removing the organizationId from the user's record rather than deleting the user.
-        toast({ title: "Action Not Implemented", description: `Would remove member ${memberId}. This requires more complex logic.`});
+        toast({ title: "Action Not Implemented", description: `Removing members requires more complex logic to reassign their data or confirm deletion.`});
     }
 
     return (
@@ -51,31 +134,7 @@ export default function OrganizationMembersPage() {
                         <CardTitle>Manage Members</CardTitle>
                         <CardDescription>Invite, remove, and manage members of your organization.</CardDescription>
                     </div>
-                     <Dialog>
-                        <DialogTrigger asChild>
-                            <Button>
-                                <Mail className="mr-2 h-4 w-4" />
-                                Invite Member
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Invite a new member</DialogTitle>
-                                <DialogDescription>
-                                    Enter the email address of the person you want to invite. They will receive an email with instructions to join your organization.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div className="grid gap-4 py-4">
-                               <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="email" className="text-right">Email</Label>
-                                <Input id="email" type="email" placeholder="name@company.com" className="col-span-3"/>
-                               </div>
-                            </div>
-                            <DialogFooter>
-                                <Button onClick={() => toast({title: "Not Implemented", description: "Email invitation system needs to be set up."})}>Send Invitation</Button>
-                            </DialogFooter>
-                        </DialogContent>
-                     </Dialog>
+                    <InviteDialog />
                 </CardHeader>
                 <CardContent>
                     {loading ? (

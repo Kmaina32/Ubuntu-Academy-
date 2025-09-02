@@ -3,7 +3,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization } from './mock-data';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation } from './mock-data';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -633,4 +633,39 @@ export async function createOrganization(orgData: Omit<Organization, 'id'>): Pro
     const newOrgRef = push(orgsRef);
     await set(newOrgRef, orgData);
     return newOrgRef.key!;
+}
+
+export async function getOrganizationMembers(orgId: string): Promise<RegisteredUser[]> {
+    const usersRef = query(ref(db, 'users'), orderByChild('organizationId'), equalTo(orgId));
+    const snapshot = await get(usersRef);
+    if (snapshot.exists()) {
+        const usersData = snapshot.val();
+        return Object.keys(usersData).map(uid => ({
+            uid,
+            ...usersData[uid],
+        }));
+    }
+    return [];
+}
+
+// Invitation Functions
+export async function createInvitation(inviteData: Omit<Invitation, 'id'>): Promise<string> {
+    const invitesRef = ref(db, 'invitations');
+    const newInviteRef = push(invitesRef);
+    await set(newInviteRef, inviteData);
+    return newInviteRef.key!;
+}
+
+export async function getInvitation(inviteId: string): Promise<Invitation | null> {
+    const inviteRef = ref(db, `invitations/${inviteId}`);
+    const snapshot = await get(inviteRef);
+    if (snapshot.exists()) {
+        return { id: inviteId, ...snapshot.val() };
+    }
+    return null;
+}
+
+export async function deleteInvitation(inviteId: string): Promise<void> {
+    const inviteRef = ref(db, `invitations/${inviteId}`);
+    await remove(inviteRef);
 }

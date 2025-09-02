@@ -164,6 +164,14 @@
         },
          // Allow any authenticated user to create a new organization (on signup)
         ".write": "auth != null"
+    },
+    "invitations": {
+        ".read": true, // Allow reading invitations to validate them
+        ".write": "auth != null", // Only authenticated users (org admins) can create invitations
+        "$inviteId": {
+            // Only the creating org admin can write, anyone can read to validate
+            ".write": "auth != null && root.child('organizations').child(newData.child('organizationId').val()).child('ownerId').val() === auth.uid"
+        }
     }
   }
 }

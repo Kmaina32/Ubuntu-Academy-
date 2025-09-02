@@ -18,6 +18,7 @@ import type { StudentHelpInput, StudentHelpOutput } from '@/ai/flows/student-hel
 import type { TextToSpeechOutput } from '@/ai/flows/text-to-speech';
 import type { ApiKey } from '@/lib/mock-data';
 import type { GenerateProjectInput, GenerateProjectOutput } from '@/ai/flows/generate-project';
+import type { SendOrgInviteInput, SendOrgInviteOutput } from '@/ai/flows/send-org-invite';
 
 
 // Each function dynamically imports its corresponding flow, ensuring that the AI logic
@@ -88,4 +89,9 @@ export async function textToSpeech(input: { text: string; voice?: string; speed?
     const { textToSpeech } = await import('@/ai/flows/text-to-speech');
     // @ts-ignore
     return textToSpeech(input);
+}
+
+export async function sendOrganizationInvite(input: SendOrgInviteInput): Promise<SendOrgInviteOutput> {
+    const { sendOrganizationInvite } = await import('@/ai/flows/send-org-invite');
+    return sendOrganizationInvite(input);
 }
