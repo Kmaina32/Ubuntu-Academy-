@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Download } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { add, formatDistanceToNow, format } from 'date-fns';
 import { useState, useEffect } from 'react';
@@ -41,10 +41,14 @@ function SubscriptionCountdown({ expiryDate }: { expiryDate: Date | null }) {
 }
 
 export default function OrganizationBillingPage() {
-    const { organization } = useAuth();
+    const { organization, loading: authLoading } = useAuth();
     
     const expiryDate = organization?.subscriptionExpiresAt ? new Date(organization.subscriptionExpiresAt) : null;
     const nextPaymentDate = expiryDate ? format(expiryDate, 'MMMM d, yyyy') : 'N/A';
+
+    if (authLoading) {
+        return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+    }
 
     return (
         <div className="space-y-8">
