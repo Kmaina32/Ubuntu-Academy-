@@ -38,8 +38,6 @@ export default function TermsPage() {
                       
                       <h2 className="font-semibold text-xl">4. Termination</h2>
                       <p>We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms.</p>
-                      
-                      <p className="pt-4 text-center text-muted-foreground">This is a placeholder document. Please replace it with your own Terms of Service.</p>
                     </div>
                   </CardContent>
                 </Card>
