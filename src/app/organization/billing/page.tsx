@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Download } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { add, formatDistanceToNow, format } from 'date-fns';
+import { useState, useEffect } from 'react';
 
 const invoiceHistory = [
     { id: 'inv_1', date: format(add(new Date(), { months: -1 }), 'MMMM d, yyyy'), amount: 'Ksh 0', status: 'Paid' },

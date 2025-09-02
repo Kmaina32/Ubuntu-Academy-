@@ -156,6 +156,7 @@
       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
     "organizations": {
+        ".indexOn": "ownerId",
         ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
         "$orgId": {
             // Allow the org owner or a site admin to read/write
@@ -175,3 +176,4 @@
     }
   }
 }
+
