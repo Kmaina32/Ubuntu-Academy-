@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -9,11 +10,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getAllSubmissions, getCourseById, getAllCourses } from '@/lib/firebase-service';
 import type { Submission, Course } from '@/lib/mock-data';
-import { ArrowLeft, Loader2, Star, CheckCircle, Edit } from 'lucide-react';
+import { ArrowLeft, Loader2, Star, CheckCircle, Edit, Briefcase, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { generateProject } from '@/app/actions';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+
 
 type SubmissionWithCourse = Submission & { course?: Course };
 
@@ -73,7 +77,7 @@ function SubmissionsList() {
                 {submission.graded ? (
                     <Badge>
                         <CheckCircle className="mr-1 h-3 w-3" />
-                        Graded ({submission.pointsAwarded || 0} pts)
+                        Graded ({submission.pointsAwarded || 0} / 10)
                     </Badge>
                 ) : (
                     <Badge variant="secondary">Pending Review</Badge>
@@ -102,26 +106,43 @@ function SubmissionsList() {
   );
 }
 
-function ExamsList() {
+function ProjectsList() {
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isGenerating, setIsGenerating] = useState<string | null>(null);
     const { toast } = useToast();
 
-    useEffect(() => {
-        const fetchCourses = async () => {
-            try {
-                setLoading(true);
-                const fetchedCourses = await getAllCourses();
-                setCourses(fetchedCourses);
-            } catch(err) {
-                 console.error("Failed to fetch courses:", err);
-                 toast({ title: "Error", description: "Failed to load courses.", variant: "destructive" });
-            } finally {
-                setLoading(false);
-            }
+     const fetchCourses = async () => {
+        try {
+            setLoading(true);
+            const fetchedCourses = await getAllCourses();
+            setCourses(fetchedCourses);
+        } catch(err) {
+             console.error("Failed to fetch courses:", err);
+             toast({ title: "Error", description: "Failed to load courses.", variant: "destructive" });
+        } finally {
+            setLoading(false);
         }
+    }
+
+    useEffect(() => {
         fetchCourses();
-    }, [toast]);
+    }, []);
+    
+    const handleGenerateProject = async (course: Course) => {
+        setIsGenerating(course.id);
+        toast({ title: 'Generating Exam...', description: 'The AI is creating a new exam for this course.' });
+        try {
+            await generateProject({ courseTitle: course.title, courseDescription: course.longDescription });
+            toast({ title: 'Exam Generated!', description: 'The exam has been added to the course. You can now edit it.' });
+            fetchCourses(); // Re-fetch to update the UI
+        } catch (error) {
+            console.error('Failed to generate exam', error);
+            toast({ title: 'Error', description: 'Could not generate the exam.', variant: 'destructive' });
+        } finally {
+            setIsGenerating(null);
+        }
+    }
     
     return (
     loading ? (
@@ -134,7 +155,7 @@ function ExamsList() {
         <TableHeader>
           <TableRow>
             <TableHead>Course Title</TableHead>
-            <TableHead>Number of Questions</TableHead>
+            <TableHead>Exam Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -142,14 +163,42 @@ function ExamsList() {
           {courses.map((course) => (
             <TableRow key={course.id}>
               <TableCell className="font-medium">{course.title}</TableCell>
-              <TableCell>{course.exam?.length || 0} questions</TableCell>
-              <TableCell className="text-right">
+              <TableCell>
+                {course.exam && course.exam.length > 0 ? (
+                    <Badge variant="default">Exam Added</Badge>
+                ) : (
+                    <Badge variant="secondary">No Exam</Badge>
+                )}
+              </TableCell>
+              <TableCell className="text-right space-x-2">
                 <Button asChild size="sm">
-                  <Link href={`/admin/assignments/edit/${course.id}`}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Manage Exam
-                  </Link>
+                    <Link href={`/admin/assignments/edit/${course.id}`}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        {course.exam && course.exam.length > 0 ? 'Edit Exam' : 'Add Exam'}
+                    </Link>
                 </Button>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="outline" disabled={isGenerating === course.id}>
+                            {isGenerating === course.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4" />}
+                            Generate with AI
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Generate Final Exam?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This will use AI to generate a final exam for "{course.title}" based on its description. This will replace any existing questions.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleGenerateProject(course)}>
+                                Yes, Generate
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
               </TableCell>
             </TableRow>
           ))}
@@ -179,19 +228,19 @@ export default function AdminAssignmentsPage() {
             <Tabs defaultValue="submissions">
               <Card>
                   <CardHeader>
-                      <CardTitle>Manage Assignments</CardTitle>
-                      <CardDescription>Review student submissions and manage course exams.</CardDescription>
+                      <CardTitle className="flex items-center gap-2"><Briefcase className="h-6 w-6"/>Manage Exams & Submissions</CardTitle>
+                      <CardDescription>Review student exam submissions and manage course exams.</CardDescription>
                       <TabsList className="grid w-full grid-cols-2 mt-4">
                         <TabsTrigger value="submissions">Submissions</TabsTrigger>
-                        <TabsTrigger value="exams">Exams</TabsTrigger>
+                        <TabsTrigger value="projects">Course Exams</TabsTrigger>
                     </TabsList>
                   </CardHeader>
                   <CardContent>
                     <TabsContent value="submissions">
                         <SubmissionsList />
                     </TabsContent>
-                    <TabsContent value="exams">
-                        <ExamsList />
+                    <TabsContent value="projects">
+                        <ProjectsList />
                     </TabsContent>
                   </CardContent>
               </Card>

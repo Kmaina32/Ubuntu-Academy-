@@ -12,10 +12,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { AlertTriangle, Home, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
-const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
-
 function AdminAccessDenied() {
-    const router = useRouter();
     return (
         <div className="flex flex-col min-h-screen">
              <main className="flex-grow flex items-center justify-center bg-secondary/50">
@@ -42,16 +39,13 @@ function AdminAccessDenied() {
     )
 }
 
-
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const { user, loading } = useAuth();
-
+  const { user, loading, isAdmin } = useAuth();
+  
   if (loading) {
      return (
         <div className="flex h-screen items-center justify-center">
@@ -61,11 +55,11 @@ export default function AdminLayout({
      )
   }
 
-  if (!user || user.uid !== ADMIN_UID) {
+  if (!user || !isAdmin) {
       return <AdminAccessDenied />;
   }
 
-  // If we are here, user is the admin.
+  // If we are here, user is an admin.
   return (
     <SidebarProvider>
         <AdminSidebar />

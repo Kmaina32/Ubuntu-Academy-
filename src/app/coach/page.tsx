@@ -12,14 +12,17 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Sparkles, Briefcase, ArrowRight, Bot, CheckCircle } from 'lucide-react';
+import { Loader2, Sparkles, Briefcase, ArrowRight, Bot, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getLearningPath, LearningPathOutput } from '@/ai/flows/career-coach';
+import { getLearningPath } from '@/app/actions';
+import type { LearningPathOutput } from '@/ai/flows/career-coach';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
+import { isConfigured } from '@/ai/genkit';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const careerGoalSchema = z.object({
   goal: z.string().min(10, 'Please describe your career goal in more detail.'),
@@ -85,40 +88,50 @@ export default function CareerCoachPage() {
                 </p>
               </div>
 
-              <Card className="mb-8">
-                <CardHeader>
-                    <CardTitle>What is your career goal?</CardTitle>
-                    <CardDescription>
-                        Be specific! For example, "I want to become a freelance social media manager for small businesses in Kenya."
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col sm:flex-row items-start gap-4">
-                      <FormField
-                        control={form.control}
-                        name="goal"
-                        render={({ field }) => (
-                          <FormItem className="flex-grow w-full">
-                            <FormControl>
-                              <Input placeholder="e.g., Become a full-stack web developer" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
-                        {isLoading ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <Sparkles className="mr-2 h-4 w-4" />
-                        )}
-                        Generate My Path
-                      </Button>
-                    </form>
-                  </Form>
-                </CardContent>
-              </Card>
+               {!isConfigured ? (
+                 <Alert variant="destructive" className="mb-8">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>AI Feature Not Configured</AlertTitle>
+                  <AlertDescription>
+                    The AI Career Coach is currently unavailable. The application is missing the required API key for this service.
+                  </AlertDescription>
+                </Alert>
+               ) : (
+                <Card className="mb-8">
+                    <CardHeader>
+                        <CardTitle>What is your career goal?</CardTitle>
+                        <CardDescription>
+                            Be specific! For example, "I want to become a freelance social media manager for small businesses in Kenya."
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col sm:flex-row items-start gap-4">
+                        <FormField
+                            control={form.control}
+                            name="goal"
+                            render={({ field }) => (
+                            <FormItem className="flex-grow w-full">
+                                <FormControl>
+                                <Input placeholder="e.g., Become a full-stack web developer" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
+                            {isLoading ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            )}
+                            Generate My Path
+                        </Button>
+                        </form>
+                    </Form>
+                    </CardContent>
+                </Card>
+               )}
 
               {isLoading && (
                 <div className="text-center py-10">

@@ -114,6 +114,7 @@ export default function EditCoursePage() {
     setIsLoading(true);
      try {
         const courseData = {
+            duration: editedContent.duration,
             longDescription: editedContent.longDescription,
             modules: editedContent.modules,
             exam: editedContent.exam,

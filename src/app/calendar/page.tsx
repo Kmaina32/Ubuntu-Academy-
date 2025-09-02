@@ -140,7 +140,7 @@ export default function CalendarPage() {
                                         <p className="text-xs text-muted-foreground mb-2">{event.description}</p>
                                          <Button asChild variant="outline" size="sm" className="w-full">
                                             <a href={createGoogleCalendarLink(event)} target="_blank" rel="noopener noreferrer">
-                                                Add to Calendar
+                                                Save to Google Calendar
                                                 <ExternalLink className="ml-2 h-4 w-4" />
                                             </a>
                                         </Button>

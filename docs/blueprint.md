@@ -1,4 +1,4 @@
-# **App Name**: SkillSet Academy
+# **App Name**: Ubuntu Academy
 
 ## Core Features:
 

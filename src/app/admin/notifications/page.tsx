@@ -15,12 +15,23 @@ import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Loader2, Bell, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createNotification } from '@/lib/firebase-service';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const notificationSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
   body: z.string().min(10, 'Body must be at least 10 characters.'),
   link: z.string().url('Please enter a valid URL.').optional().or(z.literal('')),
+  cohort: z.string().optional(),
 });
+
+// Example cohorts. In a real app, you might fetch these dynamically.
+const exampleCohorts = [
+    "Sept-2024-FT",
+    "Sept-2024-PT",
+    "Oct-2024-FT",
+    "Web-Dev-Beginners",
+    "Marketing-Gurus"
+];
 
 export default function AdminNotificationsPage() {
   const { toast } = useToast();
@@ -32,16 +43,25 @@ export default function AdminNotificationsPage() {
       title: '',
       body: '',
       link: '',
+      cohort: 'all',
     },
   });
 
   const onSubmit = async (values: z.infer<typeof notificationSchema>) => {
     setIsLoading(true);
     try {
-      await createNotification(values);
+      const dataToSend: { title: string; body: string; link?: string; cohort?: string } = {
+          title: values.title,
+          body: values.body,
+          link: values.link,
+      };
+      if (values.cohort && values.cohort !== 'all') {
+          dataToSend.cohort = values.cohort;
+      }
+      await createNotification(dataToSend);
       toast({
         title: 'Success!',
-        description: 'Your notification has been saved and will be sent to all users.',
+        description: 'Your notification has been saved and will be sent to the targeted users.',
       });
       form.reset();
     } catch (error) {
@@ -67,7 +87,7 @@ export default function AdminNotificationsPage() {
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Bell className="h-6 w-6"/> Send Notification</CardTitle>
-                    <CardDescription>Compose and send a push notification to all registered users. Use this for important announcements or new course alerts.</CardDescription>
+                    <CardDescription>Compose and send a push notification to all registered users or a specific cohort. Use this for important announcements or new course alerts.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
@@ -111,6 +131,30 @@ export default function AdminNotificationsPage() {
                             </FormItem>
                           )}
                         />
+                        <FormField
+                            control={form.control}
+                            name="cohort"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Target Cohort</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a cohort to target..." />
+                                    </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Users</SelectItem>
+                                        {exampleCohorts.map(cohort => (
+                                            <SelectItem key={cohort} value={cohort}>{cohort}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
                         <div className="flex justify-end">
                             <Button type="submit" disabled={isLoading}>
                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}

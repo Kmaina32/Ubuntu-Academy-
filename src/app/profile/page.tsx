@@ -1,15 +1,17 @@
 
+
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, User as UserIcon, Camera, Upload } from 'lucide-react';
+import { ArrowLeft, Loader2, User as UserIcon, Camera, Upload, Eye, Building } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -45,7 +47,7 @@ const splitDisplayName = (displayName: string | null | undefined): {firstName: s
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, loading, logout, setUser } = useAuth();
+  const { user, loading, logout, setUser, isAdmin, isOrganizationAdmin } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -177,8 +179,7 @@ export default function ProfilePage() {
         });
 
         // Update the user record in the Realtime Database
-        await saveUser({
-            uid: user.uid,
+        await saveUser(user.uid, {
             email: user.email,
             displayName: newDisplayName
         });
@@ -232,7 +233,7 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden"/>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                        <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
                             <Upload className="mr-2 h-4 w-4" />
                             Upload Image
@@ -278,7 +279,7 @@ export default function ProfilePage() {
                                 <Label htmlFor='email'>Email Address</Label>
                                 <Input id='email' value={user.email || ''} readOnly disabled />
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                                 <FormField
                                 control={form.control}
                                 name="firstName"
@@ -322,6 +323,22 @@ export default function ProfilePage() {
                                     />
                              </div>
                              <p className="text-xs text-muted-foreground pt-2">Please ensure this is your full, correct name as it will be used on your certificates.</p>
+                              <div className="mt-6 space-y-2">
+                                <Button asChild variant="outline" className="w-full">
+                                    <Link href={`/portfolio/${user.uid}`}>
+                                        <Eye className="mr-2 h-4 w-4" />
+                                        View My Public Portfolio
+                                    </Link>
+                                </Button>
+                                {!isAdmin && !isOrganizationAdmin && (
+                                     <Button asChild variant="outline" className="w-full">
+                                        <Link href="/organization/signup">
+                                            <Building className="mr-2 h-4 w-4" />
+                                            Create an Organization
+                                        </Link>
+                                    </Button>
+                                )}
+                             </div>
                              <CardFooter className="flex justify-between px-0 pt-6">
                                 <Button variant="outline" onClick={handleLogout}>Logout</Button>
                                 <Button type="submit" disabled={isLoading}>

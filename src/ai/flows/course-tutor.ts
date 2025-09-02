@@ -9,9 +9,10 @@
  * - CourseTutorOutput - The return type for the courseTutor function.
  */
 
-import {ai} from '@/ai/genkit';
+import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
 import { textToSpeech } from './text-to-speech';
+import { googleAI } from '@genkit-ai/googleai';
 
 const CourseTutorInputSchema = z.object({
   question: z.string().optional().describe('The student\'s question about the lesson, or a command like "Tutor me".'),
@@ -37,9 +38,10 @@ export async function courseTutor(
 
 const prompt = ai.definePrompt({
   name: 'courseTutorPrompt',
+  model: googleAI.model('gemini-1.5-flash'),
   input: {schema: CourseTutorInputSchema},
   output: {schema: CourseTutorOutputSchema},
-  prompt: `You are Gina, an expert AI Tutor for the SkillSet Academy online learning platform. Your tone is encouraging, friendly, and very helpful.
+  prompt: `You are Gina, an expert AI Tutor for the Ubuntu Academy online learning platform. Your tone is encouraging, friendly, and very helpful.
 
 You will be given the content of a specific lesson and a student's question or a command. Your task is to respond based on the provided course context. Do not use any external knowledge.
 

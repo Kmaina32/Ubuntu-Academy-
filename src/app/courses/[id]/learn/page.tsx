@@ -1,15 +1,13 @@
-
-
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Course, Lesson, Module, TutorMessage } from '@/lib/mock-data';
-import { getCourseById, updateUserCourseProgress, getUserCourses, saveTutorHistory, getTutorHistory, getTutorSettings, TutorSettings, getUserNotes, saveUserNotes } from '@/lib/firebase-service';
+import { getCourseById, updateUserCourseProgress, getUserCourses, saveTutorHistory, getTutorHistory, getTutorSettings, TutorSettings, getUserNotes, saveUserNotes, getAllCourses } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit, FileText, Sparkles, Pencil, VolumeX, Link as LinkIcon, Notebook as NotebookIcon, Download, Gem, MessageCircle } from 'lucide-react';
+import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit, FileText, Sparkles, Pencil, VolumeX, Link as LinkIcon, Notebook as NotebookIcon, Download, Gem, MessageCircle, ArrowRight } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -22,9 +20,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
-import { courseTutor } from '@/ai/flows/course-tutor';
-import { speechToText } from '@/ai/flows/speech-to-text';
-import { textToSpeech } from '@/ai/flows/text-to-speech';
+import { courseTutor, speechToText, textToSpeech } from '@/app/actions';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useRecorder } from '@/hooks/use-recorder';
 import { Separator } from '@/components/ui/separator';
@@ -32,6 +28,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DiscussionForum } from '@/components/DiscussionForum';
+import { slugify } from '@/lib/utils';
 
 
 function getYouTubeEmbedUrl(url: string | undefined): string | null {
@@ -75,7 +72,7 @@ function Markdown({ content }: { content: string }) {
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
         .replace(/\n/g, '<br />');
-    return <p className="text-sm" dangerouslySetInnerHTML={{ __html: html }} />;
+    return <p className="text-sm whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
 const GoogleDriveIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -106,7 +103,7 @@ function CourseOutline({ course, progress, completedLessons, unlockedLessonsCoun
                     <SheetTitle>Course Outline</SheetTitle>
                 </SheetHeader>
             ) : (
-                <button onClick={() => router.push(`/courses/${course.id}`)} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+                <button onClick={() => router.push(`/courses/${slugify(course.title)}`)} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
                     <ArrowLeft className="h-4 w-4" />
                     Back to Course Details
                 </button>
@@ -373,7 +370,7 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
                                                 <Bot className="h-5 w-5 m-1.5" />
                                             </Avatar>
                                         )}
-                                        <div className={`rounded-lg px-3 py-2 max-w-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+                                        <div className={`rounded-lg px-3 py-2 max-w-md ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
                                             <Markdown content={message.content} />
                                             {message.role === 'assistant' && (
                                                 <Button 
@@ -577,7 +574,7 @@ function NotesSheet({ course }: { course: Course }) {
                     <div className="border-b-2 border-black pb-4 mb-4 flex justify-between items-center">
                         <div className="flex items-center gap-2">
                             <Gem className="h-8 w-8 text-primary" />
-                            <span className="font-bold text-xl font-headline">SkillSet Academy</span>
+                            <span className="font-bold text-xl font-headline">Ubuntu Academy</span>
                         </div>
                         <div className="text-right text-xs">
                             <p className="font-semibold">{user?.displayName}</p>
@@ -590,7 +587,7 @@ function NotesSheet({ course }: { course: Course }) {
                         <pre className="whitespace-pre-wrap font-body text-sm">{notes || 'No notes taken for this course.'}</pre>
                     </div>
                         <p className="text-center text-xs text-gray-400 mt-6">
-                        &copy; {new Date().getFullYear()} SkillSet Academy. All rights reserved.
+                        &copy; {new Date().getFullYear()} Ubuntu Academy. All rights reserved.
                     </p>
                 </div>
             </div>
@@ -598,9 +595,117 @@ function NotesSheet({ course }: { course: Course }) {
     )
 }
 
+function LessonContent({ lesson, onComplete }: { lesson: Lesson | null; onComplete: () => void }) {
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const pages = useMemo(() => {
+    if (!lesson?.content) return [];
+    
+    // Split by newlines first
+    const paragraphs = lesson.content.split('\n').filter(p => p.trim() !== '');
+    
+    // Then split long paragraphs by word count
+    const MAX_WORDS_PER_PAGE = 50;
+    const finalPages: string[] = [];
+
+    paragraphs.forEach(paragraph => {
+      const words = paragraph.split(' ');
+      if (words.length <= MAX_WORDS_PER_PAGE) {
+        finalPages.push(paragraph);
+      } else {
+        for (let i = 0; i < words.length; i += MAX_WORDS_PER_PAGE) {
+          finalPages.push(words.slice(i, i + MAX_WORDS_PER_PAGE).join(' '));
+        }
+      }
+    });
+
+    return finalPages;
+  }, [lesson]);
+
+  useEffect(() => {
+    // Reset to the first page when the lesson changes
+    setCurrentPage(0);
+  }, [lesson]);
+
+  if (!lesson) return null;
+
+  const totalPages = pages.length;
+  const isLastPage = totalPages === 0 || currentPage === totalPages - 1;
+
+  return (
+    <div>
+      <h1 className="text-3xl font-bold mb-4 font-headline">{lesson.title}</h1>
+      <div className="aspect-video bg-black rounded-lg mb-6">
+        {getYouTubeEmbedUrl(lesson.youtubeLinks?.[0]?.url) ? (
+          <iframe
+            className="w-full h-full rounded-lg"
+            src={getYouTubeEmbedUrl(lesson.youtubeLinks?.[0]?.url)!}
+            title={lesson.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-muted rounded-lg">
+            <Video className="h-16 w-16 text-muted-foreground/50" />
+            <p className="ml-4 text-muted-foreground">Video coming soon.</p>
+          </div>
+        )}
+      </div>
+
+      <div className="prose max-w-none text-foreground/90 mb-6">
+        <p>{totalPages > 0 ? pages[currentPage] : lesson.content}</p>
+      </div>
+
+       {totalPages > 0 && (
+         <div className="flex justify-between items-center mt-6">
+            <Button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 0} variant="outline">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+            </Button>
+            {totalPages > 1 && (
+                <span className="text-sm text-muted-foreground">
+                    Page {currentPage + 1} of {totalPages}
+                </span>
+            )}
+            <Button onClick={() => setCurrentPage(p => p + 1)} disabled={isLastPage} variant="outline">
+            Next <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+        </div>
+       )}
+
+      {isLastPage && (
+        <Button size="lg" className="bg-accent hover:bg-accent/90 mt-8 w-full" onClick={onComplete}>
+          Mark as Completed &amp; Continue
+        </Button>
+      )}
+
+      {lesson.googleDriveLinks && lesson.googleDriveLinks.length > 0 && (
+        <div className="mt-8">
+          <Separator />
+          <h3 className="text-lg font-semibold my-4">Lesson Resources</h3>
+          <div className="space-y-2">
+            {lesson.googleDriveLinks.map(link => (
+              <a
+                href={link.url}
+                key={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-3 bg-background border rounded-md hover:bg-secondary transition-colors"
+              >
+                <GoogleDriveIcon className="h-6 w-6 flex-shrink-0" />
+                <span className="text-sm font-medium text-primary">{link.title}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 export default function CoursePlayerPage() {
   const router = useRouter();
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>(); // This is now a slug
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -627,10 +732,17 @@ export default function CoursePlayerPage() {
     const fetchCourseAndProgress = async () => {
         if (!user) return;
         setLoading(true);
-        const [fetchedCourse, fetchedTutorSettings] = await Promise.all([
-             getCourseById(params.id),
-             getTutorSettings()
-        ]);
+
+        const allCourses = await getAllCourses();
+        const courseSlug = params.id;
+        const fetchedCourse = allCourses.find(c => slugify(c.title) === courseSlug);
+        
+        if (!fetchedCourse) {
+            notFound();
+            return;
+        }
+        
+        const fetchedTutorSettings = await getTutorSettings();
         
         setCourse(fetchedCourse);
         setTutorSettings(fetchedTutorSettings);
@@ -689,7 +801,7 @@ export default function CoursePlayerPage() {
   }
 
   const handleExamClick = () => {
-    router.push(`/courses/${course!.id}/exam`);
+    router.push(`/courses/${slugify(course!.title)}/exam`);
     if (isMobile) {
         setIsSheetOpen(false);
     }
@@ -727,7 +839,6 @@ export default function CoursePlayerPage() {
   };
 
   const progress = allLessons.length > 0 ? (completedLessons.size / allLessons.length) * 100 : 0;
-  const currentVideoUrl = getYouTubeEmbedUrl(currentLesson?.youtubeLinks?.[0]?.url);
 
   if (loading || authLoading) {
     return (
@@ -810,55 +921,7 @@ export default function CoursePlayerPage() {
                   </TabsList>
                   <TabsContent value="lesson">
                      {currentLesson ? (
-                        <div>
-                        <h1 className="text-3xl font-bold mb-4 font-headline">{currentLesson.title}</h1>
-                        <div className="aspect-video bg-black rounded-lg mb-6">
-                            {currentVideoUrl ? (
-                                <iframe
-                                    className="w-full h-full rounded-lg"
-                                    src={currentVideoUrl}
-                                    title={currentLesson.title}
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                ></iframe>
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-muted rounded-lg">
-                                    <Video className="h-16 w-16 text-muted-foreground/50" />
-                                    <p className="ml-4 text-muted-foreground">Video coming soon.</p>
-                                </div>
-                            )}
-                        </div>
-                        <div className="prose max-w-none text-foreground/90">
-                            <p>{currentLesson.content}</p>
-                        </div>
-                        
-                        {currentLesson.googleDriveLinks && currentLesson.googleDriveLinks.length > 0 && (
-                            <div className="mt-8">
-                                <Separator />
-                                <h3 className="text-lg font-semibold my-4">Lesson Resources</h3>
-                                <div className="space-y-2">
-                                    {currentLesson.googleDriveLinks.map(link => (
-                                        <a 
-                                            href={link.url} 
-                                            key={link.url}
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="flex items-center gap-3 p-3 bg-background border rounded-md hover:bg-secondary transition-colors"
-                                        >
-                                            <GoogleDriveIcon className="h-6 w-6 flex-shrink-0" />
-                                            <span className="text-sm font-medium text-primary">{link.title}</span>
-                                        </a>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {!completedLessons.has(currentLesson.id) && (
-                            <Button size="lg" className="bg-accent hover:bg-accent/90 mt-8" onClick={handleCompleteLesson}>
-                            Mark as Completed &amp; Continue
-                            </Button>
-                        )}
-                        </div>
+                        <LessonContent lesson={currentLesson} onComplete={handleCompleteLesson} />
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full text-center">
                             {progress >= 100 ? (
@@ -866,7 +929,7 @@ export default function CoursePlayerPage() {
                                     <CheckCircle className="h-24 w-24 text-green-500 mb-4" />
                                     <h1 className="text-3xl font-bold mb-2 font-headline">You've completed all lessons!</h1>
                                     <p className="text-muted-foreground mb-6">Great job. Now it's time to test your knowledge.</p>
-                                    <Button size="lg" onClick={() => router.push(`/courses/${course.id}/exam`)}>
+                                    <Button size="lg" onClick={() => router.push(`/courses/${slugify(course.title)}/exam`)}>
                                         Go to Final Exam
                                     </Button>
                                 </>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -16,6 +15,7 @@ import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
+import { slugify } from '@/lib/utils';
 
 export default function ProgramDetailPage() {
   const params = useParams<{ id: string }>();
@@ -139,7 +139,7 @@ export default function ProgramDetailPage() {
                                             </div>
                                         </div>
                                         <Button asChild className="w-full md:w-auto flex-shrink-0">
-                                            <Link href={`/courses/${course.id}`}>
+                                            <Link href={`/courses/${slugify(course.title)}`}>
                                                 View Course
                                                 <ArrowRight className="h-4 w-4 ml-2" />
                                             </Link>

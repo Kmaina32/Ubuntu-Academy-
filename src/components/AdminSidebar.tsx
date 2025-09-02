@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -13,14 +14,16 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library, Layers } from 'lucide-react';
-import { version } from '../../package.json';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library, Layers, BarChart3, Tag, ShieldCheck, Building } from 'lucide-react';
+import pkg from '../../package.json';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
+import { useAuth } from '@/hooks/use-auth';
 
 
 export function AdminSidebar() {
     const pathname = usePathname();
+    const { isSuperAdmin } = useAuth();
 
     const isActive = (path: string) => {
         if (path === '/admin') return pathname === '/admin';
@@ -32,7 +35,7 @@ export function AdminSidebar() {
         <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
                 <Gem className="h-6 w-6 text-primary" />
-                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">SkillSet Academy</span>
+                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Ubuntu Academy</span>
             </div>
         </SidebarHeader>
         <SidebarContent>
@@ -41,7 +44,7 @@ export function AdminSidebar() {
             </div>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/admin')} tooltip="Dashboard">
+                    <SidebarMenuButton asChild isActive={isActive('/admin') && pathname === '/admin'} tooltip="Dashboard">
                         <Link href="/admin">
                             <LayoutDashboard />
                             <span>Dashboard</span>
@@ -52,7 +55,7 @@ export function AdminSidebar() {
                     <SidebarMenuButton asChild isActive={isActive('/admin/assignments')} tooltip="Assignments">
                         <Link href="/admin/assignments">
                             <ListTodo />
-                            <span>Assignments</span>
+                            <span>Exams</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -72,6 +75,24 @@ export function AdminSidebar() {
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/admin/organizations')} tooltip="Organizations">
+                        <Link href="/admin/organizations">
+                            <Building />
+                            <span>Organizations</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                {isSuperAdmin && (
+                     <SidebarMenuItem>
+                        <SidebarMenuButton asChild isActive={isActive('/admin/approvals')} tooltip="Approvals">
+                            <Link href="/admin/approvals">
+                                <ShieldCheck />
+                                <span>Approvals</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                )}
                  <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive('/admin/calendar')} tooltip="Calendar">
                         <Link href="/admin/calendar">
@@ -112,6 +133,14 @@ export function AdminSidebar() {
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/admin/analytics')} tooltip="Analytics">
+                        <Link href="/admin/analytics">
+                            <BarChart3 />
+                            <span>Analytics</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
                  <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive('/admin/hero')} tooltip="Site Settings">
                         <Link href="/admin/hero">
@@ -148,8 +177,9 @@ export function AdminSidebar() {
             </div>
         </SidebarContent>
         <SidebarFooter>
-            <div className="text-left text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-                Beta Version: v{version}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+                <Tag className="h-3 w-3" />
+                <span>v{pkg.version}</span>
             </div>
         </SidebarFooter>
     </Sidebar>

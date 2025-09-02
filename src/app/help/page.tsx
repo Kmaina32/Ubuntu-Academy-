@@ -8,18 +8,18 @@ import { z } from 'zod';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Header } from "@/components/Header";
-import { HelpCircle, Loader2, Send, UserCircle, Bot } from "lucide-react";
+import { HelpCircle, Loader2, Send, UserCircle, Bot, BookText } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/Sidebar';
-import { studentHelp } from '@/ai/flows/student-help';
+import { studentHelp } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar } from '@/components/ui/avatar';
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const helpSchema = z.object({
   question: z.string().min(10, 'Please ask a more detailed question.'),
@@ -32,12 +32,8 @@ type Message = {
 
 function FaqComponent() {
     return (
-        <Card className="h-full">
-            <CardHeader>
-                <CardTitle>Frequently Asked Questions</CardTitle>
-                <CardDescription>Find quick answers to common questions.</CardDescription>
-            </CardHeader>
-            <CardContent>
+        <Card className="h-full border-0 shadow-none">
+            <CardContent className="pt-6">
                 <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="item-1">
                         <AccordionTrigger>How do I purchase a course?</AccordionTrigger>
@@ -69,13 +65,13 @@ function FaqComponent() {
     )
 }
 
-export default function HelpPage() {
+function AiAssistant() {
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
         {
             role: 'assistant',
-            content: "Hello! I'm an AI assistant. How can I help you today?"
+            content: "Hello! If you can't find your answer in the FAQ, ask me anything about how the platform works."
         }
     ]);
 
@@ -104,7 +100,74 @@ export default function HelpPage() {
             setIsLoading(false);
         }
     };
+    
+    return (
+        <Card className="h-full flex flex-col border-0 shadow-none">
+            <CardContent className="flex-grow overflow-hidden p-0">
+                <ScrollArea className="h-full px-6 py-4">
+                    <div className="space-y-6">
+                        {messages.map((message, index) => (
+                            <div key={index} className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
+                                {message.role === 'assistant' && (
+                                     <Avatar className="h-8 w-8 border">
+                                        <Bot className="h-5 w-5 m-1.5" />
+                                    </Avatar>
+                                )}
+                                <div className={`rounded-lg px-4 py-3 max-w-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+                                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                                </div>
+                                {message.role === 'user' && <UserCircle className="h-8 w-8 text-muted-foreground" />}
+                            </div>
+                        ))}
+                        {isLoading && (
+                            <div className="flex items-start gap-3">
+                                <Avatar className="h-8 w-8 border">
+                                    <Bot className="h-5 w-5 m-1.5" />
+                                </Avatar>
+                                <div className="rounded-lg px-4 py-3 bg-secondary flex items-center">
+                                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </ScrollArea>
+            </CardContent>
+            <CardContent className="border-t pt-6">
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-start gap-2">
+                    <FormField
+                    control={form.control}
+                    name="question"
+                    render={({ field }) => (
+                        <FormItem className="flex-grow">
+                        <FormControl>
+                            <Textarea
+                            placeholder="e.g., How do I get my certificate?"
+                            className="min-h-0 resize-none"
+                            rows={1}
+                            {...field}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                form.handleSubmit(onSubmit)();
+                                }
+                            }}
+                            />
+                        </FormControl>
+                        </FormItem>
+                    )}
+                    />
+                    <Button type="submit" disabled={isLoading} size="icon">
+                    <Send className="h-4 w-4" />
+                    </Button>
+                </form>
+                </Form>
+            </CardContent>
+        </Card>
+    )
+}
 
+export default function HelpPage() {
   return (
     <SidebarProvider>
         <AppSidebar />
@@ -119,88 +182,25 @@ export default function HelpPage() {
                         <h1 className="text-3xl font-bold font-headline">Help Center</h1>
                         <p className="text-muted-foreground">Get help from our AI assistant or browse the FAQ.</p>
                     </div>
-                    <div className="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-8">
-                       <div className="lg:col-span-2">
-                         <Card className="h-full flex flex-col">
-                            <CardHeader>
-                                <div className="flex items-center gap-3">
-                                    <div className="relative">
-                                    <Avatar className="h-12 w-12 border">
-                                            <Bot className="h-8 w-8 m-2" />
-                                    </Avatar>
-                                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></div>
-                                    </div>
-                                    <div>
-                                        <CardTitle>AI Assistant</CardTitle>
-                                        <CardDescription>Ask me anything about the platform.</CardDescription>
-                                    </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="flex-grow overflow-hidden p-0">
-                                <ScrollArea className="h-full px-6 py-4">
-                                    <div className="space-y-6">
-                                        {messages.map((message, index) => (
-                                            <div key={index} className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
-                                                {message.role === 'assistant' && (
-                                                     <Avatar className="h-8 w-8 border">
-                                                        <Bot className="h-5 w-5 m-1.5" />
-                                                    </Avatar>
-                                                )}
-                                                <div className={`rounded-lg px-4 py-3 max-w-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                                                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                                                </div>
-                                                {message.role === 'user' && <UserCircle className="h-8 w-8 text-muted-foreground" />}
-                                            </div>
-                                        ))}
-                                        {isLoading && (
-                                            <div className="flex items-start gap-3">
-                                                <Avatar className="h-8 w-8 border">
-                                                    <Bot className="h-5 w-5 m-1.5" />
-                                                </Avatar>
-                                                <div className="rounded-lg px-4 py-3 bg-secondary flex items-center">
-                                                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </ScrollArea>
-                            </CardContent>
-                            <CardContent className="border-t pt-6">
-                            <Form {...form}>
-                                <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-start gap-2">
-                                    <FormField
-                                    control={form.control}
-                                    name="question"
-                                    render={({ field }) => (
-                                        <FormItem className="flex-grow">
-                                        <FormControl>
-                                            <Textarea
-                                            placeholder="e.g., How do I get my certificate?"
-                                            className="min-h-0 resize-none"
-                                            rows={1}
-                                            {...field}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && !e.shiftKey) {
-                                                e.preventDefault();
-                                                form.handleSubmit(onSubmit)();
-                                                }
-                                            }}
-                                            />
-                                        </FormControl>
-                                        </FormItem>
-                                    )}
-                                    />
-                                    <Button type="submit" disabled={isLoading} size="icon">
-                                    <Send className="h-4 w-4" />
-                                    </Button>
-                                </form>
-                                </Form>
-                            </CardContent>
-                        </Card>
-                       </div>
-                       <div className="hidden lg:block">
-                         <FaqComponent />
-                       </div>
+                    <div className="flex-grow max-w-4xl mx-auto w-full">
+                       <Tabs defaultValue="faq" className="w-full">
+                          <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="faq">
+                                <BookText className="mr-2 h-4 w-4" />
+                                FAQ
+                            </TabsTrigger>
+                            <TabsTrigger value="ai-assistant">
+                                <Bot className="mr-2 h-4 w-4" />
+                                AI Assistant
+                            </TabsTrigger>
+                          </TabsList>
+                          <TabsContent value="faq">
+                              <FaqComponent />
+                          </TabsContent>
+                          <TabsContent value="ai-assistant" className="h-[60vh] flex flex-col">
+                             <AiAssistant />
+                          </TabsContent>
+                        </Tabs>
                     </div>
                 </main>
               <Footer />

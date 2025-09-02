@@ -8,13 +8,16 @@ import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import type { Course, UserCourse } from "@/lib/mock-data";
 import { getAllCourses, getHeroData, getUserCourses } from '@/lib/firebase-service';
-import { Loader2, Search } from 'lucide-react';
+import { Loader2, Search, ArrowLeft, ArrowRight } from 'lucide-react';
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+
+const COURSES_PER_PAGE = 6;
 
 export default function Home() {
   const { user } = useAuth();
@@ -24,6 +27,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,27 +54,41 @@ export default function Home() {
   
   const enrolledCourseIds = useMemo(() => new Set(userCourses.map(c => c.courseId)), [userCourses]);
 
-  const { ongoingCourses, featuredCourses } = useMemo(() => {
-    const ongoing = courses.filter(course => enrolledCourseIds.has(course.id));
-    const featured = courses.filter(course => !enrolledCourseIds.has(course.id));
-    
-    if (searchQuery) {
-        const lowercasedQuery = searchQuery.toLowerCase();
-        return {
-            ongoingCourses: ongoing.filter(c => c.title.toLowerCase().includes(lowercasedQuery)),
-            featuredCourses: featured.filter(c => c.title.toLowerCase().includes(lowercasedQuery)),
-        }
-    }
-
-    return { ongoingCourses: ongoing, featuredCourses: featured };
+  const filteredCourses = useMemo(() => {
+    return courses.filter(course => 
+      !enrolledCourseIds.has(course.id) &&
+      course.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [courses, enrolledCourseIds, searchQuery]);
+  
+  const ongoingCourses = useMemo(() => {
+     const ongoing = courses.filter(course => enrolledCourseIds.has(course.id));
+     if (searchQuery) {
+        return ongoing.filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase()));
+     }
+     return ongoing;
   }, [courses, enrolledCourseIds, searchQuery]);
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredCourses.length / COURSES_PER_PAGE);
+  const paginatedFeaturedCourses = useMemo(() => {
+    const startIndex = (currentPage - 1) * COURSES_PER_PAGE;
+    const endIndex = startIndex + COURSES_PER_PAGE;
+    return filteredCourses.slice(startIndex, endIndex);
+  }, [filteredCourses, currentPage]);
 
-  const courseAiHints: Record<string, string> = {
-    'digital-marketing-101': 'marketing computer',
-    'mobile-app-dev-react-native': 'code mobile',
-    'graphic-design-canva': 'design art'
-  };
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  }
+  
+  const handlePrevPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
+  }
+  
+  useEffect(() => {
+      setCurrentPage(1); // Reset to first page on search
+  }, [searchQuery]);
+
 
   return (
     <SidebarProvider>
@@ -88,6 +106,7 @@ export default function Home() {
                         src={heroData.imageUrl}
                         alt="Hero background"
                         fill
+                        priority
                         className="object-cover"
                         data-ai-hint="abstract background"
                     />
@@ -139,31 +158,44 @@ export default function Home() {
                                     key={course.id} 
                                     course={course} 
                                     isEnrolled={true}
-                                    aiHint={courseAiHints[course.id] || 'course placeholder'} 
                                 />
                             ))}
                          </div>
                      </div>
                   )}
 
-                  {featuredCourses.length > 0 && (
+                  {paginatedFeaturedCourses.length > 0 && (
                      <div>
                         {user && ongoingCourses.length > 0 && <Separator className="my-12"/>}
                         <h3 className="text-2xl font-bold font-headline text-center mb-8">Featured Courses</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {featuredCourses.map((course) => (
+                            {paginatedFeaturedCourses.map((course) => (
                                 <CourseCard 
                                     key={course.id} 
                                     course={course} 
                                     isEnrolled={false}
-                                    aiHint={courseAiHints[course.id] || 'course placeholder'} 
                                 />
                             ))}
                         </div>
+                        {totalPages > 1 && (
+                            <div className="flex justify-center items-center gap-4 mt-12">
+                                <Button onClick={handlePrevPage} disabled={currentPage === 1} variant="outline">
+                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                    Previous
+                                </Button>
+                                <span className="text-sm text-muted-foreground">
+                                    Page {currentPage} of {totalPages}
+                                </span>
+                                <Button onClick={handleNextPage} disabled={currentPage === totalPages} variant="outline">
+                                    Next
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                            </div>
+                        )}
                      </div>
                   )}
 
-                  {ongoingCourses.length === 0 && featuredCourses.length === 0 && (
+                  {ongoingCourses.length === 0 && filteredCourses.length === 0 && (
                     <div className="text-center text-muted-foreground py-10">
                       <p>No courses found{searchQuery ? ` that match "${searchQuery}"` : ''}.</p>
                     </div>

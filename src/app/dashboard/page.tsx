@@ -1,63 +1,220 @@
 
-
 'use client'
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import type { Course, UserCourse } from "@/lib/mock-data";
-import { getCourseById, getUserCourses } from '@/lib/firebase-service';
+import type { Course, UserCourse, RegisteredUser } from "@/lib/mock-data";
+import { getCourseById, getUserCourses, getAllCourses, saveUser } from '@/lib/firebase-service';
 import { Award, BookOpen, User, Loader2, Trophy, BookCopy, ListTodo } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
+import { slugify } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { updateProfile } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 type PurchasedCourseDetail = UserCourse & Partial<Course>;
 
+const profileFormSchema = z.object({
+  firstName: z.string().min(1, 'First name is required.'),
+  middleName: z.string().optional(),
+  lastName: z.string().min(1, 'Last name is required.'),
+});
+
+type ProfileFormValues = z.infer<typeof profileFormSchema>;
+
+const splitDisplayName = (displayName: string | null | undefined): {firstName: string, middleName: string, lastName: string} => {
+    if (!displayName) return { firstName: '', middleName: '', lastName: '' };
+    const parts = displayName.split(' ');
+    const firstName = parts[0] || '';
+    const lastName = parts[parts.length - 1] || '';
+    const middleName = parts.slice(1, -1).join(' ');
+    return { firstName, middleName, lastName };
+}
+
+
+function OnboardingModal({ user, onComplete }: { user: RegisteredUser, onComplete: (newDisplayName: string) => void }) {
+    const { toast } = useToast();
+    const [isLoading, setIsLoading] = useState(false);
+
+    const form = useForm<ProfileFormValues>({
+        resolver: zodResolver(profileFormSchema),
+        defaultValues: {
+            firstName: '',
+            middleName: '',
+            lastName: '',
+        }
+    });
+
+    const onSubmit = async (values: ProfileFormValues) => {
+        setIsLoading(true);
+        try {
+            const newDisplayName = [values.firstName, values.middleName, values.lastName].filter(Boolean).join(' ');
+            
+            if (auth.currentUser) {
+                await updateProfile(auth.currentUser, { displayName: newDisplayName });
+            }
+
+            await saveUser(user.uid, { displayName: newDisplayName });
+            
+            toast({ title: 'Success', description: 'Your profile has been updated.' });
+            onComplete(newDisplayName);
+        } catch(error) {
+            console.error(error);
+            toast({ title: 'Error', description: 'Failed to update profile.', variant: 'destructive'});
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    return (
+        <Dialog open={true}>
+            <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+                 <DialogHeader>
+                    <DialogTitle>Complete Your Profile</DialogTitle>
+                    <DialogDescription>
+                        Please enter your full name. This will be used on your certificates.
+                    </DialogDescription>
+                </DialogHeader>
+                 <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="firstName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>First Name</FormLabel>
+                                        <FormControl><Input placeholder="Jomo" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="lastName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Last Name</FormLabel>
+                                        <FormControl><Input placeholder="Kenyatta" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <FormField
+                            control={form.control}
+                            name="middleName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Middle Name (Optional)</FormLabel>
+                                    <FormControl><Input {...field} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <DialogFooter>
+                            <Button type="submit" disabled={isLoading}>
+                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                Save and Continue
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
 export default function DashboardPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isOrganizationAdmin, setUser: setAuthUser } = useAuth();
+  const router = useRouter();
   const [purchasedCourses, setPurchasedCourses] = useState<PurchasedCourseDetail[]>([]);
+  const [allCourses, setAllCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
+  const [dbUser, setDbUser] = useState<RegisteredUser | null>(null);
+
+  // Redirect organization admins to their specific dashboard
+  useEffect(() => {
+    if (!authLoading && isOrganizationAdmin) {
+      router.replace('/organization/dashboard');
+    }
+  }, [authLoading, isOrganizationAdmin, router]);
+
 
   useEffect(() => {
+    if (isOrganizationAdmin) return; // Don't fetch student data for org admins
+
     const fetchCourseDetails = async () => {
-      if (!user) return;
       setLoadingCourses(true);
       
-      const userCourses = await getUserCourses(user.uid);
-      
-      const courseDetailsPromises = userCourses.map(async (userCourse) => {
-          const courseDetails = await getCourseById(userCourse.courseId);
-          return {
-              ...userCourse,
-              ...courseDetails, // Adds title, instructor, etc. to the object
-              id: userCourse.courseId,
-          };
-      });
+      if (user) {
+        const [allCoursesData, userCoursesData, userProfile] = await Promise.all([
+            getAllCourses(),
+            getUserCourses(user.uid),
+            getUserById(user.uid),
+        ]);
+        setAllCourses(allCoursesData);
+        setDbUser(userProfile);
 
-      const detailedCourses = await Promise.all(courseDetailsPromises);
-      setPurchasedCourses(detailedCourses.filter(c => c.title)); // Filter out any courses that couldn't be fetched
+        const courseDetailsPromises = userCoursesData.map(async (userCourse) => {
+            const courseDetails = allCoursesData.find(c => c.id === userCourse.courseId);
+            return {
+                ...userCourse,
+                ...courseDetails,
+                id: userCourse.courseId,
+            };
+        });
+
+        const detailedCourses = await Promise.all(courseDetailsPromises);
+        setPurchasedCourses(detailedCourses.filter(c => c.title));
+      }
       setLoadingCourses(false);
     };
 
-    if (user) {
+    if (!authLoading) {
       fetchCourseDetails();
-    } else if (!authLoading) {
-      setLoadingCourses(false);
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, isOrganizationAdmin]);
   
   const inProgressCourses = purchasedCourses.filter(c => !c.completed);
   const completedCourses = purchasedCourses.filter(c => c.completed || c.certificateAvailable);
 
+  const needsOnboarding = dbUser && (!dbUser.displayName || dbUser.displayName === 'New Member');
+
+  const handleOnboardingComplete = (newDisplayName: string) => {
+      if (dbUser) {
+          setDbUser({ ...dbUser, displayName: newDisplayName });
+      }
+      if (auth.currentUser) {
+          setAuthUser(auth.currentUser);
+      }
+  }
+
 
   const renderContent = () => {
-    if (authLoading || (loadingCourses && user)) {
+    if (authLoading || (loadingCourses && user) || isOrganizationAdmin) {
         return (
             <div className="flex justify-center items-center py-10 h-full">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -66,7 +223,7 @@ export default function DashboardPage() {
         )
     }
 
-    if (!user) {
+    if (!user || !dbUser) {
         return (
             <div className="text-center h-full flex flex-col justify-center">
                 <User className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
@@ -81,13 +238,14 @@ export default function DashboardPage() {
 
     return (
         <div className="max-w-6xl mx-auto">
+            {needsOnboarding && <OnboardingModal user={dbUser} onComplete={handleOnboardingComplete} />}
             <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-1 font-headline">Welcome Back, {user.displayName?.split(' ')[0]}!</h1>
+                <h1 className="text-3xl font-bold mb-1 font-headline">Welcome Back, {dbUser.displayName?.split(' ')[0]}!</h1>
                 <p className="text-muted-foreground">Let's continue your learning journey.</p>
             </div>
             
             {/* Summary Cards */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 mb-8">
+            <div className="grid gap-6 sm:grid-cols-2 mb-8">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Courses in Progress</CardTitle>
@@ -116,7 +274,7 @@ export default function DashboardPage() {
                  {inProgressCourses.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {inProgressCourses.map((course) => (
-                            course.id && (
+                            course.id && course.title && (
                             <Card key={course.id} className="flex flex-col">
                                 <CardHeader>
                                 <CardTitle className="font-headline text-xl">{course.title}</CardTitle>
@@ -129,14 +287,14 @@ export default function DashboardPage() {
                                     </div>
                                     <Progress value={course.progress} className="h-2" />
                                 </CardContent>
-                                <CardContent>
+                                <CardFooter>
                                     <Button asChild className="w-full">
-                                        <Link href={`/courses/${course.id}/learn`}>
+                                        <Link href={`/courses/${slugify(course.title)}/learn`}>
                                             <BookOpen className="mr-2 h-4 w-4" />
                                             Jump Back In
                                         </Link>
                                     </Button>
-                                </CardContent>
+                                </CardFooter>
                             </Card>
                             )
                         ))}
@@ -167,7 +325,7 @@ export default function DashboardPage() {
                         <CardContent className="pt-6">
                              <ul className="space-y-4">
                                 {completedCourses.map((course, index) => (
-                                course.id && (
+                                course.id && course.title && (
                                     <li key={course.id}>
                                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                                              <div>
@@ -175,7 +333,7 @@ export default function DashboardPage() {
                                                 <p className="text-sm text-muted-foreground">Completed on {new Date().toLocaleDateString()}</p>
                                              </div>
                                              <Button asChild variant="outline" className="mt-2 sm:mt-0">
-                                                <Link href={`/dashboard/certificate/${course.id}`}>
+                                                <Link href={`/dashboard/certificate/${slugify(course.title)}`}>
                                                     <Award className="mr-2 h-4 w-4" />
                                                     View Certificate
                                                  </Link>

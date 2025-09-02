@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Bundle } from "@/lib/mock-data";
-import { getAllBundles, deleteBundle } from '@/lib/firebase-service';
+import { getAllBundles, deleteBundle, createPermissionRequest } from '@/lib/firebase-service';
 import { FilePlus2, Pencil, Trash2, Loader2, Library, Layers } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -23,8 +24,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function AdminBundlesPage() {
+  const { user, isSuperAdmin } = useAuth();
   const [bundles, setBundles] = useState<Bundle[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -47,13 +50,31 @@ export default function AdminBundlesPage() {
   }, []);
 
   const handleDelete = async (bundle: Bundle) => {
-    try {
-      await deleteBundle(bundle.id);
-      toast({ title: "Success", description: `Bundle "${bundle.title}" has been deleted.` });
-      fetchBundles(); // Refresh the list
-    } catch (error) {
-      console.error("Failed to delete bundle:", error);
-      toast({ title: "Error", description: "Failed to delete bundle.", variant: "destructive" });
+    if (!user) return;
+    
+    if (isSuperAdmin) {
+        try {
+            await deleteBundle(bundle.id);
+            toast({ title: "Success", description: `Bundle "${bundle.title}" has been deleted.` });
+            fetchBundles(); // Refresh the list
+        } catch (error) {
+            console.error("Failed to delete bundle:", error);
+            toast({ title: "Error", description: "Failed to delete bundle.", variant: "destructive" });
+        }
+    } else {
+        try {
+            await createPermissionRequest({
+                requesterId: user.uid,
+                requesterName: user.displayName || 'Unknown Admin',
+                action: 'delete_bundle',
+                itemId: bundle.id,
+                itemName: bundle.title,
+            });
+            toast({ title: "Request Sent", description: "Your request to delete this bundle has been sent for approval."});
+        } catch (error) {
+            console.error("Failed to create permission request:", error);
+            toast({ title: "Error", description: "Could not send deletion request.", variant: "destructive" });
+        }
     }
   };
 
@@ -70,7 +91,7 @@ export default function AdminBundlesPage() {
               <Layers className="h-8 w-8" />
               <div>
                 <h1 className="text-3xl font-bold font-headline">Course Bundles</h1>
-                <p className="text-muted-foreground">Group multiple courses into a single purchasable package.</p>
+                <p className="text-muted-foreground">Sell multiple courses together as a single, priced package.</p>
               </div>
             </div>
             <Button asChild>
@@ -125,12 +146,17 @@ export default function AdminBundlesPage() {
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete the bundle "{bundle.title}".
+                                    {isSuperAdmin
+                                      ? `This action cannot be undone. This will permanently delete the bundle "${bundle.title}".`
+                                      : `You are requesting to delete the bundle "${bundle.title}". This will send a request to the super admin for approval.`
+                                    }
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleDelete(bundle)}>Continue</AlertDialogAction>
+                                  <AlertDialogAction onClick={() => handleDelete(bundle)}>
+                                    {isSuperAdmin ? 'Yes, delete it' : 'Yes, send request'}
+                                    </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>

@@ -66,6 +66,32 @@
     --sidebar-ring: 275 69% 54%;
   }
 
+  .theme-jamhuri {
+    --background: 0 0% 96%; /* Light Gray */
+    --foreground: 0 0% 10%; /* Black */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --primary: 0 84.2% 60.2%; /* Red */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 90%;
+    --secondary-foreground: 0 0% 15%;
+    --accent: 120 54% 32%; /* Green */
+    --accent-foreground: 0 0% 100%;
+    --border: 0 0% 85%;
+    --input: 0 0% 85%;
+    --ring: 0 84.2% 60.2%;
+  }
+  
+  .dark.theme-jamhuri {
+    --background: 0 0% 8%; /* Black */
+    --foreground: 0 0% 98%; /* White */
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 98%;
+    --primary: 0 72% 51%; /* Red */
+    --secondary: 0 0% 15%;
+    --accent: 120 44% 42%; /* Green */
+  }
+
   .theme-christmas {
     --background: 120 60% 95%;
     --foreground: 120 60% 10%;

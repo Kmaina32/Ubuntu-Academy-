@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Program } from "@/lib/mock-data";
-import { getAllPrograms, deleteProgram } from '@/lib/firebase-service';
+import { getAllPrograms, deleteProgram, createPermissionRequest } from '@/lib/firebase-service';
 import { FilePlus2, Pencil, Trash2, Loader2, Library } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -23,8 +24,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function AdminProgramsPage() {
+  const { user, isSuperAdmin } = useAuth();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -47,13 +50,31 @@ export default function AdminProgramsPage() {
   }, []);
 
   const handleDelete = async (program: Program) => {
-    try {
-      await deleteProgram(program.id);
-      toast({ title: "Success", description: `Program "${program.title}" has been deleted.` });
-      fetchPrograms(); // Refresh the list
-    } catch (error) {
-      console.error("Failed to delete program:", error);
-      toast({ title: "Error", description: "Failed to delete program.", variant: "destructive" });
+    if (!user) return;
+    
+    if (isSuperAdmin) {
+        try {
+        await deleteProgram(program.id);
+        toast({ title: "Success", description: `Program "${program.title}" has been deleted.` });
+        fetchPrograms(); // Refresh the list
+        } catch (error) {
+        console.error("Failed to delete program:", error);
+        toast({ title: "Error", description: "Failed to delete program.", variant: "destructive" });
+        }
+    } else {
+        try {
+            await createPermissionRequest({
+                requesterId: user.uid,
+                requesterName: user.displayName || 'Unknown Admin',
+                action: 'delete_program',
+                itemId: program.id,
+                itemName: program.title,
+            });
+            toast({ title: "Request Sent", description: "Your request to delete this program has been sent for approval."});
+        } catch (error) {
+            console.error("Failed to create permission request:", error);
+            toast({ title: "Error", description: "Could not send deletion request.", variant: "destructive" });
+        }
     }
   };
 
@@ -70,7 +91,7 @@ export default function AdminProgramsPage() {
               <Library className="h-8 w-8" />
               <div>
                 <h1 className="text-3xl font-bold font-headline">Certificate Programs</h1>
-                <p className="text-muted-foreground">Group courses together into a structured learning program.</p>
+                <p className="text-muted-foreground">Create structured learning paths that award a program-level certificate.</p>
               </div>
             </div>
             <Button asChild>
@@ -123,12 +144,17 @@ export default function AdminProgramsPage() {
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete the program "{program.title}".
+                                    {isSuperAdmin
+                                      ? `This action cannot be undone. This will permanently delete the program "${program.title}".`
+                                      : `You are requesting to delete the program "${program.title}". This will send a request to the super admin for approval.`
+                                    }
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleDelete(program)}>Continue</AlertDialogAction>
+                                  <AlertDialogAction onClick={() => handleDelete(program)}>
+                                    {isSuperAdmin ? 'Yes, delete it' : 'Yes, send request'}
+                                  </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>

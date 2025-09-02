@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { User, LogOut, Bell, Calendar, Sparkles, PartyPopper, Gem, Moon, Sun, BellRing } from 'lucide-react';
+import { User, LogOut, Bell, Calendar, Sparkles, PartyPopper, Gem, Moon, Sun, BellRing, Code, Trash2, Clapperboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger, useSidebar } from './ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
@@ -20,9 +20,11 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Separator } from './ui/separator';
 import { useEffect, useState, useMemo } from 'react';
 import type { Course, CalendarEvent, Notification as DbNotification } from '@/lib/mock-data';
-import { getAllCourses, getAllCalendarEvents, getAllNotifications } from '@/lib/firebase-service';
-import { differenceInDays, isToday, parseISO } from 'date-fns';
+import { getAllCourses, getAllCalendarEvents, getAllNotifications, getUserById, getLiveSession } from '@/lib/firebase-service';
+import { differenceInDays, isToday, parseISO, formatDistanceToNow } from 'date-fns';
 import { usePathname, useRouter } from 'next/navigation';
+import { db } from '@/lib/firebase';
+import { onValue, ref } from 'firebase/database';
 
 type Notification = {
     id: string;
@@ -31,41 +33,61 @@ type Notification = {
     description: string;
     href?: string;
     date: string;
+    isLive?: boolean;
 };
 
 function NotificationsPopover() {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
     const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(new Set());
+    const [isLive, setIsLive] = useState(false);
 
     useEffect(() => {
         const storedIds = localStorage.getItem('readNotificationIds');
         if (storedIds) {
             setReadNotificationIds(new Set(JSON.parse(storedIds)));
         }
+
+        // Listen for live session status changes
+        const liveSessionRef = ref(db, 'webrtc-offers/live-session');
+        const unsubscribe = onValue(liveSessionRef, (snapshot) => {
+            setIsLive(snapshot.exists());
+        });
+
+        return () => unsubscribe();
     }, []);
 
     useEffect(() => {
-        if (!user) return;
+        if (authLoading) return;
+        if (!user) {
+            setLoading(false);
+            setNotifications([]);
+            return;
+        };
 
         const generateNotifications = async () => {
             setLoading(true);
             let combinedNotifications: Notification[] = [];
             const userCreationTime = user.metadata.creationTime ? new Date(user.metadata.creationTime) : new Date(0);
+            const userProfile = await getUserById(user.uid);
+            const userCohort = userProfile?.cohort;
 
             // 1. Fetch DB notifications
             try {
                 const dbNotifications = await getAllNotifications();
                 const formattedDbNotifications = dbNotifications
                     .filter(n => new Date(n.createdAt) > userCreationTime)
+                     // Filter based on cohort
+                    .filter(n => !n.cohort || n.cohort === userCohort)
                     .map((n: DbNotification) => ({
                         id: `db-${n.id}`,
-                        icon: BellRing,
+                        icon: n.title.includes('Live Now') ? Clapperboard : BellRing,
                         title: n.title,
                         description: n.body,
                         href: n.link || '#',
-                        date: n.createdAt
+                        date: n.createdAt,
+                        isLive: n.title.includes('Live Now'),
                     }));
                 combinedNotifications.push(...formattedDbNotifications);
             } catch (error) {
@@ -78,7 +100,7 @@ function NotificationsPopover() {
                     combinedNotifications.push({
                         id: 'welcome',
                         icon: PartyPopper,
-                        title: 'Welcome to SkillSet Academy!',
+                        title: 'Welcome to Ubuntu Academy!',
                         description: 'We are glad to have you here. Explore our courses.',
                         href: '/',
                         date: userCreationTime.toISOString()
@@ -135,21 +157,45 @@ function NotificationsPopover() {
 
         generateNotifications();
 
-    }, [user]);
+    }, [user, authLoading]);
     
     const unreadNotifications = useMemo(() => notifications.filter(n => !readNotificationIds.has(n.id)), [notifications, readNotificationIds]);
-    const readNotifications = useMemo(() => notifications.filter(n => readNotificationIds.has(n.id)), [notifications, readNotificationIds]);
-
 
     const handleOpenChange = (open: boolean) => {
-        if (open && unreadNotifications.length > 0) {
+        if (!open && unreadNotifications.length > 0) {
             const newReadIds = new Set(readNotificationIds);
             unreadNotifications.forEach(n => newReadIds.add(n.id));
             setReadNotificationIds(newReadIds);
             localStorage.setItem('readNotificationIds', JSON.stringify(Array.from(newReadIds)));
         }
     };
+    
+    const clearAllNotifications = () => {
+         const allIds = new Set(notifications.map(n => n.id));
+         setReadNotificationIds(allIds);
+         localStorage.setItem('readNotificationIds', JSON.stringify(Array.from(allIds)));
+    }
+    
+    const renderNotificationItem = (notification: Notification, isUnread: boolean) => {
+        const title = notification.isLive && !isLive 
+            ? notification.title.replace('Live Now', 'Live Ended') 
+            : notification.title;
+        
+        const iconColor = notification.isLive && isLive ? 'text-red-500' : isUnread ? 'text-primary' : 'text-muted-foreground';
 
+        return (
+            <Link href={notification.href || '#'} key={notification.id} className="block hover:bg-secondary rounded-md">
+                <div className="flex items-start gap-3 p-2">
+                    <notification.icon className={`h-5 w-5 ${iconColor} mt-1 flex-shrink-0`} />
+                    <div>
+                        <p className="font-semibold text-sm">{title}</p>
+                        <p className="text-xs text-muted-foreground">{notification.description}</p>
+                         <p className="text-xs text-muted-foreground/80 mt-1">{formatDistanceToNow(new Date(notification.date), { addSuffix: true })}</p>
+                    </div>
+                </div>
+            </Link>
+        )
+    }
 
     return (
         <Popover onOpenChange={handleOpenChange}>
@@ -167,6 +213,10 @@ function NotificationsPopover() {
             <PopoverContent align="end" className="w-80 p-0">
                 <div className="flex items-center justify-between p-3">
                     <h3 className="font-semibold">Notifications</h3>
+                    <Button variant="ghost" size="sm" onClick={clearAllNotifications} disabled={notifications.length === 0}>
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Clear all
+                    </Button>
                 </div>
                 <Separator />
                 {loading ? (
@@ -176,35 +226,16 @@ function NotificationsPopover() {
                         {unreadNotifications.length > 0 && (
                             <div className="p-2">
                                 <p className="text-xs font-semibold text-muted-foreground px-2 mb-1">Unread</p>
-                                {unreadNotifications.map(notification => (
-                                    <Link href={notification.href || '#'} key={notification.id} className="block hover:bg-secondary rounded-md">
-                                        <div className="flex items-start gap-3 p-2">
-                                            <notification.icon className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
-                                            <div>
-                                                <p className="font-semibold text-sm">{notification.title}</p>
-                                                <p className="text-xs text-muted-foreground">{notification.description}</p>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                ))}
+                                {unreadNotifications.map(notification => renderNotificationItem(notification, true))}
                             </div>
                         )}
-                         {readNotifications.length > 0 && (
-                            <div className="p-2">
+                         
+                         {notifications.filter(n => readNotificationIds.has(n.id)).length > 0 && (
+                             <div className="p-2">
                                 <p className="text-xs font-semibold text-muted-foreground px-2 mb-1">Read</p>
-                                {readNotifications.map(notification => (
-                                    <Link href={notification.href || '#'} key={notification.id} className="block hover:bg-secondary rounded-md opacity-70">
-                                        <div className="flex items-start gap-3 p-2">
-                                            <notification.icon className="h-5 w-5 text-muted-foreground mt-1 flex-shrink-0" />
-                                            <div>
-                                                <p className="font-medium text-sm">{notification.title}</p>
-                                                <p className="text-xs text-muted-foreground">{notification.description}</p>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                ))}
+                                {notifications.filter(n => readNotificationIds.has(n.id)).map(notification => renderNotificationItem(notification, false))}
                             </div>
-                        )}
+                         )}
                      </div>
                 ) : (
                     <div className="p-4 text-center text-sm text-muted-foreground">
@@ -283,7 +314,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
              <div className='block md:hidden'>
                  <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
                     <Gem className="h-6 w-6 text-primary" />
-                    <span>SkillSet Academy</span>
+                    <span>Ubuntu Academy</span>
                 </Link>
             </div>
         </div>

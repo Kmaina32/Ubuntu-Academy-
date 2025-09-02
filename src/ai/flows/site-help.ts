@@ -1,3 +1,4 @@
+
 // This file is machine-generated - edit with care!
 
 'use server';
@@ -10,8 +11,9 @@
  * - SiteHelpOutput - The return type for the siteHelp function.
  */
 
-import {ai} from '@/ai/genkit';
+import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
 
 const SiteHelpInputSchema = z.object({
   question: z.string().describe('The question the user is asking about the site.'),
@@ -31,14 +33,15 @@ export async function siteHelp(
 
 const prompt = ai.definePrompt({
   name: 'siteHelpPrompt',
+  model: googleAI.model('gemini-1.5-flash'),
   input: {schema: SiteHelpInputSchema},
   output: {schema: SiteHelpOutputSchema},
-  prompt: `You are Gina, an expert support agent for the SkillSet Academy online learning platform. Your tone is friendly, helpful, and professional. An administrator is asking you a question about how the platform works.
+  prompt: `You are Gina, an expert support agent for the Ubuntu Academy online learning platform. Your tone is friendly, helpful, and professional. An administrator is asking you a question about how the platform works.
 
   Use the following information about the student journey to answer their question comprehensively.
 
-  **Platform Overview: SkillSet Academy**
-  SkillSet Academy is an online learning platform for Kenyan users. It features courses created and managed by an admin. Students can enroll, learn, take exams, and earn certificates.
+  **Platform Overview: Ubuntu Academy**
+  Ubuntu Academy is an online learning platform for Kenyan users. It features courses created and managed by an admin. Students can enroll, learn, take exams, and earn certificates.
 
   **The Student Journey**
 

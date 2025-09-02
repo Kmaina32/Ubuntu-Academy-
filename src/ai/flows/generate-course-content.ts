@@ -1,4 +1,3 @@
-
 // This file is machine-generated - edit with care!
 
 'use server';
@@ -11,9 +10,10 @@
  * - GenerateCourseContentOutput - The return type for the generateCourseContentOutput function.
  */
 
-import {ai} from '@/ai/genkit';
+import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
+import { listCoursesTool } from '../tools/course-catalog';
 
 const GenerateCourseContentInputSchema = z.object({
   courseTitle: z.string().describe('The title of the course to be generated.'),
@@ -68,8 +68,8 @@ const ExamQuestionSchema = z.union([ShortAnswerQuestionSchema, MultipleChoiceQue
 const GenerateCourseContentOutputSchema = z.object({
   longDescription: z.string().min(100).describe('A detailed, comprehensive description of the entire course.'),
   duration: z.string().describe("The estimated total duration of the course, e.g., '4 Weeks' or '6 Weeks'."),
-  modules: z.array(ModuleSchema).min(2).describe('An array of modules for the course. Should contain at least 2 modules.'),
-  exam: z.array(ExamQuestionSchema).min(5).describe('The final exam for the course, containing at least five questions, with a mix of short-answer and multiple-choice questions.'),
+  modules: z.array(ModuleSchema).length(2).describe('An array of exactly 2 modules for the course.'),
+  exam: z.array(ExamQuestionSchema).length(5).describe('The final exam for the course, containing exactly five questions, with a mix of short-answer and multiple-choice questions.'),
 });
 export type GenerateCourseContentOutput = z.infer<typeof GenerateCourseContentOutputSchema>;
 
@@ -81,18 +81,21 @@ export async function generateCourseContent(
 
 const prompt = ai.definePrompt({
   name: 'generateCourseContentPrompt',
-  model: googleAI.model('gemini-1.5-flash'),
+  model: googleAI.model('gemini-1.5-pro'),
+  tools: [listCoursesTool],
   input: {schema: GenerateCourseContentInputSchema},
   output: {schema: GenerateCourseContentOutputSchema},
   prompt: `You are an expert curriculum developer for an online learning platform in Kenya. Your task is to generate a complete course structure based on a given title and context.
 
-The course must be comprehensive and well-structured.
+First, use the 'listCourses' tool to get a list of all existing courses in the catalog. You MUST NOT create a course that is a duplicate or very similar to an existing one. Your new course idea must be unique.
+
+The new course must be comprehensive and well-structured.
 It MUST include:
 - A detailed long description (minimum 100 characters).
 - An estimated total duration (e.g., "4 Weeks").
 - Exactly two (2) modules.
 - A total of at least five (5) lessons distributed across the two modules.
-- A final exam with exactly five (5) questions: three (3) multiple-choice questions and two (2) short-answer questions.
+- A final exam with exactly five (5) questions: three (3) 'multiple-choice' questions and two (2) 'short-answer' questions.
 
 Course Title: {{{courseTitle}}}
 
@@ -102,11 +105,12 @@ Course Context:
 {{{courseContext}}}
 {{/if}}
 
-Please generate the following content:
+Please generate the following content for the NEW, UNIQUE course:
 1.  **Long Description**: A detailed description of what the course is about, who it's for, and what students will learn. Minimum 100 characters.
 2.  **Duration**: The estimated total duration of the course.
 3.  **Modules**: A list of exactly 2 modules. Each module must have a unique ID, a title, and its list of lessons.
-4.  **Lessons**: Distribute at least 5 lessons between the modules. Each lesson must have a unique ID, title, duration (e.g., "5 min"), and full, extensive lesson content. 
+4.  **Lessons**: Distribute at least 5 lessons between the modules. Each lesson must have a unique ID, title, duration (e.g., "5 min"), and full, extensive lesson content.
+    - For **content**, you MUST write full, extensive, and detailed content for the lesson text. It should be comprehensive and provide in-depth information, not just a brief summary.
     - For **youtubeLinks**, you MUST ONLY include a link if a valid, full 'https://' URL is found in the context. If no valid URL is present, you MUST provide an EMPTY array. Do not invent URLs.
     - For **googleDriveLinks**, ALWAYS provide an EMPTY array.
 5.  **Exam**: A final exam with an array of exactly 5 questions. This exam must contain three (3) 'multiple-choice' questions and two (2) 'short-answer' questions. Each question needs a unique ID, type, text, max points (always 10), and the correct answer details (referenceAnswer for short-answer, options array and correctAnswer index for multiple-choice).
@@ -125,5 +129,8 @@ const generateCourseContentFlow = ai.defineFlow(
     return output!;
   }
 );
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 432e5eac49816e2c78bf62271af66792e024d4b8

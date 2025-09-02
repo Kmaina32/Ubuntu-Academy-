@@ -1,33 +1,141 @@
 
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Video, VideoOff } from 'lucide-react';
+import { ArrowLeft, Loader2, Video, VideoOff, PhoneOff, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-import { updateLiveSession, getLiveSession } from '@/lib/firebase-service';
+import { db } from '@/lib/firebase';
+import { ref, onValue, set, remove, onChildAdded, get } from 'firebase/database';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { createNotification, getUserById } from '@/lib/firebase-service';
+import { LiveChat } from '@/components/LiveChat';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+const liveSessionSchema = z.object({
+    title: z.string().min(5, 'Title must be at least 5 characters.'),
+    description: z.string().optional(),
+    speakers: z.string().optional(),
+    target: z.enum(['all', 'cohort', 'students']),
+    cohort: z.string().optional(),
+}).refine(data => {
+    if (data.target === 'cohort' && !data.cohort) return false;
+    return true;
+}, { message: 'Cohort name is required.', path: ['cohort']});
+
+const ICE_SERVERS = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+    ],
+};
+
+function ViewerList() {
+    const [viewers, setViewers] = useState<Map<string, string>>(new Map());
+
+    useEffect(() => {
+        const answersRef = ref(db, 'webrtc-answers/live-session');
+
+        const unsubscribe = onChildAdded(answersRef, async (snapshot) => {
+            const studentId = snapshot.key;
+            if (studentId) {
+                const user = await getUserById(studentId);
+                setViewers(prev => new Map(prev).set(studentId, user?.displayName || 'Anonymous'));
+            }
+        });
+        
+        // A simple way to handle disconnects without complex presence system for this specific feature
+        const allAnswersUnsubscribe = onValue(answersRef, (snapshot) => {
+            if (!snapshot.exists()) {
+                setViewers(new Map());
+                return;
+            }
+            const connectedIds = Object.keys(snapshot.val());
+            setViewers(prev => {
+                const newViewers = new Map<string, string>();
+                connectedIds.forEach(id => {
+                    if (prev.has(id)) {
+                        newViewers.set(id, prev.get(id)!);
+                    }
+                });
+                return newViewers;
+            });
+        });
+
+        return () => {
+            unsubscribe();
+            allAnswersUnsubscribe();
+        };
+    }, []);
+
+    const viewerList = Array.from(viewers.values());
+
+    return (
+         <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm pointer-events-auto">
+                        <Users className="h-4 w-4" />
+                        <span>{viewerList.length}</span>
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                   {viewerList.length > 0 ? (
+                    <ul className="text-sm">
+                        {viewerList.map(name => <li key={name}>{name}</li>)}
+                    </ul>
+                   ) : <p>No viewers yet.</p>}
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+    )
+}
+
 
 export default function AdminLivePage() {
     const { toast } = useToast();
     const [isLive, setIsLive] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
-    const streamRef = useRef<MediaStream | null>(null);
+    const localStreamRef = useRef<MediaStream | null>(null);
+    const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
+
+    const offerRef = ref(db, 'webrtc-offers/live-session');
+    const answersRef = ref(db, 'webrtc-answers/live-session');
+    const adminIceCandidatesRef = ref(db, 'webrtc-candidates/live-session/admin');
+    const studentIceCandidatesRef = ref(db, 'webrtc-candidates/live-session/student');
+    
+     const form = useForm<z.infer<typeof liveSessionSchema>>({
+        resolver: zodResolver(liveSessionSchema),
+        defaultValues: {
+            title: '',
+            description: '',
+            speakers: '',
+            target: 'all',
+        },
+    });
 
     useEffect(() => {
-        const fetchSessionStatus = async () => {
-            const session = await getLiveSession();
-            setIsLive(session?.isActive || false);
-            setIsLoading(false);
+        // Cleanup on component unmount
+        return () => {
+            if(isLive) {
+                handleStopLive();
+            }
         };
-        fetchSessionStatus();
-    }, []);
-
+    }, [isLive]);
+    
     const getCameraPermission = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -35,7 +143,7 @@ export default function AdminLivePage() {
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
             }
-            streamRef.current = stream;
+            localStreamRef.current = stream;
             return stream;
         } catch (error) {
             console.error('Error accessing camera:', error);
@@ -49,84 +157,196 @@ export default function AdminLivePage() {
         }
     };
 
-    const handleGoLive = async () => {
+
+    const handleGoLive = async (values: z.infer<typeof liveSessionSchema>) => {
         setIsLoading(true);
         const stream = await getCameraPermission();
-        if (stream) {
-            // In a real app, you would set up WebRTC here and send the stream data.
-            // For this demo, we'll just mark the session as active.
-            await updateLiveSession({
-                isActive: true,
-                streamData: "simulated_stream_data", // Placeholder
-                startedAt: new Date().toISOString()
-            });
-            setIsLive(true);
-            toast({ title: 'You are now live!', description: 'Your video stream has started.' });
+        if (!stream) {
+            setIsLoading(false);
+            return;
         }
+
+        const notificationPayload: {
+            title: string;
+            body: string;
+            link: string;
+            cohort?: string;
+        } = {
+            title: `🔴 Live Now: ${values.title}`,
+            body: values.description || 'A live session has started. Join now!',
+            link: '/live',
+        };
+
+        if (values.target === 'cohort' && values.cohort) {
+            notificationPayload.cohort = values.cohort;
+        }
+
+        await createNotification(notificationPayload);
+        toast({ title: 'Notifications Sent!', description: 'Targeted students have been notified about the live session.'});
+
+        const offerPc = new RTCPeerConnection(ICE_SERVERS);
+        stream.getTracks().forEach(track => offerPc.addTrack(track, stream));
+        const offer = await offerPc.createOffer();
+        await offerPc.setLocalDescription(offer);
+        
+        await set(offerRef, { sdp: offer.sdp, type: offer.type, ...values });
+        offerPc.close();
+
+        setIsLive(true);
         setIsLoading(false);
+        toast({ title: 'You are now live!', description: 'Your video stream has started. Waiting for students to join.' });
+
+        onChildAdded(answersRef, async (snapshot) => {
+            const studentId = snapshot.key;
+            if (!studentId || peerConnectionsRef.current.has(studentId)) return;
+
+            const studentAnswer = snapshot.val();
+            toast({ title: 'Student Joined', description: `A new student has connected to the stream.` });
+            
+            const peerConnection = new RTCPeerConnection(ICE_SERVERS);
+            peerConnectionsRef.current.set(studentId, peerConnection);
+
+            localStreamRef.current?.getTracks().forEach(track => {
+                peerConnection.addTrack(track, localStreamRef.current!);
+            });
+
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(studentAnswer));
+            
+            peerConnection.onicecandidate = event => {
+                if (event.candidate) {
+                    set(ref(db, `webrtc-candidates/live-session/admin/${studentId}/${Date.now()}`), event.candidate.toJSON());
+                }
+            };
+            
+            onChildAdded(ref(db, `webrtc-candidates/live-session/student/${studentId}`), (candidateSnapshot) => {
+                const candidate = candidateSnapshot.val();
+                if (candidate) {
+                   peerConnection.addIceCandidate(new RTCIceCandidate(candidate)).catch(e => console.error("Error adding ICE candidate:", e));
+                }
+            });
+        });
     };
 
     const handleStopLive = async () => {
         setIsLoading(true);
-        await updateLiveSession({ isActive: false, streamData: "" });
-        setIsLive(false);
+        
+        peerConnectionsRef.current.forEach(pc => pc.close());
+        peerConnectionsRef.current.clear();
 
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
+        if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach(track => track.stop());
+            localStreamRef.current = null;
         }
         if (videoRef.current) {
             videoRef.current.srcObject = null;
         }
-        
+
+        await Promise.all([
+            remove(offerRef),
+            remove(answersRef),
+            remove(adminIceCandidatesRef),
+            remove(studentIceCandidatesRef),
+            remove(ref(db, 'liveChat/live-session'))
+        ]);
+
+        setIsLive(false);
         toast({ title: 'Stream Ended', description: 'You have stopped the live session.' });
         setIsLoading(false);
     };
 
     return (
         <div className="flex flex-col min-h-screen">
-        <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
-            <div className="max-w-4xl mx-auto">
-                <Link href="/admin" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to Admin Dashboard
-                </Link>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Live Classroom</CardTitle>
-                        <CardDescription>Start or stop a live video session for all students.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                            <video ref={videoRef} className="w-full h-full rounded-lg" autoPlay muted playsInline />
+            <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
+                <div className="max-w-6xl mx-auto">
+                    <Link href="/admin" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to Admin Dashboard
+                    </Link>
+                    <div className="grid lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-2">
+                             <Card>
+                                <CardHeader>
+                                    <CardTitle>Live Classroom</CardTitle>
+                                    <CardDescription>Start or stop a live video session for all students.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center relative">
+                                        <video ref={videoRef} className="w-full h-full rounded-lg" autoPlay muted playsInline />
+                                        {isLive && (
+                                            <>
+                                                <ViewerList />
+                                                <LiveChat sessionId="live-session" />
+                                                <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20">
+                                                    <Button size="icon" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="rounded-full h-12 w-12 shadow-lg">
+                                                        {isLoading ? <Loader2 className="h-6 w-6 animate-spin"/> : <PhoneOff className="h-6 w-6" />}
+                                                    </Button>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                    
+                                    {hasCameraPermission === false && (
+                                        <Alert variant="destructive">
+                                            <AlertTitle>Camera Access Required</AlertTitle>
+                                            <AlertDescription>
+                                                Please allow camera access in your browser to use this feature.
+                                            </AlertDescription>
+                                        </Alert>
+                                    )}
+                                </CardContent>
+                            </Card>
                         </div>
-                        
-                        {hasCameraPermission === false && (
-                            <Alert variant="destructive">
-                                <AlertTitle>Camera Access Required</AlertTitle>
-                                <AlertDescription>
-                                    Please allow camera access in your browser to use this feature.
-                                </AlertDescription>
-                            </Alert>
-                        )}
-                        
-                        <div className="flex justify-center">
-                            {isLive ? (
-                                <Button size="lg" variant="destructive" onClick={handleStopLive} disabled={isLoading}>
-                                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <VideoOff className="mr-2 h-4 w-4" />}
-                                    Stop Live Session
-                                </Button>
-                            ) : (
-                                <Button size="lg" onClick={handleGoLive} disabled={isLoading}>
-                                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Video className="mr-2 h-4 w-4" />}
-                                    Go Live
-                                </Button>
+                        <div className="lg:col-span-1">
+                             {!isLive && (
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Start a New Session</CardTitle>
+                                        <CardDescription>Configure and start your live broadcast.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <Form {...form}>
+                                            <form onSubmit={form.handleSubmit(handleGoLive)} className="space-y-4">
+                                                <FormField control={form.control} name="title" render={({ field }) => (
+                                                    <FormItem><FormLabel>Session Title</FormLabel><FormControl><Input placeholder="e.g., Marketing Q&A" {...field} /></FormControl><FormMessage /></FormItem>
+                                                )}/>
+                                                <FormField control={form.control} name="description" render={({ field }) => (
+                                                    <FormItem><FormLabel>Description (for notification)</FormLabel><FormControl><Textarea placeholder="Join us for a live Q&A session..." {...field} /></FormControl><FormMessage /></FormItem>
+                                                )}/>
+                                                <FormField control={form.control} name="speakers" render={({ field }) => (
+                                                    <FormItem><FormLabel>Keynote Speakers (Optional)</FormLabel><FormControl><Input placeholder="e.g., Jane Doe, John Smith" {...field} /></FormControl><FormMessage /></FormItem>
+                                                )}/>
+                                                 <FormField control={form.control} name="target" render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Target Audience</FormLabel>
+                                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                            <FormControl><SelectTrigger><SelectValue placeholder="Select who to notify..." /></SelectTrigger></FormControl>
+                                                            <SelectContent>
+                                                                <SelectItem value="all">All Students</SelectItem>
+                                                                <SelectItem value="cohort">Specific Cohort</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}/>
+                                                {form.watch('target') === 'cohort' && (
+                                                    <FormField control={form.control} name="cohort" render={({ field }) => (
+                                                        <FormItem><FormLabel>Cohort Name</FormLabel><FormControl><Input placeholder="e.g., Sept-2024-FT" {...field} /></FormControl><FormMessage /></FormItem>
+                                                    )}/>
+                                                )}
+                                                <Button size="lg" type="submit" disabled={isLoading} className="w-full">
+                                                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Video className="mr-2 h-4 w-4" />}
+                                                    Go Live
+                                                </Button>
+                                            </form>
+                                        </Form>
+                                    </CardContent>
+                                </Card>
                             )}
                         </div>
-                    </CardContent>
-                </Card>
-            </div>
-        </main>
-        <Footer />
+                    </div>
+                </div>
+            </main>
+            <Footer />
         </div>
     );
 }

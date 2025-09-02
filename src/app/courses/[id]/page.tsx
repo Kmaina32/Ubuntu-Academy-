@@ -4,21 +4,22 @@ import { useState, useEffect } from 'react';
 import { notFound, useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from 'next/link';
-import type { Course } from "@/lib/mock-data";
-import { getCourseById, enrollUserInCourse, getUserCourses } from '@/lib/firebase-service';
+import type { Course, UserCourse } from "@/lib/mock-data";
+import { getCourseById, enrollUserInCourse, getUserCourses, getAllCourses } from '@/lib/firebase-service';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
-import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen, Clock, Check } from "lucide-react";
+import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen, Clock, Check, MessageSquare } from "lucide-react";
 import { MpesaModal } from '@/components/MpesaModal';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
+import { slugify } from '@/lib/utils';
 
 function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolled }: { course: Course, onEnrollFree: () => void, onPurchase: () => void, isEnrolling: boolean, isEnrolled: boolean }) {
     return (
@@ -43,7 +44,7 @@ function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolle
                            <Check className="mr-2 h-4 w-4 flex-shrink-0"/> Enrolled
                         </Button>
                          <Button size="lg" variant="outline" asChild className="w-full text-sm">
-                           <Link href={`/courses/${course.id}/learn`}>Go to Course</Link>
+                           <Link href={`/courses/${slugify(course.title)}/learn`}>Go to Course</Link>
                         </Button>
                     </div>
                 ) : course.price > 0 ? (
@@ -87,7 +88,7 @@ function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolle
 
 
 export default function CourseDetailPage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>(); // This 'id' is now the slug
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -97,7 +98,6 @@ export default function CourseDetailPage() {
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(false);
 
-
    useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
@@ -105,22 +105,29 @@ export default function CourseDetailPage() {
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    if (user) {
-        const fetchCourse = async () => {
-            setLoading(true);
-            const [fetchedCourse, userCourses] = await Promise.all([
-                getCourseById(params.id),
-                getUserCourses(user.uid)
-            ]);
-            
-            if(userCourses.some(c => c.courseId === params.id)) {
-                setIsEnrolled(true);
-            }
-
-            setCourse(fetchedCourse);
-            setLoading(false);
+    const fetchCourseAndProgress = async () => {
+        if (!user) return;
+        setLoading(true);
+        const allCourses = await getAllCourses();
+        const courseSlug = params.id;
+        const fetchedCourse = allCourses.find(c => slugify(c.title) === courseSlug);
+        
+        if (!fetchedCourse) {
+            notFound();
+            return;
         }
-        fetchCourse();
+
+        const userCourses = await getUserCourses(user.uid);
+        
+        if(userCourses.some(c => c.courseId === fetchedCourse.id)) {
+            setIsEnrolled(true);
+        }
+
+        setCourse(fetchedCourse);
+        setLoading(false);
+    }
+    if (user) {
+      fetchCourseAndProgress();
     }
   }, [params.id, user]);
 
@@ -188,9 +195,6 @@ export default function CourseDetailPage() {
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 font-headline break-words overflow-wrap-anywhere leading-tight">
                   {course.title}
                 </h1>
-                <p className="text-muted-foreground text-sm sm:text-base lg:text-lg mb-6 break-words overflow-wrap-anywhere leading-relaxed">
-                  {course.longDescription}
-                </p>
                 
                 {/* Purchase Card for Mobile View */}
                 <div className="lg:hidden mb-6 sm:mb-8">
@@ -203,6 +207,11 @@ export default function CourseDetailPage() {
                     />
                 </div>
 
+                <h2 className="text-xl sm:text-2xl font-bold mb-4 font-headline">Course Description</h2>
+                <p className="text-muted-foreground text-sm sm:text-base lg:text-lg mb-6 break-words overflow-wrap-anywhere leading-relaxed">
+                  {course.longDescription}
+                </p>
+                
                 <h2 className="text-xl sm:text-2xl font-bold mb-4 font-headline">Course Content</h2>
                 <Accordion type="single" collapsible className="w-full">
                   {course.modules && course.modules.map((module) => (

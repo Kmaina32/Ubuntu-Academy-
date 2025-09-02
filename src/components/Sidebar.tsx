@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -14,16 +15,14 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library, Briefcase } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library, Briefcase, Tag, Building } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from './ui/separator';
-import { version } from '../../package.json';
-
-const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
+import pkg from '../../package.json';
 
 export function AppSidebar() {
     const pathname = usePathname();
-    const { user } = useAuth();
+    const { user, isAdmin, isOrganizationAdmin } = useAuth();
     const { setOpenMobile } = useSidebar();
 
     const isActive = (path: string) => {
@@ -40,7 +39,7 @@ export function AppSidebar() {
         <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
                 <Gem className="h-6 w-6 text-primary" />
-                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">SkillSet Academy</span>
+                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Ubuntu Academy</span>
             </div>
         </SidebarHeader>
         <SidebarContent>
@@ -150,7 +149,18 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         
-                        {user.uid === ADMIN_UID && (
+                        {(isAdmin || isOrganizationAdmin) && (
+                            <SidebarMenuItem>
+                                <SidebarMenuButton asChild isActive={isActive('/organization')} tooltip="Manage Organization" onClick={onLinkClick}>
+                                    <Link href="/organization/dashboard">
+                                        <Building />
+                                        <span>Manage Organization</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        )}
+
+                        {isAdmin && (
                              <SidebarMenuItem>
                                 <SidebarMenuButton asChild isActive={isActive('/admin')} tooltip="Admin Dashboard" onClick={onLinkClick}>
                                     <Link href="/admin">
@@ -176,6 +186,14 @@ export function AppSidebar() {
                                 <Link href="/programs">
                                     <Library />
                                     <span>Programs</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/for-business')} tooltip="For Organizations" onClick={onLinkClick}>
+                                <Link href="/for-business">
+                                    <Building />
+                                    <span>Organization</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -208,8 +226,9 @@ export function AppSidebar() {
             </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
-             <div className="text-left text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-                Beta Version: v{version}
+             <div className="flex items-center gap-2 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+                <Tag className="h-3 w-3" />
+                <span>v{pkg.version}</span>
             </div>
         </SidebarFooter>
     </Sidebar>

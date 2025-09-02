@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Loader2, Shield, Rss, Palette } from 'lucide-react';
+import { ArrowLeft, Loader2, Shield, Rss, Palette, Building } from 'lucide-react';
 import { getHeroData, saveHeroData, getRemoteConfigValues, saveRemoteConfigValues } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { useToast } from '@/hooks/use-toast';
@@ -32,6 +32,9 @@ const heroFormSchema = z.object({
   recaptchaEnabled: z.boolean(),
   theme: z.string().optional(),
   animationsEnabled: z.boolean(),
+  orgHeroTitle: z.string().min(5, 'Title must be at least 5 characters.'),
+  orgHeroSubtitle: z.string().min(20, 'Subtitle must be at least 20 characters.'),
+  orgHeroImageUrl: z.string().url('Please enter a valid URL.'),
 });
 
 export default function AdminHeroPage() {
@@ -52,6 +55,9 @@ export default function AdminHeroPage() {
       recaptchaEnabled: true,
       theme: 'default',
       animationsEnabled: true,
+      orgHeroTitle: '',
+      orgHeroSubtitle: '',
+      orgHeroImageUrl: '',
     },
   });
 
@@ -86,7 +92,7 @@ export default function AdminHeroPage() {
 
   const applyTheme = (theme: string) => {
     // Remove all theme classes
-    document.documentElement.classList.remove('theme-valentines', 'theme-christmas', 'theme-new-year', 'theme-eid');
+    document.documentElement.classList.remove('theme-valentines', 'theme-christmas', 'theme-new-year', 'theme-eid', 'theme-jamhuri');
     if (theme !== 'default') {
       document.documentElement.classList.add(`theme-${theme}`);
     }
@@ -170,6 +176,7 @@ export default function AdminHeroPage() {
                                     </FormControl>
                                     <SelectContent>
                                         <SelectItem value="default">Default</SelectItem>
+                                        <SelectItem value="jamhuri">Jamhuri (Kenyan Holiday)</SelectItem>
                                         <SelectItem value="valentines">Valentine's Day</SelectItem>
                                         <SelectItem value="christmas">Christmas</SelectItem>
                                         <SelectItem value="new-year">New Year</SelectItem>
@@ -254,12 +261,7 @@ export default function AdminHeroPage() {
                             </FormItem>
                           )}
                         />
-
-                        <div>
-                            <h3 className="text-lg font-semibold">Homepage Slideshow</h3>
-                            <Separator className="mt-2" />
-                        </div>
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                            <FormField
                               control={form.control}
                               name="slideshowSpeed"
@@ -293,6 +295,52 @@ export default function AdminHeroPage() {
                                 )}
                             />
                          </div>
+
+                        <div>
+                            <h3 className="text-lg font-semibold flex items-center gap-2"><Building /> Organization Page Hero</h3>
+                            <Separator className="mt-2" />
+                        </div>
+                         <FormField
+                          control={form.control}
+                          name="orgHeroTitle"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Organization Page Title</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g., Ubuntu Academy for Business" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="orgHeroSubtitle"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Organization Page Subtitle</FormLabel>
+                              <FormControl>
+                                <Textarea placeholder="e.g., Empower your workforce..." {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="orgHeroImageUrl"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Organization Page Image URL</FormLabel>
+                              <FormControl>
+                                <Input placeholder="https://example.com/org-image.png" {...field} />
+                              </FormControl>
+                               <p className="text-sm text-muted-foreground">Recommended size: 1200x800 pixels.</p>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
 
                         <div>
                             <h3 className="text-lg font-semibold">Authentication Pages</h3>

@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,12 +15,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, Gem } from 'lucide-react';
-import { getHeroData } from '@/lib/firebase-service';
+import { getHeroData, getInvitation, deleteInvitation } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { Separator } from '@/components/ui/separator';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { auth } from '@/lib/firebase';
 import { RecaptchaVerifier } from 'firebase/auth';
+import { Invitation } from '@/lib/mock-data';
 
 const formSchema = z.object({
   firstName: z.string().min(1, { message: 'First name is required.' }),
@@ -36,20 +37,47 @@ const formSchema = z.object({
 });
 
 const GoogleIcon = () => (
-    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
-        <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.667-.053-1.333-.16-2z"></path>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="h-5 w-5">
+        <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"></path>
+        <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"></path>
+        <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.222 0-9.619-3.317-11.28-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"></path>
+        <path fill="#1976D2" d="M43.611 20.083H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C44.912 34.411 48 29.692 48 24c0-1.341-.138-2.65-.389-3.917z"></path>
     </svg>
 )
 
 export default function SignupPage() {
   const router = useRouter();
-  const { signup, signInWithGoogle } = useAuth();
+  const searchParams = useSearchParams();
+  const { signup, signInWithGoogle, user, loading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [siteSettings, setSiteSettings] = useState<HeroData | null>(null);
+  const [invitation, setInvitation] = useState<Invitation | null>(null);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
+  
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, loading, router]);
+
+  useEffect(() => {
+    const fetchInviteData = async () => {
+        const inviteId = searchParams.get('invite');
+        if (inviteId) {
+            const inviteData = await getInvitation(inviteId);
+            if (inviteData) {
+                setInvitation(inviteData);
+                form.setValue('email', inviteData.email);
+            } else {
+                 toast({ title: "Invalid Invitation", description: "This invitation link is either invalid or has expired.", variant: "destructive" });
+            }
+        }
+    }
+    fetchInviteData();
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -79,15 +107,23 @@ export default function SignupPage() {
     setError(null);
     try {
       const displayName = [values.firstName, values.middleName, values.lastName].filter(Boolean).join(' ');
-      await signup(values.email, values.password, displayName);
+      
+      const orgId = invitation ? invitation.organizationId : undefined;
+      
+      await signup(values.email, values.password, displayName, undefined, orgId);
+      
+      if (invitation) {
+          await deleteInvitation(invitation.id);
+      }
+
       toast({
         title: 'Account Created!',
         description: "A verification email has been sent. Please check your inbox.",
       });
       router.push('/unverified');
     } catch (e: any) {
-        if (e.code === 'auth/email-already-in-use') {
-            setError('This email address is already in use. Please try another one or log in.');
+        if (e.code === 'auth/email-already-in-use' || e.message.includes('already exists')) {
+            setError('An account with this email already exists. Please try another one or log in.');
         } else {
             setError(e.message || 'An error occurred. Please try again.');
         }
@@ -117,7 +153,7 @@ export default function SignupPage() {
            <div className="grid gap-2 text-center">
               <Link href="/" className="flex items-center justify-center gap-2 font-bold text-2xl font-headline">
                   <Gem className="h-7 w-7 text-primary" />
-                  <span>SkillSet Academy</span>
+                  <span>Ubuntu Academy</span>
               </Link>
           </div>
           <Card>
@@ -128,6 +164,14 @@ export default function SignupPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+                {invitation && (
+                    <Alert className="mb-4">
+                        <AlertTitle>You've been invited!</AlertTitle>
+                        <AlertDescription>
+                            You are joining the <strong>{invitation.organizationName}</strong> organization.
+                        </AlertDescription>
+                    </Alert>
+                )}
                <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                       {error && (
@@ -184,7 +228,7 @@ export default function SignupPage() {
                           <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                              <Input placeholder="jomo@example.com" {...field} />
+                              <Input placeholder="jomo@example.com" {...field} disabled={!!invitation} />
                           </FormControl>
                           <FormMessage />
                           </FormItem>
@@ -225,7 +269,7 @@ export default function SignupPage() {
               </div>
                 <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading}>
                     {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                    Google
+                    Sign up with Google
                 </Button>
               <div className="mt-4 text-center text-sm">
                 Already have an account?{' '}
@@ -237,7 +281,7 @@ export default function SignupPage() {
           </Card>
         </div>
       </div>
-        <div className="hidden bg-muted lg:flex items-center justify-center p-8">
+        <div className="hidden bg-muted lg:block p-8">
          <div className="w-full h-full bg-cover bg-center rounded-lg" style={{backgroundImage: `url('${siteSettings?.signupImageUrl}')`}} data-ai-hint="learning online">
             <div className="w-full h-full bg-black/50 rounded-lg flex items-end p-8 text-white">
                 <div>
@@ -250,5 +294,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
-    

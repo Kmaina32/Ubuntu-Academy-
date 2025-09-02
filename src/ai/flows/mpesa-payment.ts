@@ -9,7 +9,7 @@
  * - MpesaPaymentOutput - The return type for the processMpesaPayment function.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai } from '@/ai/genkit-instance';
 import { z } from 'genkit';
 import axios from 'axios';
 
