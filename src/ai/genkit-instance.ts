@@ -7,7 +7,7 @@ import { googleAI } from '@genkit-ai/googleai';
 
 const plugins = [];
 
-if (process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+if (process.env.GEMINI_API_KEY) {
     plugins.push(googleAI());
 } else {
     if (process.env.NODE_ENV === 'production') {
