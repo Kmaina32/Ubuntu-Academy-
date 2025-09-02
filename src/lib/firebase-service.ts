@@ -648,6 +648,42 @@ export async function getOrganizationMembers(orgId: string): Promise<RegisteredU
     return [];
 }
 
+export async function getAllOrganizations(): Promise<Organization[]> {
+    const orgsRef = ref(db, 'organizations');
+    const snapshot = await get(orgsRef);
+    if (snapshot.exists()) {
+        const orgsData = snapshot.val();
+        return Object.keys(orgsData).map(key => ({
+            id: key,
+            ...orgsData[key]
+        }));
+    }
+    return [];
+}
+
+export async function getOrganizationByOwnerId(ownerId: string): Promise<Organization | null> {
+  const orgsRef = query(ref(db, 'organizations'), orderByChild('ownerId'), equalTo(ownerId));
+  const snapshot = await get(orgsRef);
+  if (snapshot.exists()) {
+    const orgsData = snapshot.val();
+    const orgId = Object.keys(orgsData)[0];
+    return { id: orgId, ...orgsData[orgId] };
+  }
+  return null;
+}
+
+export async function updateOrganization(orgId: string, orgData: Partial<Organization>): Promise<void> {
+    const orgRef = ref(db, `organizations/${orgId}`);
+    await update(orgRef, orgData);
+}
+
+export async function deleteOrganization(orgId: string): Promise<void> {
+    const orgRef = ref(db, `organizations/${orgId}`);
+    // You might also want to handle members associated with this org
+    await remove(orgRef);
+}
+
+
 // Invitation Functions
 export async function createInvitation(inviteData: Omit<Invitation, 'id'>): Promise<string> {
     const invitesRef = ref(db, 'invitations');
