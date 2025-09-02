@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { useEffect } from 'react';
 
 function OrgAccessDenied() {
     return (
@@ -48,6 +49,16 @@ export default function OrganizationLayout({
   const pathname = usePathname();
   const router = useRouter();
 
+  const isPublicOrgPage = pathname === '/organization/login' || pathname === '/organization/signup';
+
+  useEffect(() => {
+    // This effect handles redirection for logged-in admins trying to access public org pages.
+    if (!loading && (isOrganizationAdmin || isAdmin) && isPublicOrgPage) {
+      router.replace('/organization/dashboard');
+    }
+  }, [loading, isAdmin, isOrganizationAdmin, isPublicOrgPage, router]);
+
+
   if (loading) {
      return (
         <div className="flex h-screen items-center justify-center">
@@ -57,13 +68,10 @@ export default function OrganizationLayout({
      )
   }
 
-  const isPublicOrgPage = pathname === '/organization/login' || pathname === '/organization/signup';
-
   // If on a public page (login/signup), render children without the dashboard layout
   if (isPublicOrgPage) {
-    // If the user is already an org admin and tries to visit login/signup, redirect them
     if (user && (isOrganizationAdmin || isAdmin)) {
-      router.replace('/organization/dashboard');
+      // Show loader while redirecting
       return (
         <div className="flex h-screen items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin" />
