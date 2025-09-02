@@ -1,11 +1,12 @@
 
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Download, Loader2 } from 'lucide-react';
+import { Download, Loader2, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { add, formatDistanceToNow, format } from 'date-fns';
 import { useState, useEffect } from 'react';
@@ -40,58 +41,74 @@ function SubscriptionCountdown({ expiryDate }: { expiryDate: Date | null }) {
     return <span className="font-bold">{countdown}</span>;
 }
 
+const pricingTiers = [
+    {
+        name: 'Trial',
+        price: 'Free',
+        priceDetail: 'for 30 days',
+        features: ['Up to 5 users', 'Basic analytics', 'Access to all courses'],
+        cta: 'Your Current Plan',
+        disabled: true,
+    },
+    {
+        name: 'Basic',
+        price: 'Ksh 32,000',
+        priceDetail: 'per year',
+        features: ['Up to 10 users', 'Advanced analytics', 'Priority support'],
+        cta: 'Contact Support to Upgrade'
+    },
+    {
+        name: 'Pro',
+        price: 'Ksh 74,000',
+        priceDetail: 'per year',
+        features: ['Up to 50 users', 'Dedicated account manager', 'Custom integrations'],
+        cta: 'Contact Support to Upgrade'
+    }
+];
+
 export default function OrganizationBillingPage() {
     const { organization, loading: authLoading } = useAuth();
     
-    const expiryDate = organization?.subscriptionExpiresAt ? new Date(organization.subscriptionExpiresAt) : null;
-    const nextPaymentDate = expiryDate ? format(expiryDate, 'MMMM d, yyyy') : 'N/A';
-
     if (authLoading) {
         return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
     }
 
     return (
         <div className="space-y-8">
-            <div className="grid gap-6 md:grid-cols-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Current Plan</CardTitle>
-                        <CardDescription>Your current subscription details.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex justify-between items-baseline">
-                            <span className="text-2xl font-bold capitalize">{organization?.subscriptionTier || 'Free'} Plan</span>
-                             <Badge>Active</Badge>
-                        </div>
-                        <p className="text-muted-foreground">
-                            {organization?.subscriptionTier === 'free' 
-                                ? 'Includes up to 5 users and basic analytics.'
-                                : 'Includes up to 20 users, advanced analytics, and priority support.'}
-                        </p>
-                        <div className="text-sm">
-                            <p><strong>Subscription expires:</strong> <SubscriptionCountdown expiryDate={expiryDate} /></p>
-                            <p><strong>Next payment date:</strong> {nextPaymentDate}</p>
-                        </div>
-                        <Button variant="outline" className="w-full">Manage Subscription</Button>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Payment Method</CardTitle>
-                        <CardDescription>The primary payment method for your subscription.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                       <div className="flex items-center gap-4 p-4 border rounded-md">
-                           <p className="font-mono text-lg">N/A</p>
-                           <Badge variant="secondary">Free Tier</Badge>
-                       </div>
-                       <p className="text-xs text-muted-foreground">
-                           Upgrade your plan to add a payment method.
-                       </p>
-                       <Button variant="outline" className="w-full">Contact Support</Button>
-                    </CardContent>
-                </Card>
-            </div>
+            <Card>
+                 <CardHeader>
+                    <CardTitle>Plans & Pricing</CardTitle>
+                    <CardDescription>Choose the plan that's right for your team.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {pricingTiers.map(tier => (
+                            <Card key={tier.name} className={`flex flex-col ${organization?.subscriptionTier === tier.name.toLowerCase() ? 'border-primary ring-2 ring-primary' : ''}`}>
+                                <CardHeader>
+                                    <CardTitle>{tier.name}</CardTitle>
+                                    <p className="text-3xl font-bold">{tier.price}</p>
+                                    <p className="text-sm text-muted-foreground">{tier.priceDetail}</p>
+                                </CardHeader>
+                                <CardContent className="flex-grow">
+                                    <ul className="space-y-2 text-sm">
+                                        {tier.features.map(feature => (
+                                            <li key={feature} className="flex items-center gap-2">
+                                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                                <span>{feature}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </CardContent>
+                                <CardContent>
+                                    <Button className="w-full" disabled={tier.disabled}>
+                                        {tier.cta}
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
              <Card>
                 <CardHeader>
                     <CardTitle>Billing History</CardTitle>

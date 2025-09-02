@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -15,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, Gem, Building } from 'lucide-react';
 import Image from 'next/image';
+import { getHeroData } from '@/lib/firebase-service';
 
 const formSchema = z.object({
   organizationName: z.string().min(2, { message: 'Organization name is required.' }),
@@ -90,7 +92,7 @@ export default function OrganizationSignupPage() {
               </div>
               <CardTitle className="text-2xl font-bold text-center">Create Your Organization</CardTitle>
               <CardDescription className="text-center">
-                Set up your organization and admin account.
+                Set up your organization and admin account. All plans start with a 30-day free trial.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -169,7 +171,7 @@ export default function OrganizationSignupPage() {
           </Card>
         </div>
       </div>
-      <div className="hidden bg-muted lg:block p-8">
+        <div className="hidden bg-muted lg:block p-8">
             <div
                 className="h-full w-full rounded-lg bg-cover bg-center"
                 style={{ backgroundImage: `url('https://picsum.photos/1200/900')` }}

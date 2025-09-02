@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -23,9 +24,10 @@ import {
   sendEmailVerification,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { RegisteredUser, saveUser, getUserById, createOrganization, getOrganizationByOwnerId, Organization } from '@/lib/firebase-service';
+import { RegisteredUser, saveUser, getUserById, createOrganization, getOrganizationByOwnerId, Organization, getOrganizationMembers } from '@/lib/firebase-service';
 import { ref, onValue, onDisconnect, set, serverTimestamp, update, get } from 'firebase/database';
 import { useToast } from './use-toast';
+import { add } from 'date-fns';
 
 const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
 const SUPER_ADMIN_ORG_NAME = "Ubuntu Academy";
@@ -33,6 +35,8 @@ const SUPER_ADMIN_ORG_NAME = "Ubuntu Academy";
 interface AuthContextType {
   user: User | null;
   setUser: Dispatch<SetStateAction<User | null>>;
+  members: RegisteredUser[];
+  setMembers: Dispatch<SetStateAction<RegisteredUser[]>>;
   loading: boolean;
   isAdmin: boolean;
   isSuperAdmin: boolean;
@@ -55,6 +59,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isOrganizationAdmin, setIsOrganizationAdmin] = useState(false);
   const [organization, setOrganization] = useState<Organization | null>(null);
+  const [members, setMembers] = useState<RegisteredUser[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -74,6 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsAdmin(false);
         setIsOrganizationAdmin(false);
         setOrganization(null);
+        setMembers([]);
         return;
     }
     
@@ -101,27 +107,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const currentIsAdmin = userProfile.isAdmin && (!userProfile.adminExpiresAt || new Date(userProfile.adminExpiresAt) > new Date());
             setIsAdmin(isSuper || currentIsAdmin);
 
+            let currentOrgId: string | undefined;
+
             if (isSuper) {
-                 setIsOrganizationAdmin(true);
                  let saOrg = await getOrganizationByOwnerId(user.uid);
                  if (!saOrg) {
                     const orgId = await createOrganization({
                         name: SUPER_ADMIN_ORG_NAME,
                         ownerId: user.uid,
                         createdAt: new Date().toISOString(),
-                        subscriptionTier: 'free',
+                        subscriptionTier: 'pro',
                         subscriptionExpiresAt: null, // Permanent
+                        memberLimit: 999
                     });
-                    saOrg = { id: orgId, name: SUPER_ADMIN_ORG_NAME, ownerId: user.uid, createdAt: new Date().toISOString(), subscriptionTier: 'free', subscriptionExpiresAt: null };
+                    saOrg = { id: orgId, name: SUPER_ADMIN_ORG_NAME, ownerId: user.uid, createdAt: new Date().toISOString(), subscriptionTier: 'pro', subscriptionExpiresAt: null, memberLimit: 999 };
                  }
                  setOrganization(saOrg);
-            } else if (userProfile.isOrganizationAdmin || userProfile.organizationId) {
-                setIsOrganizationAdmin(true);
-                const orgData = await getOrganizationByOwnerId(user.uid);
+                 currentOrgId = saOrg.id;
+            } else if (userProfile.organizationId) {
+                const orgData = await getOrganizationByOwnerId(userProfile.organizationId);
                 setOrganization(orgData);
+                currentOrgId = orgData?.id;
             } else {
                 setIsOrganizationAdmin(false);
                 setOrganization(null);
+            }
+
+            if(currentOrgId) {
+              const orgMembers = await getOrganizationMembers(currentOrgId);
+              setMembers(orgMembers);
+              const currentUserInOrg = orgMembers.find(m => m.uid === user.uid);
+              setIsOrganizationAdmin(!!currentUserInOrg?.isOrganizationAdmin || isSuper);
             }
         } else {
             setIsAdmin(false);
@@ -176,12 +192,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
     
     if (organizationName) {
+        const trialExpiry = add(new Date(), { days: 30 }).toISOString();
         const orgId = await createOrganization({
             name: organizationName,
             ownerId: userCredential.user.uid,
             createdAt: new Date().toISOString(),
-            subscriptionTier: 'free',
-            subscriptionExpiresAt: null, // Permanent free tier for simplicity
+            subscriptionTier: 'trial',
+            subscriptionExpiresAt: trialExpiry,
+            memberLimit: 5,
         });
         newUser.organizationId = orgId;
         newUser.isOrganizationAdmin = true;
@@ -250,6 +268,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const value = {
     user,
     setUser,
+    members,
+    setMembers,
     loading,
     isAdmin,
     isSuperAdmin,

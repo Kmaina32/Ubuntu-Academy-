@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,7 +26,7 @@ const inviteFormSchema = z.object({
 });
 
 function InviteDialog() {
-    const { organization } = useAuth();
+    const { organization, members } = useAuth();
     const { toast } = useToast();
     const [isOpen, setIsOpen] = useState(false);
     const [isSending, setIsSending] = useState(false);
@@ -37,19 +38,36 @@ function InviteDialog() {
 
     const onSubmit = async (values: z.infer<typeof inviteFormSchema>) => {
         if (!organization) return;
+        
+        if (organization.memberLimit && members.length >= organization.memberLimit) {
+            toast({
+                title: 'Member Limit Reached',
+                description: `You have reached the ${organization.memberLimit}-member limit for your plan. Please upgrade to add more members.`,
+                variant: 'destructive',
+                duration: 7000
+            });
+            return;
+        }
+
         setIsSending(true);
         try {
-            await sendOrganizationInvite({
+            const result = await sendOrganizationInvite({
                 email: values.email,
                 organizationId: organization.id,
                 organizationName: organization.name,
             });
-            toast({
-                title: "Invitation Sent!",
-                description: `An invitation has been sent to ${values.email}.`
-            });
-            setIsOpen(false);
-            form.reset();
+            
+            if (result.success) {
+                toast({
+                    title: "Invitation Sent!",
+                    description: `An invitation has been sent to ${values.email}.`
+                });
+                 setIsOpen(false);
+                 form.reset();
+            } else {
+                 toast({ title: "Error", description: result.message, variant: 'destructive'});
+            }
+           
         } catch (error) {
             console.error(error);
             toast({ title: "Error", description: "Could not send the invitation.", variant: 'destructive'});
@@ -103,8 +121,7 @@ function InviteDialog() {
 
 
 export default function OrganizationMembersPage() {
-    const { organization, user } = useAuth();
-    const [members, setMembers] = useState<RegisteredUser[]>([]);
+    const { organization, user, members, setMembers } = useAuth();
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
@@ -132,7 +149,9 @@ export default function OrganizationMembersPage() {
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                         <CardTitle>Manage Members</CardTitle>
-                        <CardDescription>Invite, remove, and manage members of your organization.</CardDescription>
+                        <CardDescription>
+                            {`You have ${members.length} of ${organization?.memberLimit || 5} members.`} Invite, remove, and manage members of your organization.
+                        </CardDescription>
                     </div>
                     <InviteDialog />
                 </CardHeader>

@@ -230,8 +230,9 @@ export interface Organization {
     name: string;
     ownerId: string;
     createdAt: string; // ISO String
-    subscriptionTier: 'free' | 'team' | 'business';
+    subscriptionTier: 'trial' | 'basic' | 'pro';
     subscriptionExpiresAt: string | null;
+    memberLimit: number;
     members?: string[];
 }
 

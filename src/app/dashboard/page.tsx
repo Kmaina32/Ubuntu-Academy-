@@ -1,13 +1,14 @@
+
 'use client'
 
 import Link from 'next/link';
 import { useState, useEffect, useMemo } from 'react';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import type { Course, UserCourse } from "@/lib/mock-data";
-import { getCourseById, getUserCourses, getAllCourses } from '@/lib/firebase-service';
+import type { Course, UserCourse, RegisteredUser } from "@/lib/mock-data";
+import { getCourseById, getUserCourses, getAllCourses, saveUser } from '@/lib/firebase-service';
 import { Award, BookOpen, User, Loader2, Trophy, BookCopy, ListTodo } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
@@ -16,15 +17,143 @@ import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { slugify } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { updateProfile } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 type PurchasedCourseDetail = UserCourse & Partial<Course>;
 
+const profileFormSchema = z.object({
+  firstName: z.string().min(1, 'First name is required.'),
+  middleName: z.string().optional(),
+  lastName: z.string().min(1, 'Last name is required.'),
+});
+
+type ProfileFormValues = z.infer<typeof profileFormSchema>;
+
+const splitDisplayName = (displayName: string | null | undefined): {firstName: string, middleName: string, lastName: string} => {
+    if (!displayName) return { firstName: '', middleName: '', lastName: '' };
+    const parts = displayName.split(' ');
+    const firstName = parts[0] || '';
+    const lastName = parts[parts.length - 1] || '';
+    const middleName = parts.slice(1, -1).join(' ');
+    return { firstName, middleName, lastName };
+}
+
+
+function OnboardingModal({ user, onComplete }: { user: RegisteredUser, onComplete: (newDisplayName: string) => void }) {
+    const { toast } = useToast();
+    const [isLoading, setIsLoading] = useState(false);
+
+    const form = useForm<ProfileFormValues>({
+        resolver: zodResolver(profileFormSchema),
+        defaultValues: {
+            firstName: '',
+            middleName: '',
+            lastName: '',
+        }
+    });
+
+    const onSubmit = async (values: ProfileFormValues) => {
+        setIsLoading(true);
+        try {
+            const newDisplayName = [values.firstName, values.middleName, values.lastName].filter(Boolean).join(' ');
+            
+            if (auth.currentUser) {
+                await updateProfile(auth.currentUser, { displayName: newDisplayName });
+            }
+
+            await saveUser(user.uid, { displayName: newDisplayName });
+            
+            toast({ title: 'Success', description: 'Your profile has been updated.' });
+            onComplete(newDisplayName);
+        } catch(error) {
+            console.error(error);
+            toast({ title: 'Error', description: 'Failed to update profile.', variant: 'destructive'});
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    return (
+        <Dialog open={true}>
+            <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+                 <DialogHeader>
+                    <DialogTitle>Complete Your Profile</DialogTitle>
+                    <DialogDescription>
+                        Please enter your full name. This will be used on your certificates.
+                    </DialogDescription>
+                </DialogHeader>
+                 <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="firstName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>First Name</FormLabel>
+                                        <FormControl><Input placeholder="Jomo" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="lastName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Last Name</FormLabel>
+                                        <FormControl><Input placeholder="Kenyatta" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <FormField
+                            control={form.control}
+                            name="middleName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Middle Name (Optional)</FormLabel>
+                                    <FormControl><Input {...field} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <DialogFooter>
+                            <Button type="submit" disabled={isLoading}>
+                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                Save and Continue
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
 export default function DashboardPage() {
-  const { user, loading: authLoading, isOrganizationAdmin } = useAuth();
+  const { user, loading: authLoading, isOrganizationAdmin, setUser: setAuthUser } = useAuth();
   const router = useRouter();
   const [purchasedCourses, setPurchasedCourses] = useState<PurchasedCourseDetail[]>([]);
   const [allCourses, setAllCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
+  const [dbUser, setDbUser] = useState<RegisteredUser | null>(null);
 
   // Redirect organization admins to their specific dashboard
   useEffect(() => {
@@ -40,27 +169,27 @@ export default function DashboardPage() {
     const fetchCourseDetails = async () => {
       setLoadingCourses(true);
       
-      const allCoursesPromise = getAllCourses();
-      
-      let userCoursesPromise: Promise<UserCourse[]> = Promise.resolve([]);
       if (user) {
-        userCoursesPromise = getUserCourses(user.uid);
+        const [allCoursesData, userCoursesData, userProfile] = await Promise.all([
+            getAllCourses(),
+            getUserCourses(user.uid),
+            getUserById(user.uid),
+        ]);
+        setAllCourses(allCoursesData);
+        setDbUser(userProfile);
+
+        const courseDetailsPromises = userCoursesData.map(async (userCourse) => {
+            const courseDetails = allCoursesData.find(c => c.id === userCourse.courseId);
+            return {
+                ...userCourse,
+                ...courseDetails,
+                id: userCourse.courseId,
+            };
+        });
+
+        const detailedCourses = await Promise.all(courseDetailsPromises);
+        setPurchasedCourses(detailedCourses.filter(c => c.title));
       }
-
-      const [allCoursesData, userCoursesData] = await Promise.all([allCoursesPromise, userCoursesPromise]);
-      setAllCourses(allCoursesData);
-
-      const courseDetailsPromises = userCoursesData.map(async (userCourse) => {
-          const courseDetails = allCoursesData.find(c => c.id === userCourse.courseId);
-          return {
-              ...userCourse,
-              ...courseDetails,
-              id: userCourse.courseId,
-          };
-      });
-
-      const detailedCourses = await Promise.all(courseDetailsPromises);
-      setPurchasedCourses(detailedCourses.filter(c => c.title));
       setLoadingCourses(false);
     };
 
@@ -70,10 +199,18 @@ export default function DashboardPage() {
   }, [user, authLoading, isOrganizationAdmin]);
   
   const inProgressCourses = purchasedCourses.filter(c => !c.completed);
+  const completedCourses = purchasedCourses.filter(c => c.completed || c.certificateAvailable);
 
-  // Super admin logic: gmaina424@gmail.com's UID is 'YlyqSWedlPfEqI9LlGzjN7zlRtC2'
-  const isSuperAdmin = user?.email === 'gmaina424@gmail.com';
-  const completedCourses = isSuperAdmin ? allCourses : purchasedCourses.filter(c => c.completed || c.certificateAvailable);
+  const needsOnboarding = dbUser && (!dbUser.displayName || dbUser.displayName === 'New Member');
+
+  const handleOnboardingComplete = (newDisplayName: string) => {
+      if (dbUser) {
+          setDbUser({ ...dbUser, displayName: newDisplayName });
+      }
+      if (auth.currentUser) {
+          setAuthUser(auth.currentUser);
+      }
+  }
 
 
   const renderContent = () => {
@@ -86,7 +223,7 @@ export default function DashboardPage() {
         )
     }
 
-    if (!user) {
+    if (!user || !dbUser) {
         return (
             <div className="text-center h-full flex flex-col justify-center">
                 <User className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
@@ -101,8 +238,9 @@ export default function DashboardPage() {
 
     return (
         <div className="max-w-6xl mx-auto">
+            {needsOnboarding && <OnboardingModal user={dbUser} onComplete={handleOnboardingComplete} />}
             <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-1 font-headline">Welcome Back, {user.displayName?.split(' ')[0]}!</h1>
+                <h1 className="text-3xl font-bold mb-1 font-headline">Welcome Back, {dbUser.displayName?.split(' ')[0]}!</h1>
                 <p className="text-muted-foreground">Let's continue your learning journey.</p>
             </div>
             
@@ -149,14 +287,14 @@ export default function DashboardPage() {
                                     </div>
                                     <Progress value={course.progress} className="h-2" />
                                 </CardContent>
-                                <CardContent>
+                                <CardFooter>
                                     <Button asChild className="w-full">
                                         <Link href={`/courses/${slugify(course.title)}/learn`}>
                                             <BookOpen className="mr-2 h-4 w-4" />
                                             Jump Back In
                                         </Link>
                                     </Button>
-                                </CardContent>
+                                </CardFooter>
                             </Card>
                             )
                         ))}
