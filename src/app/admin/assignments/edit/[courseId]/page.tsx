@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -23,7 +24,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 const shortAnswerSchema = z.object({
   id: z.string(),
-  type: z.string().describe("The type of the question, either 'short-answer' or 'multiple-choice'."),
+  type: z.literal('short-answer'),
   question: z.string().min(1, "Question cannot be empty"),
   referenceAnswer: z.string().min(1, "Reference answer cannot be empty"),
   maxPoints: z.coerce.number().min(1, "Points must be at least 1"),
@@ -31,7 +32,7 @@ const shortAnswerSchema = z.object({
 
 const multipleChoiceSchema = z.object({
   id: z.string(),
-  type: z.string().describe("The type of the question, either 'short-answer' or 'multiple-choice'."),
+  type: z.literal('multiple-choice'),
   question: z.string().min(1, "Question cannot be empty"),
   options: z.array(z.string().min(1, "Option cannot be empty")).length(4, "Must have exactly 4 options"),
   correctAnswer: z.coerce.number().min(0).max(3),
@@ -241,9 +242,9 @@ export default function EditExamPage() {
                                     defaultValue={String(radioField.value)}
                                     className="flex flex-col space-y-1"
                                   >
-                                    {field.options && field.options.map((_, optionIndex) => (
+                                    {(field.options as string[]).map((_, optionIndex) => (
                                        <div key={optionIndex} className="flex items-center gap-2">
-                                            <RadioGroupItem value={String(optionIndex)} id={`${radioField.name}-${optionIndex}`} />
+                                            <RadioGroupItem value={String(optionIndex)} id={`${field.id}-${optionIndex}`} />
                                             <FormField
                                                 control={form.control}
                                                 name={`exam.${index}.options.${optionIndex}`}

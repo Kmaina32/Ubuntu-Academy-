@@ -55,7 +55,7 @@ export function AdminSidebar() {
                     <SidebarMenuButton asChild isActive={isActive('/admin/assignments')} tooltip="Assignments">
                         <Link href="/admin/assignments">
                             <ListTodo />
-                            <span>Assignments</span>
+                            <span>Exams</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

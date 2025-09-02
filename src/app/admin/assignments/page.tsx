@@ -77,7 +77,7 @@ function SubmissionsList() {
                 {submission.graded ? (
                     <Badge>
                         <CheckCircle className="mr-1 h-3 w-3" />
-                        Graded ({submission.grade || 0}/10)
+                        Graded ({submission.pointsAwarded || 0} / 10)
                     </Badge>
                 ) : (
                     <Badge variant="secondary">Pending Review</Badge>
@@ -127,18 +127,18 @@ function ProjectsList() {
 
     useEffect(() => {
         fetchCourses();
-    }, [toast]);
+    }, []);
     
     const handleGenerateProject = async (course: Course) => {
         setIsGenerating(course.id);
-        toast({ title: 'Generating Project...', description: 'The AI is creating a new project for this course.' });
+        toast({ title: 'Generating Exam...', description: 'The AI is creating a new exam for this course.' });
         try {
             await generateProject({ courseTitle: course.title, courseDescription: course.longDescription });
-            toast({ title: 'Project Generated!', description: 'The project has been added to the course. You can now edit it.' });
+            toast({ title: 'Exam Generated!', description: 'The exam has been added to the course. You can now edit it.' });
             fetchCourses(); // Re-fetch to update the UI
         } catch (error) {
-            console.error('Failed to generate project', error);
-            toast({ title: 'Error', description: 'Could not generate the project.', variant: 'destructive' });
+            console.error('Failed to generate exam', error);
+            toast({ title: 'Error', description: 'Could not generate the exam.', variant: 'destructive' });
         } finally {
             setIsGenerating(null);
         }
@@ -148,14 +148,14 @@ function ProjectsList() {
     loading ? (
        <div className="flex justify-center items-center py-10">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <p className="ml-2">Loading projects...</p>
+          <p className="ml-2">Loading exams...</p>
        </div>
     ) : (
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Course Title</TableHead>
-            <TableHead>Project Status</TableHead>
+            <TableHead>Exam Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -164,44 +164,41 @@ function ProjectsList() {
             <TableRow key={course.id}>
               <TableCell className="font-medium">{course.title}</TableCell>
               <TableCell>
-                {course.project ? (
-                    <Badge variant="default">Project Added</Badge>
+                {course.exam && course.exam.length > 0 ? (
+                    <Badge variant="default">Exam Added</Badge>
                 ) : (
-                    <Badge variant="secondary">No Project</Badge>
+                    <Badge variant="secondary">No Exam</Badge>
                 )}
               </TableCell>
               <TableCell className="text-right space-x-2">
-                {course.project ? (
-                    <Button asChild size="sm">
-                        <Link href={`/admin/assignments/edit/${course.id}`}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Project
-                        </Link>
-                    </Button>
-                ) : (
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button size="sm" variant="outline" disabled={isGenerating === course.id}>
-                                {isGenerating === course.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4" />}
-                                Generate Project
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Generate Final Project?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This will use AI to generate a final project for "{course.title}" based on its description. You can edit the project details after generation.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleGenerateProject(course)}>
-                                    Yes, Generate
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                )}
+                <Button asChild size="sm">
+                    <Link href={`/admin/assignments/edit/${course.id}`}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        {course.exam && course.exam.length > 0 ? 'Edit Exam' : 'Add Exam'}
+                    </Link>
+                </Button>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="outline" disabled={isGenerating === course.id}>
+                            {isGenerating === course.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4" />}
+                            Generate with AI
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Generate Final Exam?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This will use AI to generate a final exam for "{course.title}" based on its description. This will replace any existing questions.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleGenerateProject(course)}>
+                                Yes, Generate
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
               </TableCell>
             </TableRow>
           ))}
@@ -231,11 +228,11 @@ export default function AdminAssignmentsPage() {
             <Tabs defaultValue="submissions">
               <Card>
                   <CardHeader>
-                      <CardTitle className="flex items-center gap-2"><Briefcase className="h-6 w-6"/>Manage Projects & Submissions</CardTitle>
-                      <CardDescription>Review student project submissions and manage course projects.</CardDescription>
+                      <CardTitle className="flex items-center gap-2"><Briefcase className="h-6 w-6"/>Manage Exams & Submissions</CardTitle>
+                      <CardDescription>Review student exam submissions and manage course exams.</CardDescription>
                       <TabsList className="grid w-full grid-cols-2 mt-4">
                         <TabsTrigger value="submissions">Submissions</TabsTrigger>
-                        <TabsTrigger value="projects">Course Projects</TabsTrigger>
+                        <TabsTrigger value="projects">Course Exams</TabsTrigger>
                     </TabsList>
                   </CardHeader>
                   <CardContent>

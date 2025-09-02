@@ -17,6 +17,8 @@ import type { SpeechToTextOutput } from '@/ai/flows/speech-to-text';
 import type { StudentHelpInput, StudentHelpOutput } from '@/ai/flows/student-help';
 import type { TextToSpeechOutput } from '@/ai/flows/text-to-speech';
 import type { ApiKey } from '@/lib/mock-data';
+import type { GenerateProjectInput, GenerateProjectOutput } from '@/ai/flows/generate-project';
+
 
 // Each function dynamically imports its corresponding flow, ensuring that the AI logic
 // is only loaded on the server when the action is executed.
@@ -49,6 +51,11 @@ export async function generateCourseContent(input: GenerateCourseContentInput): 
 export async function generateExam(input: GenerateExamInput): Promise<GenerateExamOutput> {
   const { generateExam } = await import('@/ai/flows/generate-exam');
   return generateExam(input);
+}
+
+export async function generateProject(input: GenerateProjectInput): Promise<GenerateProjectOutput> {
+    const { generateProject } = await import('@/ai/flows/generate-project');
+    return generateProject(input);
 }
 
 export async function gradeShortAnswerExam(input: GradeShortAnswerExamInput): Promise<GradeShortAnswerExamOutput> {

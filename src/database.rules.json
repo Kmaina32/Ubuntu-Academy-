@@ -1,4 +1,5 @@
 
+
 {
   "rules": {
     "courses": {
@@ -138,9 +139,7 @@
     "projects": {
        ".read": true,
        "$courseId": {
-           "$userId": {
-               ".write": "auth != null && auth.uid === $userId"
-           }
+           ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
        }
     },
     "permissionRequests": {
