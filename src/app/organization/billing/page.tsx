@@ -6,14 +6,45 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Download } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { add, formatDistanceToNow, format } from 'date-fns';
 
 const invoiceHistory = [
-    { id: 'inv_1', date: 'September 15, 2024', amount: 'Ksh 18,000', status: 'Paid' },
-    { id: 'inv_2', date: 'August 15, 2024', amount: 'Ksh 18,000', status: 'Paid' },
-    { id: 'inv_3', date: 'July 15, 2024', amount: 'Ksh 15,000', status: 'Paid' },
+    { id: 'inv_1', date: format(add(new Date(), { months: -1 }), 'MMMM d, yyyy'), amount: 'Ksh 0', status: 'Paid' },
+    { id: 'inv_2', date: format(add(new Date(), { months: -2 }), 'MMMM d, yyyy'), amount: 'Ksh 0', status: 'Paid' },
+    { id: 'inv_3', date: format(add(new Date(), { months: -3 }), 'MMMM d, yyyy'), amount: 'Ksh 0', status: 'Paid' },
 ];
 
+function SubscriptionCountdown({ expiryDate }: { expiryDate: Date | null }) {
+    const [countdown, setCountdown] = useState('');
+
+    useEffect(() => {
+        if (!expiryDate) {
+            setCountdown('Never');
+            return;
+        }
+
+        const interval = setInterval(() => {
+            const now = new Date();
+            if (now > expiryDate) {
+                setCountdown('Expired');
+            } else {
+                setCountdown(formatDistanceToNow(expiryDate, { addSuffix: true }));
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [expiryDate]);
+
+    return <span className="font-bold">{countdown}</span>;
+}
+
 export default function OrganizationBillingPage() {
+    const { organization } = useAuth();
+    
+    const expiryDate = organization?.subscriptionExpiresAt ? new Date(organization.subscriptionExpiresAt) : null;
+    const nextPaymentDate = expiryDate ? format(expiryDate, 'MMMM d, yyyy') : 'N/A';
+
     return (
         <div className="space-y-8">
             <div className="grid gap-6 md:grid-cols-2">
@@ -24,15 +55,17 @@ export default function OrganizationBillingPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex justify-between items-baseline">
-                            <span className="text-2xl font-bold">Team Plan</span>
+                            <span className="text-2xl font-bold capitalize">{organization?.subscriptionTier || 'Free'} Plan</span>
                              <Badge>Active</Badge>
                         </div>
                         <p className="text-muted-foreground">
-                            Includes up to 20 users, advanced analytics, and priority support.
+                            {organization?.subscriptionTier === 'free' 
+                                ? 'Includes up to 5 users and basic analytics.'
+                                : 'Includes up to 20 users, advanced analytics, and priority support.'}
                         </p>
                         <div className="text-sm">
-                            <p><strong>Next payment:</strong> Ksh 18,000 on October 15, 2024</p>
-                            <p><strong>Payment method:</strong> M-Pesa Business Till</p>
+                            <p><strong>Subscription expires:</strong> <SubscriptionCountdown expiryDate={expiryDate} /></p>
+                            <p><strong>Next payment date:</strong> {nextPaymentDate}</p>
                         </div>
                         <Button variant="outline" className="w-full">Manage Subscription</Button>
                     </CardContent>
@@ -44,11 +77,11 @@ export default function OrganizationBillingPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                        <div className="flex items-center gap-4 p-4 border rounded-md">
-                           <p className="font-mono text-lg">**** **** **** 1234</p>
-                           <Badge variant="secondary">M-Pesa Till</Badge>
+                           <p className="font-mono text-lg">N/A</p>
+                           <Badge variant="secondary">Free Tier</Badge>
                        </div>
                        <p className="text-xs text-muted-foreground">
-                           To change your payment method, please contact our support team.
+                           Upgrade your plan to add a payment method.
                        </p>
                        <Button variant="outline" className="w-full">Contact Support</Button>
                     </CardContent>

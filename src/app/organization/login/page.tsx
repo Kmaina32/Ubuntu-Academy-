@@ -155,13 +155,10 @@ export default function OrganizationLoginPage() {
           </Card>
         </div>
       </div>
-      <div className="hidden bg-muted lg:block">
-            <Image
-                src={imageUrl || 'https://picsum.photos/1200/900'}
-                alt="Image"
-                width="1920"
-                height="1080"
-                className="h-full w-full object-cover"
+        <div className="hidden bg-muted lg:block p-8">
+            <div
+                className="h-full w-full rounded-lg bg-cover bg-center"
+                style={{ backgroundImage: `url(${imageUrl || 'https://picsum.photos/1200/900'})` }}
                 data-ai-hint="business team meeting"
             />
         </div>

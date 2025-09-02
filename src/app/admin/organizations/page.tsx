@@ -9,22 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ArrowLeft, Loader2, Building, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-
-// Placeholder types and data
-type Organization = {
-    id: string;
-    name: string;
-    adminEmail: string;
-    memberCount: number;
-    status: 'Active' | 'Pending' | 'Suspended';
-    createdAt: string;
-}
-
-const mockOrganizations: Organization[] = [
-    { id: 'org_1', name: 'Safaricom PLC', adminEmail: 'corporate@safaricom.co.ke', memberCount: 45, status: 'Active', createdAt: '2024-08-15T10:00:00Z' },
-    { id: 'org_2', name: 'Kenya Commercial Bank', adminEmail: 'training@kcbgroup.com', memberCount: 120, status: 'Active', createdAt: '2024-07-20T14:30:00Z'},
-    { id: 'org_3', name: 'Ministry of Education', adminEmail: 'procurement@education.go.ke', memberCount: 8, status: 'Pending', createdAt: '2024-08-28T09:00:00Z' },
-];
+import { getAllOrganizations, deleteOrganization } from '@/lib/firebase-service';
+import type { Organization } from '@/lib/mock-data';
+import { format } from 'date-fns';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 
 export default function AdminOrganizationsPage() {
@@ -32,15 +20,32 @@ export default function AdminOrganizationsPage() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  const fetchOrganizations = async () => {
+    setLoading(true);
+    try {
+        const fetchedOrgs = await getAllOrganizations();
+        setOrganizations(fetchedOrgs);
+    } catch (error) {
+        toast({ title: "Error", description: "Could not load organizations.", variant: 'destructive'});
+        console.error(error);
+    } finally {
+        setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    // In a real app, you would fetch this from Firebase
-    setOrganizations(mockOrganizations);
-    setLoading(false);
+    fetchOrganizations();
   }, []);
 
-  const handleDelete = (orgId: string) => {
-    // Placeholder for delete functionality
-    toast({ title: "Action Not Implemented", description: `Would delete organization ${orgId}.` });
+  const handleDelete = async (org: Organization) => {
+    try {
+        await deleteOrganization(org.id);
+        toast({ title: "Success", description: `Organization "${org.name}" has been deleted.` });
+        fetchOrganizations();
+    } catch(error) {
+        console.error(error);
+        toast({ title: "Error", description: "Failed to delete the organization.", variant: 'destructive'});
+    }
   }
 
   return (
@@ -67,9 +72,8 @@ export default function AdminOrganizationsPage() {
                         <TableHeader>
                           <TableRow>
                             <TableHead>Organization Name</TableHead>
-                            <TableHead>Admin Contact</TableHead>
-                            <TableHead>Members</TableHead>
-                            <TableHead>Status</TableHead>
+                            <TableHead>Created At</TableHead>
+                            <TableHead>Subscription</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -77,22 +81,32 @@ export default function AdminOrganizationsPage() {
                           {organizations.length > 0 ? organizations.map((org) => (
                             <TableRow key={org.id}>
                               <TableCell className="font-medium">{org.name}</TableCell>
-                              <TableCell>{org.adminEmail}</TableCell>
-                              <TableCell>{org.memberCount}</TableCell>
+                              <TableCell>{format(new Date(org.createdAt), 'PPP')}</TableCell>
                               <TableCell>
-                                <Badge variant={
-                                    org.status === 'Active' ? 'default' :
-                                    org.status === 'Pending' ? 'secondary' :
-                                    'destructive'
-                                }>
-                                    {org.status}
+                                <Badge variant={org.subscriptionTier === 'free' ? 'secondary' : 'default'}>
+                                    {org.subscriptionTier}
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-right">
-                                {/* Placeholder for future actions like Edit, Approve, Suspend */}
-                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDelete(org.id)}>
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" title="Delete Organization">
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. This will permanently delete the organization "{org.name}" and all associated data.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDelete(org)}>Delete</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                               </TableCell>
                             </TableRow>
                           )) : (

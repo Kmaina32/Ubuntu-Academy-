@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -28,10 +28,18 @@ const formSchema = z.object({
 
 export default function OrganizationSignupPage() {
   const router = useRouter();
-  const { signup } = useAuth();
+  const { user, signup, loading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!loading && user) {
+        // If a logged in user tries to access this page, send them away.
+        router.push('/organization/dashboard');
+    }
+  }, [user, loading, router]);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,8 +63,8 @@ export default function OrganizationSignupPage() {
       // Redirect to a specific org dashboard or unverified page
       router.push('/unverified'); 
     } catch (e: any) {
-      if (e.code === 'auth/email-already-in-use') {
-        setError('This email address is already in use. Please try another one or log in.');
+      if (e.code === 'auth/email-already-in-use' || e.message.includes('already exists')) {
+        setError('An account with this email already exists. Please try another one or log in.');
       } else {
         setError(e.message || 'An error occurred. Please try again.');
       }
@@ -153,7 +161,7 @@ export default function OrganizationSignupPage() {
               </Form>
               <div className="mt-4 text-center text-sm">
                 Already have an account?{' '}
-                <Link href="/login" className="underline">
+                <Link href="/organization/login" className="underline">
                   Login
                 </Link>
               </div>
@@ -161,13 +169,10 @@ export default function OrganizationSignupPage() {
           </Card>
         </div>
       </div>
-        <div className="hidden bg-muted lg:block">
-            <Image
-                src="https://picsum.photos/1200/900"
-                alt="Image"
-                width="1920"
-                height="1080"
-                className="h-full w-full object-cover"
+      <div className="hidden bg-muted lg:block p-8">
+            <div
+                className="h-full w-full rounded-lg bg-cover bg-center"
+                style={{ backgroundImage: `url('https://picsum.photos/1200/900')` }}
                 data-ai-hint="business team"
             />
         </div>

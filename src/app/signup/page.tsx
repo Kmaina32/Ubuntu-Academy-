@@ -46,13 +46,20 @@ const GoogleIcon = () => (
 
 export default function SignupPage() {
   const router = useRouter();
-  const { signup, signInWithGoogle } = useAuth();
+  const { signup, signInWithGoogle, user, loading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [siteSettings, setSiteSettings] = useState<HeroData | null>(null);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
+  
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, loading, router]);
+
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -89,8 +96,8 @@ export default function SignupPage() {
       });
       router.push('/unverified');
     } catch (e: any) {
-        if (e.code === 'auth/email-already-in-use') {
-            setError('This email address is already in use. Please try another one or log in.');
+        if (e.code === 'auth/email-already-in-use' || e.message.includes('already exists')) {
+            setError('An account with this email already exists. Please try another one or log in.');
         } else {
             setError(e.message || 'An error occurred. Please try again.');
         }
@@ -240,7 +247,7 @@ export default function SignupPage() {
           </Card>
         </div>
       </div>
-        <div className="hidden bg-muted lg:flex items-center justify-center p-8">
+        <div className="hidden bg-muted lg:block p-8">
          <div className="w-full h-full bg-cover bg-center rounded-lg" style={{backgroundImage: `url('${siteSettings?.signupImageUrl}')`}} data-ai-hint="learning online">
             <div className="w-full h-full bg-black/50 rounded-lg flex items-end p-8 text-white">
                 <div>

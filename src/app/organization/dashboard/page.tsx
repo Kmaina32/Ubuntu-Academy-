@@ -2,23 +2,56 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
-import { Users, BarChart, CreditCard } from 'lucide-react';
+import { Users, BarChart, CreditCard, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+
+function SubscriptionCountdown({ expiryDate }: { expiryDate: Date | null }) {
+    const [countdown, setCountdown] = useState('');
+
+    useEffect(() => {
+        if (!expiryDate) {
+            setCountdown('Never');
+            return;
+        }
+
+        const interval = setInterval(() => {
+            const now = new Date();
+            if (now > expiryDate) {
+                setCountdown('Expired');
+            } else {
+                setCountdown(formatDistanceToNow(expiryDate, { addSuffix: true }));
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [expiryDate]);
+
+    return <span className="font-bold">{countdown}</span>;
+}
+
 
 export default function OrganizationDashboardPage() {
-    const { user } = useAuth();
+    const { user, organization, loading } = useAuth();
     // In a real app, you would fetch organization-specific data here.
     const stats = {
-        activeMembers: 12,
-        coursesAssigned: 5,
-        completionRate: 78,
+        activeMembers: organization?.members?.length || 1,
+        coursesAssigned: 0,
+        completionRate: 0,
     };
+    
+    const expiryDate = organization?.subscriptionExpiresAt ? new Date(organization.subscriptionExpiresAt) : null;
+
+    if (loading) {
+        return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+    }
 
     return (
         <div className="space-y-8">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-1 font-headline">Organization Dashboard</h1>
+                <h1 className="text-3xl font-bold mb-1 font-headline">Welcome, {organization?.name || user?.displayName}!</h1>
                 <p className="text-muted-foreground">
-                    Welcome, {user?.displayName}! Here's an overview of your team's progress.
+                    Here's an overview of your team's progress.
                 </p>
             </div>
             
@@ -45,12 +78,14 @@ export default function OrganizationDashboardPage() {
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Next Billing Date</CardTitle>
+                        <CardTitle className="text-sm font-medium">Subscription Expires</CardTitle>
                         <CreditCard className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">Oct 15, 2024</div>
-                        <p className="text-xs text-muted-foreground">on the Team Plan</p>
+                        <div className="text-2xl">
+                           <SubscriptionCountdown expiryDate={expiryDate} />
+                        </div>
+                        <p className="text-xs text-muted-foreground">on the {organization?.subscriptionTier || 'Free'} Plan</p>
                     </CardContent>
                 </Card>
             </div>

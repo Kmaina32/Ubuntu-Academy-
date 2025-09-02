@@ -23,9 +23,10 @@ import {
   sendEmailVerification,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { RegisteredUser, saveUser, getUserById, createOrganization } from '@/lib/firebase-service';
+import { RegisteredUser, saveUser, getUserById, createOrganization, getOrganizationByOwnerId } from '@/lib/firebase-service';
 import { ref, onValue, onDisconnect, set, serverTimestamp, update } from 'firebase/database';
 import { useToast } from './use-toast';
+import type { Organization } from '@/lib/mock-data';
 
 const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
 
@@ -36,6 +37,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isSuperAdmin: boolean;
   isOrganizationAdmin: boolean;
+  organization: Organization | null;
   login: (email: string, pass: string) => Promise<any>;
   signup: (email: string, pass: string, name: string, organizationName?: string) => Promise<any>;
   logout: () => Promise<any>;
@@ -52,6 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isOrganizationAdmin, setIsOrganizationAdmin] = useState(false);
+  const [organization, setOrganization] = useState<Organization | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -68,12 +71,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) {
         setIsAdmin(false);
         setIsOrganizationAdmin(false);
+        setOrganization(null);
         return;
-    }
-    
-    // Hardcoded for development: Treat gmaina424@gmail.com as an org admin
-    if (user.email === 'gmaina424@gmail.com') {
-        setIsOrganizationAdmin(true);
     }
     
     setIsSuperAdmin(user.uid === ADMIN_UID);
@@ -93,7 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     const userRef = ref(db, `users/${user.uid}`);
-    const unsubscribeAdminCheck = onValue(userRef, (snapshot) => {
+    const unsubscribeAdminCheck = onValue(userRef, async (snapshot) => {
         if (snapshot.exists()) {
             const userProfile = snapshot.val();
             if (userProfile.isAdmin) {
@@ -106,12 +105,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             } else {
                 setIsAdmin(false);
             }
-            if (userProfile.isOrganizationAdmin) {
+            if (userProfile.isOrganizationAdmin || userProfile.organizationId) {
                 setIsOrganizationAdmin(true);
+                const orgData = await getOrganizationByOwnerId(user.uid);
+                setOrganization(orgData);
+            } else {
+                setIsOrganizationAdmin(false);
+                setOrganization(null);
             }
         } else {
             setIsAdmin(false);
-            // Don't reset org admin here if it was set by the hardcoded check
+            setIsOrganizationAdmin(false);
+            setOrganization(null);
         }
     });
 
@@ -133,6 +138,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signup = async (email: string, pass: string, displayName: string, organizationName?: string) => {
+    
+    const existingUser = await getUserById(email); // Check by email, not UID
+     if (existingUser) {
+        throw new Error('An account with this email already exists.');
+    }
+    
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       email,
@@ -154,6 +165,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             name: organizationName,
             ownerId: userCredential.user.uid,
             createdAt: new Date().toISOString(),
+            subscriptionTier: 'free',
+            subscriptionExpiresAt: null, // Permanent free tier
         });
         newUser.organizationId = orgId;
         newUser.isOrganizationAdmin = true;
@@ -223,6 +236,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isAdmin,
     isSuperAdmin,
     isOrganizationAdmin,
+    organization,
     login,
     signup,
     logout,
