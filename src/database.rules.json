@@ -157,24 +157,18 @@
     },
     "organizations": {
         ".indexOn": "ownerId",
-        ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
-        "$orgId": {
-            // Allow the org owner or a site admin to read/write
-            ".read": "auth != null && (data.child('ownerId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
-            ".write": "auth != null && (newData.child('ownerId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
-        },
-         // Allow any authenticated user to create a new organization (on signup)
+        ".read": "auth != null",
         ".write": "auth != null"
     },
     "invitations": {
-        ".read": true, // Allow reading invitations to validate them
-        ".write": "auth != null", // Only authenticated users (org admins) can create invitations
+        ".read": true,
+        ".write": "auth != null",
         "$inviteId": {
-            // Only the creating org admin can write, anyone can read to validate
             ".write": "auth != null && root.child('organizations').child(newData.child('organizationId').val()).child('ownerId').val() === auth.uid"
         }
     }
   }
 }
+
 
 
