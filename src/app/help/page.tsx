@@ -89,7 +89,7 @@ function AiAssistant() {
         },
     });
 
-    const onSubmit = async (values: z.infer<typeof helpSchema>>) => {
+    const onSubmit = async (values: z.infer<typeof helpSchema>) => {
         setIsLoading(true);
         const userMessage: Message = { role: 'user', content: values.question };
         setMessages(prev => [...prev, userMessage]);
