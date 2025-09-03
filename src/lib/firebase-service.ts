@@ -262,6 +262,21 @@ export async function getSubmissionsByUserId(userId: string): Promise<Submission
     return [];
 }
 
+export async function getUserSubmissionsForCourse(userId: string, courseId: string): Promise<Submission[]> {
+    const submissionsRef = query(ref(db, 'submissions'), orderByChild('userId'), equalTo(userId));
+    const snapshot = await get(submissionsRef);
+    if (snapshot.exists()) {
+        const submissionsData = snapshot.val();
+        return Object.keys(submissionsData)
+            .map(key => ({
+                id: key,
+                ...submissionsData[key],
+            }))
+            .filter(submission => submission.courseId === courseId);
+    }
+    return [];
+}
+
 export async function getAllSubmissions(): Promise<Submission[]> {
     const submissionsRef = ref(db, 'submissions');
     const snapshot = await get(submissionsRef);
