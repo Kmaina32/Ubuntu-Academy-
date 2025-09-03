@@ -71,15 +71,18 @@ function AiAssistant() {
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
     const [tutorSettings, setTutorSettings] = useState<TutorSettings | null>(null);
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            role: 'assistant',
-            content: "Hello! If you can't find your answer in the FAQ, ask me anything about how the platform works."
-        }
-    ]);
+    const [messages, setMessages] = useState<Message[]>([]);
 
      useEffect(() => {
-        getTutorSettings().then(setTutorSettings);
+        getTutorSettings().then(settings => {
+            setTutorSettings(settings);
+            setMessages([
+                {
+                    role: 'assistant',
+                    content: settings.prompts?.split('\n')[0] || "Hello! If you can't find your answer in the FAQ, ask me anything about how the platform works."
+                }
+            ]);
+        });
     }, []);
 
      const form = useForm<z.infer<typeof helpSchema>>({

@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Loader2, Sparkles, Send, UserCircle, Bot } from 'lucide-react';
+import { ArrowLeft, Loader2, Send, UserCircle, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
@@ -32,12 +32,7 @@ export default function AdminHelpPage() {
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
     const [tutorSettings, setTutorSettings] = useState<TutorSettings | null>(null);
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            role: 'assistant',
-            content: "Hello! I'm Gina, your support assistant. How can I help you understand how the platform works today?"
-        }
-    ]);
+    const [messages, setMessages] = useState<Message[]>([]);
 
     const form = useForm<z.infer<typeof helpSchema>>({
         resolver: zodResolver(helpSchema),
@@ -46,8 +41,16 @@ export default function AdminHelpPage() {
         },
     });
 
-     useEffect(() => {
-        getTutorSettings().then(setTutorSettings);
+    useEffect(() => {
+        getTutorSettings().then(settings => {
+            setTutorSettings(settings);
+             setMessages([
+                {
+                    role: 'assistant',
+                    content: "Hello! I'm Gina, your support assistant. How can I help you understand how the platform works today?"
+                }
+            ]);
+        });
     }, []);
 
     const onSubmit = async (values: z.infer<typeof helpSchema>) => {

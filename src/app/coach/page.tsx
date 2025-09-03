@@ -1,28 +1,30 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Sparkles, Briefcase, ArrowRight, Bot, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Loader2, Sparkles, Bot, ArrowRight, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getLearningPath } from '@/app/actions';
 import type { LearningPathOutput } from '@/ai/flows/career-coach';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
-import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { isConfigured } from '@/ai/genkit';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { getTutorSettings } from '@/lib/firebase-service';
+import type { TutorSettings } from '@/lib/firebase-service';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const careerGoalSchema = z.object({
   goal: z.string().min(10, 'Please describe your career goal in more detail.'),
@@ -35,6 +37,12 @@ export default function CareerCoachPage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [learningPath, setLearningPath] = useState<LearningPathOutput | null>(null);
+  const [tutorSettings, setTutorSettings] = useState<TutorSettings | null>(null);
+
+
+  useEffect(() => {
+    getTutorSettings().then(setTutorSettings);
+  }, []);
 
   const form = useForm<z.infer<typeof careerGoalSchema>>({
     resolver: zodResolver(careerGoalSchema),
@@ -80,7 +88,7 @@ export default function CareerCoachPage() {
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-12">
                 <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
-                  <Briefcase className="h-10 w-10 text-primary" />
+                  <Bot className="h-10 w-10 text-primary" />
                 </div>
                 <h1 className="text-4xl font-bold font-headline">AI Career Coach</h1>
                 <p className="mt-2 text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -136,7 +144,10 @@ export default function CareerCoachPage() {
               {isLoading && (
                 <div className="text-center py-10">
                     <div className="flex items-center justify-center gap-3 text-muted-foreground">
-                        <Bot className="h-8 w-8 animate-pulse" />
+                        <Avatar className="h-10 w-10 border">
+                            <AvatarImage src={tutorSettings?.avatarUrl} />
+                            <AvatarFallback><Bot/></AvatarFallback>
+                        </Avatar>
                         <p className="text-lg">Your AI coach is building your learning plan...</p>
                     </div>
                 </div>
@@ -144,8 +155,12 @@ export default function CareerCoachPage() {
 
               {learningPath && (
                 <div className="space-y-6 animate-in fade-in-50 duration-500">
-                    <div className="p-6 bg-background rounded-lg border">
-                        <p className="italic text-muted-foreground">{learningPath.introduction}</p>
+                    <div className="p-6 bg-background rounded-lg border flex items-start gap-4">
+                         <Avatar className="h-10 w-10 border">
+                            <AvatarImage src={tutorSettings?.avatarUrl} />
+                            <AvatarFallback><Bot/></AvatarFallback>
+                        </Avatar>
+                        <p className="italic text-muted-foreground pt-2">{learningPath.introduction}</p>
                     </div>
 
                   {learningPath.learningPath.map((step, index) => (
