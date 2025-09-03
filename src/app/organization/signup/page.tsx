@@ -34,6 +34,15 @@ export default function OrganizationSignupPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState('');
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      const data = await getHeroData();
+      setImageUrl(data.orgSignupImageUrl);
+    }
+    fetchImage();
+  }, []);
 
   useEffect(() => {
     if (!loading && user) {
@@ -174,7 +183,7 @@ export default function OrganizationSignupPage() {
         <div className="hidden bg-muted lg:block p-8">
             <div
                 className="h-full w-full rounded-lg bg-cover bg-center"
-                style={{ backgroundImage: `url('https://picsum.photos/1200/900')` }}
+                style={{ backgroundImage: `url(${imageUrl || 'https://picsum.photos/1200/900'})` }}
                 data-ai-hint="business team"
             />
         </div>

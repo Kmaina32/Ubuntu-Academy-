@@ -41,6 +41,8 @@ export interface HeroData {
     orgHeroTitle?: string;
     orgHeroSubtitle?: string;
     orgHeroImageUrl?: string;
+    orgLoginImageUrl?: string;
+    orgSignupImageUrl?: string;
 }
 
 export interface TutorSettings {
@@ -190,6 +192,8 @@ export async function getHeroData(): Promise<HeroData> {
     orgHeroTitle: 'Ubuntu Academy for Business',
     orgHeroSubtitle: 'Empower your workforce with the skills they need to succeed.',
     orgHeroImageUrl: 'https://picsum.photos/1200/800',
+    orgLoginImageUrl: 'https://picsum.photos/1200/900',
+    orgSignupImageUrl: 'https://picsum.photos/1200/900',
   };
 
   const dbData = snapshot.exists() ? snapshot.val() : {};

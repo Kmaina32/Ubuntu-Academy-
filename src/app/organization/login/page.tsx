@@ -34,7 +34,7 @@ export default function OrganizationLoginPage() {
   useEffect(() => {
     const fetchImage = async () => {
       const data = await getHeroData();
-      setImageUrl(data.loginImageUrl);
+      setImageUrl(data.orgLoginImageUrl);
     }
     fetchImage();
   }, []);

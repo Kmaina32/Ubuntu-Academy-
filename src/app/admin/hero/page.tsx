@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Loader2, Shield, Rss, Palette, Building } from 'lucide-react';
+import { ArrowLeft, Loader2, Shield, Rss, Palette, Building, UserCheck } from 'lucide-react';
 import { getHeroData, saveHeroData, getRemoteConfigValues, saveRemoteConfigValues } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { useToast } from '@/hooks/use-toast';
@@ -35,6 +35,8 @@ const heroFormSchema = z.object({
   orgHeroTitle: z.string().min(5, 'Title must be at least 5 characters.'),
   orgHeroSubtitle: z.string().min(20, 'Subtitle must be at least 20 characters.'),
   orgHeroImageUrl: z.string().url('Please enter a valid URL.'),
+  orgLoginImageUrl: z.string().url('Please enter a valid URL.'),
+  orgSignupImageUrl: z.string().url('Please enter a valid URL.'),
 });
 
 export default function AdminHeroPage() {
@@ -58,6 +60,8 @@ export default function AdminHeroPage() {
       orgHeroTitle: '',
       orgHeroSubtitle: '',
       orgHeroImageUrl: '',
+      orgLoginImageUrl: '',
+      orgSignupImageUrl: '',
     },
   });
 
@@ -297,7 +301,40 @@ export default function AdminHeroPage() {
                          </div>
 
                         <div>
-                            <h3 className="text-lg font-semibold flex items-center gap-2"><Building /> Organization Page Hero</h3>
+                            <h3 className="text-lg font-semibold flex items-center gap-2"><UserCheck /> Public Auth Pages</h3>
+                            <Separator className="mt-2" />
+                        </div>
+                         <FormField
+                          control={form.control}
+                          name="loginImageUrl"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Login Page Image URL</FormLabel>
+                              <FormControl>
+                                <Input placeholder="https://example.com/login-image.png" {...field} />
+                              </FormControl>
+                               <p className="text-sm text-muted-foreground">Background for the main login page. Recommended size: 1200x900.</p>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                         <FormField
+                          control={form.control}
+                          name="signupImageUrl"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Signup Page Image URL</FormLabel>
+                              <FormControl>
+                                <Input placeholder="https://example.com/signup-image.png" {...field} />
+                              </FormControl>
+                               <p className="text-sm text-muted-foreground">Background for the main signup page. Recommended size: 1200x900.</p>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <div>
+                            <h3 className="text-lg font-semibold flex items-center gap-2"><Building /> Organization Pages</h3>
                             <Separator className="mt-2" />
                         </div>
                          <FormField
@@ -305,7 +342,7 @@ export default function AdminHeroPage() {
                           name="orgHeroTitle"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Organization Page Title</FormLabel>
+                              <FormLabel>Organization "For Business" Page Title</FormLabel>
                               <FormControl>
                                 <Input placeholder="e.g., Ubuntu Academy for Business" {...field} />
                               </FormControl>
@@ -335,41 +372,35 @@ export default function AdminHeroPage() {
                               <FormControl>
                                 <Input placeholder="https://example.com/org-image.png" {...field} />
                               </FormControl>
-                               <p className="text-sm text-muted-foreground">Recommended size: 1200x800 pixels.</p>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-
-                        <div>
-                            <h3 className="text-lg font-semibold">Authentication Pages</h3>
-                            <Separator className="mt-2" />
-                        </div>
-                         <FormField
-                          control={form.control}
-                          name="loginImageUrl"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Login Page Image URL</FormLabel>
-                              <FormControl>
-                                <Input placeholder="https://example.com/login-image.png" {...field} />
-                              </FormControl>
-                               <p className="text-sm text-muted-foreground">Background image for the login page. Recommended size: 1200x900 pixels.</p>
+                               <p className="text-sm text-muted-foreground">Background for the "/for-business" page. Recommended size: 1200x800.</p>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                          <FormField
                           control={form.control}
-                          name="signupImageUrl"
+                          name="orgLoginImageUrl"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Signup Page Image URL</FormLabel>
+                              <FormLabel>Organization Login Image URL</FormLabel>
                               <FormControl>
-                                <Input placeholder="https://example.com/signup-image.png" {...field} />
+                                <Input placeholder="https://example.com/org-login.png" {...field} />
                               </FormControl>
-                               <p className="text-sm text-muted-foreground">Background image for the signup page. Recommended size: 1200x900 pixels.</p>
+                               <p className="text-sm text-muted-foreground">Background for the organization login page. Recommended size: 1200x900.</p>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                         <FormField
+                          control={form.control}
+                          name="orgSignupImageUrl"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Organization Signup Image URL</FormLabel>
+                              <FormControl>
+                                <Input placeholder="https://example.com/org-signup.png" {...field} />
+                              </FormControl>
+                               <p className="text-sm text-muted-foreground">Background for the organization signup page. Recommended size: 1200x900.</p>
                               <FormMessage />
                             </FormItem>
                           )}

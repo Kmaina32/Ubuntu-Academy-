@@ -10,6 +10,9 @@ import { CookieConsent } from '@/components/CookieConsent';
 export const metadata: Metadata = {
   title: 'Ubuntu Academy',
   description: 'Online courses for Kenyans, by Kenyans.',
+  verification: {
+    google: 'qNZsueqgogEIZHV-vcsY-Kv7tkLo82P_-w7BQvJG1jY',
+  },
 };
 
 export default async function RootLayout({
