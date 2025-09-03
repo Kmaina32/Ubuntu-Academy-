@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -16,10 +16,12 @@ import { AppSidebar } from '@/components/Sidebar';
 import { studentHelp } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getTutorSettings } from '@/lib/firebase-service';
+import type { TutorSettings } from '@/lib/firebase-service';
 
 const helpSchema = z.object({
   question: z.string().min(10, 'Please ask a more detailed question.'),
@@ -68,12 +70,17 @@ function FaqComponent() {
 function AiAssistant() {
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
+    const [tutorSettings, setTutorSettings] = useState<TutorSettings | null>(null);
     const [messages, setMessages] = useState<Message[]>([
         {
             role: 'assistant',
             content: "Hello! If you can't find your answer in the FAQ, ask me anything about how the platform works."
         }
     ]);
+
+     useEffect(() => {
+        getTutorSettings().then(setTutorSettings);
+    }, []);
 
      const form = useForm<z.infer<typeof helpSchema>>({
         resolver: zodResolver(helpSchema),
@@ -82,7 +89,7 @@ function AiAssistant() {
         },
     });
 
-    const onSubmit = async (values: z.infer<typeof helpSchema>) => {
+    const onSubmit = async (values: z.infer<typeof helpSchema>>) => {
         setIsLoading(true);
         const userMessage: Message = { role: 'user', content: values.question };
         setMessages(prev => [...prev, userMessage]);
@@ -110,7 +117,8 @@ function AiAssistant() {
                             <div key={index} className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
                                 {message.role === 'assistant' && (
                                      <Avatar className="h-8 w-8 border">
-                                        <Bot className="h-5 w-5 m-1.5" />
+                                        <AvatarImage src={tutorSettings?.avatarUrl} />
+                                        <AvatarFallback><Bot/></AvatarFallback>
                                     </Avatar>
                                 )}
                                 <div className={`rounded-lg px-4 py-3 max-w-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
@@ -122,7 +130,8 @@ function AiAssistant() {
                         {isLoading && (
                             <div className="flex items-start gap-3">
                                 <Avatar className="h-8 w-8 border">
-                                    <Bot className="h-5 w-5 m-1.5" />
+                                    <AvatarImage src={tutorSettings?.avatarUrl} />
+                                    <AvatarFallback><Bot/></AvatarFallback>
                                 </Avatar>
                                 <div className="rounded-lg px-4 py-3 bg-secondary flex items-center">
                                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />

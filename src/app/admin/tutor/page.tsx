@@ -10,17 +10,20 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { ArrowLeft, Loader2, Bot, SlidersHorizontal, Volume2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Bot, SlidersHorizontal, Volume2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { getTutorSettings, saveTutorSettings, TutorSettings } from '@/lib/firebase-service';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const tutorSettingsSchema = z.object({
   voice: z.string().min(1, 'Please select a voice.'),
   speed: z.number().min(0.25).max(4.0),
   prompts: z.string().optional(),
+  avatarUrl: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
 });
 
 const voices = [
@@ -42,6 +45,7 @@ export default function AdminTutorPage() {
       voice: 'algenib',
       speed: 1.0,
       prompts: "Welcome! To talk with me, your virtual tutor, just click the chat button.\nHow can I help you with this lesson?",
+      avatarUrl: '/gina-avatar.png',
     },
   });
 
@@ -81,6 +85,8 @@ export default function AdminTutorPage() {
     }
   };
 
+  const avatarUrl = form.watch('avatarUrl');
+
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-grow container mx-auto px-4 md:px-6 py-12">
@@ -104,6 +110,30 @@ export default function AdminTutorPage() {
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                         
+                        <div className="space-y-4 p-4 border rounded-lg">
+                            <h3 className="font-semibold text-lg flex items-center gap-2"><ImageIcon /> Appearance</h3>
+                             <FormField
+                                control={form.control}
+                                name="avatarUrl"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Avatar Image URL</FormLabel>
+                                        <div className="flex items-center gap-4">
+                                            <Avatar className="h-16 w-16">
+                                                <AvatarImage src={avatarUrl} alt="Tutor Avatar" />
+                                                <AvatarFallback><Bot /></AvatarFallback>
+                                            </Avatar>
+                                            <FormControl>
+                                                <Input placeholder="https://example.com/avatar.png" {...field} />
+                                            </FormControl>
+                                        </div>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+
                         {/* Voice and Speech Settings */}
                         <div className="space-y-4 p-4 border rounded-lg">
                             <h3 className="font-semibold text-lg flex items-center gap-2"><Volume2 /> Voice & Speech</h3>
@@ -189,4 +219,3 @@ export default function AdminTutorPage() {
     </div>
   );
 }
-

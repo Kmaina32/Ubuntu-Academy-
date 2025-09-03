@@ -47,6 +47,7 @@ export interface TutorSettings {
     voice: string;
     speed: number;
     prompts?: string;
+    avatarUrl?: string;
 }
 
 // Image Upload Service
@@ -322,6 +323,7 @@ export async function getTutorSettings(): Promise<TutorSettings> {
         voice: 'algenib',
         speed: 1.0,
         prompts: "Welcome! To talk with me, your virtual tutor, just click the chat button.\nHow can I help you with this lesson?",
+        avatarUrl: '/gina-avatar.png',
     };
     if (snapshot.exists()) {
         return { ...defaults, ...snapshot.val() };

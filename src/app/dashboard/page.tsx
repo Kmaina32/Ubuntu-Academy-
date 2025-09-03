@@ -148,7 +148,7 @@ function OnboardingModal({ user, onComplete }: { user: RegisteredUser, onComplet
 }
 
 export default function DashboardPage() {
-  const { user, loading: authLoading, isOrganizationAdmin, setUser: setAuthUser } = useAuth();
+  const { user, loading: authLoading, isOrganizationAdmin, setUser: setAuthUser, isAdmin } = useAuth();
   const router = useRouter();
   const [purchasedCourses, setPurchasedCourses] = useState<PurchasedCourseDetail[]>([]);
   const [allCourses, setAllCourses] = useState<Course[]>([]);
@@ -178,16 +178,34 @@ export default function DashboardPage() {
         setAllCourses(allCoursesData);
         setDbUser(userProfile);
 
-        const courseDetailsPromises = userCoursesData.map(async (userCourse) => {
-            const courseDetails = allCoursesData.find(c => c.id === userCourse.courseId);
-            return {
-                ...userCourse,
-                ...courseDetails,
-                id: userCourse.courseId,
-            };
+        if (isAdmin) {
+             // Admins are "enrolled" in all courses and have certificates
+             const allAsPurchased = allCoursesData.map(course => ({
+                 courseId: course.id,
+                 progress: 100,
+                 completed: true,
+                 certificateAvailable: true,
+                 enrollmentDate: course.createdAt || new Date().toISOString(),
+             }));
+             setUserCourses(allAsPurchased);
+        } else {
+            setUserCourses(userCoursesData);
+        }
+
+        const courseDetailsPromises = allCoursesData.map(async (course) => {
+            const userCourse = userCourses.find(c => c.courseId === course.id);
+            if (userCourse || isAdmin) {
+                 return {
+                    ...userCourse,
+                    ...course,
+                    id: course.id,
+                    certificateAvailable: isAdmin || userCourse?.certificateAvailable,
+                 };
+            }
+            return null;
         });
 
-        const detailedCourses = await Promise.all(courseDetailsPromises);
+        const detailedCourses = (await Promise.all(courseDetailsPromises)).filter(Boolean) as PurchasedCourseDetail[];
         setPurchasedCourses(detailedCourses.filter(c => c.title));
       }
       setLoadingCourses(false);
@@ -196,10 +214,10 @@ export default function DashboardPage() {
     if (!authLoading) {
       fetchCourseDetails();
     }
-  }, [user, authLoading, isOrganizationAdmin]);
+  }, [user, authLoading, isOrganizationAdmin, isAdmin]);
   
-  const inProgressCourses = purchasedCourses.filter(c => !c.completed);
-  const completedCourses = purchasedCourses.filter(c => c.completed || c.certificateAvailable);
+  const inProgressCourses = purchasedCourses.filter(c => !(isAdmin || c.completed || c.certificateAvailable));
+  const completedCourses = purchasedCourses.filter(c => isAdmin || c.completed || c.certificateAvailable);
 
   const needsOnboarding = dbUser && (!dbUser.displayName || dbUser.displayName === 'New Member');
 

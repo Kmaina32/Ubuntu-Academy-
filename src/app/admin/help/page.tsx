@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,6 +16,8 @@ import { useToast } from '@/hooks/use-toast';
 import { siteHelp } from '@/app/actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { getTutorSettings } from '@/lib/firebase-service';
+import type { TutorSettings } from '@/lib/firebase-service';
 
 const helpSchema = z.object({
   question: z.string().min(10, 'Please ask a more detailed question.'),
@@ -29,12 +31,17 @@ type Message = {
 export default function AdminHelpPage() {
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
+    const [tutorSettings, setTutorSettings] = useState<TutorSettings | null>(null);
     const [messages, setMessages] = useState<Message[]>([
         {
             role: 'assistant',
             content: "Hello! I'm Gina, your support assistant. How can I help you understand how the platform works today?"
         }
     ]);
+
+     useEffect(() => {
+        getTutorSettings().then(setTutorSettings);
+    }, []);
 
     const form = useForm<z.infer<typeof helpSchema>>({
         resolver: zodResolver(helpSchema),
@@ -43,7 +50,7 @@ export default function AdminHelpPage() {
         },
     });
 
-    const onSubmit = async (values: z.infer<typeof helpSchema>) => {
+    const onSubmit = async (values: z.infer<typeof helpSchema>>) => {
         setIsLoading(true);
         const userMessage: Message = { role: 'user', content: values.question };
         setMessages(prev => [...prev, userMessage]);
@@ -76,8 +83,8 @@ export default function AdminHelpPage() {
                     <div className="flex items-center gap-3">
                         <div className="relative">
                            <Avatar className="h-12 w-12 border">
-                                <AvatarImage src="/gina-avatar.png" />
-                                <AvatarFallback>G</AvatarFallback>
+                                <AvatarImage src={tutorSettings?.avatarUrl} />
+                                <AvatarFallback><Bot/></AvatarFallback>
                            </Avatar>
                            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></div>
                         </div>
@@ -94,8 +101,8 @@ export default function AdminHelpPage() {
                                 <div key={index} className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
                                     {message.role === 'assistant' && (
                                         <Avatar className="h-8 w-8 border">
-                                            <AvatarImage src="/gina-avatar.png" />
-                                            <AvatarFallback>G</AvatarFallback>
+                                            <AvatarImage src={tutorSettings?.avatarUrl} />
+                                            <AvatarFallback><Bot/></AvatarFallback>
                                         </Avatar>
                                     )}
                                     <div className={`rounded-lg px-4 py-3 max-w-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
@@ -107,8 +114,8 @@ export default function AdminHelpPage() {
                              {isLoading && (
                                 <div className="flex items-start gap-3">
                                     <Avatar className="h-8 w-8 border">
-                                        <AvatarImage src="/gina-avatar.png" />
-                                        <AvatarFallback>G</AvatarFallback>
+                                        <AvatarImage src={tutorSettings?.avatarUrl} />
+                                        <AvatarFallback><Bot/></AvatarFallback>
                                     </Avatar>
                                     <div className="rounded-lg px-4 py-3 bg-secondary flex items-center">
                                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
