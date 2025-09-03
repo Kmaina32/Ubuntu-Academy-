@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -11,7 +10,7 @@ import { z } from 'zod';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, User as UserIcon, Camera, Upload, Eye, Building } from 'lucide-react';
+import { ArrowLeft, Loader2, User as UserIcon, Camera, Upload, Eye, Building, Share2 } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -22,15 +21,23 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { updateProfile } from 'firebase/auth';
-import { uploadImage, saveUser } from '@/lib/firebase-service';
+import { uploadImage, saveUser, getUserById } from '@/lib/firebase-service';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { auth } from '@/lib/firebase';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import type { RegisteredUser } from '@/lib/mock-data';
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, 'First name is required.'),
   middleName: z.string().optional(),
   lastName: z.string().min(1, 'Last name is required.'),
+  summary: z.string().optional(),
+  github: z.string().url().optional().or(z.literal('')),
+  linkedin: z.string().url().optional().or(z.literal('')),
+  twitter: z.string().url().optional().or(z.literal('')),
+  public: z.boolean().default(false),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -55,6 +62,7 @@ export default function ProfilePage() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [dbUser, setDbUser] = useState<RegisteredUser | null>(null);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -62,6 +70,11 @@ export default function ProfilePage() {
         firstName: '',
         middleName: '',
         lastName: '',
+        summary: '',
+        github: '',
+        linkedin: '',
+        twitter: '',
+        public: false,
     }
   });
 
@@ -70,11 +83,21 @@ export default function ProfilePage() {
       router.push('/login');
     }
     if (user) {
-      const { firstName, middleName, lastName } = splitDisplayName(user.displayName);
-      form.reset({
-        firstName,
-        middleName,
-        lastName,
+      getUserById(user.uid).then(profile => {
+        if(profile) {
+          setDbUser(profile);
+          const { firstName, middleName, lastName } = splitDisplayName(profile.displayName);
+          form.reset({
+            firstName,
+            middleName,
+            lastName,
+            summary: profile.portfolio?.summary || '',
+            github: profile.portfolio?.socialLinks?.github || '',
+            linkedin: profile.portfolio?.socialLinks?.linkedin || '',
+            twitter: profile.portfolio?.socialLinks?.twitter || '',
+            public: profile.portfolio?.public || false,
+          });
+        }
       });
     }
   }, [user, loading, router, form]);
@@ -173,15 +196,23 @@ export default function ProfilePage() {
     try {
         const newDisplayName = [values.firstName, values.middleName, values.lastName].filter(Boolean).join(' ');
         
-        // Update Firebase Auth profile
-        await updateProfile(user, {
-            displayName: newDisplayName
-        });
+        // Update Firebase Auth profile if the name has changed
+        if (newDisplayName !== user.displayName) {
+          await updateProfile(user, { displayName: newDisplayName });
+        }
 
         // Update the user record in the Realtime Database
         await saveUser(user.uid, {
-            email: user.email,
-            displayName: newDisplayName
+            displayName: newDisplayName,
+            portfolio: {
+                summary: values.summary,
+                socialLinks: {
+                    github: values.github,
+                    linkedin: values.linkedin,
+                    twitter: values.twitter,
+                },
+                public: values.public,
+            }
         });
         
         // Manually reload user state to reflect changes immediately
@@ -274,7 +305,7 @@ export default function ProfilePage() {
                     </div>
 
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                              <div className='space-y-2 mt-6'>
                                 <Label htmlFor='email'>Email Address</Label>
                                 <Input id='email' value={user.email || ''} readOnly disabled />
@@ -307,7 +338,7 @@ export default function ProfilePage() {
                                 )}
                                 />
                             </div>
-                             <div className="mt-4">
+                             <div>
                                 <FormField
                                     control={form.control}
                                     name="middleName"
@@ -323,6 +354,48 @@ export default function ProfilePage() {
                                     />
                              </div>
                              <p className="text-xs text-muted-foreground pt-2">Please ensure this is your full, correct name as it will be used on your certificates.</p>
+
+                            <FormField
+                                control={form.control}
+                                name="summary"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Portfolio Summary</FormLabel>
+                                    <FormControl>
+                                        <Textarea placeholder="A brief summary about your skills and career goals." {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                                />
+
+                            <div className="grid grid-cols-1 gap-4">
+                                <FormField control={form.control} name="github" render={({ field }) => (<FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input placeholder="https://github.com/username" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="linkedin" render={({ field }) => (<FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input placeholder="https://linkedin.com/in/username" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="twitter" render={({ field }) => (<FormItem><FormLabel>X (Twitter) URL</FormLabel><FormControl><Input placeholder="https://x.com/username" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            </div>
+                            
+                            <FormField
+                                control={form.control}
+                                name="public"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                    <div className="space-y-0.5">
+                                        <FormLabel className="text-base">Make Portfolio Public</FormLabel>
+                                        <FormDescription>
+                                        Allow employers and peers to view your completed courses and profile.
+                                        </FormDescription>
+                                    </div>
+                                    <FormControl>
+                                        <Switch
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                        />
+                                    </FormControl>
+                                    </FormItem>
+                                )}
+                                />
+
                               <div className="mt-6 space-y-2">
                                 <Button asChild variant="outline" className="w-full">
                                     <Link href={`/portfolio/${user.uid}`}>

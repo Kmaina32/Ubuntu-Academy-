@@ -25,6 +25,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getTutorSettings } from '@/lib/firebase-service';
 import type { TutorSettings } from '@/lib/firebase-service';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { slugify } from '@/lib/utils';
 
 const careerGoalSchema = z.object({
   goal: z.string().min(10, 'Please describe your career goal in more detail.'),
@@ -177,7 +178,7 @@ export default function CareerCoachPage() {
                         <CardContent className="p-6 space-y-4">
                             <p><strong className="font-semibold">Why this course:</strong> {step.reasoning}</p>
                              <Button asChild>
-                                <Link href={`/courses/${step.courseId}`}>
+                                <Link href={`/courses/${slugify(step.courseTitle)}`}>
                                     View Course
                                     <ArrowRight className="ml-2 h-4 w-4" />
                                 </Link>
