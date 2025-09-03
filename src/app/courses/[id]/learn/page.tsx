@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -368,7 +369,7 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
                                     <div className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
                                         {message.role === 'assistant' && (
                                             <Avatar className="h-8 w-8 border">
-                                                <AvatarImage src={settings?.avatarUrl} />
+                                                <AvatarImage src={settings?.avatarUrl || ''} />
                                                 <AvatarFallback><Bot/></AvatarFallback>
                                             </Avatar>
                                         )}
@@ -407,7 +408,7 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
                             {isLoading && (
                                 <div className="flex items-start gap-3">
                                     <Avatar className="h-8 w-8 border">
-                                        <AvatarImage src={settings?.avatarUrl} />
+                                        <AvatarImage src={settings?.avatarUrl || ''} />
                                         <AvatarFallback><Bot/></AvatarFallback>
                                     </Avatar>
                                     <div className="rounded-lg px-4 py-3 bg-secondary flex items-center">
