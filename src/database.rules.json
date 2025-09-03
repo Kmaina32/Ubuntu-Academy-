@@ -20,7 +20,7 @@
     },
     "users": {
       "$uid": {
-        ".read": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || root.child('users').child($uid).child('portfolio').child('public').val() === true)",
+        ".read": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || data.child('portfolio').child('public').val() === true)",
         ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
         "cohort": {
           ".read": "auth != null"
@@ -29,7 +29,7 @@
            ".read": "auth != null && auth.uid === $uid"
         }
       },
-      ".read": "auth != null"
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
     "calendarEvents": {
       ".read": true,
@@ -169,6 +169,7 @@
     }
   }
 }
+
 
 
 
