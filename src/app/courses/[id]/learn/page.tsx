@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -21,7 +22,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { courseTutor, speechToText, textToSpeech } from '@/app/actions';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRecorder } from '@/hooks/use-recorder';
 import { Separator } from '@/components/ui/separator';
 import jsPDF from 'jspdf';
@@ -366,8 +367,9 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
                                 <div key={index}>
                                     <div className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
                                         {message.role === 'assistant' && (
-                                            <Avatar className="h-8 w-8 border bg-primary text-primary-foreground">
-                                                <Bot className="h-5 w-5 m-1.5" />
+                                            <Avatar className="h-8 w-8 border">
+                                                <AvatarImage src={settings?.avatarUrl} />
+                                                <AvatarFallback><Bot/></AvatarFallback>
                                             </Avatar>
                                         )}
                                         <div className={`rounded-lg px-3 py-2 max-w-md ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
@@ -386,7 +388,8 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
                                         </div>
                                             {message.role === 'user' && (
                                             <Avatar className="h-8 w-8 border">
-                                                <User className="h-5 w-5 m-1.5" />
+                                                <AvatarImage src={user?.photoURL || ''} />
+                                                <AvatarFallback><User /></AvatarFallback>
                                             </Avatar>
                                         )}
                                     </div>
@@ -403,8 +406,9 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
                             ))}
                             {isLoading && (
                                 <div className="flex items-start gap-3">
-                                    <Avatar className="h-8 w-8 border bg-primary text-primary-foreground">
-                                        <Bot className="h-5 w-5 m-1.5" />
+                                    <Avatar className="h-8 w-8 border">
+                                        <AvatarImage src={settings?.avatarUrl} />
+                                        <AvatarFallback><Bot/></AvatarFallback>
                                     </Avatar>
                                     <div className="rounded-lg px-4 py-3 bg-secondary flex items-center">
                                         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
