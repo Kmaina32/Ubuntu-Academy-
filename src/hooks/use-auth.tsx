@@ -106,8 +106,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const userProfile = snapshot.val() as RegisteredUser;
             const currentIsAdmin = userProfile.isAdmin && (!userProfile.adminExpiresAt || new Date(userProfile.adminExpiresAt) > new Date());
             setIsAdmin(isSuper || currentIsAdmin);
+            
+            // This is the specific logic for Organization Admin role
+            setIsOrganizationAdmin(userProfile.isOrganizationAdmin || false);
 
-            let currentOrgId: string | undefined;
+            let currentOrgId: string | undefined = userProfile.organizationId;
 
             if (isSuper) {
                  let saOrg = await getOrganizationByOwnerId(user.uid);
@@ -127,17 +130,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             } else if (userProfile.organizationId) {
                 const orgData = await getOrganizationByOwnerId(userProfile.organizationId);
                 setOrganization(orgData);
-                currentOrgId = orgData?.id;
             } else {
-                setIsOrganizationAdmin(false);
                 setOrganization(null);
             }
 
             if(currentOrgId) {
               const orgMembers = await getOrganizationMembers(currentOrgId);
               setMembers(orgMembers);
-              const currentUserInOrg = orgMembers.find(m => m.uid === user.uid);
-              setIsOrganizationAdmin(!!currentUserInOrg?.isOrganizationAdmin || isSuper);
             }
         } else {
             setIsAdmin(false);

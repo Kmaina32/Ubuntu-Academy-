@@ -154,16 +154,16 @@ export default function DashboardPage() {
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [dbUser, setDbUser] = useState<RegisteredUser | null>(null);
 
-  // Redirect organization admins to their specific dashboard
+  // Redirect organization admins to their specific dashboard, but not site admins
   useEffect(() => {
-    if (!authLoading && isOrganizationAdmin) {
+    if (!authLoading && isOrganizationAdmin && !isAdmin) {
       router.replace('/organization/dashboard');
     }
-  }, [authLoading, isOrganizationAdmin, router]);
+  }, [authLoading, isOrganizationAdmin, isAdmin, router]);
 
 
   useEffect(() => {
-    if (isOrganizationAdmin) return; // Don't fetch student data for org admins
+    if (isOrganizationAdmin && !isAdmin) return; // Don't fetch student data for org admins
 
     const fetchCourseDetails = async () => {
       setLoadingCourses(true);
@@ -215,7 +215,7 @@ export default function DashboardPage() {
 
 
   const renderContent = () => {
-    if (authLoading || (loadingCourses && user) || isOrganizationAdmin) {
+    if (authLoading || (loadingCourses && user) || (isOrganizationAdmin && !isAdmin)) {
         return (
             <div className="flex justify-center items-center py-10 h-full">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
