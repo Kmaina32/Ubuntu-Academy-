@@ -39,16 +39,16 @@ export default function AdminHelpPage() {
         }
     ]);
 
-     useEffect(() => {
-        getTutorSettings().then(setTutorSettings);
-    }, []);
-
     const form = useForm<z.infer<typeof helpSchema>>({
         resolver: zodResolver(helpSchema),
         defaultValues: {
           question: '',
         },
     });
+
+     useEffect(() => {
+        getTutorSettings().then(setTutorSettings);
+    }, []);
 
     const onSubmit = async (values: z.infer<typeof helpSchema>>) => {
         setIsLoading(true);
