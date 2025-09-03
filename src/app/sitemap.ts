@@ -1,3 +1,4 @@
+
 import type { MetadataRoute } from 'next';
 import { getAllCourses, getAllPrograms } from '@/lib/firebase-service';
 import { slugify } from '@/lib/utils';
@@ -9,11 +10,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const courses = await getAllCourses();
   const programs = await getAllPrograms();
 
-  const courseEntries: MetadataRoute.Sitemap = courses.map((course) => ({
-    url: `${BASE_URL}/courses/${slugify(course.title)}`,
-    lastModified: new Date(course.createdAt),
-    changeFrequency: 'weekly',
-  }));
+  const courseEntries: MetadataRoute.Sitemap = courses.map((course) => {
+    // Ensure createdAt is a valid date before using it
+    const lastModified = course.createdAt && !isNaN(new Date(course.createdAt).getTime())
+      ? new Date(course.createdAt)
+      : new Date();
+      
+    return {
+      url: `${BASE_URL}/courses/${slugify(course.title)}`,
+      lastModified,
+      changeFrequency: 'weekly',
+    };
+  });
   
   const programEntries: MetadataRoute.Sitemap = programs.map((program) => ({
     url: `${BASE_URL}/programs/${program.id}`,
