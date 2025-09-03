@@ -29,7 +29,7 @@
            ".read": "auth != null && auth.uid === $uid"
         }
       },
-      ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      ".read": "auth != null"
     },
     "calendarEvents": {
       ".read": true,
