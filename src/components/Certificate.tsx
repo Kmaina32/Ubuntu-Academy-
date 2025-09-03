@@ -159,3 +159,4 @@ export function Certificate({ course, userName }: CertificateProps) {
     </div>
   );
 }
+ 
