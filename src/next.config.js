@@ -45,6 +45,7 @@ const nextConfig = {
     'long',
     'protobufjs',
     'zod',
+    'axios'
   ],
 };
 
