@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { notFound, useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -121,10 +122,10 @@ export default function ExamPage() {
     if (!user || !course) return;
     setIsSubmitting(true);
     
-    const answersArray = Object.entries(data.answers).map(([questionId, value]) => ({
-      questionId,
-      answer: value.answer,
-    }));
+  const answersArray = Object.entries(data.answers).map(([questionId, value]) => ({
+    questionId,
+    answer: (value as { answer: any }).answer,
+  }));
 
     try {
       await createSubmission({
@@ -213,51 +214,51 @@ export default function ExamPage() {
                           <Card key={q.id} className="p-6">
                             <FormLabel className="text-base font-semibold">{index + 1}. {q.question}</FormLabel>
                              <div className="mt-4">
-                              {q.type === 'multiple-choice' && q.options ? (
-                                <FormField
-                                  control={form.control}
-                                  name={`answers.${q.id}.answer`}
-                                  render={({ field }) => (
-                                    <FormItem className="space-y-3">
-                                      <FormControl>
-                                        <RadioGroup
-                                          onValueChange={(val) => field.onChange(parseInt(val, 10))}
-                                          defaultValue={String(field.value)}
-                                          className="flex flex-col space-y-2"
-                                        >
-                                          {q.options?.map((option, i) => (
-                                            <FormItem key={i} className="flex items-center space-x-3 space-y-0">
-                                              <FormControl>
-                                                <RadioGroupItem value={String(i)} />
-                                              </FormControl>
-                                              <FormLabel className="font-normal">{option}</FormLabel>
-                                            </FormItem>
-                                          ))}
-                                        </RadioGroup>
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              ) : (
-                                <FormField
-                                  control={form.control}
-                                  name={`answers.${q.id}.answer`}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormControl>
-                                        <Textarea
-                                          placeholder="Type your detailed answer here..."
-                                          className="min-h-[120px]"
-                                          {...field}
-                                          value={field.value as string || ''}
-                                        />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              )}
+{q.type === 'multiple-choice' && q.options ? (
+  <FormField
+    control={form.control}
+    name={`answers.${q.id}.answer` as any}
+    render={({ field }) => (
+      <FormItem className="space-y-3">
+        <FormControl>
+          <RadioGroup
+            onValueChange={(val) => field.onChange(parseInt(val, 10))}
+            defaultValue={String((field.value as number) ?? '')}
+            className="flex flex-col space-y-2"
+          >
+            {q.options?.map((option, i) => (
+              <FormItem key={i} className="flex items-center space-x-3 space-y-0">
+                <FormControl>
+                  <RadioGroupItem value={String(i)} />
+                </FormControl>
+                <FormLabel className="font-normal">{option}</FormLabel>
+              </FormItem>
+            ))}
+          </RadioGroup>
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+) : (
+  <FormField
+    control={form.control}
+    name={`answers.${q.id}.answer` as any}
+    render={({ field }) => (
+      <FormItem>
+        <FormControl>
+          <Textarea
+            placeholder="Type your detailed answer here..."
+            className="min-h-[120px]"
+            {...field}
+            value={(field.value as string) || ''}
+          />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+)}
                             </div>
                           </Card>
                         ))}
