@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import type { Course, UserCourse } from "@/lib/mock-data";
-import { getAllCourses, getHeroData, getUserCourses } from '@/lib/firebase-service';
+import { getAllCourses, getHeroData, getUserById, getUserCourses } from '@/lib/firebase-service';
 import { Loader2, Search, ArrowLeft, ArrowRight } from 'lucide-react';
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/Sidebar";
@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 const COURSES_PER_PAGE = 6;
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [userCourses, setUserCourses] = useState<UserCourse[]>([]);
   const [heroData, setHeroData] = useState({ title: '', subtitle: '', imageUrl: '' });
@@ -38,7 +38,18 @@ export default function Home() {
         setHeroData(hero);
 
         if (user) {
-            const fetchedUserCourses = await getUserCourses(user.uid);
+            let fetchedUserCourses = await getUserCourses(user.uid);
+            
+            // If user is an admin, treat all courses as "enrolled" for display purposes
+            if (isAdmin) {
+                fetchedUserCourses = coursesData.map(course => ({
+                    courseId: course.id,
+                    progress: 100,
+                    completed: true,
+                    certificateAvailable: true,
+                    enrollmentDate: new Date().toISOString(),
+                }));
+            }
             setUserCourses(fetchedUserCourses);
         }
 
@@ -50,7 +61,7 @@ export default function Home() {
       }
     };
     fetchData();
-  }, [user]);
+  }, [user, isAdmin]);
   
   const enrolledCourseIds = useMemo(() => new Set(userCourses.map(c => c.courseId)), [userCourses]);
 

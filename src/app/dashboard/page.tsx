@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import type { Course, UserCourse, RegisteredUser } from "@/lib/mock-data";
-import { getCourseById, getUserCourses, getAllCourses, saveUser, getUserById } from '@/lib/firebase-service';
+import { getUserCourses, getAllCourses, saveUser, getUserById } from '@/lib/firebase-service';
 import { Award, BookOpen, User, Loader2, Trophy, BookCopy, ListTodo } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
@@ -151,7 +151,6 @@ export default function DashboardPage() {
   const { user, loading: authLoading, isOrganizationAdmin, setUser: setAuthUser, isAdmin } = useAuth();
   const router = useRouter();
   const [purchasedCourses, setPurchasedCourses] = useState<PurchasedCourseDetail[]>([]);
-  const [allCourses, setAllCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [dbUser, setDbUser] = useState<RegisteredUser | null>(null);
 
@@ -175,31 +174,15 @@ export default function DashboardPage() {
             getUserCourses(user.uid),
             getUserById(user.uid),
         ]);
-        setAllCourses(allCoursesData);
+        
         setDbUser(userProfile);
 
-        if (isAdmin) {
-             // Admins are "enrolled" in all courses and have certificates
-             const allAsPurchased = allCoursesData.map(course => ({
-                 courseId: course.id,
-                 progress: 100,
-                 completed: true,
-                 certificateAvailable: true,
-                 enrollmentDate: course.createdAt || new Date().toISOString(),
-             }));
-             setUserCourses(allAsPurchased);
-        } else {
-            setUserCourses(userCoursesData);
-        }
-
         const courseDetailsPromises = allCoursesData.map(async (course) => {
-            const userCourse = userCourses.find(c => c.courseId === course.id);
-            if (userCourse || isAdmin) {
+            const userCourse = userCoursesData.find(c => c.courseId === course.id);
+            if (userCourse) {
                  return {
                     ...userCourse,
                     ...course,
-                    id: course.id,
-                    certificateAvailable: isAdmin || userCourse?.certificateAvailable,
                  };
             }
             return null;
