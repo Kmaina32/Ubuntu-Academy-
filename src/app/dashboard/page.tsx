@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import type { Course, UserCourse, RegisteredUser } from "@/lib/mock-data";
-import { getCourseById, getUserCourses, getAllCourses, saveUser } from '@/lib/firebase-service';
+import { getCourseById, getUserCourses, getAllCourses, saveUser, getUserById } from '@/lib/firebase-service';
 import { Award, BookOpen, User, Loader2, Trophy, BookCopy, ListTodo } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
