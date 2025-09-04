@@ -1,14 +1,13 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { getPublicProfiles } from '@/lib/firebase-service';
 import type { RegisteredUser } from '@/lib/types';
-import { Header } from '@/components/shared/Header';
-import { Footer } from '@/components/shared/Footer';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/shared/Sidebar';
+import { AppSidebar } from '@/components/Sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
