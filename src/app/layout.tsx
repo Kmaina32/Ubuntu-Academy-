@@ -1,11 +1,11 @@
 
 import type {Metadata} from 'next';
-import './globals.css';
+import '@/styles/globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/hooks/use-auth';
 import { ThemeEffects } from '@/components/ThemeEffects';
 import { Analytics } from "@vercel/analytics/next"
-import { CookieConsent } from '@/components/CookieConsent';
+import { CookieConsent } from '@/components/shared/CookieConsent';
 
 export const metadata: Metadata = {
   title: 'Ubuntu Academy',
