@@ -4,19 +4,19 @@
   "rules": {
     "courses": {
       ".read": true,
-      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
     },
     "bundles": {
        ".read": true,
-       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+       ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
     },
     "programs": {
         ".read": true,
-        ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+        ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
     },
     "hero": {
       ".read": true,
-      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
     },
     "users": {
       "$uid": {
@@ -33,7 +33,7 @@
     },
     "calendarEvents": {
       ".read": true,
-      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
     },
     "submissions": {
       ".read": "auth != null",
@@ -45,7 +45,7 @@
     },
     "tutorSettings": {
       ".read": "auth != null",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
     },
     "tutorHistory": {
       "$userId": {
@@ -79,8 +79,8 @@
         }
     },
     "analytics": {
-        ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
-        ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+        ".read": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+        ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
     },
     "apiKeys": {
         "$userId": {
@@ -90,20 +90,20 @@
     },
     "apiUsage": {
       "$userId": {
-        ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+        ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
         ".read": "auth != null && auth.uid === $userId"
       }
     },
     "webrtc-offers": {
         "live-session": {
           ".read": "auth != null",
-          ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+          ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
         }
     },
     "webrtc-answers": {
         "live-session": {
           "$uid": {
-            ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+            ".read": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
             ".write": "auth != null && auth.uid == $uid"
           }
         }
@@ -113,12 +113,12 @@
           "admin": {
             "$studentId": {
               ".read": "auth != null && auth.uid === $studentId",
-              ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+              ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
             }
           },
           "student": {
             "$uid": {
-              ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+              ".read": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
               ".write": "auth != null && auth.uid == $uid"
             }
           }
@@ -132,19 +132,19 @@
     },
     "courseFeedback": {
         "$courseId": {
-          ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+          ".read": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
           ".write": "auth != null"
         }
     },
     "projects": {
        ".read": true,
        "$courseId": {
-           ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+           ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
        }
     },
     "permissionRequests": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+      ".read": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+      ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
       "$requestId": {
           "status": {
             ".write": "auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2'"
@@ -153,7 +153,7 @@
     },
     "notifications": {
       ".read": "auth != null",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
     },
     "organizations": {
         ".indexOn": "ownerId",
@@ -169,6 +169,7 @@
     }
   }
 }
+
 
 
 
