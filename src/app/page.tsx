@@ -54,6 +54,7 @@ export default function Home() {
             try {
                 let fetchedUserCourses = await getUserCourses(user.uid);
                 
+                // If the user is an admin, treat all courses as enrolled and completed.
                 if (isAdmin) {
                     fetchedUserCourses = courses.map(course => ({
                         courseId: course.id,
@@ -74,7 +75,8 @@ export default function Home() {
         }
     };
     
-    if (user || !loading) { // Run if user is logged in or initial load is finished
+    // Run if user is logged in or initial load is finished and we have courses to check against for admin
+    if (user || (!loading && courses.length > 0)) { 
         fetchUserSpecificData();
     }
   }, [user, isAdmin, courses, loading]);
