@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Footer } from "@/components/Footer";
 import { CourseCard } from "@/components/CourseCard";
 import type { Course, UserCourse } from "@/lib/mock-data";
-import { getAllCourses, getHeroData, getUserById, getUserCourses } from '@/lib/firebase-service';
+import { getAllCourses, getHeroData, getUserCourses } from '@/lib/firebase-service';
 import { Loader2, Search, ArrowLeft, ArrowRight } from 'lucide-react';
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/Sidebar";
@@ -29,30 +29,14 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Effect for fetching public data (courses and hero)
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchPublicData = async () => {
       try {
         setLoading(true);
         const [coursesData, hero] = await Promise.all([getAllCourses(), getHeroData()]);
         setCourses(coursesData);
         setHeroData(hero);
-
-        if (user) {
-            let fetchedUserCourses = await getUserCourses(user.uid);
-            
-            // If user is an admin, treat all courses as "enrolled" for display purposes
-            if (isAdmin) {
-                fetchedUserCourses = coursesData.map(course => ({
-                    courseId: course.id,
-                    progress: 100,
-                    completed: true,
-                    certificateAvailable: true,
-                    enrollmentDate: new Date().toISOString(),
-                }));
-            }
-            setUserCourses(fetchedUserCourses);
-        }
-
       } catch (err) {
         console.error(err);
         setError("Failed to load page content. Please try again later.");
@@ -60,8 +44,40 @@ export default function Home() {
         setLoading(false);
       }
     };
-    fetchData();
-  }, [user, isAdmin]);
+    fetchPublicData();
+  }, []);
+
+  // Effect for fetching user-specific data, runs only when user changes
+  useEffect(() => {
+    const fetchUserSpecificData = async () => {
+        if (user) {
+            try {
+                let fetchedUserCourses = await getUserCourses(user.uid);
+                
+                if (isAdmin) {
+                    fetchedUserCourses = courses.map(course => ({
+                        courseId: course.id,
+                        progress: 100,
+                        completed: true,
+                        certificateAvailable: true,
+                        enrollmentDate: new Date().toISOString(),
+                    }));
+                }
+                setUserCourses(fetchedUserCourses);
+            } catch(err) {
+                console.error("Failed to fetch user courses", err);
+                setError("Could not load your course data.");
+            }
+        } else {
+            // Clear user data on logout
+            setUserCourses([]);
+        }
+    };
+    
+    if (user || !loading) { // Run if user is logged in or initial load is finished
+        fetchUserSpecificData();
+    }
+  }, [user, isAdmin, courses, loading]);
   
   const enrolledCourseIds = useMemo(() => new Set(userCourses.map(c => c.courseId)), [userCourses]);
 
