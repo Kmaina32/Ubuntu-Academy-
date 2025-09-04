@@ -19,6 +19,7 @@
       ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
     },
     "users": {
+      ".indexOn": ["portfolio/public"],
       "$uid": {
         ".read": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || data.child('portfolio').child('public').val() === true)",
         ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
@@ -169,6 +170,7 @@
     }
   }
 }
+
 
 
 

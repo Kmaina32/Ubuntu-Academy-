@@ -1,15 +1,16 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAllUsers } from '@/lib/firebase-service';
-import type { RegisteredUser } from '@/lib/mock-data';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { getPublicProfiles } from '@/lib/firebase-service';
+import type { RegisteredUser } from '@/lib/types';
+import { Header } from '@/components/shared/Header';
+import { Footer } from '@/components/shared/Footer';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/Sidebar';
+import { AppSidebar } from '@/components/shared/Sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Github, Linkedin, Loader2, Twitter, Users } from 'lucide-react';
 import Link from 'next/link';
@@ -28,8 +29,7 @@ export default function PortfoliosPage() {
         const fetchPublicProfiles = async () => {
             setLoading(true);
             try {
-                const allUsers = await getAllUsers();
-                const publicUsers = allUsers.filter(user => user.portfolio?.public);
+                const publicUsers = await getPublicProfiles();
                 setPublicProfiles(publicUsers);
             } catch (error) {
                 console.error("Failed to fetch profiles:", error);

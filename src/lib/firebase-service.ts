@@ -3,29 +3,12 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation } from './mock-data';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser } from './types';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
+export type { RegisteredUser } from './types';
 
-export interface RegisteredUser {
-    uid: string;
-    email: string | null;
-    displayName: string | null;
-    createdAt?: string; // ISO String
-    cohort?: string;
-    purchasedCourses?: Record<string, Omit<UserCourse, 'courseId'>>;
-    plan?: 'free' | 'basic' | 'pro';
-    apiCallCount?: number;
-    isAdmin?: boolean;
-    isOrganizationAdmin?: boolean;
-    organizationId?: string;
-    adminExpiresAt?: string | null;
-    isOnline?: boolean;
-    lastSeen?: number;
-    photoURL?: string;
-    portfolio?: Portfolio;
-}
 
 export interface HeroData {
     title: string;
@@ -169,6 +152,20 @@ export async function getAllUsers(): Promise<RegisteredUser[]> {
     }
     return [];
 }
+
+export async function getPublicProfiles(): Promise<RegisteredUser[]> {
+    const publicProfilesRef = query(ref(db, 'users'), orderByChild('portfolio/public'), equalTo(true));
+    const snapshot = await get(publicProfilesRef);
+     if (snapshot.exists()) {
+        const usersData = snapshot.val();
+        return Object.keys(usersData).map(uid => ({
+            uid,
+            ...usersData[uid],
+        }));
+    }
+    return [];
+}
+
 
 export async function deleteUser(userId: string): Promise<void> {
     const userRef = ref(db, `users/${userId}`);
