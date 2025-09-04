@@ -18,12 +18,12 @@ import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { updateProfile } from 'firebase/auth';
 import { uploadImage, saveUser, getUserById } from '@/lib/firebase-service';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertTitle, AlertDescription as AlertDescriptionComponent } from '@/components/ui/alert';
 import { auth } from '@/lib/firebase';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
@@ -289,9 +289,9 @@ export default function ProfilePage() {
                                 {hasCameraPermission === false && (
                                      <Alert variant="destructive">
                                         <AlertTitle>Camera Access Required</AlertTitle>
-                                        <AlertDescription>
+                                        <AlertDescriptionComponent>
                                             Please allow camera access in your browser to use this feature.
-                                        </AlertDescription>
+                                        </AlertDescriptionComponent>
                                     </Alert>
                                 )}
                                 <DialogFooter>
@@ -372,7 +372,7 @@ export default function ProfilePage() {
                             <div className="grid grid-cols-1 gap-4">
                                 <FormField control={form.control} name="github" render={({ field }) => (<FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input placeholder="https://github.com/username" {...field} /></FormControl><FormMessage /></FormItem>)} />
                                 <FormField control={form.control} name="linkedin" render={({ field }) => (<FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input placeholder="https://linkedin.com/in/username" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name="twitter" render={({ field }) => (<FormItem><FormLabel>X (Twitter) URL</FormLabel><FormControl><Input placeholder="https://x.com/username" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="twitter" render={({ field }) => (<FormItem><FormLabel>X (Twitter) URL</FormLabel><FormControl><Input placeholder="https://x.com/username" {...field} /></FormControl><FormMessage /></FormMessage>)} />
                             </div>
                             
                             <FormField
