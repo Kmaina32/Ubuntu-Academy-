@@ -1,4 +1,3 @@
-// This file is machine-generated - edit with care!
 
 'use server';
 
@@ -87,7 +86,7 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateCourseContentOutputSchema},
   prompt: `You are an expert curriculum developer for an online learning platform in Kenya. Your task is to generate a complete course structure based on a given title and context.
 
-First, use the 'listCourses' tool to get a list of all existing courses in the catalog. You MUST NOT create a course that is a duplicate or very similar to an existing one. Your new course idea must be unique.
+First, use the 'listCourses' tool to see if there are any existing courses in the catalog. If there are, you MUST NOT create a course that is a duplicate or very similar to an existing one. Your new course idea must be unique. If no courses are returned, proceed with generation.
 
 The new course must be comprehensive and well-structured.
 It MUST include:
