@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Gem } from 'lucide-react';
+import { Loader2, Gem, ArrowLeft } from 'lucide-react';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
@@ -49,6 +49,9 @@ export default function ForgotPasswordPage() {
   return (
     <div className="w-full min-h-screen flex items-center justify-center bg-secondary p-4">
         <div className="mx-auto grid w-[400px] gap-6">
+            <Button variant="outline" asChild className="w-fit">
+                <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link>
+            </Button>
            <div className="grid gap-2 text-center">
               <Link href="/" className="flex items-center justify-center gap-2 font-bold text-2xl font-headline">
                   <Gem className="h-7 w-7 text-primary" />
@@ -113,3 +116,4 @@ export default function ForgotPasswordPage() {
     </div>
   );
 }
+

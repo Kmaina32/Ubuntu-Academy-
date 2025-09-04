@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Gem, Building } from 'lucide-react';
+import { Loader2, Gem, Building, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { getHeroData } from '@/lib/firebase-service';
 
@@ -81,6 +81,9 @@ export default function OrganizationLoginPage() {
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 xl:min-h-screen">
       <div className="flex items-center justify-center py-12">
         <div className="mx-auto grid w-[350px] gap-6">
+           <Button variant="outline" asChild className="w-fit">
+                <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link>
+            </Button>
            <div className="grid gap-2 text-center">
               <Link href="/" className="flex items-center justify-center gap-2 font-bold text-2xl font-headline">
                   <Gem className="h-7 w-7 text-primary" />
@@ -165,3 +168,4 @@ export default function OrganizationLoginPage() {
     </div>
   );
 }
+
