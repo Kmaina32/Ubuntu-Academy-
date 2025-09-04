@@ -9,7 +9,7 @@ import { ai } from '@/ai/genkit-instance';
 import { generateCourseContent } from './generate-course-content';
 import { createCourse, createProgram, createBundle } from '@/lib/firebase-service';
 import { z } from 'zod';
-import { ContentStrategyOutputSchema } from '@/lib/mock-data';
+import { ContentStrategyOutputSchema } from '@/lib/types';
 import { googleAI } from '@genkit-ai/googleai';
 
 // Schema for generating course ideas
