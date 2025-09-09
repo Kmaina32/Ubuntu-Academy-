@@ -78,7 +78,21 @@ Kenya is in the midst of a digital transformation. A young, ambitious, and tech-
 
 ---
 
-### Slide 8: Market Opportunity
+### Slide 8: Expanding the Vision: Future Revenue Streams
+
+**Building a Comprehensive Ed-Tech Ecosystem.**
+
+1.  **Premium AI Services:** Offer personalized one-on-one AI tutoring sessions or in-depth career path consultations as a paid add-on.
+2.  **Sponsored Courses:** Partner with corporations to create and host courses on their specific technologies, which they pay to feature on the platform.
+3.  **Talent Placement & Job Board:** Charge companies a fee to list targeted job openings for certified graduates or take a percentage of the salary for successful placements.
+4.  **Live Workshops & Bootcamps:** Host paid, intensive, multi-day live workshops on high-demand topics (e.g., "AI for Business Leaders").
+5.  **Official Project Reviews:** Offer a paid service where students can have their final course projects professionally reviewed and graded by an expert instructor for personalized feedback.
+6.  **"White-Label" Platform Licensing:** License the Ubuntu Academy platform to other educational institutions or large corporations for their internal training programs.
+7.  **Content Marketplace:** Allow verified, expert instructors to create and sell their own courses, with Ubuntu Academy taking a percentage of each sale.
+
+---
+
+### Slide 9: Market Opportunity
 
 **Tapping into a Multi-Billion Dollar Market.**
 
@@ -86,7 +100,7 @@ The E-learning market in Africa is projected to reach over **$2.5 Billion by 202
 
 ---
 
-### Slide 9: The Team
+### Slide 10: The Team
 
 **[Your Name/Team Name]**
 
@@ -96,7 +110,7 @@ We are a team of passionate educators, developers, and AI specialists dedicated 
 
 ---
 
-### Slide 10: The Ask & Vision
+### Slide 11: The Ask & Vision
 
 **Join Us in Building the Future of African Ed-Tech.**
 
