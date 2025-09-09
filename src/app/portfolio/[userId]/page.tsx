@@ -29,7 +29,7 @@ export default function PortfolioPage() {
             setLoading(true);
             try {
                 const userData = await getUserById(params.userId);
-                if (!userData) {
+                if (!userData || !userData.portfolio?.public) {
                     notFound();
                     return;
                 }

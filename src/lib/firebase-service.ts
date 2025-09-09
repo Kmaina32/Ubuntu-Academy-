@@ -98,19 +98,29 @@ export async function deleteCourse(courseId: string): Promise<void> {
 export async function saveUser(uid: string, userData: Partial<Omit<RegisteredUser, 'uid'>>): Promise<void> {
     const userRef = ref(db, `users/${uid}`);
     await update(userRef, userData);
+
+    // Denormalize data for public profiles
+    if (userData.portfolio) {
+        const publicProfileRef = ref(db, `publicProfiles/${uid}`);
+        if (userData.portfolio.public) {
+            await set(publicProfileRef, {
+                uid: uid,
+                displayName: userData.displayName,
+                photoURL: userData.photoURL,
+                summary: userData.portfolio.summary,
+                socialLinks: userData.portfolio.socialLinks,
+            });
+        } else {
+            await remove(publicProfileRef);
+        }
+    }
 }
 
 export async function getUserById(uid: string): Promise<RegisteredUser | null> {
     const userRef = ref(db, `users/${uid}`);
     const snapshot = await get(userRef);
     if (snapshot.exists()) {
-        const userData = snapshot.val();
-        // Allow reading if the portfolio is public
-        if (userData.portfolio?.public) {
-            return { uid, ...userData };
-        }
-        // Fallback to null if not public and no auth context (handled by rules)
-        return { uid, ...userData };
+        return { uid, ...snapshot.val() };
     }
     return null;
 }
@@ -160,7 +170,7 @@ export async function getAllUsers(): Promise<RegisteredUser[]> {
 }
 
 export async function getPublicProfiles(): Promise<RegisteredUser[]> {
-    const publicProfilesRef = query(ref(db, 'users'), orderByChild('portfolio/public'), equalTo(true));
+    const publicProfilesRef = ref(db, 'publicProfiles');
     const snapshot = await get(publicProfilesRef);
      if (snapshot.exists()) {
         const usersData = snapshot.val();

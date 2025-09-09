@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -12,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, User as UserIcon, Camera, Upload, Eye, Building, Share2 } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
@@ -154,6 +155,7 @@ export default function ProfilePage() {
     try {
         const downloadURL = await uploadImage(user.uid, file);
         await updateProfile(user, { photoURL: downloadURL });
+        await saveUser(user.uid, { photoURL: downloadURL });
         // Force a reload of the user to get the new photoURL
         await auth.currentUser?.reload();
         setUser(auth.currentUser);
@@ -203,6 +205,7 @@ export default function ProfilePage() {
         // Update the user record in the Realtime Database
         await saveUser(user.uid, {
             displayName: newDisplayName,
+            photoURL: user.photoURL,
             portfolio: {
                 summary: values.summary,
                 socialLinks: {
