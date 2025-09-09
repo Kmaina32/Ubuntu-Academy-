@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import 'quill/dist/quill.snow.css'; // Import Quill styles
+import { useRouter } from 'next/navigation';
 
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -302,4 +303,3 @@ export default function AdminDocumentsPage() {
     </div>
   );
 }
-
