@@ -1,4 +1,3 @@
-
 # Ubuntu Academy Pitch Deck
 
 ---
