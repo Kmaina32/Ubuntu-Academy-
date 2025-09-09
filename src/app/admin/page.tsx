@@ -13,7 +13,7 @@ import Link from "next/link";
 import { useToast } from '@/hooks/use-toast';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Line, ComposedChart, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { format, subDays, startOfDay } from 'date-fns';
+import { format, subDays, startOfDay, formatDistanceToNow } from 'date-fns';
 
 type AnalyticsData = {
   totalUsers: number;
