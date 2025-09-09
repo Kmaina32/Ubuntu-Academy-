@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useAuth } from '@/hooks/use-auth';
@@ -94,7 +95,9 @@ export default function OrganizationLayout({
         <SidebarInset>
             <Header />
              <main className="flex-grow bg-secondary/50 p-6 md:p-8">
-                {children}
+                 <div className="max-w-7xl mx-auto">
+                    {children}
+                 </div>
             </main>
             <Footer />
         </SidebarInset>
