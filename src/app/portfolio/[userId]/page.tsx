@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { notFound, useParams } from 'next/navigation';
-import { getUserById, getUserCourses, getCourseById } from '@/lib/firebase-service';
+import { getUserById, getUserCourses, getAllCourses } from '@/lib/firebase-service';
 import type { RegisteredUser, Course, UserCourse } from '@/lib/mock-data';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Award, Github, Linkedin, Loader2, Twitter } from 'lucide-react';
 import Link from 'next/link';
+import { slugify } from '@/lib/utils';
 
 type CourseWithDetails = UserCourse & Partial<Course>;
 
@@ -34,21 +35,21 @@ export default function PortfolioPage() {
                 }
                 setUser(userData);
 
-                const userCourses = await getUserCourses(params.userId);
-                const completed = userCourses.filter(c => c.certificateAvailable);
-                
-                const courseDetails = await Promise.all(
-                    completed.map(c => getCourseById(c.courseId))
-                );
+                const [allCourses, userCourses] = await Promise.all([
+                    getAllCourses(),
+                    getUserCourses(params.userId)
+                ]);
 
-                const courseMap = new Map(courseDetails.filter(Boolean).map(c => [c!.id, c]));
-
-                setCompletedCourses(
-                    completed.map(uc => ({
+                const courseMap = new Map(allCourses.map(c => [c.id, c]));
+                const completed = userCourses
+                    .filter(c => c.certificateAvailable)
+                    .map(uc => ({
                         ...uc,
                         ...courseMap.get(uc.courseId)
                     }))
-                );
+                    .filter(c => c.title); // Ensure the course details were found
+
+                setCompletedCourses(completed);
 
             } catch (error) {
                 console.error("Failed to load portfolio data", error);
@@ -117,11 +118,13 @@ export default function PortfolioPage() {
                                                             <p className="text-sm text-muted-foreground">Instructor: {course.instructor}</p>
                                                         </div>
                                                     </div>
-                                                    <Button asChild variant="outline">
-                                                        <Link href={`/dashboard/certificate/${course.courseId}`}>
-                                                            View Certificate
-                                                        </Link>
-                                                    </Button>
+                                                     {course.title && (
+                                                        <Button asChild variant="outline">
+                                                            <Link href={`/dashboard/certificate/${slugify(course.title)}`}>
+                                                                View Certificate
+                                                            </Link>
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
