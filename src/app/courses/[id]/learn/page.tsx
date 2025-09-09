@@ -10,8 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { CheckCircle, Lock, PlayCircle, Star, Loader2, ArrowLeft, Youtube, Video, AlertCircle, Menu, Bot, User, Send, MessageSquare, Volume2, Mic, MicOff, BrainCircuit, FileText, Sparkles, Pencil, VolumeX, Link as LinkIcon, Notebook as NotebookIcon, Download, Gem, MessageCircle, ArrowRight } from 'lucide-react';
-import { AppSidebar } from '@/components/Sidebar';
-import { Header } from '@/components/Header';
+import { AppSidebar } from '@/components/shared/Sidebar';
+import { Header } from '@/components/shared/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
@@ -29,7 +29,7 @@ import { Separator } from '@/components/ui/separator';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DiscussionForum } from '@/components/DiscussionForum';
+import { DiscussionForum } from '@/components/shared/DiscussionForum';
 import { slugify } from '@/lib/utils';
 
 
