@@ -4,7 +4,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import 'quill/dist/quill.snow.css'; // Import Quill styles
 import { useRouter } from 'next/navigation';
 
 import { Footer } from "@/components/Footer";
@@ -18,8 +17,12 @@ import { useAuth } from '@/hooks/use-auth';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-// Dynamically import ReactQuill to ensure it's only loaded on the client side
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+// Dynamically import QuillEditor to ensure it's only loaded on the client side
+const QuillEditor = dynamic(() => import('@/components/shared/QuillEditor'), {
+    ssr: false,
+    loading: () => <div className="flex justify-center items-center flex-grow"><Loader2 className="h-8 w-8 animate-spin" /></div>,
+});
+
 
 const ALL_DOC_TYPES: readonly DocType[] = ['PITCH_DECK.md', 'FRAMEWORK.md', 'API.md', 'RESOLUTION_TO_REGISTER_A_COMPANY.md', 'PATENT_APPLICATION.md'] as const;
 type DocType = (typeof ALL_DOC_TYPES)[number];
@@ -74,62 +77,25 @@ function DocumentEditor({ docType }: { docType: DocType }) {
     }
   }
 
- const formatPitchDeckForPdf = (markdownContent: string): string => {
-    const slides = markdownContent.split('### Slide');
+ const formatPitchDeckForPdf = (htmlContent: string): string => {
+    const slides = htmlContent.split(/<h[2]>/).slice(1); // Split by <h2> which we use for slide titles
     let html = '';
     slides.forEach((slideContent, index) => {
-        if (slideContent.trim() === '') return;
+        const titleMatch = slideContent.match(/(.*?)<\/h[2]>/);
+        const title = titleMatch ? titleMatch[1].replace(/Slide \d+:?/, '').trim() : `Slide ${index + 1}`;
+        const bodyContent = slideContent.substring(titleMatch ? titleMatch[0].length : 0);
 
-        const lines = slideContent.trim().split('\n');
-        const titleLine = lines[0] || '';
-        const titleMatch = titleLine.match(/^\s*\d+:\s*(.*)/);
-        const title = titleMatch ? titleMatch[1].trim() : `Slide ${index}`;
-        
-        const bodyContent = lines.slice(1).join('\n').trim();
-        
         html += `<div class="pdf-slide">`;
         html += `<div class="pdf-slide-header">${title}</div>`;
-        html += `<div class="pdf-slide-body">`;
-        // Convert markdown list items to html list items
-        const listItems = bodyContent.split('\n* ').map(item => item.trim()).filter(Boolean);
-        if (listItems.length > 0) {
-            html += '<ul>';
-            listItems.forEach(item => {
-                html += `<li>${item.replace(/^\*/, '').trim()}</li>`;
-            });
-            html += '</ul>';
-        } else {
-            html += `<p>${bodyContent.replace(/\*/g, '')}</p>`;
-        }
-        html += `</div>`;
-        html += `<div class="pdf-slide-footer">${index}</div>`;
+        html += `<div class="pdf-slide-body">${bodyContent}</div>`;
+        html += `<div class="pdf-slide-footer">${index + 1}</div>`;
         html += `</div>`;
     });
     return html;
  };
 
-const formatGeneralContent = (markdownContent: string): string => {
-    let html = markdownContent
-        .replace(/^# (.*?$)/gm, '<h1>$1</h1>')
-        .replace(/^## (.*?$)/gm, '<h2>$1</h2>')
-        .replace(/^### (.*?$)/gm, '<h3>$1</h3>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/`([^`]+)`/g, '<code>$1</code>')
-        .replace(/^\* (.*$)/gm, '<li>$1</li>');
-
-    // Wrap list items in <ul>
-    html = html.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
-    // Cleanup multiple <ul> tags
-    html = html.replace(/<\/ul>\s*<ul>/gs, '');
-
-    // Convert newlines to <br> for non-list and non-header content
-    return html.split('\n').map(line => {
-        if (line.match(/^<(h[1-3]|ul|li|strong|em|code|p)>/)) {
-            return line;
-        }
-        return line + '<br />';
-    }).join('');
+const formatGeneralContent = (htmlContent: string): string => {
+    return `<div class="pdf-general">${htmlContent}</div>`;
 };
 
 
@@ -140,63 +106,63 @@ const formatGeneralContent = (markdownContent: string): string => {
     const isPitchDeck = docType === 'PITCH_DECK.md';
     const contentToRender = isPitchDeck ? formatPitchDeckForPdf(content) : formatGeneralContent(content);
     
-    pdfRef.current.innerHTML = contentToRender;
-
+    // It's better to render into a dedicated, styled div
+    const renderDiv = document.createElement('div');
+    document.body.appendChild(renderDiv);
+    renderDiv.className = "pdf-render-area";
+    renderDiv.innerHTML = contentToRender;
+    
     const pdf = new jsPDF('p', 'pt', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    const margin = 40;
     
-    const pageCanvas = document.createElement('canvas');
-    const pageContext = pageCanvas.getContext('2d');
-    pageCanvas.width = pdfWidth;
-    pageCanvas.height = pdfHeight;
-    
-    const elements = isPitchDeck ? Array.from(pdfRef.current.children) as HTMLElement[] : [pdfRef.current];
-    
+    const elements = isPitchDeck 
+        ? Array.from(renderDiv.querySelectorAll('.pdf-slide'))
+        : [renderDiv.querySelector('.pdf-general')];
+
     for (let i = 0; i < elements.length; i++) {
-        const element = elements[i];
+        const element = elements[i] as HTMLElement;
+        if (!element) continue;
         if (i > 0) pdf.addPage();
         
-        await html2canvas(element, { scale: 2 }).then(canvas => {
+        await html2canvas(element, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
             const imgData = canvas.toDataURL('image/png');
-            const imgWidth = pdfWidth - (margin * 2);
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const imgProps = pdf.getImageProperties(imgData);
+            const ratio = imgProps.height / imgProps.width;
             
-            pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+            let imgWidth = pdfWidth - 80;
+            let imgHeight = imgWidth * ratio;
+
+            if (imgHeight > pdfHeight - 80) {
+                imgHeight = pdfHeight - 80;
+                imgWidth = imgHeight / ratio;
+            }
+            
+            const x = (pdfWidth - imgWidth) / 2;
+            const y = (pdfHeight - imgHeight) / 2;
+            
+            pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
         });
     }
 
+    document.body.removeChild(renderDiv); // Clean up the temporary div
     pdf.save(`${docType.replace('.md','')}.pdf`);
-    pdfRef.current.innerHTML = ''; // Clean up
     setIsDownloading(false);
   };
   
   return (
     <div className="space-y-4 h-full flex flex-col">
-        {/* Hidden div for PDF rendering */}
-        <div ref={pdfRef} className="pdf-render-area" aria-hidden="true" />
-      {isLoading ? (
-        <div className="flex justify-center items-center flex-grow"><Loader2 className="h-8 w-8 animate-spin" /></div>
-      ) : (
+        {/* Hidden div for PDF rendering styles */}
+        <div ref={pdfRef} aria-hidden="true" />
+      
         <div className="bg-background rounded-md border min-h-[50vh] flex-grow">
-          <ReactQuill
-            theme="snow"
+          <QuillEditor
             value={content}
             onChange={setContent}
-            className="h-full"
-            modules={{
-                toolbar: [
-                    [{ 'header': [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{'list': 'ordered'}, {'list': 'bullet'}],
-                    ['link'],
-                    ['clean']
-                ],
-            }}
+            isLoading={isLoading}
           />
         </div>
-      )}
+      
       <div className="flex justify-between items-center flex-shrink-0">
         <div className="flex gap-2">
             <Button onClick={handleGenerate} disabled={isGenerating || isLoading}>
@@ -286,38 +252,70 @@ export default function AdminDocumentsPage() {
                 top: 0;
                 opacity: 0;
                 color: black;
+                background-color: white;
+                font-family: 'PT Sans', sans-serif;
             }
             .pdf-slide {
                 width: 842pt; /* A4 landscape width */
                 height: 595pt; /* A4 landscape height */
                 padding: 40pt;
-                background-color: white;
                 display: flex;
                 flex-direction: column;
-                font-family: sans-serif;
                 page-break-after: always;
+                box-sizing: border-box;
             }
              .pdf-slide-header {
-                font-size: 24pt;
+                font-size: 28pt;
                 font-weight: bold;
                 color: #8C3DD9;
                 padding-bottom: 20pt;
                 border-bottom: 2pt solid #8C3DD9;
+                text-align: left;
             }
              .pdf-slide-body {
                 flex-grow: 1;
                 padding-top: 20pt;
-                font-size: 14pt;
+                font-size: 16pt;
                 line-height: 1.6;
+                text-align: left;
             }
             .pdf-slide-body ul {
                 list-style-type: disc;
-                padding-left: 20pt;
+                padding-left: 25pt;
+            }
+            .pdf-slide-body li {
+                margin-bottom: 12pt;
             }
              .pdf-slide-footer {
                 text-align: right;
                 font-size: 10pt;
                 color: #666;
+            }
+            .pdf-general {
+                width: 595pt; /* A4 portrait width */
+                padding: 40pt;
+                font-size: 12pt;
+                line-height: 1.5;
+            }
+            .pdf-general h1, .pdf-general h2, .pdf-general h3 {
+                font-family: 'PT Sans', sans-serif;
+                font-weight: bold;
+                margin-bottom: 12pt;
+                margin-top: 20pt;
+            }
+            .pdf-general h1 { font-size: 24pt; }
+            .pdf-general h2 { font-size: 18pt; }
+            .pdf-general h3 { font-size: 14pt; }
+            .pdf-general p { margin-bottom: 10pt; }
+            .pdf-general ul { padding-left: 20pt; margin-bottom: 10pt; }
+            .pdf-general li { margin-bottom: 5pt; }
+            .pdf-general strong { font-weight: bold; }
+            .pdf-general em { font-style: italic; }
+            .pdf-general code { 
+                font-family: monospace; 
+                background-color: #f0f0f0; 
+                padding: 2px 4px; 
+                border-radius: 3px;
             }
         `}</style>
     </div>
