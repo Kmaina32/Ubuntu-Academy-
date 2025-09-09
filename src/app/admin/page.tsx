@@ -13,7 +13,7 @@ import Link from "next/link";
 import { useToast } from '@/hooks/use-toast';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Line, ComposedChart, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { format, subDays, startOfDay, formatDistanceToNow } from 'date-fns';
+import { format, subDays, startOfDay, formatDistanceToNow, parseISO } from 'date-fns';
 
 type AnalyticsData = {
   totalUsers: number;
@@ -56,9 +56,12 @@ export default function AdminDashboardPage() {
                 const thirtyDaysAgo = subDays(new Date(), 30);
 
                  users.forEach(user => {
-                    const signupDate = user.createdAt ? new Date(user.createdAt) : new Date();
+                    const signupDate = user.createdAt ? parseISO(user.createdAt) : new Date();
                      if (signupDate > thirtyDaysAgo) {
-                         recentActivities.push({ type: 'signup', text: `${user.displayName} signed up`, time: signupDate.toISOString() });
+                         recentActivities.push({ type: 'signup', text: `${user.displayName || 'A new user'} signed up`, time: signupDate.toISOString() });
+                     }
+                     if (user.lastSeen && new Date(user.lastSeen) > thirtyDaysAgo) {
+                         recentActivities.push({ type: 'lastSeen', text: `${user.displayName || 'A user'} was last seen`, time: new Date(user.lastSeen).toISOString() });
                      }
 
                     const signupDateKey = format(signupDate, 'yyyy-MM-dd');
@@ -117,12 +120,6 @@ export default function AdminDashboardPage() {
       <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
         <div className="flex items-center justify-between mb-8">
             <h1 className="text-3xl font-bold font-headline">Admin Dashboard</h1>
-             <Button asChild>
-                <Link href="/admin/courses/create">
-                    <FilePlus2 className="mr-2 h-4 w-4" />
-                    Create Course
-                </Link>
-            </Button>
         </div>
         
         {loading ? (
