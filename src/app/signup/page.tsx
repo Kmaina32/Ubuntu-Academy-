@@ -149,7 +149,7 @@ export default function SignupPage() {
   return (
      <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 xl:min-h-screen">
        <div className="flex items-center justify-center py-12">
-        <div className="mx-auto grid w-[350px] gap-6">
+        <div className="w-[350px] space-y-6">
             <Button variant="outline" asChild className="w-fit">
                 <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link>
             </Button>
@@ -297,4 +297,3 @@ export default function SignupPage() {
     </div>
   );
 }
-

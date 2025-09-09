@@ -48,7 +48,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="w-full min-h-screen flex items-center justify-center bg-secondary p-4">
-        <div className="mx-auto grid w-[400px] gap-6">
+        <div className="w-[400px] space-y-6">
             <Button variant="outline" asChild className="w-fit">
                 <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link>
             </Button>
@@ -116,4 +116,3 @@ export default function ForgotPasswordPage() {
     </div>
   );
 }
-
