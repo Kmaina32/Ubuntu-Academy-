@@ -3,17 +3,14 @@
 
 import { useEffect, useState } from 'react';
 import { Footer } from "@/components/Footer";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { Course, RegisteredUser, UserCourse } from "@/lib/mock-data";
-import { getAllCourses, getAllUsers, getSubmissionsByUserId } from '@/lib/firebase-service';
-import { FilePlus2, Pencil, Trash2, Loader2, Search, Users, BookOpen, BarChart3, LineChart, Activity, UserPlus, DollarSign } from "lucide-react";
-import Link from "next/link";
-import { useToast } from '@/hooks/use-toast';
+import { Users, BookOpen, UserPlus, DollarSign, BarChart3, Activity } from "lucide-react";
+import type { Course, RegisteredUser, UserCourse } from '@/lib/mock-data';
+import { getAllCourses, getAllUsers } from '@/lib/firebase-service';
+import { Loader2 } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Line, ComposedChart, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { format, subDays, startOfDay, formatDistanceToNow, parseISO } from 'date-fns';
+import { format, subDays, parseISO, formatDistanceToNow } from 'date-fns';
 
 type AnalyticsData = {
   totalUsers: number;
@@ -33,6 +30,10 @@ const chartConfig = {
   signups: {
     label: "Sign-ups",
     color: "hsl(var(--accent))",
+  },
+  trend: {
+    label: "Trend",
+    color: "hsl(var(--foreground))",
   }
 };
 
@@ -174,8 +175,8 @@ export default function AdminDashboardPage() {
                   </Card>
             </div>
             
-            <div className="grid gap-6 lg:grid-cols-3">
-                 <Card className="lg:col-span-2">
+            <div className="grid gap-6 lg:grid-cols-5">
+                 <Card className="lg:col-span-3">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><BarChart3 /> User Signups (Last 30 Days)</CardTitle>
                     </CardHeader>
@@ -188,11 +189,12 @@ export default function AdminDashboardPage() {
                                 <Tooltip content={<ChartTooltipContent />} />
                                 <Legend />
                                 <Bar dataKey="count" fill="var(--color-signups)" radius={4} name="Signups" />
+                                <Line type="monotone" dataKey="count" stroke="var(--color-trend)" strokeWidth={2} name="Trend" dot={false} />
                             </ComposedChart>
                         </ChartContainer>
                     </CardContent>
                 </Card>
-                 <Card>
+                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Activity /> Recent Activity</CardTitle>
                     </CardHeader>
@@ -212,6 +214,24 @@ export default function AdminDashboardPage() {
                        </div>
                     </CardContent>
                  </Card>
+            </div>
+            <div className="grid gap-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Top 5 Enrolled Courses</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+                        <BarChart data={analyticsData.courseEnrollments} layout="vertical" margin={{ left: 150 }}>
+                          <XAxis type="number" hide />
+                          <YAxis dataKey="title" type="category" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} width={200} />
+                          <CartesianGrid horizontal={false} />
+                           <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                          <Bar dataKey="enrollments" fill="var(--color-enrollments)" radius={4} />
+                        </BarChart>
+                      </ChartContainer>
+                    </CardContent>
+                  </Card>
             </div>
           </div>
         )}
