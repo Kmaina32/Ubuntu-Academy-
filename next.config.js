@@ -1,4 +1,5 @@
 
+
 const nextConfig = {
   /* config options here */
   typescript: {
@@ -31,6 +32,7 @@ const nextConfig = {
     'long',
     'protobufjs',
     'zod',
+    'axios'
   ],
 };
 

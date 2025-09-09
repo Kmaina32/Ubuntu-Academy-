@@ -21,9 +21,11 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getDatabase(app);
 const storage = getStorage(app);
-const remoteConfig = typeof window !== 'undefined' ? getRemoteConfig(app) : null;
+let remoteConfig: any = null;
 
-if (remoteConfig) {
+if (typeof window !== 'undefined') {
+    remoteConfig = getRemoteConfig(app);
+    remoteConfig.settings.minimumFetchIntervalMillis = 3600000;
     remoteConfig.defaultConfig = {
         "hero_title": "Unlock Your Potential.",
         "hero_subtitle": "Quality, affordable courses designed for the Kenyan market."
