@@ -10,7 +10,7 @@ import { getAllCourses, getAllUsers } from '@/lib/firebase-service';
 import { Loader2 } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Line, ComposedChart, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { format, subDays, parseISO, formatDistanceToNowStrict } from 'date-fns';
+import { format, subDays, parseISO, isValid, formatDistanceToNow } from 'date-fns';
 
 type AnalyticsData = {
   totalUsers: number;
@@ -66,7 +66,9 @@ export default function AdminDashboardPage() {
                 const thirtyDaysAgo = subDays(new Date(), 30);
 
                  users.forEach(user => {
-                    const signupDate = user.createdAt ? parseISO(user.createdAt) : new Date();
+                    const signupDateISO = user.createdAt ? parseISO(user.createdAt) : new Date();
+                    const signupDate = isValid(signupDateISO) ? signupDateISO : new Date();
+
                      if (signupDate > thirtyDaysAgo) {
                          recentActivities.push({ type: 'signup', text: `${user.displayName || 'A new user'} signed up`, time: signupDate.toISOString() });
                      }
@@ -223,7 +225,7 @@ export default function AdminDashboardPage() {
                                    </div>
                                    <div>
                                        <p className="text-sm font-medium">{activity.text}</p>
-                                       <p className="text-xs text-muted-foreground">{formatDistanceToNowStrict(new Date(activity.time), { addSuffix: true })}</p>
+                                       <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(activity.time), { addSuffix: true })}</p>
                                    </div>
                                </div>
                            ))}
