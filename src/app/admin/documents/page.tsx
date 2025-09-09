@@ -73,39 +73,43 @@ function DocumentEditor({ docType }: { docType: DocType }) {
     if (!pdfRef.current) return;
     setIsDownloading(true);
 
-    const canvas = await html2canvas(pdfRef.current, { scale: 2, backgroundColor: null });
-    const imgData = canvas.toDataURL('image/png');
-    
     const pdf = new jsPDF('p', 'pt', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
+    const pageNodes = pdfRef.current.querySelectorAll('.pdf-page');
 
-    const imgWidth = canvas.width;
-    const imgHeight = canvas.height;
-    const ratio = imgWidth / imgHeight;
+    for (let i = 0; i < pageNodes.length; i++) {
+        const page = pageNodes[i] as HTMLElement;
+        const canvas = await html2canvas(page, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+        });
+        const imgData = canvas.toDataURL('image/png');
 
-    let finalWidth = pdfWidth - 80; // with margins
-    let finalHeight = finalWidth / ratio;
-    
-    if (finalHeight > pdfHeight - 80) {
-        finalHeight = pdfHeight - 80;
-        finalWidth = finalHeight * ratio;
+        if (i > 0) {
+            pdf.addPage();
+        }
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
     }
 
-    const x = (pdfWidth - finalWidth) / 2;
-    const y = (pdfHeight - finalHeight) / 2;
-    
-    pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
     pdf.save(`UbuntuAcademy_${docType.replace('.md', '')}.pdf`);
     setIsDownloading(false);
   };
   
-  const formattedContent = content.replace(/### (.*?)\n/g, '<h3 class="text-xl font-bold mt-4 mb-2">$1</h3>')
-                               .replace(/## (.*?)\n/g, '<h2 class="text-2xl font-bold mt-6 mb-3 border-b pb-2">$1</h2>')
-                               .replace(/# (.*?)\n/g, '<h1 class="text-3xl font-bold mt-8 mb-4">$1</h1>')
-                               .replace(/\* \*\*(.*?)\*\*/g, '<li><strong>$1</strong></li>')
-                               .replace(/\* (.*?)\n/g, '<li>$1</li>')
-                               .replace(/\n/g, '<br />');
+  const formattedContent = content
+    .replace(/^(#+) (.*$)/gim, (match, hashes, content) => {
+        const level = hashes.length;
+        if (level === 1) return `<h1 class="text-3xl font-bold mt-8 mb-4">${content}</h1>`;
+        if (level === 2) return `<h2 class="text-2xl font-bold mt-6 mb-3 border-b pb-2">${content}</h2>`;
+        if (level === 3) return `<h3 class="text-xl font-bold mt-4 mb-2">${content}</h3>`;
+        return `<h${level}>${content}</h${level}>`;
+    })
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code class="bg-gray-200 text-red-600 px-1 rounded">/$1/</code>')
+    .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc">$1</li>')
+    .replace(/\n/g, '<br />');
 
 
   return (
@@ -139,21 +143,32 @@ function DocumentEditor({ docType }: { docType: DocType }) {
 
        {/* Hidden element for PDF generation */}
         <div className="absolute -left-[9999px] top-0 opacity-0" aria-hidden="true">
-            <div ref={pdfRef} className="p-10 bg-white w-[595px] text-black font-body">
-                <div className="border-b-2 border-primary pb-4 mb-4 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <Gem className="h-8 w-8 text-primary" />
-                        <span className="font-bold text-xl font-headline">Ubuntu Academy</span>
+            <div ref={pdfRef}>
+                <div 
+                    className="pdf-page bg-white text-black font-body"
+                    style={{ 
+                        width: '595pt', 
+                        height: '842pt', 
+                        padding: '40pt',
+                        display: 'flex',
+                        flexDirection: 'column',
+                    }}
+                >
+                    <div className="border-b-2 border-primary pb-4 mb-4 flex justify-between items-center flex-shrink-0">
+                        <div className="flex items-center gap-2">
+                            <Gem className="h-8 w-8 text-primary" />
+                            <span className="font-bold text-xl font-headline">Ubuntu Academy</span>
+                        </div>
+                        <div className="text-right text-xs">
+                            <p className="font-semibold">{docType.replace('.md', ' Document')}</p>
+                            <p>{format(new Date(), 'PPP')}</p>
+                        </div>
                     </div>
-                    <div className="text-right text-xs">
-                        <p className="font-semibold">{docType.replace('.md', ' Document')}</p>
-                        <p>{format(new Date(), 'PPP')}</p>
-                    </div>
+                    <div className="prose max-w-none flex-grow" dangerouslySetInnerHTML={{ __html: formattedContent }} />
+                     <p className="text-center text-xs text-gray-400 mt-auto pt-4 flex-shrink-0">
+                        Page <span className="page-number">1</span> of <span className="total-pages">1</span> - &copy; {new Date().getFullYear()} Ubuntu Academy. All rights reserved.
+                    </p>
                 </div>
-                <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: formattedContent }} />
-                <p className="text-center text-xs text-gray-400 mt-6 absolute bottom-4 left-0 right-0">
-                    &copy; {new Date().getFullYear()} Ubuntu Academy. All rights reserved.
-                </p>
             </div>
         </div>
     </div>
