@@ -100,23 +100,47 @@ function DocumentEditor({ docType }: { docType: DocType }) {
   };
   
 const formatGeneralContent = (text: string) => {
-  return text
-    .replace(/^(#+) (.*$)/gim, (match, hashes, content) => {
-        const level = hashes.length;
-        const classes = {
-            1: "text-3xl font-bold mt-8 mb-4",
-            2: "text-2xl font-bold mt-6 mb-3 border-b pb-2",
-            3: "text-xl font-bold mt-4 mb-2",
-        };
-        // @ts-ignore
-        const style = classes[level] || `text-lg font-bold`;
-        return `<h${level} class="${style}">${content}</h${level}>`;
-    })
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/`([^`]+)`/g, '<code class="bg-gray-200 text-red-600 px-1 rounded">/$1/</code>')
-    .replace(/^- (.*$)/gim, '<li class="ml-6 list-disc">$1</li>')
-    .replace(/\n/g, '<br />');
+    let html = text
+        .replace(/^(#+) (.*$)/gim, (match, hashes, content) => {
+            const level = hashes.length;
+            const classes = {
+                1: "text-3xl font-bold mt-8 mb-4",
+                2: "text-2xl font-bold mt-6 mb-3 border-b pb-2",
+                3: "text-xl font-bold mt-4 mb-2",
+            };
+            // @ts-ignore
+            const style = classes[level] || 'text-lg font-bold';
+            return `<h${level} class="${style}">${content}</h${level}>`;
+        })
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code class="bg-gray-200 text-red-600 px-1 rounded">/$1/</code>');
+
+    // Handle lists - must be done carefully with paragraphs
+    const lines = html.split('\n');
+    let inList = false;
+    html = lines.map(line => {
+        if (line.trim().startsWith('- ')) {
+            const listItem = `<li class="ml-6 list-disc">${line.trim().substring(2)}</li>`;
+            if (!inList) {
+                inList = true;
+                return `<ul>${listItem}`;
+            }
+            return listItem;
+        } else {
+            if (inList) {
+                inList = false;
+                return `</ul><p>${line}</p>`;
+            }
+            return `<p>${line}</p>`;
+        }
+    }).join('');
+
+    if (inList) {
+        html += '</ul>';
+    }
+
+    return html.replace(/<p><\/p>/g, ''); // Clean up empty paragraphs
 };
 
 const formatPitchDeckContent = (text: string) => {
