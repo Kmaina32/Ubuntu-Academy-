@@ -25,10 +25,16 @@ import { getTutorSettings } from '@/lib/firebase-service';
 import type { TutorSettings } from '@/lib/firebase-service';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { slugify } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const careerGoalSchema = z.object({
   goal: z.string().min(10, 'Please describe your career goal in more detail.'),
 });
+
+type HistoryItem = {
+    role: 'user' | 'model';
+    content: string;
+};
 
 export default function CareerCoachPage() {
   const { user, loading: authLoading, isAiConfigured } = useAuth();
@@ -38,7 +44,7 @@ export default function CareerCoachPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [learningPath, setLearningPath] = useState<LearningPathOutput | null>(null);
   const [tutorSettings, setTutorSettings] = useState<TutorSettings | null>(null);
-
+  const [conversationHistory, setConversationHistory] = useState<HistoryItem[]>([]);
 
   useEffect(() => {
     getTutorSettings().then(setTutorSettings);
@@ -54,9 +60,21 @@ export default function CareerCoachPage() {
   const onSubmit = async (values: z.infer<typeof careerGoalSchema>) => {
     setIsLoading(true);
     setLearningPath(null);
+
+    const newUserMessage: HistoryItem = { role: 'user', content: values.goal };
+
     try {
-      const result = await getLearningPath({ careerGoal: values.goal });
+      const result = await getLearningPath({
+        careerGoal: values.goal,
+        history: [...conversationHistory, newUserMessage],
+      });
       setLearningPath(result);
+      const modelResponse: HistoryItem = {
+        role: 'model',
+        content: `Generated a learning path with introduction: "${result.introduction}"`,
+      };
+      setConversationHistory(prev => [...prev, newUserMessage, modelResponse]);
+      form.reset();
     } catch (error) {
       console.error('AI Career Coach failed:', error);
       toast({
@@ -140,6 +158,37 @@ export default function CareerCoachPage() {
                     </CardContent>
                 </Card>
                )}
+                
+              {conversationHistory.length > 0 && (
+                <div className="mb-8">
+                    <h3 className="text-lg font-semibold mb-2">Conversation History</h3>
+                    <Card>
+                        <CardContent className="p-4 max-h-48">
+                            <ScrollArea className="h-full">
+                                <div className="space-y-4 text-sm">
+                                    {conversationHistory.map((item, index) => (
+                                        <div key={index} className={`flex items-start gap-2 ${item.role === 'user' ? 'text-right justify-end' : ''}`}>
+                                            {item.role === 'model' && (
+                                                <Avatar className="h-6 w-6 border flex-shrink-0">
+                                                    <AvatarImage src={tutorSettings?.avatarUrl} />
+                                                    <AvatarFallback><Bot/></AvatarFallback>
+                                                </Avatar>
+                                            )}
+                                            <p className={`p-2 rounded-md ${item.role === 'user' ? 'bg-primary/10' : 'bg-secondary'}`}>{item.content}</p>
+                                            {item.role === 'user' && (
+                                                <Avatar className="h-6 w-6 border flex-shrink-0">
+                                                    <AvatarImage src={user?.photoURL || ''} />
+                                                    <AvatarFallback>U</AvatarFallback>
+                                                </Avatar>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </ScrollArea>
+                        </CardContent>
+                    </Card>
+                </div>
+              )}
 
               {isLoading && (
                 <div className="text-center py-10">
