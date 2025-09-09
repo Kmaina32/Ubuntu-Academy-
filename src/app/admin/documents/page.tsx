@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
@@ -17,12 +16,11 @@ import { useAuth } from '@/hooks/use-auth';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-// Dynamically import QuillEditor to ensure it's only loaded on the client side
-const QuillEditor = dynamic(() => import('@/components/shared/QuillEditor'), {
+// Dynamically import the new RichTextEditor to ensure it's only loaded on the client side
+const RichTextEditor = dynamic(() => import('@/components/shared/RichTextEditor'), {
     ssr: false,
     loading: () => <div className="flex justify-center items-center flex-grow"><Loader2 className="h-8 w-8 animate-spin" /></div>,
 });
-
 
 const ALL_DOC_TYPES: readonly DocType[] = ['PITCH_DECK.md', 'FRAMEWORK.md', 'API.md', 'RESOLUTION_TO_REGISTER_A_COMPANY.md', 'PATENT_APPLICATION.md'] as const;
 type DocType = (typeof ALL_DOC_TYPES)[number];
@@ -78,10 +76,10 @@ function DocumentEditor({ docType }: { docType: DocType }) {
   }
 
  const formatPitchDeckForPdf = (htmlContent: string): string => {
-    const slides = htmlContent.split(/<h[2]>/).slice(1); // Split by <h2> which we use for slide titles
+    const slides = htmlContent.split(/<h2>/).slice(1);
     let html = '';
     slides.forEach((slideContent, index) => {
-        const titleMatch = slideContent.match(/(.*?)<\/h[2]>/);
+        const titleMatch = slideContent.match(/(.*?)<\/h2>/);
         const title = titleMatch ? titleMatch[1].replace(/Slide \d+:?/, '').trim() : `Slide ${index + 1}`;
         const bodyContent = slideContent.substring(titleMatch ? titleMatch[0].length : 0);
 
@@ -95,7 +93,15 @@ function DocumentEditor({ docType }: { docType: DocType }) {
  };
 
 const formatGeneralContent = (htmlContent: string): string => {
-    return `<div class="pdf-general">${htmlContent}</div>`;
+    // A simple regex to handle most markdown-like tags from the new editor
+    const formatted = htmlContent
+        .replace(/<b>(.*?)<\/b>/g, '<strong>$1</strong>')
+        .replace(/<i>(.*?)<\/i>/g, '<em>$1</em>')
+        .replace(/<ul>/g, '<ul style="list-style-type: disc; padding-left: 25pt;">')
+        .replace(/<ol>/g, '<ol style="list-style-type: decimal; padding-left: 25pt;">')
+        .replace(/<li>/g, '<li style="margin-bottom: 8pt;">');
+
+    return `<div class="pdf-general">${formatted}</div>`;
 };
 
 
@@ -106,7 +112,6 @@ const formatGeneralContent = (htmlContent: string): string => {
     const isPitchDeck = docType === 'PITCH_DECK.md';
     const contentToRender = isPitchDeck ? formatPitchDeckForPdf(content) : formatGeneralContent(content);
     
-    // It's better to render into a dedicated, styled div
     const renderDiv = document.createElement('div');
     document.body.appendChild(renderDiv);
     renderDiv.className = "pdf-render-area";
@@ -145,21 +150,19 @@ const formatGeneralContent = (htmlContent: string): string => {
         });
     }
 
-    document.body.removeChild(renderDiv); // Clean up the temporary div
+    document.body.removeChild(renderDiv);
     pdf.save(`${docType.replace('.md','')}.pdf`);
     setIsDownloading(false);
   };
   
   return (
     <div className="space-y-4 h-full flex flex-col">
-        {/* Hidden div for PDF rendering styles */}
-        <div ref={pdfRef} aria-hidden="true" />
+      <div ref={pdfRef} aria-hidden="true" />
       
         <div className="bg-background rounded-md border min-h-[50vh] flex-grow">
-          <QuillEditor
+          <RichTextEditor
             value={content}
             onChange={setContent}
-            isLoading={isLoading}
           />
         </div>
       
@@ -193,8 +196,6 @@ export default function AdminDocumentsPage() {
         if (!authLoading && !isSuperAdmin) {
             router.push('/admin');
         }
-        // This is a stand-in for a dynamic fetch, which would require Node FS access not available here.
-        // In a real scenario, this list would be fetched from the server.
         setAllDocs([...ALL_DOC_TYPES]);
     }, [isSuperAdmin, authLoading, router]);
 
@@ -256,8 +257,8 @@ export default function AdminDocumentsPage() {
                 font-family: 'PT Sans', sans-serif;
             }
             .pdf-slide {
-                width: 842pt; /* A4 landscape width */
-                height: 595pt; /* A4 landscape height */
+                width: 842pt;
+                height: 595pt;
                 padding: 40pt;
                 display: flex;
                 flex-direction: column;
@@ -265,49 +266,49 @@ export default function AdminDocumentsPage() {
                 box-sizing: border-box;
             }
              .pdf-slide-header {
-                font-size: 28pt;
+                font-size: 24pt;
                 font-weight: bold;
                 color: #8C3DD9;
-                padding-bottom: 20pt;
+                padding-bottom: 15pt;
                 border-bottom: 2pt solid #8C3DD9;
                 text-align: left;
             }
              .pdf-slide-body {
                 flex-grow: 1;
-                padding-top: 20pt;
-                font-size: 16pt;
-                line-height: 1.6;
+                padding-top: 15pt;
+                font-size: 14pt;
+                line-height: 1.5;
                 text-align: left;
             }
             .pdf-slide-body ul {
                 list-style-type: disc;
-                padding-left: 25pt;
+                padding-left: 20pt;
             }
             .pdf-slide-body li {
-                margin-bottom: 12pt;
+                margin-bottom: 10pt;
             }
              .pdf-slide-footer {
                 text-align: right;
-                font-size: 10pt;
+                font-size: 9pt;
                 color: #666;
             }
             .pdf-general {
-                width: 595pt; /* A4 portrait width */
+                width: 595pt;
                 padding: 40pt;
-                font-size: 12pt;
+                font-size: 11pt;
                 line-height: 1.5;
             }
             .pdf-general h1, .pdf-general h2, .pdf-general h3 {
                 font-family: 'PT Sans', sans-serif;
                 font-weight: bold;
-                margin-bottom: 12pt;
-                margin-top: 20pt;
+                margin-bottom: 11pt;
+                margin-top: 18pt;
             }
-            .pdf-general h1 { font-size: 24pt; }
-            .pdf-general h2 { font-size: 18pt; }
-            .pdf-general h3 { font-size: 14pt; }
-            .pdf-general p { margin-bottom: 10pt; }
-            .pdf-general ul { padding-left: 20pt; margin-bottom: 10pt; }
+            .pdf-general h1 { font-size: 22pt; }
+            .pdf-general h2 { font-size: 16pt; }
+            .pdf-general h3 { font-size: 13pt; }
+            .pdf-general p { margin-bottom: 9pt; }
+            .pdf-general ul { padding-left: 20pt; margin-bottom: 9pt; }
             .pdf-general li { margin-bottom: 5pt; }
             .pdf-general strong { font-weight: bold; }
             .pdf-general em { font-style: italic; }
