@@ -196,14 +196,17 @@ export async function getHeroData(): Promise<HeroData> {
   const dbData = snapshot.exists() ? snapshot.val() : {};
   let remoteData = { title: 'Unlock Your Potential.', subtitle: 'Quality, affordable courses designed for the Kenyan market.' };
 
+  // This check ensures Remote Config is only used on the client-side
   if (typeof window !== 'undefined') {
     try {
       const remoteConfig = getRemoteConfig(app);
+      // Set a timeout for the fetch operation to prevent long delays
+      remoteConfig.settings.fetchTimeoutMillis = 3000;
       await fetchAndActivate(remoteConfig);
       remoteData.title = getString(remoteConfig, 'hero_title') || remoteData.title;
       remoteData.subtitle = getString(remoteConfig, 'hero_subtitle') || remoteData.subtitle;
     } catch (error) {
-      console.error("Remote Config fetch failed, using defaults", error);
+      console.warn("Remote Config fetch failed, using defaults. This is expected if Remote Config API is not enabled.", error);
     }
   }
 
@@ -723,3 +726,4 @@ export async function deleteInvitation(inviteId: string): Promise<void> {
     const inviteRef = ref(db, `invitations/${inviteId}`);
     await remove(inviteRef);
 }
+
