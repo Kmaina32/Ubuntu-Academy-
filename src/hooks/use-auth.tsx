@@ -10,6 +10,7 @@ import {
   ReactNode,
   Dispatch,
   SetStateAction,
+  useCallback,
 } from 'react';
 import {
   User,
@@ -34,6 +35,7 @@ const SUPER_ADMIN_ORG_NAME = "Ubuntu Academy";
 
 interface AuthContextType {
   user: User | null;
+  dbUser: RegisteredUser | null;
   setUser: Dispatch<SetStateAction<User | null>>;
   members: RegisteredUser[];
   setMembers: Dispatch<SetStateAction<RegisteredUser[]>>;
@@ -55,109 +57,90 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode; isAiConfigured: boolean }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [dbUser, setDbUser] = useState<RegisteredUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  const [isOrganizationAdmin, setIsOrganizationAdmin] = useState(false);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [members, setMembers] = useState<RegisteredUser[]>([]);
   const { toast } = useToast();
+  
+  const isSuperAdmin = user?.uid === ADMIN_UID;
+  const isAdmin = dbUser?.isAdmin && (!dbUser.adminExpiresAt || new Date(dbUser.adminExpiresAt) > new Date()) || isSuperAdmin;
+  const isOrganizationAdmin = dbUser?.isOrganizationAdmin || false;
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      const isSuper = user?.uid === ADMIN_UID;
-      setIsSuperAdmin(isSuper);
-      if(isSuper) setIsAdmin(true); // Super admin is always an admin
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (!user) {
-        setIsAdmin(false);
-        setIsOrganizationAdmin(false);
-        setOrganization(null);
-        setMembers([]);
-        return;
+  const fetchUserData = useCallback(async (user: User) => {
+    const userProfile = await getUserById(user.uid);
+    setDbUser(userProfile);
+
+    let orgId = userProfile?.organizationId;
+    let orgData: Organization | null = null;
+    
+    if (user.uid === ADMIN_UID) {
+        orgData = await getOrganizationByOwnerId(user.uid);
+        if (!orgData) {
+            const newOrgId = await createOrganization({
+                name: SUPER_ADMIN_ORG_NAME,
+                ownerId: user.uid,
+                createdAt: new Date().toISOString(),
+                subscriptionTier: 'pro',
+                subscriptionExpiresAt: null,
+                memberLimit: 999
+            });
+            orgData = { id: newOrgId, name: SUPER_ADMIN_ORG_NAME, ownerId: user.uid, createdAt: new Date().toISOString(), subscriptionTier: 'pro', subscriptionExpiresAt: null, memberLimit: 999 };
+        }
+    } else if (orgId) {
+        const orgsRef = ref(db, `organizations/${orgId}`);
+        const snapshot = await get(orgsRef);
+        if(snapshot.exists()) {
+            orgData = { id: orgId, ...snapshot.val() };
+        }
     }
     
-    const isSuper = user.uid === ADMIN_UID;
-    setIsSuperAdmin(isSuper);
+    setOrganization(orgData);
 
-    const userStatusRef = ref(db, `/users/${user.uid}`);
-    
-    const connectedRef = ref(db, '.info/connected');
-    const unsubscribePresence = onValue(connectedRef, (snap) => {
-      if (snap.val() === true) {
-        update(userStatusRef, { isOnline: true });
-        
-        onDisconnect(userStatusRef).update({
-          isOnline: false,
-          lastSeen: serverTimestamp(),
-        });
-      }
-    });
+    if (orgData?.id) {
+        const orgMembers = await getOrganizationMembers(orgData.id);
+        setMembers(orgMembers);
+    }
 
-    const userRef = ref(db, `users/${user.uid}`);
-    const unsubscribeAdminCheck = onValue(userRef, async (snapshot) => {
-        if (snapshot.exists()) {
-            const userProfile = snapshot.val() as RegisteredUser;
-            const currentIsAdmin = userProfile.isAdmin && (!userProfile.adminExpiresAt || new Date(userProfile.adminExpiresAt) > new Date());
-            setIsAdmin(isSuper || currentIsAdmin);
-            
-            // This is the specific logic for Organization Admin role
-            setIsOrganizationAdmin(userProfile.isOrganizationAdmin || false);
+  }, []);
 
-            let currentOrgId: string | undefined = userProfile.organizationId;
+  useEffect(() => {
+    if (user) {
+      fetchUserData(user);
 
-            if (isSuper) {
-                 let saOrg = await getOrganizationByOwnerId(user.uid);
-                 if (!saOrg) {
-                    const orgId = await createOrganization({
-                        name: SUPER_ADMIN_ORG_NAME,
-                        ownerId: user.uid,
-                        createdAt: new Date().toISOString(),
-                        subscriptionTier: 'pro',
-                        subscriptionExpiresAt: null, // Permanent
-                        memberLimit: 999
-                    });
-                    saOrg = { id: orgId, name: SUPER_ADMIN_ORG_NAME, ownerId: user.uid, createdAt: new Date().toISOString(), subscriptionTier: 'pro', subscriptionExpiresAt: null, memberLimit: 999 };
-                 }
-                 setOrganization(saOrg);
-                 currentOrgId = saOrg.id;
-            } else if (userProfile.organizationId) {
-                const orgData = await getOrganizationByOwnerId(userProfile.organizationId);
-                setOrganization(orgData);
-            } else {
-                setOrganization(null);
-            }
-
-            if(currentOrgId) {
-              const orgMembers = await getOrganizationMembers(currentOrgId);
-              setMembers(orgMembers);
-            }
-        } else {
-            setIsAdmin(false);
-            setIsOrganizationAdmin(false);
-            setOrganization(null);
+      // Setup presence management
+      const userStatusRef = ref(db, `/users/${user.uid}`);
+      const connectedRef = ref(db, '.info/connected');
+      
+      const presenceUnsubscribe = onValue(connectedRef, (snap) => {
+        if (snap.val() === true) {
+          update(userStatusRef, { isOnline: true });
+          onDisconnect(userStatusRef).update({
+            isOnline: false,
+            lastSeen: serverTimestamp(),
+          });
         }
-    });
+      });
 
-    return () => {
-      unsubscribeAdminCheck();
-      unsubscribePresence();
-      if (userStatusRef) {
-        update(userStatusRef, { 
-            isOnline: false, 
-            lastSeen: serverTimestamp() 
-        });
-      }
-    };
+      return () => {
+        presenceUnsubscribe();
+      };
+    } else {
+      setDbUser(null);
+      setOrganization(null);
+      setMembers([]);
+    }
+  }, [user, fetchUserData]);
 
-  }, [user]);
 
   const login = (email: string, pass: string) => {
     return signInWithEmailAndPassword(auth, email, pass);
@@ -267,6 +250,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
 
   const value = {
     user,
+    dbUser,
     setUser,
     members,
     setMembers,

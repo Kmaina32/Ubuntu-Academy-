@@ -44,7 +44,7 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin, dbUser } = useAuth();
   
   if (loading) {
      return (
@@ -55,9 +55,26 @@ export default function AdminLayout({
      )
   }
 
-  if (!user || !isAdmin) {
+  // If user is not logged in OR if user data is still being fetched (dbUser is null) and it's not the initial loading phase
+  if (!user || (!dbUser && !loading)) {
       return <AdminAccessDenied />;
   }
+
+  // If user is loaded but not an admin
+  if (dbUser && !isAdmin) {
+      return <AdminAccessDenied />;
+  }
+
+  // Show a loading state while dbUser is being populated for a logged-in user
+  if (user && !dbUser) {
+    return (
+       <div className="flex h-screen items-center justify-center">
+           <Loader2 className="h-8 w-8 animate-spin" />
+           <p className="ml-2">Loading user profile...</p>
+       </div>
+    )
+  }
+
 
   // If we are here, user is an admin.
   return (
