@@ -88,18 +88,7 @@ function DocumentEditor({ docType }: { docType: DocType }) {
  };
 
 const formatGeneralContent = (markdownContent: string): string => {
-     const formatted = markdownContent
-        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/^- (.*$)/gim, '<li>$1</li>')
-        .replace(/<\/li>\n<li>/g, '</li><li>') // Handle consecutive list items
-        .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
-        .replace(/\n/g, '<br />');
-        
-    return `<div class="pdf-general">${formatted}</div>`;
+     return `<div class="pdf-general ql-editor">${markdownContent}</div>`;
 };
 
 
@@ -166,7 +155,7 @@ const formatGeneralContent = (markdownContent: string): string => {
                 onChange={(e) => setContent(e.target.value)}
                 className="w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base p-4"
                 placeholder="Start writing your document..."
-            />
+             />
           )}
         </div>
       
@@ -302,49 +291,15 @@ export default function AdminDocumentsPage() {
                 font-size: 11pt;
                 line-height: 1.5;
             }
-            .pdf-general h1 {
-                font-size: 22pt;
-                font-family: 'PT Sans', sans-serif;
-                font-weight: bold;
-                margin-top: 18pt;
-                margin-bottom: 11pt;
-            }
-             .pdf-general h2 {
-                font-size: 16pt;
-                font-family: 'PT Sans', sans-serif;
-                font-weight: bold;
-                margin-top: 18pt;
-                margin-bottom: 11pt;
-            }
-             .pdf-general h3 {
-                font-size: 13pt;
-                font-family: 'PT Sans', sans-serif;
-                font-weight: bold;
-                margin-top: 18pt;
-                margin-bottom: 11pt;
-            }
-             .pdf-general p {
-                margin-bottom: 9pt;
-            }
-            .pdf-general ul {
-                padding-left: 20pt;
-                margin-bottom: 9pt;
-            }
-             .pdf-general li {
-                margin-bottom: 5pt;
-            }
-             .pdf-general strong {
-                font-weight: bold;
-            }
-             .pdf-general em {
-                font-style: italic;
-            }
-             .pdf-general code {
-                font-family: monospace;
-                background-color: #f0f0f0;
-                padding: 2px 4px;
-                border-radius: 3px;
-            }
+             .pdf-general h1 { font-size: 22pt; font-family: 'PT Sans', sans-serif; font-weight: bold; margin-top: 18pt; margin-bottom: 11pt; }
+             .pdf-general h2 { font-size: 16pt; font-family: 'PT Sans', sans-serif; font-weight: bold; margin-top: 18pt; margin-bottom: 11pt; }
+             .pdf-general h3 { font-size: 13pt; font-family: 'PT Sans', sans-serif; font-weight: bold; margin-top: 18pt; margin-bottom: 11pt; }
+             .pdf-general p { margin-bottom: 9pt; }
+             .pdf-general ul { padding-left: 20pt; margin-bottom: 9pt; }
+             .pdf-general li { margin-bottom: 5pt; }
+             .pdf-general strong { font-weight: bold; }
+             .pdf-general em { font-style: italic; }
+             .pdf-general code { font-family: monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; }
             .ql-editor {
                 min-height: 40vh;
             }
