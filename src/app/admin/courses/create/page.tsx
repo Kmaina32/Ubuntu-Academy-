@@ -15,12 +15,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, Sparkles } from 'lucide-react';
-import { createCourse } from '@/lib/firebase-service';
+import { createCourse, createThread } from '@/lib/firebase-service';
 import type { Course } from '@/lib/mock-data';
 import { generateCourseContent } from '@/app/actions';
 import type { GenerateCourseContentOutput } from '@/ai/flows/generate-course-content';
 import { CourseReviewModal } from '@/components/CourseReviewModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuth } from '@/hooks/use-auth';
 
 const courseFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -37,6 +38,7 @@ type CourseFormValues = z.infer<typeof courseFormSchema>;
 export default function CreateCoursePage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<GenerateCourseContentOutput | null>(null);
   const [courseDetails, setCourseDetails] = useState<CourseFormValues | null>(null);
@@ -88,7 +90,7 @@ export default function CreateCoursePage() {
   };
 
   const handleSaveCourse = async (editedContent: GenerateCourseContentOutput) => {
-    if (!courseDetails) return;
+    if (!courseDetails || !user) return;
     setIsLoading(true);
      try {
         const courseData: Omit<Course, 'id' | 'createdAt'> = {
@@ -104,7 +106,21 @@ export default function CreateCoursePage() {
             exam: editedContent.exam,
             dripFeed: courseDetails.dripFeed,
         }
-        await createCourse(courseData);
+        const courseId = await createCourse(courseData);
+
+        // Automatically create the first discussion thread
+        if (editedContent.discussionPrompt) {
+          await createThread(courseId, {
+            title: "Course Kick-off Discussion",
+            content: editedContent.discussionPrompt,
+            authorId: user.uid,
+            authorName: user.displayName || 'Admin',
+            authorAvatar: user.photoURL || '',
+            createdAt: new Date().toISOString()
+          });
+        }
+
+
         toast({
             title: 'Course Created!',
             description: `The course "${courseDetails.title}" has been successfully saved.`,

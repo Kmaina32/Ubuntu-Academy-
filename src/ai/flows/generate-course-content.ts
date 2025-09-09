@@ -71,6 +71,7 @@ const GenerateCourseContentOutputSchema = z.object({
   modules: z.array(ModuleSchema).length(2).describe('An array of exactly 2 modules for the course.'),
   exam: z.array(ExamQuestionSchema).length(5).describe('The final exam for the course, containing exactly five questions, with a mix of short-answer and multiple-choice questions.'),
   project: z.custom<Project>().optional().describe("An optional final project for the course."),
+  discussionPrompt: z.string().optional().describe('A comprehensive discussion prompt to encourage student engagement.'),
 });
 export type GenerateCourseContentOutput = z.infer<typeof GenerateCourseContentOutputSchema>;
 
@@ -116,6 +117,7 @@ Please generate the following content for the NEW, UNIQUE course:
     - For **googleDriveLinks**, ALWAYS provide an EMPTY array.
 5.  **Exam**: A final exam with an array of exactly 5 questions. This exam must contain three (3) 'multiple-choice' questions and two (2) 'short-answer' questions. Each question needs a unique ID, type, text, max points (always 10), and the correct answer details (referenceAnswer for short-answer, options array and correctAnswer index for multiple-choice).
 6.  **Project**: Leave the project field empty (null or undefined) when generating course content.
+7.  **Discussion Prompt**: A comprehensive and thought-provoking discussion prompt related to the course content. This should encourage students to share their findings and engage with each other.
 
 Generate the full course structure now.`,
 });
