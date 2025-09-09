@@ -20,16 +20,9 @@
     },
     "users": {
       ".indexOn": ["portfolio/public"],
-      ".read": "query.orderByChild === 'portfolio/public' && query.equalTo === true",
       "$uid": {
         ".read": "data.child('portfolio/public').val() === true || (auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true))",
-        ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
-        "cohort": {
-          ".read": "auth != null"
-        },
-        "purchasedCourses": {
-           ".read": "auth != null && auth.uid === $uid"
-        }
+        ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
       }
     },
     "calendarEvents": {
@@ -170,6 +163,7 @@
     }
   }
 }
+
 
 
 
