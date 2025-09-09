@@ -26,7 +26,7 @@ function DocumentEditor({ docType }: { docType: DocType }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const pdfRef = useRef<HTMLDivElement>(null);
+  const pdfContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -70,13 +70,13 @@ function DocumentEditor({ docType }: { docType: DocType }) {
   }
 
   const handleDownload = async () => {
-    if (!pdfRef.current) return;
+    if (!pdfContainerRef.current) return;
     setIsDownloading(true);
 
     const pdf = new jsPDF('p', 'pt', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
-    const pageNodes = pdfRef.current.querySelectorAll('.pdf-page');
+    const pageNodes = pdfContainerRef.current.querySelectorAll('.pdf-page');
 
     for (let i = 0; i < pageNodes.length; i++) {
         const page = pageNodes[i] as HTMLElement;
@@ -97,19 +97,92 @@ function DocumentEditor({ docType }: { docType: DocType }) {
     setIsDownloading(false);
   };
   
-  const formattedContent = content
+const formatGeneralContent = (text: string) => {
+  return text
     .replace(/^(#+) (.*$)/gim, (match, hashes, content) => {
         const level = hashes.length;
-        if (level === 1) return `<h1 class="text-3xl font-bold mt-8 mb-4">${content}</h1>`;
-        if (level === 2) return `<h2 class="text-2xl font-bold mt-6 mb-3 border-b pb-2">${content}</h2>`;
-        if (level === 3) return `<h3 class="text-xl font-bold mt-4 mb-2">${content}</h3>`;
-        return `<h${level}>${content}</h${level}>`;
+        const classes = {
+            1: "text-3xl font-bold mt-8 mb-4",
+            2: "text-2xl font-bold mt-6 mb-3 border-b pb-2",
+            3: "text-xl font-bold mt-4 mb-2",
+        };
+        // @ts-ignore
+        const style = classes[level] || `text-lg font-bold`;
+        return `<h${level} class="${style}">${content}</h${level}>`;
     })
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     .replace(/`([^`]+)`/g, '<code class="bg-gray-200 text-red-600 px-1 rounded">/$1/</code>')
-    .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc">$1</li>')
+    .replace(/^- (.*$)/gim, '<li class="ml-6 list-disc">$1</li>')
     .replace(/\n/g, '<br />');
+};
+
+const formatPitchDeckContent = (text: string) => {
+    const slides = text.split(/---\s*### Slide \d+:/);
+    if (slides.length <= 1) return [formatGeneralContent(text)]; // Fallback for non-slide format
+
+    return slides.slice(1).map((slideContent, index) => {
+        const lines = slideContent.trim().split('\n');
+        const title = lines[0].trim();
+        const body = lines.slice(1).map(line => 
+            line.trim()
+                .replace(/^\* (.*)/, '<li class="text-xl mb-4 ml-6">$1</li>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        ).join('');
+        
+        return `
+            <div class="w-full h-full flex flex-col justify-center items-center text-center p-12">
+                <h1 class="text-5xl font-bold text-primary mb-8 font-headline">${title}</h1>
+                <ul class="list-disc space-y-4 text-left">${body}</ul>
+            </div>
+        `;
+    });
+};
+
+const renderPdfContent = () => {
+    if (docType === 'PITCH_DECK.md') {
+        const slideHtmls = formatPitchDeckContent(content);
+        return slideHtmls.map((html, index) => (
+            <div 
+                key={index}
+                className="pdf-page bg-white text-black font-body"
+                style={{ width: '595pt', height: '842pt', display: 'flex', flexDirection: 'column' }}
+            >
+                <div className="flex-grow" dangerouslySetInnerHTML={{ __html: html }} />
+                <div className="border-t-2 border-primary mt-auto pt-2 flex justify-between items-center text-xs flex-shrink-0">
+                    <div className="flex items-center gap-2">
+                        <Gem className="h-4 w-4 text-primary" />
+                        <span className="font-bold font-headline">Ubuntu Academy</span>
+                    </div>
+                    <p>Slide {index + 1} of {slideHtmls.length}</p>
+                </div>
+            </div>
+        ));
+    }
+
+    const formattedContent = formatGeneralContent(content);
+    return (
+        <div 
+            className="pdf-page bg-white text-black font-body"
+            style={{ width: '595pt', height: '842pt', padding: '40pt', display: 'flex', flexDirection: 'column' }}
+        >
+            <div className="border-b-2 border-primary pb-4 mb-4 flex justify-between items-center flex-shrink-0">
+                <div className="flex items-center gap-2">
+                    <Gem className="h-8 w-8 text-primary" />
+                    <span className="font-bold text-xl font-headline">Ubuntu Academy</span>
+                </div>
+                <div className="text-right text-xs">
+                    <p className="font-semibold">{docType.replace('.md', ' Document')}</p>
+                    <p>{format(new Date(), 'PPP')}</p>
+                </div>
+            </div>
+            <div className="prose max-w-none flex-grow" dangerouslySetInnerHTML={{ __html: formattedContent }} />
+            <p className="text-center text-xs text-gray-400 mt-auto pt-4 flex-shrink-0">
+                &copy; {new Date().getFullYear()} Ubuntu Academy. All rights reserved.
+            </p>
+        </div>
+    );
+};
 
 
   return (
@@ -143,32 +216,8 @@ function DocumentEditor({ docType }: { docType: DocType }) {
 
        {/* Hidden element for PDF generation */}
         <div className="absolute -left-[9999px] top-0 opacity-0" aria-hidden="true">
-            <div ref={pdfRef}>
-                <div 
-                    className="pdf-page bg-white text-black font-body"
-                    style={{ 
-                        width: '595pt', 
-                        height: '842pt', 
-                        padding: '40pt',
-                        display: 'flex',
-                        flexDirection: 'column',
-                    }}
-                >
-                    <div className="border-b-2 border-primary pb-4 mb-4 flex justify-between items-center flex-shrink-0">
-                        <div className="flex items-center gap-2">
-                            <Gem className="h-8 w-8 text-primary" />
-                            <span className="font-bold text-xl font-headline">Ubuntu Academy</span>
-                        </div>
-                        <div className="text-right text-xs">
-                            <p className="font-semibold">{docType.replace('.md', ' Document')}</p>
-                            <p>{format(new Date(), 'PPP')}</p>
-                        </div>
-                    </div>
-                    <div className="prose max-w-none flex-grow" dangerouslySetInnerHTML={{ __html: formattedContent }} />
-                     <p className="text-center text-xs text-gray-400 mt-auto pt-4 flex-shrink-0">
-                        Page <span className="page-number">1</span> of <span className="total-pages">1</span> - &copy; {new Date().getFullYear()} Ubuntu Academy. All rights reserved.
-                    </p>
-                </div>
+            <div ref={pdfContainerRef}>
+                {renderPdfContent()}
             </div>
         </div>
     </div>
