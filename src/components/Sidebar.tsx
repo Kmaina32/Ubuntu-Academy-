@@ -15,7 +15,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library, Briefcase, Tag, Building, Users, Rocket } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library, Briefcase, Tag, Building, Users as PortfoliosIcon, Rocket } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from './ui/separator';
 import pkg from '../../package.json';
@@ -208,7 +208,7 @@ export function AppSidebar() {
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild isActive={isActive('/portfolios')} tooltip="Student Portfolios" onClick={onLinkClick}>
                                 <Link href="/portfolios">
-                                    <Users />
+                                    <PortfoliosIcon />
                                     <span>Student Portfolios</span>
                                 </Link>
                             </SidebarMenuButton>

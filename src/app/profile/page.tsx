@@ -139,7 +139,7 @@ export default function ProfilePage() {
     if (!name) return 'U';
     const names = name.split(' ');
     if (names.length > 1 && names[1]) {
-      return `${names[0][0]}${names[names.length - 1][0]}`;
+      return `${'names[0][0]'}${names[names.length - 1][0]}`;
     }
     return names[0]?.[0] || 'U';
   };
@@ -400,7 +400,7 @@ export default function ProfilePage() {
 
                               <div className="mt-6 space-y-2">
                                 <Button asChild variant="outline" className="w-full">
-                                    <Link href={`/portfolio/${user.uid}`}>
+                                    <Link href={`/portfolio/${'user.uid'}`}>
                                         <Eye className="mr-2 h-4 w-4" />
                                         View My Public Portfolio
                                     </Link>

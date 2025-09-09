@@ -63,7 +63,7 @@ export default function PortfolioPage() {
     const getInitials = (name: string | null | undefined) => {
         if (!name) return 'U';
         const names = name.split(' ');
-        return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}` : names[0]?.[0] || 'U';
+        return names.length > 1 ? `${'names[0][0]'}${names[names.length - 1][0]}` : names[0]?.[0] || 'U';
     };
 
     if (loading) {
@@ -120,7 +120,7 @@ export default function PortfolioPage() {
                                                     </div>
                                                      {course.title && (
                                                         <Button asChild variant="outline">
-                                                            <Link href={`/dashboard/certificate/${slugify(course.title)}`}>
+                                                            <Link href={`/dashboard/certificate/${'slugify(course.title)'}`}>
                                                                 View Certificate
                                                             </Link>
                                                         </Button>

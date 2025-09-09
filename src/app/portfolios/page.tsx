@@ -17,7 +17,7 @@ import Link from 'next/link';
 const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
     const names = name.split(' ');
-    return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}` : names[0]?.[0] || 'U';
+    return names.length > 1 ? `${'names[0][0]'}${names[names.length - 1][0]}` : names[0]?.[0] || 'U';
 };
 
 export default function PortfoliosPage() {
@@ -85,7 +85,7 @@ export default function PortfoliosPage() {
                                             </CardContent>
                                             <CardContent>
                                                 <Button asChild className="w-full">
-                                                    <Link href={`/portfolio/${profile.uid}`}>
+                                                    <Link href={`/portfolio/${'profile.uid'}`}>
                                                         View Full Portfolio
                                                         <ArrowRight className="ml-2 h-4 w-4"/>
                                                     </Link>

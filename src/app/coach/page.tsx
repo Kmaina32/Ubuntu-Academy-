@@ -71,7 +71,7 @@ export default function CareerCoachPage() {
       setLearningPath(result);
       const modelResponse: HistoryItem = {
         role: 'model',
-        content: `Generated a learning path with introduction: "${result.introduction}"`,
+        content: `Generated a learning path with introduction: "${'result.introduction'}"`,
       };
       setConversationHistory(prev => [...prev, newUserMessage, modelResponse]);
       form.reset();
@@ -167,14 +167,14 @@ export default function CareerCoachPage() {
                             <ScrollArea className="h-full">
                                 <div className="space-y-4 text-sm">
                                     {conversationHistory.map((item, index) => (
-                                        <div key={index} className={`flex items-start gap-2 ${item.role === 'user' ? 'text-right justify-end' : ''}`}>
+                                        <div key={index} className={`flex items-start gap-2 ${'item.role' === 'user' ? 'text-right justify-end' : ''}`}>
                                             {item.role === 'model' && (
                                                 <Avatar className="h-6 w-6 border flex-shrink-0">
                                                     <AvatarImage src={tutorSettings?.avatarUrl} />
                                                     <AvatarFallback><Bot/></AvatarFallback>
                                                 </Avatar>
                                             )}
-                                            <p className={`p-2 rounded-md ${item.role === 'user' ? 'bg-primary/10' : 'bg-secondary'}`}>{item.content}</p>
+                                            <p className={`p-2 rounded-md ${'item.role' === 'user' ? 'bg-primary/10' : 'bg-secondary'}`}>{item.content}</p>
                                             {item.role === 'user' && (
                                                 <Avatar className="h-6 w-6 border flex-shrink-0">
                                                     <AvatarImage src={user?.photoURL || ''} />
@@ -226,7 +226,7 @@ export default function CareerCoachPage() {
                         <CardContent className="p-6 space-y-4">
                             <p><strong className="font-semibold">Why this course:</strong> {step.reasoning}</p>
                              <Button asChild>
-                                <Link href={`/courses/${slugify(step.courseTitle)}`}>
+                                <Link href={`/courses/${'slugify(step.courseTitle)'}`}>
                                     View Course
                                     <ArrowRight className="ml-2 h-4 w-4" />
                                 </Link>
