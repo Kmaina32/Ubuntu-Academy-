@@ -16,7 +16,9 @@ import html2canvas from 'html2canvas';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/use-auth';
 
-type DocType = 'FRAMEWORK.md' | 'API.md' | 'PITCH_DECK.md';
+type DocType = 'FRAMEWORK.md' | 'API.md' | 'PITCH_DECK.md' | 'RESOLUTION_TO_REGISTER_A_COMPANY.md' | 'PATENT_APPLICATION.md';
+
+const ALL_DOC_TYPES: DocType[] = ['FRAMEWORK.md', 'API.md', 'PITCH_DECK.md', 'RESOLUTION_TO_REGISTER_A_COMPANY.md', 'PATENT_APPLICATION.md'];
 
 function DocumentEditor({ docType }: { docType: DocType }) {
   const { user } = useAuth();
@@ -118,8 +120,8 @@ const formatGeneralContent = (text: string) => {
 };
 
 const formatPitchDeckContent = (text: string) => {
-    const slides = text.split(/---\s*### Slide \d+:/);
-    if (slides.length <= 1) return [formatGeneralContent(text)]; // Fallback for non-slide format
+    const slides = text.split(/---(?:\r\n|\n)### Slide \d+:/);
+    if (slides.length <= 1) return [formatGeneralContent(text)]; 
 
     return slides.slice(1).map((slideContent, index) => {
         const lines = slideContent.trim().split('\n');
@@ -132,8 +134,10 @@ const formatPitchDeckContent = (text: string) => {
         
         return `
             <div class="w-full h-full flex flex-col justify-center items-center text-center p-12">
-                <h1 class="text-5xl font-bold text-primary mb-8 font-headline">${title}</h1>
-                <ul class="list-disc space-y-4 text-left">${body}</ul>
+                 <div class="flex-grow flex flex-col justify-center items-center">
+                    <h1 class="text-5xl font-bold text-primary mb-8 font-headline">${title}</h1>
+                    <ul class="list-disc space-y-4 text-left">${body}</ul>
+                </div>
             </div>
         `;
     });
@@ -146,7 +150,7 @@ const renderPdfContent = () => {
             <div 
                 key={index}
                 className="pdf-page bg-white text-black font-body"
-                style={{ width: '595pt', height: '842pt', display: 'flex', flexDirection: 'column' }}
+                style={{ width: '595pt', height: '842pt', display: 'flex', flexDirection: 'column', padding: '40pt' }}
             >
                 <div className="flex-grow" dangerouslySetInnerHTML={{ __html: html }} />
                 <div className="border-t-2 border-primary mt-auto pt-2 flex justify-between items-center text-xs flex-shrink-0">
@@ -241,16 +245,20 @@ export default function AdminDocumentsPage() {
                   Manage Documents
                 </CardTitle>
                 <CardDescription>View, edit, and generate formal documentation for your application.</CardDescription>
-                <TabsList className="grid w-full grid-cols-3 mt-4">
+                <TabsList className="grid w-full grid-cols-5 mt-4">
                   <TabsTrigger value="framework">Framework</TabsTrigger>
                   <TabsTrigger value="api">API</TabsTrigger>
                   <TabsTrigger value="pitch">Pitch Deck</TabsTrigger>
+                  <TabsTrigger value="resolution">Resolution</TabsTrigger>
+                  <TabsTrigger value="patent">Patent</TabsTrigger>
                 </TabsList>
               </CardHeader>
               <CardContent>
                 <TabsContent value="framework"><DocumentEditor docType="FRAMEWORK.md" /></TabsContent>
                 <TabsContent value="api"><DocumentEditor docType="API.md" /></TabsContent>
                 <TabsContent value="pitch"><DocumentEditor docType="PITCH_DECK.md" /></TabsContent>
+                <TabsContent value="resolution"><DocumentEditor docType="RESOLUTION_TO_REGISTER_A_COMPANY.md" /></TabsContent>
+                <TabsContent value="patent"><DocumentEditor docType="PATENT_APPLICATION.md" /></TabsContent>
               </CardContent>
             </Card>
           </Tabs>
