@@ -246,6 +246,8 @@ export interface Organization {
     subscriptionExpiresAt: string | null;
     memberLimit: number;
     members?: string[];
+    logoUrl?: string;
+    welcomeMessage?: string;
 }
 
 

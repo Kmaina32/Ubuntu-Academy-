@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,6 +6,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Users, BarChart, CreditCard, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import Image from 'next/image';
 
 function SubscriptionCountdown({ expiryDate }: { expiryDate: Date | null }) {
     const [countdown, setCountdown] = useState('');
@@ -49,9 +51,14 @@ export default function OrganizationDashboardPage() {
     return (
         <div className="space-y-8">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-1 font-headline">Welcome, {organization?.name || user?.displayName}!</h1>
+                 <div className="flex items-center gap-4 mb-2">
+                    {organization?.logoUrl && (
+                        <Image src={organization.logoUrl} alt={`${organization.name} Logo`} width={48} height={48} className="h-12 w-12 object-contain"/>
+                    )}
+                    <h1 className="text-3xl font-bold font-headline">Welcome, {organization?.name || user?.displayName}!</h1>
+                </div>
                 <p className="text-muted-foreground">
-                    Here's an overview of your team's progress.
+                    {organization?.welcomeMessage || "Here's an overview of your team's progress."}
                 </p>
             </div>
             

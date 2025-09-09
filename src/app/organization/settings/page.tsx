@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,9 +15,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Textarea } from '@/components/ui/textarea';
 
 const settingsSchema = z.object({
     name: z.string().min(2, 'Organization name is required.'),
+    logoUrl: z.string().url().optional().or(z.literal('')),
+    welcomeMessage: z.string().optional(),
 });
 
 export default function OrganizationSettingsPage() {
@@ -28,12 +32,18 @@ export default function OrganizationSettingsPage() {
         resolver: zodResolver(settingsSchema),
         defaultValues: {
             name: '',
+            logoUrl: '',
+            welcomeMessage: '',
         }
     });
 
     useEffect(() => {
         if (organization) {
-            form.reset({ name: organization.name });
+            form.reset({ 
+                name: organization.name,
+                logoUrl: organization.logoUrl || '',
+                welcomeMessage: organization.welcomeMessage || '',
+             });
         }
     }, [organization, form]);
     
@@ -41,7 +51,7 @@ export default function OrganizationSettingsPage() {
         if (!organization) return;
         setIsLoading(true);
         try {
-            await updateOrganization(organization.id, { name: values.name });
+            await updateOrganization(organization.id, values);
             toast({ title: "Settings Saved", description: "Your organization details have been updated."});
         } catch (error) {
             console.error(error);
@@ -60,7 +70,7 @@ export default function OrganizationSettingsPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Organization Settings</CardTitle>
-                    <CardDescription>Update your organization's name and other details.</CardDescription>
+                    <CardDescription>Update your organization's name, logo, and other details.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
@@ -73,6 +83,32 @@ export default function OrganizationSettingsPage() {
                                         <FormLabel>Organization Name</FormLabel>
                                         <FormControl>
                                             <Input {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="logoUrl"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Logo URL</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="https://example.com/logo.png" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="welcomeMessage"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Dashboard Welcome Message</FormLabel>
+                                        <FormControl>
+                                            <Textarea placeholder="e.g., Welcome to our team's learning portal!" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
