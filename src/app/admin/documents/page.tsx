@@ -4,6 +4,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -15,8 +16,8 @@ import { getDocumentContent, saveDocumentContent, generateFormalDocument } from 
 import { useAuth } from '@/hooks/use-auth';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { Textarea } from '@/components/ui/textarea';
 
+const QuillEditor = dynamic(() => import('@/components/shared/QuillEditor'), { ssr: false });
 
 const ALL_DOC_TYPES: readonly DocType[] = ['PITCH_DECK.md', 'FRAMEWORK.md', 'API.md', 'RESOLUTION_TO_REGISTER_A_COMPANY.md', 'PATENT_APPLICATION.md'] as const;
 type DocType = (typeof ALL_DOC_TYPES)[number];
@@ -88,24 +89,13 @@ function DocumentEditor({ docType }: { docType: DocType }) {
     return html;
  };
 
-const formatGeneralContent = (markdownContent: string): string => {
-    const formatted = markdownContent
-        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/^- (.*$)/gim, '<li>$1</li>')
-        .replace(/<\/li>\n<li>/g, '</li><li>') // Handle consecutive list items
-        .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
-        .replace(/\n/g, '<br />');
-
-    return `<div class="pdf-general">${formatted}</div>`;
+const formatGeneralContent = (htmlContent: string): string => {
+    return `<div class="pdf-general">${htmlContent}</div>`;
 };
 
 
   const handleDownload = async () => {
-    if (!pdfRef.current) return;
+    if (pdfRef.current === null) return;
     setIsDownloading(true);
 
     const isPitchDeck = docType === 'PITCH_DECK.md';
@@ -162,12 +152,7 @@ const formatGeneralContent = (markdownContent: string): string => {
           {isLoading ? (
              <div className="flex justify-center items-center flex-grow h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
           ) : (
-            <Textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base p-4"
-                placeholder="Start writing your document..."
-            />
+            <QuillEditor value={content} onChange={setContent} />
           )}
         </div>
       
@@ -322,6 +307,9 @@ export default function AdminDocumentsPage() {
                 background-color: #f0f0f0; 
                 padding: 2px 4px; 
                 border-radius: 3px;
+            }
+            .ql-editor {
+                min-height: 40vh;
             }
         `}</style>
     </div>
