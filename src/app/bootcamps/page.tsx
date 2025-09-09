@@ -3,9 +3,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Footer } from "@/components/Footer";
-import { AppSidebar } from '@/components/Sidebar';
-import { Header } from '@/components/Header';
+import { Footer } from "@/components/shared/Footer";
+import { AppSidebar } from '@/components/shared/Sidebar';
+import { Header } from '@/components/shared/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { getAllBootcamps, Bootcamp } from '@/lib/firebase-service';
 import { Loader2, Rocket } from 'lucide-react';
