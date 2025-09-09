@@ -5,8 +5,8 @@
 // The actual AI instance is created in a separate, server-only file.
 
 import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/googleai';
 
-export const isConfigured = !!process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+// This check needs to align with the server-side check in genkit-instance.ts
+export const isConfigured = !!process.env.GEMINI_API_KEY || !!process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
 export type AI = ReturnType<typeof genkit<any>>;
