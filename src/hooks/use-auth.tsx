@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -64,7 +63,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
   const { toast } = useToast();
   
   const isSuperAdmin = user?.uid === ADMIN_UID;
-  const isAdmin = dbUser?.isAdmin && (!dbUser.adminExpiresAt || new Date(dbUser.adminExpiresAt) > new Date()) || isSuperAdmin;
+  const isAdmin = (dbUser?.isAdmin && (!dbUser.adminExpiresAt || new Date(dbUser.adminExpiresAt) > new Date())) || isSuperAdmin;
   const isOrganizationAdmin = dbUser?.isOrganizationAdmin || false;
 
 
