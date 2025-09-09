@@ -1,9 +1,8 @@
 
-
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Bootcamp, PricingPlan } from './types';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Bootcamp, PricingPlan, ProjectSubmission } from './types';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -76,7 +75,7 @@ export async function createCourse(courseData: Omit<Course, 'id'>): Promise<stri
         ...courseData,
         createdAt: new Date().toISOString(),
         modules: courseData.modules || [],
-        exam: courseData.project || null,
+        exam: courseData.exam || [],
     };
     await set(newCourseRef, dataToSave);
     return newCourseRef.key!;
@@ -603,8 +602,8 @@ export async function createCourseFeedback(courseId: string, feedbackData: Omit<
     return newFeedbackRef.key!;
 }
 
-export async function getProjectsForCourse(courseId: string): Promise<Project[]> {
-    const projectsRef = ref(db, `projects/${courseId}`);
+export async function getProjectsForCourse(courseId: string): Promise<ProjectSubmission[]> {
+    const projectsRef = ref(db, `projectSubmissions/${courseId}`);
     const snapshot = await get(projectsRef);
      if (snapshot.exists()) {
         const data = snapshot.val();
@@ -613,11 +612,10 @@ export async function getProjectsForCourse(courseId: string): Promise<Project[]>
     return [];
 }
 
-export async function createProject(courseId: string, userId: string, projectData: Omit<Project, 'id'>): Promise<string> {
-    const projectRef = ref(db, `projects/${courseId}/${'userId'}`);
-    const newProjectRef = push(projectRef);
-    await set(newProjectRef, projectData);
-    return newProjectRef.key!;
+export async function submitProject(courseId: string, userId: string, projectData: Omit<ProjectSubmission, 'id'>): Promise<string> {
+    const projectRef = ref(db, `projectSubmissions/${courseId}/${userId}`);
+    await set(projectRef, projectData);
+    return userId;
 }
 
 export async function saveLearningGoals(userId: string, goals: Record<string, LearningGoal>): Promise<void> {

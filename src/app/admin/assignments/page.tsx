@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -131,14 +130,14 @@ function ProjectsList() {
     
     const handleGenerateProject = async (course: Course) => {
         setIsGenerating(course.id);
-        toast({ title: 'Generating Exam...', description: 'The AI is creating a new exam for this course.' });
+        toast({ title: 'Generating Project...', description: 'The AI is creating a new final project for this course.' });
         try {
             await generateProject({ courseTitle: course.title, courseDescription: course.longDescription });
-            toast({ title: 'Exam Generated!', description: 'The exam has been added to the course. You can now edit it.' });
+            toast({ title: 'Project Generated!', description: 'The project has been added to the course. You can now edit it.' });
             fetchCourses(); // Re-fetch to update the UI
         } catch (error) {
-            console.error('Failed to generate exam', error);
-            toast({ title: 'Error', description: 'Could not generate the exam.', variant: 'destructive' });
+            console.error('Failed to generate project', error);
+            toast({ title: 'Error', description: 'Could not generate the project.', variant: 'destructive' });
         } finally {
             setIsGenerating(null);
         }
@@ -148,14 +147,14 @@ function ProjectsList() {
     loading ? (
        <div className="flex justify-center items-center py-10">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <p className="ml-2">Loading exams...</p>
+          <p className="ml-2">Loading exams &amp; projects...</p>
        </div>
     ) : (
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Course Title</TableHead>
-            <TableHead>Exam Status</TableHead>
+            <TableHead>Assignment Type</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -164,17 +163,19 @@ function ProjectsList() {
             <TableRow key={course.id}>
               <TableCell className="font-medium">{course.title}</TableCell>
               <TableCell>
-                {course.exam && course.exam.length > 0 ? (
-                    <Badge variant="default">Exam Added</Badge>
+                {course.project ? (
+                    <Badge variant="default">Project</Badge>
+                ) : course.exam &amp;&amp; course.exam.length &gt; 0 ? (
+                    <Badge variant="secondary">Exam</Badge>
                 ) : (
-                    <Badge variant="secondary">No Exam</Badge>
+                    <Badge variant="outline">None</Badge>
                 )}
               </TableCell>
               <TableCell className="text-right space-x-2">
-                <Button asChild size="sm">
+                <Button asChild size="sm" variant="outline">
                     <Link href={`/admin/assignments/edit/${course.id}`}>
                         <Edit className="mr-2 h-4 w-4" />
-                        {course.exam && course.exam.length > 0 ? 'Edit Exam' : 'Add Exam'}
+                        Edit
                     </Link>
                 </Button>
                 <AlertDialog>
@@ -186,15 +187,15 @@ function ProjectsList() {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Generate Final Exam?</AlertDialogTitle>
+                            <AlertDialogTitle>Generate Final Assignment?</AlertDialogTitle>
                             <AlertDialogDescription>
-                                This will use AI to generate a final exam for "{course.title}" based on its description. This will replace any existing questions.
+                                This will use AI to generate a final assignment for "{course.title}" based on its description. You can choose to generate an exam or a project. This will replace any existing assignment.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction onClick={() => handleGenerateProject(course)}>
-                                Yes, Generate
+                                Generate Project
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
@@ -228,18 +229,18 @@ export default function AdminAssignmentsPage() {
             <Tabs defaultValue="submissions">
               <Card>
                   <CardHeader>
-                      <CardTitle className="flex items-center gap-2"><Briefcase className="h-6 w-6"/>Manage Exams & Submissions</CardTitle>
-                      <CardDescription>Review student exam submissions and manage course exams.</CardDescription>
+                      <CardTitle className="flex items-center gap-2"><Briefcase className="h-6 w-6"/>Manage Exams &amp; Projects</CardTitle>
+                      <CardDescription>Review student submissions and manage final assignments for courses.</CardDescription>
                       <TabsList className="grid w-full grid-cols-2 mt-4">
                         <TabsTrigger value="submissions">Submissions</TabsTrigger>
-                        <TabsTrigger value="projects">Course Exams</TabsTrigger>
+                        <TabsTrigger value="assignments">Course Assignments</TabsTrigger>
                     </TabsList>
                   </CardHeader>
                   <CardContent>
                     <TabsContent value="submissions">
                         <SubmissionsList />
                     </TabsContent>
-                    <TabsContent value="projects">
+                    <TabsContent value="assignments">
                         <ProjectsList />
                     </TabsContent>
                   </CardContent>

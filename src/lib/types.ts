@@ -1,5 +1,4 @@
 
-
 import { z } from 'zod';
 
 export interface YoutubeLink {
@@ -63,6 +62,12 @@ export interface CalendarEvent {
   date: string; // YYYY-MM-DD
   title: string;
   description: string;
+}
+
+export interface Project {
+    id: string;
+    title: string;
+    description: string;
 }
 
 export interface Course {
@@ -226,14 +231,14 @@ export interface CourseFeedback {
     createdAt: string;
 }
 
-export interface Project {
+export interface ProjectSubmission {
     id: string;
     courseId: string;
     userId: string;
     title: string;
     description: string;
     url?: string;
-    content?: string;
+    imageUrl?: string;
     submittedAt: string;
 }
 

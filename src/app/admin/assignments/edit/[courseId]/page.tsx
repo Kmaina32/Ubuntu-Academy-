@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,7 +7,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { getCourseById, updateCourse } from '@/lib/firebase-service';
-import type { Course, ExamQuestion } from '@/lib/mock-data';
+import type { Course, ExamQuestion, Project } from '@/lib/mock-data';
 import { useToast } from '@/hooks/use-toast';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -17,10 +16,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ArrowLeft, Loader2, PlusCircle, Trash2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Loader2, PlusCircle, Trash2, Sparkles, BookCopy } from 'lucide-react';
 import Link from 'next/link';
-import { generateExam } from '@/app/actions';
+import { generateExam, generateProject } from '@/app/actions';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 
 const shortAnswerSchema = z.object({
   id: z.string(),
@@ -41,22 +42,31 @@ const multipleChoiceSchema = z.object({
 
 const examQuestionSchema = z.union([shortAnswerSchema, multipleChoiceSchema]);
 
-const courseExamSchema = z.object({
-  exam: z.array(examQuestionSchema),
+const projectSchema = z.object({
+    id: z.string().default(() => `proj-${Date.now()}`),
+    title: z.string().min(5, "Project title is required"),
+    description: z.string().min(20, "Project description is required"),
 });
 
-export default function EditExamPage() {
+const courseAssignmentSchema = z.object({
+  exam: z.array(examQuestionSchema).optional(),
+  project: projectSchema.optional(),
+});
+
+export default function EditAssignmentPage() {
   const params = useParams<{ courseId: string }>();
   const router = useRouter();
   const { toast } = useToast();
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [activeTab, setActiveTab] = useState('exam');
 
-  const form = useForm<z.infer<typeof courseExamSchema>>({
-    resolver: zodResolver(courseExamSchema),
+  const form = useForm<z.infer<typeof courseAssignmentSchema>>({
+    resolver: zodResolver(courseAssignmentSchema),
     defaultValues: {
       exam: [],
+      project: undefined,
     },
   });
   
@@ -74,21 +84,26 @@ export default function EditExamPage() {
         return;
       }
       setCourse(courseData);
-      form.reset({ exam: courseData.exam || [] });
+      form.reset({ exam: courseData.exam || [], project: courseData.project });
+      setActiveTab(courseData.project ? 'project' : 'exam');
       setLoading(false);
     };
     fetchCourse();
   }, [params.courseId, form]);
 
-  const onSubmit = async (data: z.infer<typeof courseExamSchema>) => {
+  const onSubmit = async (data: z.infer<typeof courseAssignmentSchema>) => {
     setLoading(true);
     try {
-      await updateCourse(course!.id, { exam: data.exam });
-      toast({ title: "Success", description: "Exam has been updated." });
+        const dataToSave: Partial<Course> = activeTab === 'exam' 
+            ? { exam: data.exam, project: undefined } 
+            : { project: data.project, exam: [] };
+
+      await updateCourse(course!.id, dataToSave);
+      toast({ title: "Success", description: "Assignment has been updated." });
       router.push('/admin/assignments');
     } catch (error) {
       console.error(error);
-      toast({ title: "Error", description: "Failed to update exam.", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to update assignment.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -125,6 +140,8 @@ export default function EditExamPage() {
             courseDescription: course.longDescription,
         });
         replace(result.exam);
+        form.setValue('project', undefined);
+        setActiveTab('exam');
         toast({ title: 'Exam Generated!', description: 'Review the new questions below and save.' });
     } catch(error) {
         console.error('Failed to generate exam', error);
@@ -132,6 +149,24 @@ export default function EditExamPage() {
     } finally {
         setIsGenerating(false);
     }
+  }
+
+  const handleGenerateProject = async () => {
+      if (!course) return;
+      setIsGenerating(true);
+      toast({ title: 'Generating Project...', description: 'The AI is creating a new final project.'});
+      try {
+          const result = await generateProject({ courseTitle: course.title, courseDescription: course.longDescription });
+          form.setValue('project', result.project);
+          form.setValue('exam', []);
+          setActiveTab('project');
+          toast({ title: 'Project Generated!', description: 'Review the project details and save.' });
+      } catch (error) {
+          console.error('Failed to generate project', error);
+          toast({ title: 'Error', description: 'Could not generate project.', variant: 'destructive'});
+      } finally {
+          setIsGenerating(false);
+      }
   }
 
   if (loading) {
@@ -154,134 +189,104 @@ export default function EditExamPage() {
                 <CardHeader>
                     <div className="flex justify-between items-start">
                         <div>
-                            <CardTitle className="text-2xl font-headline">Manage Exam</CardTitle>
-                            <CardDescription>Edit the exam for <strong>{course.title}</strong>.</CardDescription>
+                            <CardTitle className="text-2xl font-headline flex items-center gap-2"><BookCopy/> Manage Assignment</CardTitle>
+                            <CardDescription>Edit the final assignment for <strong>{course.title}</strong>.</CardDescription>
                         </div>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button type="button" variant="outline" disabled={isGenerating}>
                                     {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                                    Generate Exam with AI
+                                    Generate with AI
                                 </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogTitle>Generate Final Assignment?</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        This will replace all current questions with a new set generated by AI. This action cannot be undone, but you can edit the generated exam before saving.
+                                        This will replace the current assignment with new content generated by AI. This action cannot be undone, but you can edit before saving.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleGenerateExam}>Continue</AlertDialogAction>
+                                    <AlertDialogAction onClick={handleGenerateProject}>Generate Project</AlertDialogAction>
+                                    <AlertDialogAction onClick={handleGenerateExam}>Generate Exam</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
 
                     </div>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  {fields.map((field, index) => (
-                    <Card key={field.id} className="p-4 relative">
-                       <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-2 right-2 text-destructive hover:text-destructive"
-                            onClick={() => remove(index)}
-                        >
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                      {field.type === 'short-answer' ? (
-                        <div className="space-y-4">
-                          <FormField
-                            control={form.control}
-                            name={`exam.${index}.question`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Short Answer Question</FormLabel>
-                                <FormControl><Textarea {...field} /></FormControl>
-                                <FormMessage />
-                              </FormItem>
+                <CardContent>
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="exam">Exam</TabsTrigger>
+                            <TabsTrigger value="project">Final Project</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="exam" className="space-y-6 pt-6">
+                          {fields.map((field, index) => (
+                            <Card key={field.id} className="p-4 relative bg-secondary/50">
+                            <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute top-2 right-2 text-destructive hover:text-destructive"
+                                    onClick={() => remove(index)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            {field.type === 'short-answer' ? (
+                                <div className="space-y-4">
+                                <FormField control={form.control} name={`exam.${index}.question`} render={({ field }) => ( <FormItem><FormLabel>Short Answer Question</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name={`exam.${index}.referenceAnswer`} render={({ field }) => ( <FormItem><FormLabel>Reference Answer</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                <FormField control={form.control} name={`exam.${index}.question`} render={({ field }) => ( <FormItem><FormLabel>Multiple Choice Question</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name={`exam.${index}.correctAnswer`} render={({ field: radioField }) => (
+                                    <FormItem className="space-y-3">
+                                        <FormLabel>Options (select the correct one)</FormLabel>
+                                        <FormControl>
+                                        <RadioGroup onValueChange={(value) => radioField.onChange(parseInt(value, 10))} defaultValue={String(radioField.value)} className="flex flex-col space-y-1">
+                                            {(field.options as string[]).map((_, optionIndex) => (
+                                            <div key={optionIndex} className="flex items-center gap-2">
+                                                    <RadioGroupItem value={String(optionIndex)} id={`${field.id}-${optionIndex}`} />
+                                                    <FormField control={form.control} name={`exam.${index}.options.${optionIndex}`} render={({ field: optionField }) => ( <FormItem className="flex-grow"><FormControl><Input {...optionField} /></FormControl><FormMessage /></FormItem>)} />
+                                            </div>
+                                            ))}
+                                        </RadioGroup>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                                </div>
                             )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`exam.${index}.referenceAnswer`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Reference Answer</FormLabel>
-                                <FormControl><Textarea {...field} /></FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <FormField
-                            control={form.control}
-                            name={`exam.${index}.question`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Multiple Choice Question</FormLabel>
-                                <FormControl><Textarea {...field} /></FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`exam.${index}.correctAnswer`}
-                            render={({ field: radioField }) => (
-                              <FormItem className="space-y-3">
-                                <FormLabel>Options (select the correct one)</FormLabel>
-                                <FormControl>
-                                  <RadioGroup
-                                    onValueChange={(value) => radioField.onChange(parseInt(value, 10))}
-                                    defaultValue={String(radioField.value)}
-                                    className="flex flex-col space-y-1"
-                                  >
-                                    {(field.options as string[]).map((_, optionIndex) => (
-                                       <div key={optionIndex} className="flex items-center gap-2">
-                                            <RadioGroupItem value={String(optionIndex)} id={`${field.id}-${optionIndex}`} />
-                                            <FormField
-                                                control={form.control}
-                                                name={`exam.${index}.options.${optionIndex}`}
-                                                render={({ field: optionField }) => (
-                                                    <FormItem className="flex-grow">
-                                                        <FormControl><Input {...optionField} /></FormControl>
-                                                         <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                       </div>
-                                    ))}
-                                  </RadioGroup>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      )}
-                    </Card>
-                  ))}
+                            </Card>
+                        ))}
 
-                  <div className="flex gap-2">
-                    <Button type="button" variant="outline" onClick={() => addQuestion('short-answer')}>
-                      <PlusCircle className="mr-2 h-4 w-4" /> Add Short Answer
-                    </Button>
-                    <Button type="button" variant="outline" onClick={() => addQuestion('multiple-choice')}>
-                      <PlusCircle className="mr-2 h-4 w-4" /> Add Multiple Choice
-                    </Button>
-                  </div>
-                  <div className="flex justify-end">
-                     <Button type="submit" disabled={loading}>
-                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Save Exam
-                    </Button>
-                  </div>
+                        <div className="flex gap-2">
+                            <Button type="button" variant="outline" onClick={() => addQuestion('short-answer')}>
+                            <PlusCircle className="mr-2 h-4 w-4" /> Add Short Answer
+                            </Button>
+                            <Button type="button" variant="outline" onClick={() => addQuestion('multiple-choice')}>
+                            <PlusCircle className="mr-2 h-4 w-4" /> Add Multiple Choice
+                            </Button>
+                        </div>
+                        </TabsContent>
+                        <TabsContent value="project" className="pt-6">
+                            <div className="space-y-4 p-4 border rounded-lg bg-secondary/50">
+                                <FormField control={form.control} name="project.title" render={({ field }) => (<FormItem><FormLabel>Project Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="project.description" render={({ field }) => (<FormItem><FormLabel>Project Description</FormLabel><FormControl><Textarea className="min-h-48" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            </div>
+                        </TabsContent>
+                    </Tabs>
+                    <Separator className="my-6"/>
+                    <div className="flex justify-end">
+                        <Button type="submit" disabled={loading}>
+                            {loading &amp;&amp; <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Save Assignment
+                        </Button>
+                    </div>
                 </CardContent>
               </Card>
             </form>

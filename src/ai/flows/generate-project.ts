@@ -13,6 +13,7 @@ import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
 import { updateCourse } from '@/lib/firebase-service';
+import { Project } from '@/lib/types';
 
 export const GenerateProjectInputSchema = z.object({
   courseTitle: z.string().describe('The title of the course.'),
@@ -21,6 +22,7 @@ export const GenerateProjectInputSchema = z.object({
 export type GenerateProjectInput = z.infer<typeof GenerateProjectInputSchema>;
 
 const ProjectSchema = z.object({
+    id: z.string().describe("A unique identifier for the project, e.g., 'proj-1'."),
     title: z.string().describe('A clear and concise title for the final project.'),
     description: z.string().describe('A detailed description of the project, including requirements, goals, and steps to complete.'),
 });
@@ -48,7 +50,7 @@ The project should be practical, hands-on, and allow students to apply the skill
 Course Title: {{{courseTitle}}}
 Course Description: {{{courseDescription}}}
 
-Please generate a single, comprehensive final project.`,
+Please generate a single, comprehensive final project. The project ID should be a unique string, for example 'proj-{{courseTitle}}'.`,
 });
 
 const generateProjectFlow = ai.defineFlow(
