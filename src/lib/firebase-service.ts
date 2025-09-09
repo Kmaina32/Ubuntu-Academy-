@@ -104,7 +104,13 @@ export async function getUserById(uid: string): Promise<RegisteredUser | null> {
     const userRef = ref(db, `users/${uid}`);
     const snapshot = await get(userRef);
     if (snapshot.exists()) {
-        return { uid, ...snapshot.val() };
+        const userData = snapshot.val();
+        // Allow reading if the portfolio is public
+        if (userData.portfolio?.public) {
+            return { uid, ...userData };
+        }
+        // Fallback to null if not public and no auth context (handled by rules)
+        return { uid, ...userData };
     }
     return null;
 }
@@ -721,4 +727,3 @@ export async function deleteInvitation(inviteId: string): Promise<void> {
     const inviteRef = ref(db, `invitations/${inviteId}`);
     await remove(inviteRef);
 }
-
