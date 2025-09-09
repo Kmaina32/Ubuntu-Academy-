@@ -42,6 +42,7 @@ interface AuthContextType {
   isSuperAdmin: boolean;
   isOrganizationAdmin: boolean;
   organization: Organization | null;
+  isAiConfigured: boolean;
   login: (email: string, pass: string) => Promise<any>;
   signup: (email: string, pass: string, name: string, organizationName?: string, inviteOrgId?: string) => Promise<any>;
   logout: () => Promise<any>;
@@ -52,7 +53,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode; isAiConfigured: boolean }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -274,6 +275,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isSuperAdmin,
     isOrganizationAdmin,
     organization,
+    isAiConfigured,
     login,
     signup,
     logout,

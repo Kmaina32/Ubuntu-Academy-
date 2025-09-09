@@ -20,7 +20,6 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import Link from 'next/link';
-import { isConfigured } from '@/ai/genkit';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getTutorSettings } from '@/lib/firebase-service';
 import type { TutorSettings } from '@/lib/firebase-service';
@@ -32,7 +31,7 @@ const careerGoalSchema = z.object({
 });
 
 export default function CareerCoachPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isAiConfigured } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -97,7 +96,7 @@ export default function CareerCoachPage() {
                 </p>
               </div>
 
-               {!isConfigured ? (
+               {!isAiConfigured ? (
                  <Alert variant="destructive" className="mb-8">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertTitle>AI Feature Not Configured</AlertTitle>

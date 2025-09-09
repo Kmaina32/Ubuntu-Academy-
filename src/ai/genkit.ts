@@ -6,8 +6,4 @@
 
 import { genkit } from 'genkit';
 
-// This check uses a public environment variable to determine if the AI features are configured on the server.
-// This prevents the actual API key from being exposed to the client.
-export const isConfigured = process.env.NEXT_PUBLIC_GEMINI_API_KEY_CONFIGURED === 'true';
-
 export type AI = ReturnType<typeof genkit<any>>;

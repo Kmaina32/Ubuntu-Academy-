@@ -20,6 +20,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isAiConfigured = !!process.env.GEMINI_API_KEY;
+
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <head>
@@ -50,7 +52,7 @@ export default async function RootLayout({
             `,
           }}
         />
-        <AuthProvider>
+        <AuthProvider isAiConfigured={isAiConfigured}>
             <ThemeEffects />
             {children}
             <Analytics />
