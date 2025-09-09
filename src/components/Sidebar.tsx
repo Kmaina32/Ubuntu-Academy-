@@ -15,7 +15,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library, Briefcase, Tag, Building, Users } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library, Briefcase, Tag, Building, Users, Rocket } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from './ui/separator';
 import pkg from '../../package.json';
@@ -59,6 +59,14 @@ export function AppSidebar() {
                                 <Link href="/programs">
                                     <Library />
                                     <span>Programs</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/bootcamps')} tooltip="Bootcamps" onClick={onLinkClick}>
+                                <Link href="/bootcamps">
+                                    <Rocket />
+                                    <span>Bootcamps</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -186,6 +194,14 @@ export function AppSidebar() {
                                 <Link href="/programs">
                                     <Library />
                                     <span>Programs</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/bootcamps')} tooltip="Bootcamps" onClick={onLinkClick}>
+                                <Link href="/bootcamps">
+                                    <Rocket />
+                                    <span>Bootcamps</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

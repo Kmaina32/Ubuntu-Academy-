@@ -3,7 +3,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser } from './types';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Bootcamp } from './types';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -736,4 +736,44 @@ export async function getInvitation(inviteId: string): Promise<Invitation | null
 export async function deleteInvitation(inviteId: string): Promise<void> {
     const inviteRef = ref(db, `invitations/${inviteId}`);
     await remove(inviteRef);
+}
+
+// Bootcamp Functions
+export async function createBootcamp(bootcampData: Omit<Bootcamp, 'id'>): Promise<string> {
+    const bootcampsRef = ref(db, 'bootcamps');
+    const newBootcampRef = push(bootcampsRef);
+    await set(newBootcampRef, bootcampData);
+    return newBootcampRef.key!;
+}
+
+export async function getAllBootcamps(): Promise<Bootcamp[]> {
+    const bootcampsRef = ref(db, 'bootcamps');
+    const snapshot = await get(bootcampsRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        return Object.keys(data).map(key => ({
+            id: key,
+            ...data[key]
+        }));
+    }
+    return [];
+}
+
+export async function getBootcampById(id: string): Promise<Bootcamp | null> {
+    const bootcampRef = ref(db, `bootcamps/${id}`);
+    const snapshot = await get(bootcampRef);
+    if (snapshot.exists()) {
+        return { id, ...snapshot.val() };
+    }
+    return null;
+}
+
+export async function updateBootcamp(id: string, bootcampData: Partial<Bootcamp>): Promise<void> {
+    const bootcampRef = ref(db, `bootcamps/${id}`);
+    await update(bootcampRef, bootcampData);
+}
+
+export async function deleteBootcamp(id: string): Promise<void> {
+    const bootcampRef = ref(db, `bootcamps/${id}`);
+    await remove(bootcampRef);
 }

@@ -99,6 +99,18 @@ export interface Bundle {
   imageUrl: string;
 }
 
+export interface Bootcamp {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  courseIds: string[];
+  imageUrl: string;
+  duration: string;
+  startDate: string; // ISO String
+}
+
+
 export const user = {
     name: 'Jomo Kenyatta',
     purchasedCourses: [
