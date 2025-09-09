@@ -10,7 +10,7 @@ import { getAllCourses, getAllUsers } from '@/lib/firebase-service';
 import { Loader2 } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Line, ComposedChart, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { format, subDays, parseISO, formatDistanceToNow } from 'date-fns';
+import { format, subDays, parseISO, formatDistanceToNowStrict } from 'date-fns';
 
 type AnalyticsData = {
   totalUsers: number;
@@ -19,6 +19,7 @@ type AnalyticsData = {
   totalRevenue: number;
   userSignups: { date: string, count: number }[];
   courseEnrollments: { title: string, enrollments: number }[];
+  courseRevenue: { title: string, revenue: number }[];
   recentActivities: { type: string, text: string, time: string }[];
 };
 
@@ -26,6 +27,10 @@ const chartConfig = {
   enrollments: {
     label: "Enrollments",
     color: "hsl(var(--primary))",
+  },
+   revenue: {
+    label: "Revenue (Ksh)",
+    color: "hsl(var(--accent))",
   },
   signups: {
     label: "Sign-ups",
@@ -50,7 +55,11 @@ export default function AdminDashboardPage() {
                 let totalEnrollments = 0;
                 let totalRevenue = 0;
                 const courseEnrollmentCounts: { [key: string]: number } = {};
-                courses.forEach(c => courseEnrollmentCounts[c.id] = 0);
+                const courseRevenueCounts: { [key: string]: number } = {};
+                courses.forEach(c => {
+                    courseEnrollmentCounts[c.id] = 0
+                    courseRevenueCounts[c.id] = 0
+                });
         
                 const userSignupCounts: { [key: string]: number } = {};
                 const recentActivities: any[] = [];
@@ -75,6 +84,7 @@ export default function AdminDashboardPage() {
                                 totalEnrollments++;
                                 totalRevenue += course.price;
                                 courseEnrollmentCounts[course.id] = (courseEnrollmentCounts[course.id] || 0) + 1;
+                                courseRevenueCounts[course.id] = (courseRevenueCounts[course.id] || 0) + course.price;
                                 
                                 const enrollmentDate = new Date(user.purchasedCourses![courseId].enrollmentDate);
                                 if (enrollmentDate > thirtyDaysAgo) {
@@ -89,6 +99,11 @@ export default function AdminDashboardPage() {
                     title: course.title,
                     enrollments: courseEnrollmentCounts[course.id] || 0
                 })).sort((a, b) => b.enrollments - a.enrollments).slice(0, 5); // top 5
+                
+                const courseRevenue = courses.map(course => ({
+                    title: course.title,
+                    revenue: courseRevenueCounts[course.id] || 0
+                })).sort((a,b) => b.revenue - a.revenue).slice(0, 5); // top 5
         
                 const userSignups = Object.entries(userSignupCounts).map(([date, count]) => ({
                     date,
@@ -104,6 +119,7 @@ export default function AdminDashboardPage() {
                     totalEnrollments,
                     totalRevenue,
                     courseEnrollments,
+                    courseRevenue,
                     userSignups,
                     recentActivities: recentActivities.slice(0, 5), // top 5 recent
                 });
@@ -207,7 +223,7 @@ export default function AdminDashboardPage() {
                                    </div>
                                    <div>
                                        <p className="text-sm font-medium">{activity.text}</p>
-                                       <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(activity.time), { addSuffix: true })}</p>
+                                       <p className="text-xs text-muted-foreground">{formatDistanceToNowStrict(new Date(activity.time), { addSuffix: true })}</p>
                                    </div>
                                </div>
                            ))}
@@ -215,7 +231,7 @@ export default function AdminDashboardPage() {
                     </CardContent>
                  </Card>
             </div>
-            <div className="grid gap-6">
+            <div className="grid gap-6 md:grid-cols-2">
                 <Card>
                     <CardHeader>
                         <CardTitle>Top 5 Enrolled Courses</CardTitle>
@@ -228,6 +244,22 @@ export default function AdminDashboardPage() {
                           <CartesianGrid horizontal={false} />
                            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                           <Bar dataKey="enrollments" fill="var(--color-enrollments)" radius={4} />
+                        </BarChart>
+                      </ChartContainer>
+                    </CardContent>
+                  </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Top 5 Courses by Revenue</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+                        <BarChart data={analyticsData.courseRevenue} layout="vertical" margin={{ left: 150 }}>
+                          <XAxis type="number" hide />
+                          <YAxis dataKey="title" type="category" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} width={200} />
+                          <CartesianGrid horizontal={false} />
+                           <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                          <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
                         </BarChart>
                       </ChartContainer>
                     </CardContent>
