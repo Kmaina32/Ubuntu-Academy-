@@ -91,6 +91,14 @@ export function AdminSidebar() {
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/admin/plans')} tooltip="Pricing Plans">
+                        <Link href="/admin/plans">
+                            <Tag />
+                            <span>Pricing Plans</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
                 {isSuperAdmin && (
                      <SidebarMenuItem>
                         <SidebarMenuButton asChild isActive={isActive('/admin/approvals')} tooltip="Approvals">

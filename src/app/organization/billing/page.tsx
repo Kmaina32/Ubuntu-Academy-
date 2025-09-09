@@ -8,10 +8,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Download, Loader2, CheckCircle, Mail } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { add, formatDistanceToNow, format } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { useState, useEffect } from 'react';
 import { MpesaModal } from '@/components/MpesaModal';
 import { useToast } from '@/hooks/use-toast';
+import type { PricingPlan } from '@/lib/types';
+import { getAllPlans } from '@/lib/firebase-service';
 
 const MpesaIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg width="24" height="24" viewBox="0 0 256 177" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -49,36 +51,30 @@ export default function OrganizationBillingPage() {
     const { organization, loading: authLoading } = useAuth();
     const { toast } = useToast();
     const [isMpesaModalOpen, setIsMpesaModalOpen] = useState(false);
+    const [plans, setPlans] = useState<PricingPlan[]>([]);
+    const [loadingPlans, setLoadingPlans] = useState(true);
 
-    const pricingTiers = [
-        {
-            name: 'Trial',
-            price: 'Free',
-            priceDetail: 'for 30 days',
-            features: ['Up to 5 users', 'Basic analytics', 'Access to all courses'],
-            isCurrent: organization?.subscriptionTier === 'trial',
-        },
-        {
-            name: 'Basic',
-            price: 'Ksh 70,000',
-            priceDetail: 'per month',
-            features: ['Up to 10 users', 'Advanced analytics', 'Priority support'],
-            isCurrent: organization?.subscriptionTier === 'basic',
-        },
-        {
-            name: 'Pro',
-            price: 'Ksh 200,000',
-            priceDetail: 'per month',
-            features: ['Up to 50 users', 'Dedicated account manager', 'Custom integrations'],
-            isCurrent: organization?.subscriptionTier === 'pro',
-        }
-    ];
+    useEffect(() => {
+        const fetchPlans = async () => {
+            setLoadingPlans(true);
+            try {
+                const fetchedPlans = await getAllPlans();
+                setPlans(fetchedPlans);
+            } catch (error) {
+                console.error("Failed to fetch pricing plans:", error);
+                toast({ title: 'Error', description: 'Could not load pricing information.', variant: 'destructive'});
+            } finally {
+                setLoadingPlans(false);
+            }
+        };
+        fetchPlans();
+    }, [toast]);
 
     const showNotImplementedToast = () => {
         toast({ title: 'Coming Soon', description: 'This payment method is not yet implemented.' });
     };
 
-    if (authLoading) {
+    if (authLoading || loadingPlans) {
         return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
     }
 
@@ -91,17 +87,17 @@ export default function OrganizationBillingPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {pricingTiers.map(tier => (
-                            <Card key={tier.name} className={`flex flex-col ${tier.isCurrent ? 'border-primary ring-2 ring-primary' : ''}`}>
+                        {plans.map(tier => (
+                            <Card key={tier.name} className={`flex flex-col ${tier.isPrimary ? 'border-primary ring-2 ring-primary' : ''}`}>
                                 <CardHeader>
                                     <CardTitle>{tier.name}</CardTitle>
-                                    <p className="text-3xl font-bold">{tier.price}</p>
+                                    <p className="text-3xl font-bold">Ksh {tier.price.toLocaleString()}</p>
                                     <p className="text-sm text-muted-foreground">{tier.priceDetail}</p>
                                 </CardHeader>
                                 <CardContent className="flex-grow">
                                     <ul className="space-y-2 text-sm">
-                                        {tier.features.map(feature => (
-                                            <li key={feature} className="flex items-center gap-2">
+                                        {tier.features.map((feature, i) => (
+                                            <li key={i} className="flex items-center gap-2">
                                                 <CheckCircle className="h-4 w-4 text-green-500" />
                                                 <span>{feature}</span>
                                             </li>
@@ -109,7 +105,7 @@ export default function OrganizationBillingPage() {
                                     </ul>
                                 </CardContent>
                                 <CardContent>
-                                    {tier.isCurrent ? (
+                                    {organization?.subscriptionTier === tier.name.toLowerCase() ? (
                                         <Button className="w-full" disabled>Your Current Plan</Button>
                                     ) : (
                                         <div className="space-y-2">

@@ -3,7 +3,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Bootcamp } from './types';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Bootcamp, PricingPlan } from './types';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -776,4 +776,35 @@ export async function updateBootcamp(id: string, bootcampData: Partial<Bootcamp>
 export async function deleteBootcamp(id: string): Promise<void> {
     const bootcampRef = ref(db, `bootcamps/${id}`);
     await remove(bootcampRef);
+}
+
+// Pricing Plan Functions
+export async function createPlan(planData: Omit<PricingPlan, 'id'>): Promise<string> {
+    const plansRef = ref(db, 'pricingPlans');
+    const newPlanRef = push(plansRef);
+    await set(newPlanRef, planData);
+    return newPlanRef.key!;
+}
+
+export async function getAllPlans(): Promise<PricingPlan[]> {
+    const plansRef = ref(db, 'pricingPlans');
+    const snapshot = await get(plansRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        return Object.keys(data).map(key => ({
+            id: key,
+            ...data[key]
+        }));
+    }
+    return [];
+}
+
+export async function updatePlan(id: string, planData: Partial<PricingPlan>): Promise<void> {
+    const planRef = ref(db, `pricingPlans/${id}`);
+    await update(planRef, planData);
+}
+
+export async function deletePlan(id: string): Promise<void> {
+    const planRef = ref(db, `pricingPlans/${id}`);
+    await remove(planRef);
 }

@@ -290,3 +290,12 @@ export interface Invitation {
     organizationName: string;
     createdAt: string; // ISO String
 }
+
+export interface PricingPlan {
+    id: string;
+    name: string;
+    price: number;
+    priceDetail: string; // e.g., 'per user / month'
+    features: string[];
+    isPrimary: boolean; // For highlighting a recommended plan
+}

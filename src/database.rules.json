@@ -164,6 +164,10 @@
       "$inviteId": {
         ".write": "auth != null && root.child('organizations').child(newData.child('organizationId').val()).child('ownerId').val() === auth.uid"
       }
+    },
+    "pricingPlans": {
+        ".read": "auth != null",
+        ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
     }
   }
 }
