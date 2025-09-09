@@ -64,9 +64,17 @@ Kenya is in the midst of a digital transformation. A young, ambitious, and tech-
 
 **Simple, Diverse, and Scalable Revenue Streams.**
 
-1.  **Direct-to-Consumer (B2C):** Individual course and bundle sales via a seamless M-Pesa integration.
-2.  **Business-to-Business (B2B):** Subscription-based "Ubuntu for Business" portal for corporate training.
-3.  **API Access:** Future revenue from providing programmatic access to our course catalog and AI services.
+1.  **Flexible B2C Offerings:**
+    *   **Pay-per-Course:** Individual course and bundle sales via a seamless M-Pesa integration for users who want specific skills.
+    *   **Subscription (Ubuntu Pro):** A monthly or annual subscription providing unlimited access to our entire course catalog and premium features like advanced AI tutoring.
+    *   **Certificate Fees:** Offer the course content for free to maximize reach, with an optional fee for an official, verifiable certificate upon completion.
+
+2.  **Business-to-Business (B2B):**
+    *   **Team Subscriptions:** A "Ubuntu for Business" portal with tiered pricing based on the number of employee seats and features.
+    *   **Recruiter Access:** A subscription service for companies to access our pool of certified, job-ready talent and view detailed portfolios.
+
+3.  **Platform & API:**
+    *   **API Access:** Future revenue from providing programmatic access to our course catalog and AI services for integration into other platforms.
 
 ---
 
@@ -98,4 +106,3 @@ We are seeking **[Amount]** to achieve the following:
 *   Enhance our AI capabilities and platform features.
 
 **Our vision is to become the leading platform for digital skills training across Africa.**
-
