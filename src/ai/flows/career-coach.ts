@@ -33,8 +33,8 @@ const LearningStepSchema = z.object({
 
 const LearningPathOutputSchema = z.object({
   introduction: z.string().describe('A friendly and encouraging introduction to the learning path.'),
-  learningPath: z.array(LearningStepSchema).describe('A list of courses, in order, that form the learning path.'),
-  conclusion: z.string().describe('A motivating concluding statement to encourage the student to start.'),
+  learningPath: z.array(LearningStepSchema).describe('A list of courses, in order, that form the learning path. If no relevant courses are found, this should be an empty array.'),
+  conclusion: z.string().describe('A motivating concluding statement to encourage the student to start. If no path is generated, this should explain why and suggest next steps.'),
 });
 export type LearningPathOutput = z.infer<typeof LearningPathOutputSchema>;
 
@@ -52,11 +52,10 @@ const prompt = ai.definePrompt({
   output: { schema: LearningPathOutputSchema },
   prompt: `You are an expert AI Career Coach for Ubuntu Academy. Your task is to create a personalized learning path for a student based on their stated career goal and their conversation history.
 
-You have access to a tool called \`listCourses\` which provides the full catalog of available courses. You MUST use this tool to see which courses are available to recommend.
+**CRITICAL INSTRUCTIONS:**
 
-**Instructions:**
-
-1.  **Analyze the Goal and History:** Understand the student's most recent career goal: "{{careerGoal}}". Also, review the past conversation for context.
+1.  **MUST USE TOOL:** You MUST start by calling the \`listCourses\` tool to get the full catalog of available courses. Do not recommend any courses without first checking what is available.
+2.  **Analyze the Goal and History:** Understand the student's most recent career goal: "{{careerGoal}}". Also, review the past conversation for context.
 {{#if history}}
 ---
 **Conversation History:**
@@ -65,12 +64,12 @@ You have access to a tool called \`listCourses\` which provides the full catalog
 {{/each}}
 ---
 {{/if}}
-2.  **Use the Tool:** Call the \`listCourses\` tool to get all available courses.
-3.  **Select Courses:** Based on the student's goal and the available courses, select a logical sequence of 2-4 courses that will help them achieve their goal. Do not recommend courses that are not in the tool's output. If the student asks to refine a previous path, adjust your recommendations accordingly.
-4.  **Create the Path:** Structure your response as a clear, step-by-step learning path. For each step:
-    *   Provide the exact \`courseId\` and \`courseTitle\` from the tool's output.
+3.  **Select Courses:** Based on the student's goal and the available courses from the tool, select a logical sequence of 2-4 courses that will help them achieve their goal.
+4.  **Handle No Relevant Courses:** If no courses in the catalog are a good fit for the user's goal, you MUST return an empty \`learningPath\` array and explain in the \`conclusion\` that you couldn't find a relevant path and suggest they browse the catalog manually.
+5.  **Create the Path:** If relevant courses are found, structure your response as a clear, step-by-step learning path. For each step:
+    *   Provide the exact \`courseId\` and \`courseTitle\` from the tool's output. **\`courseId\` must not be null.**
     *   Provide clear, encouraging, and detailed reasoning for why that course is the right choice for that step and how it builds towards the final goal.
-5.  **Write Introduction and Conclusion:** Add a friendly introduction and a motivating concluding statement.
+6.  **Write Introduction and Conclusion:** Add a friendly introduction and a motivating concluding statement.
 
 Your tone should be encouraging, professional, and empowering.`,
 });
