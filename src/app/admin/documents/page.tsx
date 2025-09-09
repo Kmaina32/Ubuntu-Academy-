@@ -1,8 +1,8 @@
+
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
 import { Footer } from "@/components/Footer";
@@ -15,12 +15,8 @@ import { getDocumentContent, saveDocumentContent, generateFormalDocument } from 
 import { useAuth } from '@/hooks/use-auth';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { Textarea } from '@/components/ui/textarea';
 
-// Dynamically import the new RichTextEditor to ensure it's only loaded on the client side
-const RichTextEditor = dynamic(() => import('@/components/shared/RichTextEditor'), {
-    ssr: false,
-    loading: () => <div className="flex justify-center items-center flex-grow"><Loader2 className="h-8 w-8 animate-spin" /></div>,
-});
 
 const ALL_DOC_TYPES: readonly DocType[] = ['PITCH_DECK.md', 'FRAMEWORK.md', 'API.md', 'RESOLUTION_TO_REGISTER_A_COMPANY.md', 'PATENT_APPLICATION.md'] as const;
 type DocType = (typeof ALL_DOC_TYPES)[number];
@@ -75,31 +71,34 @@ function DocumentEditor({ docType }: { docType: DocType }) {
     }
   }
 
- const formatPitchDeckForPdf = (htmlContent: string): string => {
-    const slides = htmlContent.split(/<h2>/).slice(1);
+ const formatPitchDeckForPdf = (markdownContent: string): string => {
+    const slides = markdownContent.split(/### Slide \d+:/).slice(1);
     let html = '';
     slides.forEach((slideContent, index) => {
-        const titleMatch = slideContent.match(/(.*?)<\/h2>/);
-        const title = titleMatch ? titleMatch[1].replace(/Slide \d+:?/, '').trim() : `Slide ${index + 1}`;
-        const bodyContent = slideContent.substring(titleMatch ? titleMatch[0].length : 0);
+        const titleMatch = slideContent.match(/\*\*([^*]+)\*\*/);
+        const title = titleMatch ? titleMatch[1] : `Slide ${index + 1}`;
+        const bodyContent = slideContent.replace(/\*\*([^*]+)\*\*/, '').replace(/\*/g, '').replace(/^-/gm, '').trim();
 
         html += `<div class="pdf-slide">`;
         html += `<div class="pdf-slide-header">${title}</div>`;
-        html += `<div class="pdf-slide-body">${bodyContent}</div>`;
+        html += `<div class="pdf-slide-body"><p>${bodyContent.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br/>')}</p></div>`;
         html += `<div class="pdf-slide-footer">${index + 1}</div>`;
         html += `</div>`;
     });
     return html;
  };
 
-const formatGeneralContent = (htmlContent: string): string => {
-    // A simple regex to handle most markdown-like tags from the new editor
-    const formatted = htmlContent
-        .replace(/<b>(.*?)<\/b>/g, '<strong>$1</strong>')
-        .replace(/<i>(.*?)<\/i>/g, '<em>$1</em>')
-        .replace(/<ul>/g, '<ul style="list-style-type: disc; padding-left: 25pt;">')
-        .replace(/<ol>/g, '<ol style="list-style-type: decimal; padding-left: 25pt;">')
-        .replace(/<li>/g, '<li style="margin-bottom: 8pt;">');
+const formatGeneralContent = (markdownContent: string): string => {
+    const formatted = markdownContent
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/^- (.*$)/gim, '<li>$1</li>')
+        .replace(/<\/li>\n<li>/g, '</li><li>') // Handle consecutive list items
+        .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+        .replace(/\n/g, '<br />');
 
     return `<div class="pdf-general">${formatted}</div>`;
 };
@@ -160,10 +159,16 @@ const formatGeneralContent = (htmlContent: string): string => {
       <div ref={pdfRef} aria-hidden="true" />
       
         <div className="bg-background rounded-md border min-h-[50vh] flex-grow">
-          <RichTextEditor
-            value={content}
-            onChange={setContent}
-          />
+          {isLoading ? (
+             <div className="flex justify-center items-center flex-grow h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+          ) : (
+            <Textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base p-4"
+                placeholder="Start writing your document..."
+            />
+          )}
         </div>
       
       <div className="flex justify-between items-center flex-shrink-0">
