@@ -17,7 +17,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Textarea } from '@/components/ui/textarea';
 
-const ALL_DOC_TYPES: readonly DocType[] = ['PITCH_DECK.md', 'FRAMEWORK.md', 'API.md', 'RESOLUTION_TO_REGISTER_A_COMPANY.md', 'PATENT_APPLICATION.md'] as const;
+const ALL_DOC_TYPES: readonly DocType[] = ['PITCH_DECK.md', 'FRAMEWORK.md', 'API.md', 'B2B_STRATEGY.md', 'SEO_STRATEGY.md', 'VISUAL_FRAMEWORK.md'] as const;
 type DocType = (typeof ALL_DOC_TYPES)[number];
 
 function DocumentEditor({ docType }: { docType: DocType }) {
@@ -196,8 +196,9 @@ export default function AdminDocumentsPage() {
         { value: "pitch_deck", label: "Pitch Deck", docType: "PITCH_DECK.md" as DocType, icon: Presentation },
         { value: "framework", label: "Framework", docType: "FRAMEWORK.md" as DocType, icon: BookOpen },
         { value: "api", label: "API", docType: "API.md" as DocType, icon: FileText },
-        { value: "resolution", label: "Resolution", docType: "RESOLUTION_TO_REGISTER_A_COMPANY.md" as DocType, icon: FileSignature },
-        { value: "patent", label: "Patent", docType: "PATENT_APPLICATION.md" as DocType, icon: FileSignature },
+        { value: "b2b_strategy", label: "B2B Strategy", docType: "B2B_STRATEGY.md" as DocType, icon: FileSignature },
+        { value: "seo_strategy", label: "SEO Strategy", docType: "SEO_STRATEGY.md" as DocType, icon: FileSignature },
+        { value: "visual_framework", label: "Visual Framework", docType: "VISUAL_FRAMEWORK.md" as DocType, icon: FileSignature }
     ], []);
     
     if (authLoading || !isSuperAdmin) {
@@ -221,7 +222,7 @@ export default function AdminDocumentsPage() {
                   Manage Documents
                 </CardTitle>
                 <CardDescription>View, edit, and generate formal documentation for your application.</CardDescription>
-                 <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mt-4">
+                 <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 mt-4">
                     {TABS_CONFIG.map(tab => (
                         <TabsTrigger key={tab.value} value={tab.value}><tab.icon className="mr-2 h-4 w-4"/>{tab.label}</TabsTrigger>
                     ))}

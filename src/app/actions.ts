@@ -100,12 +100,12 @@ export async function sendOrganizationInvite(input: SendOrgInviteInput): Promise
 }
 
 export async function getDocumentContent(docType: string): Promise<string> {
-    const filePath = path.join(process.cwd(), docType);
+    const filePath = path.join(process.cwd(), 'src/docs', docType);
     return fs.readFile(filePath, 'utf-8');
 }
 
 export async function saveDocumentContent(docType: string, content: string): Promise<void> {
-    const filePath = path.join(process.cwd(), docType);
+    const filePath = path.join(process.cwd(), 'src/docs', docType);
     await fs.writeFile(filePath, content, 'utf-8');
 }
 
