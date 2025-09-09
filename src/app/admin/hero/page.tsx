@@ -20,6 +20,8 @@ import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { fetchAndActivate, getString } from 'firebase/remote-config';
+import { remoteConfig } from '@/lib/firebase';
 
 const heroFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -70,12 +72,24 @@ export default function AdminHeroPage() {
       setIsFetching(true);
       try {
         const dbData = await getHeroData();
-        const remoteData = await getRemoteConfigValues(['hero_title', 'hero_subtitle']);
+        
+        let remoteTitle = dbData.title;
+        let remoteSubtitle = dbData.subtitle;
 
+        if (remoteConfig) {
+           try {
+              await fetchAndActivate(remoteConfig);
+              remoteTitle = getString(remoteConfig, 'hero_title') || dbData.title;
+              remoteSubtitle = getString(remoteConfig, 'hero_subtitle') || dbData.subtitle;
+           } catch(e) {
+             console.warn("Could not fetch remote config. Using defaults.");
+           }
+        }
+        
         form.reset({
           ...dbData,
-          title: remoteData.hero_title || dbData.title,
-          subtitle: remoteData.hero_subtitle || dbData.subtitle,
+          title: remoteTitle,
+          subtitle: remoteSubtitle,
           theme: dbData.theme || 'default',
           animationsEnabled: dbData.animationsEnabled !== false, // default to true if not set
         });

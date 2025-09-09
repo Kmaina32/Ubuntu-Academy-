@@ -15,16 +15,15 @@ const firebaseConfig = {
   appId: "1:971829599240:web:c7ae181183e385219dc5bd",
 };
 
-// Initialize Firebase
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+// Initialize Firebase using a singleton pattern
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 const auth = getAuth(app);
 const db = getDatabase(app);
 const storage = getStorage(app);
+const remoteConfig = typeof window !== 'undefined' ? getRemoteConfig(app) : null;
 
-let remoteConfig: any;
-if (typeof window !== 'undefined') {
-    remoteConfig = getRemoteConfig(app);
+if (remoteConfig) {
     remoteConfig.defaultConfig = {
         "hero_title": "Unlock Your Potential.",
         "hero_subtitle": "Quality, affordable courses designed for the Kenyan market."

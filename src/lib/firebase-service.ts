@@ -178,6 +178,8 @@ export async function getHeroData(): Promise<HeroData> {
   const heroRef = ref(db, 'hero');
   const snapshot = await get(heroRef);
   const defaults = {
+    title: 'Unlock Your Potential.', 
+    subtitle: 'Quality, affordable courses designed for the Kenyan market.',
     imageUrl: 'https://placehold.co/1200x400.png',
     loginImageUrl: 'https://placehold.co/1200x900.png',
     signupImageUrl: 'https://placehold.co/1200x900.png',
@@ -194,23 +196,11 @@ export async function getHeroData(): Promise<HeroData> {
   };
 
   const dbData = snapshot.exists() ? snapshot.val() : {};
-  let remoteData = { title: 'Unlock Your Potential.', subtitle: 'Quality, affordable courses designed for the Kenyan market.' };
-
-  // This check ensures Remote Config is only used on the client-side
-  if (typeof window !== 'undefined') {
-    try {
-      const remoteConfig = getRemoteConfig(app);
-      // Set a timeout for the fetch operation to prevent long delays
-      remoteConfig.settings.fetchTimeoutMillis = 3000;
-      await fetchAndActivate(remoteConfig);
-      remoteData.title = getString(remoteConfig, 'hero_title') || remoteData.title;
-      remoteData.subtitle = getString(remoteConfig, 'hero_subtitle') || remoteData.subtitle;
-    } catch (error) {
-      console.warn("Remote Config fetch failed, using defaults. This is expected if Remote Config API is not enabled.", error);
-    }
-  }
-
-  return { ...defaults, ...dbData, ...remoteData };
+  
+  // Remote Config is now client-only, so we don't fetch it here on the server.
+  // We can combine the DB data with client-fetched remote config in the component itself.
+  
+  return { ...defaults, ...dbData };
 }
 
 export async function saveHeroData(data: Partial<HeroData>): Promise<void> {
@@ -366,8 +356,13 @@ export async function getRemoteConfigValues(keys: string[]): Promise<Record<stri
 
 
 export async function saveRemoteConfigValues(data: Record<string, string>): Promise<void> {
-    const remoteConfigRef = ref(db, 'remoteConfig');
-    await update(remoteConfigRef, data);
+    // This function can't actually save to remote config from the client.
+    // It will write to the Realtime Database instead as a mock.
+    const heroRef = ref(db, 'hero');
+    await update(heroRef, {
+        title: data.hero_title,
+        subtitle: data.hero_subtitle
+    });
     console.log("Remote config values saved to RTDB for demo purposes:", data);
 }
 
