@@ -121,12 +121,12 @@ This diagram illustrates potential threats and the implemented mitigations at di
 
 ```mermaid
 graph TD
-    subgraph "Threat Vectors"
+    subgraph THREATS [Threat Vectors]
         A[External Attacker]
         B[Malicious User]
     end
     
-    subgraph "Application Layers"
+    subgraph LAYERS [Application Layers]
         C[Next.js Frontend]
         D[Next.js Backend / Server Actions]
         E[Firebase Services]
@@ -139,7 +139,7 @@ graph TD
     B -->|IDOR| D
     B -->|Unauthorized Access| E
     
-    subgraph "Mitigations"
+    subgraph MITIGATIONS [Mitigations]
         M1(Input Sanitization, reCAPTCHA)
         M2(Firebase Hosting DDoS Protection)
         M3(Rate Limiting, Auth Middleware)
@@ -153,8 +153,8 @@ graph TD
     D -- Mitigated by --> M4
     E -- Mitigated by --> M5
     
-    style "Threat Vectors" fill:#F5B7B1
-    style "Mitigations" fill:#A9DFBF
+    style THREATS fill:#F5B7B1
+    style MITIGATIONS fill:#A9DFBF
 ```
 
 ## Data Analytics Flow
@@ -163,19 +163,19 @@ This diagram shows the flow of data from user actions to the analytics dashboard
 
 ```mermaid
 graph LR
-    A[User Action<br/>(e.g., Signup, Enroll)] --> B{Next.js Server Action};
-    B --> C[Firebase Realtime DB<br/>/users, /courses];
+    A["User Action<br/>(e.g., Signup, Enroll)"] --> B{Next.js Server Action};
+    B --> C["Firebase Realtime DB<br/>/users, /courses"];
     
-    subgraph "Analytics Process"
+    subgraph ANALYTICS [Analytics Process]
         D[Admin Analytics Page] --> E{fetchAnalytics()};
         E -->|getAllUsers(), getAllCourses()| C;
-        E --> F[Process Data<br/>(Count totals, Aggregate signups)];
+        E --> F["Process Data<br/>(Count totals, Aggregate signups)"];
         F --> G[Display in Charts & Cards];
     end
     
     D --> G;
 
-    style "Analytics Process" fill:#D6EAF8,stroke:#333,stroke-width:1px
+    style ANALYTICS fill:#D6EAF8,stroke:#333,stroke-width:1px
 ```
 
 ## Database Framework
@@ -196,7 +196,7 @@ erDiagram
         string courseId PK "Course ID"
         string title
         string description
-        array modules
+        string modules
     }
 
     SUBMISSIONS {
