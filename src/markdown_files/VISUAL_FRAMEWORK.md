@@ -9,21 +9,21 @@ This diagram provides a bird's-eye view of the entire application stack. It show
 ```mermaid
 graph TD
     subgraph CLIENT [Client (Next.js/React)]
-        A[User Interface] --> B{React Components};
-        B --> C[ShadCN UI];
-        B --> D[Tailwind CSS];
-        A --> E[Next.js App Router];
+        A["User Interface"] --> B{"React Components"};
+        B --> C["ShadCN UI"];
+        B --> D["Tailwind CSS"];
+        A --> E["Next.js App Router"];
     end
 
     subgraph SERVER [Server-Side (Next.js)]
-        E --> F[Server Components];
-        E --> G[Server Actions];
+        E --> F["Server Components"];
+        E --> G["Server Actions"];
     end
 
     subgraph BACKEND [Backend Services]
-        H[Firebase Auth]
-        I[Firebase Realtime DB]
-        J[Genkit AI Flows]
+        H["Firebase Auth"]
+        I["Firebase Realtime DB"]
+        J["Genkit AI Flows"]
     end
 
     G --> H;
@@ -33,7 +33,7 @@ graph TD
     F --> I;
 
     subgraph AIML [AI/ML (Genkit)]
-        J --> K[Google AI Platform];
+        J --> K["Google AI Platform"];
     end
 
     style CLIENT fill:#D6EAF8,stroke:#333,stroke-width:2px
@@ -48,24 +48,24 @@ This diagram shows how different UI components interact and form the user interf
 ```mermaid
 graph TD
     subgraph PAGES [Pages]
-        P1[Course Player Page]
-        P2[Admin Dashboard]
-        P3[Home Page]
+        P1["Course Player Page"]
+        P2["Admin Dashboard"]
+        P3["Home Page"]
     end
 
     subgraph SHARED [Shared Components]
-        C1[Header]
-        C2[Footer]
-        C3[Sidebar]
-        C4[CourseCard]
-        C5[MpesaModal]
+        C1["Header"]
+        C2["Footer"]
+        C3["Sidebar"]
+        C4["CourseCard"]
+        C5["MpesaModal"]
     end
 
-    subgraph PRIMITIVES [UI Primitives (ShadCN)]
-        U1[Button]
-        U2[Card]
-        U3[Dialog]
-        U4[Input]
+    subgraph PRIMITIVES ["UI Primitives (ShadCN)"]
+        U1["Button"]
+        U2["Card"]
+        U3["Dialog"]
+        U4["Input"]
     end
 
     P1 --> C1;
@@ -99,17 +99,17 @@ graph LR
     A[User] -->|HTTPS| B(Next.js Frontend);
 
     subgraph FIREBASE [Firebase]
-        C[Firebase Authentication]
-        D[Firebase Realtime DB]
-        E[Database Security Rules]
+        C["Firebase Authentication"]
+        D["Firebase Realtime DB"]
+        E["Database Security Rules"]
     end
 
-    B -->|Login/Signup| C;
+    B -->|"Login/Signup"| C;
     C -->|"Auth Token (JWT)"| B;
-    B -->|"Server Actions"| F[Next.js Backend];
+    B -->|"Server Actions"| F["Next.js Backend"];
     F -->|"Authenticated Requests"| D;
-    D -- Enforces --> E;
-    E -- Defines Access --> D;
+    D -- "Enforces" --> E;
+    E -- "Defines Access" --> D;
 
     style FIREBASE fill:#FDEBD0,stroke:#F39C12,stroke-width:2px
 ```
@@ -120,39 +120,39 @@ This diagram illustrates potential threats and the implemented mitigations at di
 ```mermaid
 graph TD
     subgraph THREATS ["Threat Vectors"]
-        A[External Attacker]
-        B[Malicious User]
+        A["External Attacker"]
+        B["Malicious User"]
     end
     
     subgraph LAYERS ["Application Layers"]
-        C[Next.js Frontend]
+        C["Next.js Frontend"]
         D["Next.js Backend / Server Actions"]
-        E[Firebase Services]
-        F[Database]
+        E["Firebase Services"]
+        F["Database"]
     end
     
-    A -->|XSS, CSRF| C
+    A -->|"XSS, CSRF"| C
     A -->|DDoS| C
     A -->|"API Abuse"| D
     B -->|IDOR| D
     B -->|"Unauthorized Access"| E
     
     subgraph MITIGATIONS ["Mitigations"]
-        M1(Input Sanitization, reCAPTCHA)
-        M2(Firebase Hosting DDoS Protection)
-        M3(Rate Limiting, Auth Middleware)
-        M4(DB Rules: auth.uid checks)
-        M5(DB Rules: isAdmin checks)
+        M1("Input Sanitization, reCAPTCHA")
+        M2("Firebase Hosting DDoS Protection")
+        M3("Rate Limiting, Auth Middleware")
+        M4("DB Rules: auth.uid checks")
+        M5("DB Rules: isAdmin checks")
     end
     
-    C -- Mitigated by --> M1
-    C -- Mitigated by --> M2
-    D -- Mitigated by --> M3
-    D -- Mitigated by --> M4
-    E -- Mitigated by --> M5
+    C -- "Mitigated by" --> M1
+    C -- "Mitigated by" --> M2
+    D -- "Mitigated by" --> M3
+    D -- "Mitigated by" --> M4
+    E -- "Mitigated by" --> M5
     
-    style THREATS fill:#F5B7B1
-    style MITIGATIONS fill:#A9DFBF
+    style THREATS fill:#F5B7B1,stroke:#333,stroke-width:2px
+    style MITIGATIONS fill:#A9DFBF,stroke:#333,stroke-width:2px
 ```
 
 ## Data Analytics Flow
@@ -160,26 +160,26 @@ This diagram shows the flow of data from user actions to the analytics dashboard
 
 ```mermaid
 graph LR
-    subgraph ACTION [User Action]
+    subgraph ACTION ["User Action"]
         A["User Action<br/>(e.g., Signup, Enroll)"]
     end
     
-    subgraph SERVER [Server-Side Logic]
-        B{Next.js Server Action}
+    subgraph SERVER ["Server-Side Logic"]
+        B{"Next.js Server Action"}
     end
 
-    subgraph DATABASE [Database]
-         C["Firebase Realtime DB<br/>(e.g., /users, /courses)"]
+    subgraph DATABASE ["Database"]
+         C["Firebase Realtime DB<br/>(/users, /courses)"]
     end
     
     A --> B;
     B --> C;
     
-    subgraph ANALYTICS [Analytics Process]
-        D[Admin Analytics Page] --> E{fetchAnalytics()};
-        E -->|getAllUsers(), getAllCourses()| C;
-        E --> F[Process Data<br/>(Count totals, Aggregate signups)];
-        F --> G[Display in Charts & Cards];
+    subgraph ANALYTICS ["Analytics Process"]
+        D["Admin Analytics Page"] --> E{"fetchAnalytics()"};
+        E -->|"getAllUsers(), getAllCourses()"| C;
+        E --> F["Process Data<br/>(Count totals, Aggregate signups)"];
+        F --> G["Display in Charts & Cards"];
     end
     
     D --> G;
@@ -194,35 +194,34 @@ This diagram shows a simplified version of the Firebase Realtime Database schema
 erDiagram
     USERS {
         string uid PK "User ID"
-        string email
-        string displayName
-        bool isAdmin
-        string organizationId FK
+        string email "Email"
+        string displayName "Display Name"
+        bool isAdmin "Is Admin"
+        string organizationId FK "Organization ID"
     }
 
     COURSES {
         string courseId PK "Course ID"
-        string title
-        string description
-        array modules
+        string title "Title"
+        string description "Description"
+        array modules "Modules"
     }
 
     SUBMISSIONS {
         string submissionId PK "Submission ID"
-        string userId FK
-        string courseId FK
-        string submittedAt
-        bool graded
+        string userId FK "User ID"
+        string courseId FK "Course ID"
+        string submittedAt "Submitted At"
+        bool graded "Graded"
     }
 
     ORGANIZATIONS {
         string orgId PK "Organization ID"
-        string name
-        string ownerId FK
+        string name "Name"
+        string ownerId FK "Owner ID"
     }
 
-    USERS ||--o{ SUBMISSIONS : submits
-    COURSES ||--o{ SUBMISSIONS : for
+    USERS ||--o{ SUBMISSIONS : "submits"
+    COURSES ||--o{ SUBMISSIONS : "for"
     USERS }|--|| ORGANIZATIONS : "belongs-to"
 ```
-
