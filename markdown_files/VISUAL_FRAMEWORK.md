@@ -2,7 +2,7 @@
 # Akili AI
 # Akili A.I Academy - Visual Framework
 
-This document provides a graphical overview of the application's structure and key operational flows using Mermaid syntax. These diagrams can be rendered by GitHub or compatible Markdown editors.
+This document provides a graphical overview of the application\'s structure and key operational flows using Mermaid syntax. These diagrams can be rendered by GitHub or compatible Markdown editors.
 
 ## 1. Application Site Map
 
@@ -119,7 +119,7 @@ sequenceDiagram
     GenkitFlow->>GeminiModel: Prompts model to answer based on context
     GeminiModel-->>GenkitFlow: Returns formatted answer/quiz
     GenkitFlow-->>TutorUI: Returns answer to display
-    TutorUI-->>Student: Shows Gina's response
+    TutorUI-->>Student: Shows Gina\'s response
 ```
 
 ## 5. Roles & Permissions Overview
@@ -241,7 +241,7 @@ sequenceDiagram
 
     User->>FirebaseClient: Attempts to read or write data (e.g., `db.ref('/users/some-uid').set(...)`)
     FirebaseClient->>FirebaseAuth: Automatically attaches Auth token to request
-    FirebaseAuth-->>FirebaseClient: Token contains user's UID
+    FirebaseAuth-->>FirebaseClient: Token contains user\'s UID
     FirebaseClient->>FirebaseRules: Sends request with path, data, and Auth token
 
     FirebaseRules->>FirebaseRules: Evaluates rules for the target path
@@ -264,7 +264,7 @@ sequenceDiagram
             FirebaseClient->>FirebaseDB: Executes operation
             FirebaseDB-->>FirebaseClient: Returns data or success
             FirebaseClient-->>User: Displays result
-        else Other User's Data
+        else Other User\'s Data
             FirebaseRules-->>FirebaseClient: Denies Read/Write
             FirebaseClient-->>User: Shows permission denied error
         end
@@ -280,7 +280,7 @@ This diagram illustrates the Next.js component architecture for a key page, the 
 ```mermaid
 graph TD
     subgraph "Next.js Page: /courses/[id]/learn"
-        A[CoursePlayerPage (Server Component)]
+        A["CoursePlayerPage (Server Component)"]
         
         subgraph "Client Components (Interactive UI)"
             direction LR
@@ -294,7 +294,7 @@ graph TD
             G["updateProgress()"]
         end
 
-        B[LessonList (Server Component)]
+        B["LessonList (Server Component)"]
 
         A -- "Renders" --> B
         A -- "Renders & passes data to" --> C
