@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -12,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
-import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen, Clock, Check, MessageSquare } from "lucide-react";
+import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen, Clock, Check } from "lucide-react";
 import { MpesaModal } from '@/components/MpesaModal';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
@@ -41,7 +42,7 @@ function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolle
 
                 {isEnrolled ? (
                     <div className="space-y-2">
-                        <Button size="lg" className="w-full text-sm">
+                        <Button size="lg" className="w-full text-sm" disabled>
                            <Check className="mr-2 h-4 w-4 flex-shrink-0"/> Enrolled
                         </Button>
                          <Button size="lg" variant="outline" asChild className="w-full text-sm">
