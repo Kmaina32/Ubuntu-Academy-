@@ -1,6 +1,7 @@
-# Ubuntu Academy - Global SEO Strategy
 
-This document outlines a comprehensive Search Engine Optimization (SEO) strategy to scale Ubuntu Academy's online presence from a local Kenyan audience to a worldwide audience.
+# Akili AI Academy - Global SEO Strategy
+
+This document outlines a comprehensive Search Engine Optimization (SEO) strategy to scale Akili AI Academy's online presence from a local Kenyan audience to a worldwide audience.
 
 ## 1. Executive Summary
 
@@ -41,8 +42,8 @@ Our keyword strategy will shift from purely Kenyan-centric terms to a broader, t
 ## 4. On-Page SEO
 
 #### 4.1. Meta Titles & Descriptions:
--   **Template:** `[Course Title] Online Course | Ubuntu Academy`
--   **Example:** `Data Science with Python Online Course | Ubuntu Academy`
+-   **Template:** `[Course Title] Online Course | Akili AI Academy`
+-   **Example:** `Data Science with Python Online Course | Akili AI Academy`
 -   Descriptions must be compelling, include a call-to-action (CTA), and be localized where appropriate.
 
 #### 4.2. Content Optimization:
@@ -70,11 +71,11 @@ This is the most critical component for global scaling.
 -   To tell Google about localized versions of a page, we must use `hreflang` tags.
 -   **Example:** If we create a Spanish version of the homepage, the `<head>` of both the English and Spanish pages should contain:
     ```html
-    <link rel="alternate" hreflang="en" href="https://ubuntu-academy.com/" />
-    <link rel="alternate" hreflang="es" href="https://ubuntu-academy.com/es/" />
-    <link rel="alternate" hreflang="x-default" href="https://ubuntu-academy.com/" />
+    <link rel="alternate" hreflang="en" href="https://akili-ai-academy.com/" />
+    <link rel="alternate" hreflang="es" href="https://akili-ai-academy.com/es/" />
+    <link rel="alternate" hreflang="x-default" href="https://akili-ai-academy.com/" />
     ```
--   This requires a URL structure that supports localization (e.g., `ubuntu-academy.com/es/` for Spanish).
+-   This requires a URL structure that supports localization (e.g., `akili-ai-academy.com/es/` for Spanish).
 
 #### 5.4. XML Sitemap:
 -   Ensure the sitemap is always up-to-date and includes all public pages. If we implement `hreflang`, the sitemap must also include the alternate versions of each URL.

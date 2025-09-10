@@ -108,7 +108,7 @@ const mpesaPaymentFlow = ai.defineFlow(
             PartyB: shortCode,
             PhoneNumber: formattedPhoneNumber,
             CallBackURL: `${callbackUrl}?courseId=${courseId}`,
-            AccountReference: "UbuntuAcademy", // Replace with your company name
+            AccountReference: "AkiliAIAcademy", // Replace with your company name
             TransactionDesc: `Payment for ${courseId}`
         }, {
             headers: {

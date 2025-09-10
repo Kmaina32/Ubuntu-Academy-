@@ -87,7 +87,7 @@ export default function OrganizationLoginPage() {
            <div className="grid gap-2 text-center">
               <Link href="/" className="flex items-center justify-center gap-2 font-bold text-2xl font-headline">
                   <Gem className="h-7 w-7 text-primary" />
-                  <span>Ubuntu Academy</span>
+                  <span>Akili AI Academy</span>
               </Link>
           </div>
           <Card>
@@ -168,4 +168,3 @@ export default function OrganizationLoginPage() {
     </div>
   );
 }
-

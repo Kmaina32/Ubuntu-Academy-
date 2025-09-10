@@ -1,10 +1,11 @@
-# Ubuntu Academy - API Documentation
 
-Welcome to the Ubuntu Academy API documentation. This document provides all the information you need to interact with our platform programmatically.
+# Akili AI Academy - API Documentation
+
+Welcome to the Akili AI Academy API documentation. This document provides all the information you need to interact with our platform programmatically.
 
 ## 1. Introduction
 
-The Ubuntu Academy API provides access to our course catalog and other platform features. It follows RESTful principles and uses standard HTTP response codes and JSON-formatted responses.
+The Akili AI Academy API provides access to our course catalog and other platform features. It follows RESTful principles and uses standard HTTP response codes and JSON-formatted responses.
 
 ### Base URL
 

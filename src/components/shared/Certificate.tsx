@@ -46,7 +46,7 @@ export function Certificate({ course, userName }: CertificateProps) {
       const pdfHeight = pdf.internal.pageSize.getHeight();
 
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`MkenyaSkilled_Certificate_${course.title.replace(/\s+/g, '_')}.pdf`);
+      pdf.save(`Akili_AI_Academy_Certificate_${course.title.replace(/\s+/g, '_')}.pdf`);
     } catch (error) {
       console.error("Error generating PDF:", error);
     } finally {
@@ -160,4 +160,3 @@ export function Certificate({ course, userName }: CertificateProps) {
     </div>
   );
 }
- 

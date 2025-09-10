@@ -1,3 +1,4 @@
+
 import { render, screen } from '@testing-library/react'
 import { Footer } from './Footer'
 
@@ -6,12 +7,12 @@ describe('Footer', () => {
     render(<Footer />)
 
     // Check for the company name
-    const companyName = screen.getByText(/Ubuntu Academy/i)
+    const companyName = screen.getByText(/Akili AI Academy/i)
     expect(companyName).toBeInTheDocument()
 
     // Check for the copyright notice
     const currentYear = new Date().getFullYear()
-    const copyrightNotice = screen.getByText(`© ${currentYear} Ubuntu Academy. All rights reserved.`)
+    const copyrightNotice = screen.getByText(`© ${currentYear} Akili AI Academy. All rights reserved.`)
     expect(copyrightNotice).toBeInTheDocument()
 
     // Check for the navigation links
