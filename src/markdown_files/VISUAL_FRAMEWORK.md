@@ -7,19 +7,19 @@ This document provides a visual representation of the application's architecture
 
 ```mermaid
 graph TD
-    subgraph CLIENT [Client (Next.js/React)]
+    subgraph CLIENT ["Client (Next.js/React)"]
         A[User Interface] --> B{React Components};
         B --> C[ShadCN UI];
         B --> D[Tailwind CSS];
         A --> E[Next.js App Router];
     end
 
-    subgraph SERVER [Server-Side (Next.js)]
+    subgraph SERVER ["Server-Side (Next.js)"]
         E --> F[Server Components];
         E --> G[Server Actions];
     end
 
-    subgraph BACKEND [Backend Services]
+    subgraph BACKEND ["Backend Services"]
         H[Firebase Auth]
         I[Firebase Realtime DB]
         J[Genkit AI Flows]
@@ -31,7 +31,7 @@ graph TD
 
     F --> I;
 
-    subgraph AIML [AI/ML (Genkit)]
+    subgraph AIML ["AI/ML (Genkit)"]
         J --> K[Google AI Platform];
     end
 
@@ -47,13 +47,13 @@ This diagram shows how different UI components interact and form the user interf
 
 ```mermaid
 graph TD
-    subgraph PAGES [Pages]
+    subgraph PAGES ["Pages"]
         P1[Course Player Page]
         P2[Admin Dashboard]
         P3[Home Page]
     end
 
-    subgraph SHARED [Shared Components]
+    subgraph SHARED ["Shared Components"]
         C1[Header]
         C2[Footer]
         C3[Sidebar]
@@ -61,7 +61,7 @@ graph TD
         C5[MpesaModal]
     end
 
-    subgraph PRIMITIVES [UI Primitives (ShadCN)]
+    subgraph PRIMITIVES ["UI Primitives (ShadCN)"]
         U1[Button]
         U2[Card]
         U3[Dialog]
@@ -99,7 +99,7 @@ This diagram illustrates the security layers, from user authentication to databa
 graph LR
     A[User] -->|HTTPS| B(Next.js Frontend);
 
-    subgraph FIREBASE [Firebase]
+    subgraph FIREBASE ["Firebase"]
         C[Firebase Authentication]
         D[Firebase Realtime DB]
         E[Database Security Rules]
@@ -128,33 +128,33 @@ graph TD
     
     subgraph LAYERS ["Application Layers"]
         C[Next.js Frontend]
-        D[Next.js Backend / Server Actions]
+        D["Next.js Backend / Server Actions"]
         E[Firebase Services]
         F[Database]
     end
     
-    A -->|XSS, CSRF| C
+    A -->|"XSS, CSRF"| C
     A -->|DDoS| C
-    A -->|API Abuse| D
+    A -->|"API Abuse"| D
     B -->|IDOR| D
-    B -->|Unauthorized Access| E
+    B -->|"Unauthorized Access"| E
     
     subgraph MITIGATIONS ["Mitigations"]
-        M1(Input Sanitization, reCAPTCHA)
-        M2(Firebase Hosting DDoS Protection)
-        M3(Rate Limiting, Auth Middleware)
-        M4(DB Rules: auth.uid checks)
-        M5(DB Rules: isAdmin checks)
+        M1["Input Sanitization, reCAPTCHA"]
+        M2["Firebase Hosting DDoS Protection"]
+        M3["Rate Limiting, Auth Middleware"]
+        M4["DB Rules: auth.uid checks"]
+        M5["DB Rules: isAdmin checks"]
     end
     
-    C -- Mitigated by --> M1
-    C -- Mitigated by --> M2
-    D -- Mitigated by --> M3
-    D -- Mitigated by --> M4
-    E -- Mitigated by --> M5
+    C -- "Mitigated by" --> M1
+    C -- "Mitigated by" --> M2
+    D -- "Mitigated by" --> M3
+    D -- "Mitigated by" --> M4
+    E -- "Mitigated by" --> M5
     
-    style THREATS fill:#F5B7B1
-    style MITIGATIONS fill:#A9DFBF
+    style THREATS fill:#F5B7B1,stroke:#333
+    style MITIGATIONS fill:#A9DFBF,stroke:#333
 ```
 
 ## Data Analytics Flow
@@ -163,14 +163,15 @@ This diagram shows the flow of data from user actions to the analytics dashboard
 
 ```mermaid
 graph LR
-    A["User Action<br/>(e.g., Signup, Enroll)"] --> B{Next.js Server Action};
+    A["User Action<br/>(e.g., Signup, Enroll)"] --> B{"Next.js Server Action"};
     B --> C["Firebase Realtime DB<br/>/users, /courses"];
     
     subgraph ANALYTICS ["Analytics Process"]
-        D[Admin Analytics Page] --> E{fetchAnalytics()};
-        E -->|getAllUsers(), getAllCourses()| C;
-        E --> F["Process Data<br/>(Count totals, Aggregate signups)"];
-        F --> G[Display in Charts & Cards];
+        D["Admin Analytics Page"] --> E{"fetchAnalytics()"};
+        E -->|"getAllUsers(),<br/>getAllCourses()"| C;
+        F["Process Data<br/>(Count totals, Aggregate signups)"]
+        E --> F;
+        F --> G["Display in Charts & Cards"];
     end
     
     D --> G;
@@ -213,7 +214,7 @@ erDiagram
         string ownerId FK
     }
 
-    USERS ||--o{ SUBMISSIONS : submits
-    COURSES ||--o{ SUBMISSIONS : for
-    USERS }|--|| ORGANIZATIONS : belongs-to
+    USERS ||--o{ SUBMISSIONS : "submits"
+    COURSES ||--o{ SUBMISSIONS : "for"
+    USERS }|--|| ORGANIZATIONS : "belongs-to"
 ```
