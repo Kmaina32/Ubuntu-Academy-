@@ -27,10 +27,6 @@ const MpesaPaymentOutputSchema = z.object({
 });
 export type MpesaPaymentOutput = z.infer<typeof MpesaPaymentOutputSchema>;
 
-// This is a placeholder. In a real app, you would have a callback URL
-// registered with Safaricom to receive the payment status.
-const CALLBACK_URL = "https://your-callback-url.com/mpesa/callback";
-
 function getTimestamp() {
   const now = new Date();
   return (
@@ -45,8 +41,6 @@ function getTimestamp() {
 
 
 async function getMpesaAccessToken(): Promise<string> {
-    // IMPORTANT: Store these credentials securely in environment variables.
-    // Do not hardcode them in your application.
     const consumerKey = process.env.MPESA_CONSUMER_KEY;
     const consumerSecret = process.env.MPESA_CONSUMER_SECRET;
 
@@ -57,7 +51,7 @@ async function getMpesaAccessToken(): Promise<string> {
     const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
     
     try {
-        const response = await axios.get("https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials", {
+        const response = await axios.get("https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials", {
             headers: {
                 'Authorization': `Basic ${auth}`
             }
@@ -86,11 +80,12 @@ const mpesaPaymentFlow = ai.defineFlow(
     
     const shortCode = process.env.MPESA_TILL_NUMBER;
     const passkey = process.env.MPESA_PASSKEY;
+    const callbackUrl = process.env.MPESA_CALLBACK_URL;
 
-    if (!shortCode || !passkey) {
+    if (!shortCode || !passkey || !callbackUrl) {
         return {
             success: false,
-            message: 'M-Pesa Till Number or Passkey is not configured in environment variables.'
+            message: 'M-Pesa Till Number, Passkey, or Callback URL is not configured in environment variables.'
         }
     }
 
@@ -103,7 +98,7 @@ const mpesaPaymentFlow = ai.defineFlow(
     try {
         const accessToken = await getMpesaAccessToken();
 
-        const response = await axios.post("https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest", {
+        const response = await axios.post("https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest", {
             BusinessShortCode: shortCode,
             Password: password,
             Timestamp: timestamp,
@@ -112,7 +107,7 @@ const mpesaPaymentFlow = ai.defineFlow(
             PartyA: formattedPhoneNumber,
             PartyB: shortCode,
             PhoneNumber: formattedPhoneNumber,
-            CallBackURL: `${CALLBACK_URL}?courseId=${courseId}`,
+            CallBackURL: `${callbackUrl}?courseId=${courseId}`,
             AccountReference: "UbuntuAcademy", // Replace with your company name
             TransactionDesc: `Payment for ${courseId}`
         }, {

@@ -63,7 +63,7 @@ export function MpesaModal({
     try {
       const result = await processMpesaPayment({
         phoneNumber,
-        amount: 1, // Using 1 for sandbox environment
+        amount: price,
         courseId,
       });
 
