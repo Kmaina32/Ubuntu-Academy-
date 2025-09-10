@@ -21,6 +21,8 @@ import type { GenerateProjectInput, GenerateProjectOutput } from '@/ai/flows/gen
 import type { SendOrgInviteInput, SendOrgInviteOutput } from '@/ai/flows/send-org-invite';
 import type { GenerateFormalDocumentInput, GenerateFormalDocumentOutput } from '@/ai/flows/generate-document';
 import { getDocument, saveDocument } from '@/lib/firebase-service';
+import fs from 'fs/promises';
+import path from 'path';
 
 
 // Each function dynamically imports its corresponding flow, ensuring that the AI logic
@@ -99,8 +101,22 @@ export async function sendOrganizationInvite(input: SendOrgInviteInput): Promise
 }
 
 export async function getDocumentContent(docType: string): Promise<string> {
-    return getDocument(docType);
+    // First, try to get the document from the database
+    const dbContent = await getDocument(docType);
+    if (dbContent) {
+        return dbContent;
+    }
+    // If not in DB, fall back to reading from the file system
+    const filePath = path.join(process.cwd(), 'src', 'markdown_files', docType);
+    try {
+        const fileContent = await fs.readFile(filePath, 'utf8');
+        return fileContent;
+    } catch (error) {
+        console.warn(`Could not read fallback file ${docType}:`, error);
+        return `# ${docType}\n\nContent could not be loaded.`;
+    }
 }
+
 
 export async function saveDocumentContent(docType: string, content: string): Promise<void> {
     await saveDocument(docType, content);
@@ -108,8 +124,9 @@ export async function saveDocumentContent(docType: string, content: string): Pro
 
 export async function generateFormalDocument(input: GenerateFormalDocumentInput): Promise<GenerateFormalDocumentOutput> {
     const { generateFormalDocument } = await import('@/ai/flows/generate-document');
-    const dbContent = await getDocument(input.docType);
-    const result = await generateFormalDocument({ ...input, content: dbContent });
+    // The flow now reads the content from the text area, not the DB directly
+    const result = await generateFormalDocument(input);
+    // We save the AI's output to the database
     await saveDocument(input.docType, result.formal_document);
     return result;
 }
