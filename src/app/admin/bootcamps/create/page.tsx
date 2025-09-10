@@ -16,7 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, Rocket, Calendar as CalendarIcon } from 'lucide-react';
-import { createBootcamp, getAllCourses } from '@/lib/firebase-service';
+import { createBootcamp, getAllCourses, createPermissionRequest } from '@/lib/firebase-service';
 import type { Course } from '@/lib/mock-data';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -24,6 +24,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
+import { useAuth } from '@/hooks/use-auth';
 
 const bootcampFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -38,6 +39,7 @@ const bootcampFormSchema = z.object({
 export default function CreateBootcampPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user, isSuperAdmin } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
@@ -65,26 +67,49 @@ export default function CreateBootcampPage() {
   }, []);
 
   const onSubmit = async (values: z.infer<typeof bootcampFormSchema>) => {
+    if (!user) return;
     setIsLoading(true);
-    try {
-      await createBootcamp({
+
+    const bootcampPayload = {
         ...values,
         startDate: values.startDate.toISOString()
-      });
-      toast({
-        title: 'Bootcamp Created!',
-        description: `The bootcamp "${values.title}" has been successfully created.`,
-      });
-      router.push('/admin/bootcamps');
-    } catch (error) {
-      console.error('Failed to create bootcamp:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create the bootcamp. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
+    };
+    
+    if (isSuperAdmin) {
+        try {
+            await createBootcamp(bootcampPayload);
+            toast({
+                title: 'Bootcamp Created!',
+                description: `The bootcamp "${values.title}" has been successfully created.`,
+            });
+            router.push('/admin/bootcamps');
+        } catch (error) {
+            console.error('Failed to create bootcamp:', error);
+            toast({
+                title: 'Error',
+                description: 'Failed to create the bootcamp. Please try again.',
+                variant: 'destructive',
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    } else {
+        try {
+            await createPermissionRequest({
+                requesterId: user.uid,
+                requesterName: user.displayName || 'Unknown Admin',
+                action: 'create_bootcamp',
+                itemData: bootcampPayload,
+                itemName: values.title,
+            });
+            toast({ title: "Request Sent", description: "Your request to create this bootcamp has been sent for approval."});
+            router.push('/admin/bootcamps');
+        } catch (error) {
+             console.error("Failed to create permission request:", error);
+            toast({ title: "Error", description: "Could not send creation request.", variant: "destructive" });
+        } finally {
+            setIsLoading(false);
+        }
     }
   };
 
@@ -282,7 +307,7 @@ export default function CreateBootcampPage() {
                     </Button>
                     <Button type="submit" disabled={isLoading}>
                       {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Create Bootcamp
+                      {isSuperAdmin ? 'Create Bootcamp' : 'Request Creation'}
                     </Button>
                   </div>
                 </form>
