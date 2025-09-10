@@ -1,3 +1,6 @@
+![Akili AI](/public/Akili%20AI.png)
+# Akili AI
+
 # Akili A.I Academy - API Documentation
 
 Welcome to the Akili A.I Academy API documentation. This document provides all the information you need to interact with our platform programmatically.

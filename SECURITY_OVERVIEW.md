@@ -1,3 +1,5 @@
+![Akili AI](/public/Akili%20AI.png)
+# Akili AI
 
 # Security Overview for the AI-Powered Education Platform
 

@@ -1,3 +1,6 @@
+![Akili AI](/public/Akili%20AI.png)
+# Akili AI
+
 # Akili A.I Academy - Application Framework Document
 
 This document provides a technical overview of the Akili A.I Academy application, including its architecture, data models, AI integrations, and key operational flows.
