@@ -31,6 +31,19 @@ export type MpesaPaymentOutput = z.infer<typeof MpesaPaymentOutputSchema>;
 // registered with Safaricom to receive the payment status.
 const CALLBACK_URL = "https://your-callback-url.com/mpesa/callback";
 
+function getTimestamp() {
+  const now = new Date();
+  return (
+    now.getFullYear().toString() +
+    ("0" + (now.getMonth() + 1)).slice(-2) +
+    ("0" + now.getDate()).slice(-2) +
+    ("0" + now.getHours()).slice(-2) +
+    ("0" + now.getMinutes()).slice(-2) +
+    ("0" + now.getSeconds()).slice(-2)
+  );
+}
+
+
 async function getMpesaAccessToken(): Promise<string> {
     // IMPORTANT: Store these credentials securely in environment variables.
     // Do not hardcode them in your application.
@@ -71,18 +84,17 @@ const mpesaPaymentFlow = ai.defineFlow(
   },
   async ({ phoneNumber, amount, courseId }) => {
     
-    // In a real application, you would get these from your environment variables
-    const shortCode = process.env.MPESA_SHORTCODE || '174379'; // Test shortcode
-    const passkey = process.env.MPESA_PASSKEY || 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919';
+    const shortCode = process.env.MPESA_SHORTCODE || '4268648'; // Your Till Number
+    const passkey = process.env.MPESA_PASSKEY;
 
-    if (!shortCode || !passkey) {
+    if (!passkey) {
         return {
             success: false,
-            message: 'M-Pesa credentials (Shortcode or Passkey) are not configured.'
+            message: 'M-Pesa Passkey is not configured in environment variables.'
         }
     }
 
-    const timestamp = new Date().toISOString().replace(/[-:.]/g, "").slice(0, -1);
+    const timestamp = getTimestamp();
     const password = Buffer.from(shortCode + passkey + timestamp).toString('base64');
     
     // Format phone number to Safaricom's required format (254...)
@@ -95,13 +107,13 @@ const mpesaPaymentFlow = ai.defineFlow(
             BusinessShortCode: shortCode,
             Password: password,
             Timestamp: timestamp,
-            TransactionType: "CustomerPayBillOnline", // Or "CustomerBuyGoodsOnline"
+            TransactionType: "CustomerBuyGoodsOnline", // Use for Business Tills
             Amount: amount,
             PartyA: formattedPhoneNumber,
             PartyB: shortCode,
             PhoneNumber: formattedPhoneNumber,
             CallBackURL: `${CALLBACK_URL}?courseId=${courseId}`,
-            AccountReference: "SkillSetAcademy", // Replace with your company name
+            AccountReference: "UbuntuAcademy", // Replace with your company name
             TransactionDesc: `Payment for ${courseId}`
         }, {
             headers: {
