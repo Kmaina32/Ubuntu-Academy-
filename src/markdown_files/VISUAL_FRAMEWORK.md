@@ -8,19 +8,19 @@ This diagram provides a bird's-eye view of the entire application stack. It show
 
 ```mermaid
 graph TD
-    subgraph CLIENT [Client (Next.js/React)]
+    subgraph CLIENT ["Client (Next.js/React)"]
         A["User Interface"] --> B{"React Components"};
         B --> C["ShadCN UI"];
         B --> D["Tailwind CSS"];
         A --> E["Next.js App Router"];
     end
 
-    subgraph SERVER [Server-Side (Next.js)]
+    subgraph SERVER ["Server-Side (Next.js)"]
         E --> F["Server Components"];
         E --> G["Server Actions"];
     end
 
-    subgraph BACKEND [Backend Services]
+    subgraph BACKEND ["Backend Services"]
         H["Firebase Auth"]
         I["Firebase Realtime DB"]
         J["Genkit AI Flows"]
@@ -32,7 +32,7 @@ graph TD
 
     F --> I;
 
-    subgraph AIML [AI/ML (Genkit)]
+    subgraph AIML ["AI/ML (Genkit)"]
         J --> K["Google AI Platform"];
     end
 
@@ -47,13 +47,13 @@ This diagram shows how different UI components interact and form the user interf
 
 ```mermaid
 graph TD
-    subgraph PAGES [Pages]
+    subgraph PAGES ["Pages"]
         P1["Course Player Page"]
         P2["Admin Dashboard"]
         P3["Home Page"]
     end
 
-    subgraph SHARED [Shared Components]
+    subgraph SHARED ["Shared Components"]
         C1["Header"]
         C2["Footer"]
         C3["Sidebar"]
@@ -161,7 +161,7 @@ This diagram shows the flow of data from user actions to the analytics dashboard
 ```mermaid
 graph LR
     subgraph ACTION ["User Action"]
-        A["User Action<br/>(e.g., Signup, Enroll)"]
+        A["User Action (e.g., Signup, Enroll)"]
     end
     
     subgraph SERVER ["Server-Side Logic"]
@@ -169,7 +169,7 @@ graph LR
     end
 
     subgraph DATABASE ["Database"]
-         C["Firebase Realtime DB<br/>(/users, /courses)"]
+         C["Firebase Realtime DB (/users, /courses)"]
     end
     
     A --> B;
@@ -178,7 +178,7 @@ graph LR
     subgraph ANALYTICS ["Analytics Process"]
         D["Admin Analytics Page"] --> E{"fetchAnalytics()"};
         E -->|"getAllUsers(), getAllCourses()"| C;
-        E --> F["Process Data<br/>(Count totals, Aggregate signups)"];
+        E --> F["Process Data (Count totals, Aggregate signups)"];
         F --> G["Display in Charts & Cards"];
     end
     
