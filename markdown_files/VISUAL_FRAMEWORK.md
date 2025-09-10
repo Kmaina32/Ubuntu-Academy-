@@ -1,4 +1,5 @@
-
+![Akili AI](/public/Akili%20AI.png)
+# Akili AI
 # Akili A.I Academy - Visual Framework
 
 This document provides a graphical overview of the application's structure and key operational flows using Mermaid syntax. These diagrams can be rendered by GitHub or compatible Markdown editors.
@@ -154,4 +155,75 @@ graph LR
 
     C -- Authenticates to --> Student
     Student -- Is Admin UID --> Admin
+```
+## 6. Database Schema (Entity-Relationship Diagram)
+
+This diagram illustrates the main collections in the Firebase Realtime Database and their relationships.
+
+```mermaid
+erDiagram
+    USERS {
+        string uid PK "User ID"
+        string email
+        string displayName
+        string photoURL
+        boolean isAdmin "Flag for admin privileges"
+        object purchasedCourses "Map of purchased courses"
+    }
+
+    COURSES {
+        string courseId PK "Course ID"
+        string title
+        string description
+        string instructor
+        array modules "List of modules"
+        array exam "List of exam questions"
+    }
+
+    SUBMISSIONS {
+        string submissionId PK "Submission ID"
+        string userId FK "User ID"
+        string courseId FK "Course ID"
+        object answers
+        number grade
+        string feedback
+    }
+
+    USER_NOTES {
+        string userId PK, FK "User ID"
+        string courseId PK, FK "Course ID"
+        string noteContent
+    }
+
+    TUTOR_HISTORY {
+        string userId PK, FK "User ID"
+        string lessonId PK "Lesson ID"
+        array chatHistory
+    }
+
+    DISCUSSION_THREADS {
+        string threadId PK "Thread ID"
+        string courseId FK "Course ID"
+        string userId FK "User ID"
+        string title
+        string content
+    }
+
+    DISCUSSION_REPLIES {
+        string replyId PK "Reply ID"
+        string threadId FK "Thread ID"
+        string userId FK "User ID"
+        string content
+    }
+
+    USERS ||--o{ SUBMISSIONS : "submits"
+    USERS ||--o{ USER_NOTES : "writes"
+    USERS ||--o{ TUTOR_HISTORY : "chats with tutor in"
+    USERS ||--o{ DISCUSSION_THREADS : "starts"
+    USERS ||--o{ DISCUSSION_REPLIES : "replies to"
+    COURSES ||--o{ SUBMISSIONS : "has"
+    COURSES ||--o{ USER_NOTES : "has notes for"
+    COURSES ||--o{ DISCUSSION_THREADS : "has threads for"
+    DISCUSSION_THREADS ||--o{ DISCUSSION_REPLIES : "has replies"
+
 ```
