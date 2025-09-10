@@ -20,6 +20,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
+import Head from 'next/head';
 
 function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolled }: { course: Course, onEnrollFree: () => void, onPurchase: () => void, isEnrolling: boolean, isEnrolled: boolean }) {
     return (
@@ -84,6 +85,37 @@ function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolle
             </CardContent>
         </Card>
     )
+}
+
+function CourseSchema({ course }: { course: Course }) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "name": course.title,
+    "description": course.longDescription,
+    "provider": {
+      "@type": "Organization",
+      "name": "Ubuntu Academy",
+      "sameAs": "https://mkenya-skilled.vercel.app"
+    },
+    "courseCode": course.category,
+    "educationalCredentialAwarded": "Certificate of Completion",
+    "hasCourseInstance": {
+      "@type": "CourseInstance",
+      "courseMode": "online",
+      "instructor": {
+        "@type": "Person",
+        "name": course.instructor
+      }
+    }
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
 }
 
 
@@ -173,6 +205,12 @@ export default function CourseDetailPage() {
   }
 
   return (
+    <>
+    <Head>
+        <title>{`${course.title} | Ubuntu Academy`}</title>
+        <meta name="description" content={course.description} />
+        {course && <CourseSchema course={course} />}
+    </Head>
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
@@ -285,5 +323,6 @@ export default function CourseDetailPage() {
         <Footer />
       </SidebarInset>
     </SidebarProvider>
+    </>
   );
 }

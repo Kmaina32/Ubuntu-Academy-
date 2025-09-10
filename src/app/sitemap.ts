@@ -1,4 +1,3 @@
-
 import type { MetadataRoute } from 'next';
 import { getAllCourses, getAllPrograms } from '@/lib/firebase-service';
 import { slugify } from '@/lib/utils';
