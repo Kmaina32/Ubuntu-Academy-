@@ -20,8 +20,7 @@ import type { ApiKey } from '@/lib/mock-data';
 import type { GenerateProjectInput, GenerateProjectOutput } from '@/ai/flows/generate-project';
 import type { SendOrgInviteInput, SendOrgInviteOutput } from '@/ai/flows/send-org-invite';
 import type { GenerateFormalDocumentInput, GenerateFormalDocumentOutput } from '@/ai/flows/generate-document';
-import fs from 'fs/promises';
-import path from 'path';
+import { getDocument, saveDocument } from '@/lib/firebase-service';
 
 
 // Each function dynamically imports its corresponding flow, ensuring that the AI logic
@@ -100,16 +99,17 @@ export async function sendOrganizationInvite(input: SendOrgInviteInput): Promise
 }
 
 export async function getDocumentContent(docType: string): Promise<string> {
-    const filePath = path.join(process.cwd(), 'markdown_files', docType);
-    return fs.readFile(filePath, 'utf-8');
+    return getDocument(docType);
 }
 
 export async function saveDocumentContent(docType: string, content: string): Promise<void> {
-    const filePath = path.join(process.cwd(), 'markdown_files', docType);
-    await fs.writeFile(filePath, content, 'utf-8');
+    await saveDocument(docType, content);
 }
 
 export async function generateFormalDocument(input: GenerateFormalDocumentInput): Promise<GenerateFormalDocumentOutput> {
     const { generateFormalDocument } = await import('@/ai/flows/generate-document');
-    return generateFormalDocument(input);
+    const dbContent = await getDocument(input.docType);
+    const result = await generateFormalDocument({ ...input, content: dbContent });
+    await saveDocument(input.docType, result.formal_document);
+    return result;
 }

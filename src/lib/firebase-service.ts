@@ -202,7 +202,7 @@ export async function getHeroData(): Promise<HeroData> {
     recaptchaEnabled: true,
     theme: 'default',
     animationsEnabled: true,
-    orgHeroTitle: 'Akili A.I Academy for Business',
+    orgHeroTitle: 'Akili AI Academy for Business',
     orgHeroSubtitle: 'Empower your workforce with the skills they need to succeed.',
     orgHeroImageUrl: 'https://picsum.photos/1200/800',
     orgLoginImageUrl: 'https://picsum.photos/1200/900',
@@ -813,4 +813,16 @@ export async function updatePlan(id: string, planData: Partial<PricingPlan>): Pr
 export async function deletePlan(id: string): Promise<void> {
     const planRef = ref(db, `pricingPlans/${id}`);
     await remove(planRef);
+}
+
+// Document Management Functions
+export async function saveDocument(docType: string, content: string): Promise<void> {
+    const docRef = ref(db, `documents/${docType.replace('.md', '')}`);
+    await set(docRef, { content });
+}
+
+export async function getDocument(docType: string): Promise<string> {
+    const docRef = ref(db, `documents/${docType.replace('.md', '')}/content`);
+    const snapshot = await get(docRef);
+    return snapshot.exists() ? snapshot.val() : '';
 }

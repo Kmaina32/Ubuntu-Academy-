@@ -70,35 +70,30 @@ function DocumentEditor({ docType }: { docType: DocType }) {
     }
   }
 
- const formatPitchDeckForPdf = (markdownContent: string): string => {
-    const slides = markdownContent.split(/### Slide \d+:/).slice(1);
-    let html = '';
-    slides.forEach((slideContent, index) => {
-        const titleMatch = slideContent.match(/\*\*([^*]+)\*\*/);
-        const title = titleMatch ? titleMatch[1] : `Slide ${index + 1}`;
-        const bodyContent = slideContent.replace(/\*\*([^*]+)\*\*/, '').replace(/\*/g, '').replace(/^-/gm, '').trim();
+ const formatForPdf = (markdownContent: string): string => {
+     // A simple markdown to HTML converter for PDF rendering
+    let html = markdownContent
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+        .replace(/\*(.*)\*/gim, '<em>$1</em>')
+        .replace(/^- (.*$)/gim, '<li>$1</li>')
+        .replace(/\n/g, '<br />');
 
-        html += `<div class="pdf-slide">`;
-        html += `<div class="pdf-slide-header">${title}</div>`;
-        html += `<div class="pdf-slide-body"><p>${bodyContent.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br/>')}</p></div>`;
-        html += `<div class="pdf-slide-footer">${index + 1}</div>`;
-        html += `</div>`;
-    });
-    return html;
- };
+    html = html.replace(/<br \/><li>/g, '<li>'); // Fix lists
+    html = `<ul>${html.match(/<li>.*<\/li>/g)?.join('') || ''}</ul>` + html.replace(/<li>.*<\/li>/g, '');
 
-const formatGeneralContent = (markdownContent: string): string => {
-     return `<div class="pdf-general ql-editor">${markdownContent}</div>`;
+    return `<div class="pdf-general">${html}</div>`;
 };
 
-
   const handleDownload = async () => {
-    if (pdfRef.current === null) return;
+    if (!pdfRef.current) return;
     setIsDownloading(true);
 
-    const isPitchDeck = docType === 'PITCH_DECK.md';
-    const contentToRender = isPitchDeck ? formatPitchDeckForPdf(content) : formatGeneralContent(content);
+    const contentToRender = formatForPdf(content);
     
+    // Use a temporary div to render the HTML for html2canvas
     const renderDiv = document.createElement('div');
     document.body.appendChild(renderDiv);
     renderDiv.className = "pdf-render-area";
@@ -106,15 +101,8 @@ const formatGeneralContent = (markdownContent: string): string => {
     
     const pdf = new jsPDF('p', 'pt', 'a4');
     
-    const elements = isPitchDeck 
-        ? Array.from(renderDiv.querySelectorAll('.pdf-slide'))
-        : [renderDiv.querySelector('.pdf-general')];
-
-    for (let i = 0; i < elements.length; i++) {
-        const element = elements[i] as HTMLElement;
-        if (!element) continue;
-        if (i > 0) pdf.addPage();
-        
+    const element = renderDiv.querySelector('.pdf-general') as HTMLElement;
+    if (element) {
         await html2canvas(element, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
             const imgData = canvas.toDataURL('image/png');
             const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -122,7 +110,7 @@ const formatGeneralContent = (markdownContent: string): string => {
             const imgProps = pdf.getImageProperties(imgData);
             const ratio = imgProps.height / imgProps.width;
             
-            let imgWidth = pdfWidth - 80;
+            let imgWidth = pdfWidth - 80; // with margins
             let imgHeight = imgWidth * ratio;
 
             if (imgHeight > pdfHeight - 80) {
@@ -144,8 +132,6 @@ const formatGeneralContent = (markdownContent: string): string => {
   
   return (
     <div className="space-y-4 h-full flex flex-col">
-      <div ref={pdfRef} aria-hidden="true" />
-      
         <div className="bg-background rounded-md border min-h-[50vh] flex-grow">
           {isLoading ? (
              <div className="flex justify-center items-center flex-grow h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
@@ -167,7 +153,7 @@ const formatGeneralContent = (markdownContent: string): string => {
             </Button>
             <Button onClick={handleDownload} disabled={isDownloading || isLoading} variant="outline">
                 {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                Download
+                Download PDF
             </Button>
         </div>
         <Button onClick={handleSave} disabled={isSaving || isLoading}>
@@ -249,46 +235,10 @@ export default function AdminDocumentsPage() {
                 color: black;
                 background-color: white;
                 font-family: 'PT Sans', sans-serif;
-            }
-            .pdf-slide {
-                width: 842pt;
-                height: 595pt;
-                padding: 40pt;
-                display: flex;
-                flex-direction: column;
-                page-break-after: always;
-                box-sizing: border-box;
-            }
-             .pdf-slide-header {
-                font-size: 24pt;
-                font-weight: bold;
-                color: #8C3DD9;
-                padding-bottom: 15pt;
-                border-bottom: 2pt solid #8C3DD9;
-                text-align: left;
-            }
-             .pdf-slide-body {
-                flex-grow: 1;
-                padding-top: 15pt;
-                font-size: 14pt;
-                line-height: 1.5;
-                text-align: left;
-            }
-            .pdf-slide-body ul {
-                list-style-type: disc;
-                padding-left: 20pt;
-            }
-            .pdf-slide-body li {
-                margin-bottom: 10pt;
-            }
-             .pdf-slide-footer {
-                text-align: right;
-                font-size: 9pt;
-                color: #666;
+                width: 595px; /* A4 width in pixels at 72 DPI */
             }
             .pdf-general {
-                width: 595pt;
-                padding: 40pt;
+                padding: 40px;
                 font-size: 11pt;
                 line-height: 1.5;
             }
@@ -296,14 +246,11 @@ export default function AdminDocumentsPage() {
              .pdf-general h2 { font-size: 16pt; font-family: 'PT Sans', sans-serif; font-weight: bold; margin-top: 18pt; margin-bottom: 11pt; }
              .pdf-general h3 { font-size: 13pt; font-family: 'PT Sans', sans-serif; font-weight: bold; margin-top: 18pt; margin-bottom: 11pt; }
              .pdf-general p { margin-bottom: 9pt; }
-             .pdf-general ul { padding-left: 20pt; margin-bottom: 9pt; }
+             .pdf-general ul { padding-left: 20pt; margin-bottom: 9pt; list-style-type: disc; }
              .pdf-general li { margin-bottom: 5pt; }
              .pdf-general strong { font-weight: bold; }
              .pdf-general em { font-style: italic; }
              .pdf-general code { font-family: monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; }
-            .ql-editor {
-                min-height: 40vh;
-            }
         `}</style>
     </div>
   );
