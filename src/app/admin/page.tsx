@@ -1,16 +1,18 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, BookOpen, UserPlus, DollarSign, BarChart3, Activity } from "lucide-react";
+import { Users, BookOpen, UserPlus, DollarSign, BarChart3, Activity, UserPlus2, BookCopy, Trophy } from "lucide-react";
 import type { Course, RegisteredUser, UserCourse } from '@/lib/mock-data';
 import { getAllCourses, getAllUsers } from '@/lib/firebase-service';
 import { Loader2 } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Line, ComposedChart, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { format, subDays, parseISO, isValid, formatDistanceToNow } from 'date-fns';
+import { useAuth } from '@/hooks/use-auth';
 
 type AnalyticsData = {
   totalUsers: number;
@@ -45,6 +47,8 @@ const chartConfig = {
 export default function AdminDashboardPage() {
     const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
     const [loading, setLoading] = useState(true);
+    const { user, isAdmin } = useAuth();
+
 
     useEffect(() => {
         const fetchAnalytics = async () => {
@@ -66,12 +70,14 @@ export default function AdminDashboardPage() {
                 const thirtyDaysAgo = subDays(new Date(), 30);
 
                  users.forEach(user => {
-                    const signupDateISO = user.createdAt ? parseISO(user.createdAt) : new Date();
-                    const signupDate = isValid(signupDateISO) ? signupDateISO : new Date();
+                    const signupDateISO = user.createdAt ? parseISO(user.createdAt) : null;
+                    const signupDate = signupDateISO && isValid(signupDateISO) ? signupDateISO : new Date();
+
 
                      if (signupDate > thirtyDaysAgo) {
                          recentActivities.push({ type: 'signup', text: `${user.displayName || 'A new user'} signed up`, time: signupDate.toISOString() });
                      }
+                     
                      if (user.lastSeen && new Date(user.lastSeen) > thirtyDaysAgo) {
                          recentActivities.push({ type: 'lastSeen', text: `${user.displayName || 'A user'} was last seen`, time: new Date(user.lastSeen).toISOString() });
                      }
@@ -131,8 +137,12 @@ export default function AdminDashboardPage() {
             }
             setLoading(false);
         }
-        fetchAnalytics();
-    }, []);
+        if (user) {
+            fetchAnalytics();
+        } else {
+             setLoading(false);
+        }
+    }, [user]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -221,7 +231,9 @@ export default function AdminDashboardPage() {
                            {analyticsData.recentActivities.map((activity, index) => (
                                <div key={index} className="flex items-start gap-3">
                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary">
-                                    {activity.type === 'signup' ? <UserPlus className="h-4 w-4 text-secondary-foreground"/> : <BookOpen className="h-4 w-4 text-secondary-foreground"/>}
+                                    {activity.type === 'signup' ? <UserPlus2 className="h-4 w-4 text-secondary-foreground"/> :
+                                    activity.type === 'enrollment' ? <BookCopy className="h-4 w-4 text-secondary-foreground"/> :
+                                    <User className="h-4 w-4 text-secondary-foreground"/>}
                                    </div>
                                    <div>
                                        <p className="text-sm font-medium">{activity.text}</p>
