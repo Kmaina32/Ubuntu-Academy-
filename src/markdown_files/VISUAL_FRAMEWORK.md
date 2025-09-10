@@ -115,6 +115,69 @@ graph LR
     style FIREBASE fill:#FDEBD0,stroke:#F39C12,stroke-width:2px
 ```
 
+## Cyber Security Threat Model
+
+This diagram illustrates potential threats and the implemented mitigations at different layers of the application.
+
+```mermaid
+graph TD
+    subgraph "Threat Vectors"
+        A[External Attacker]
+        B[Malicious User]
+    end
+    
+    subgraph "Application Layers"
+        C[Next.js Frontend]
+        D[Next.js Backend / Server Actions]
+        E[Firebase Services]
+        F[Database]
+    end
+    
+    A -->|XSS, CSRF| C
+    A -->|DDoS| C
+    A -->|API Abuse| D
+    B -->|IDOR| D
+    B -->|Unauthorized Access| E
+    
+    subgraph "Mitigations"
+        M1(Input Sanitization, reCAPTCHA)
+        M2(Firebase Hosting DDoS Protection)
+        M3(Rate Limiting, Auth Middleware)
+        M4(DB Rules: auth.uid checks)
+        M5(DB Rules: isAdmin checks)
+    end
+    
+    C -- Mitigated by --> M1
+    C -- Mitigated by --> M2
+    D -- Mitigated by --> M3
+    D -- Mitigated by --> M4
+    E -- Mitigated by --> M5
+    
+    style "Threat Vectors" fill:#F5B7B1
+    style "Mitigations" fill:#A9DFBF
+```
+
+## Data Analytics Flow
+
+This diagram shows the flow of data from user actions to the analytics dashboard.
+
+```mermaid
+graph LR
+    A[User Action<br/>(e.g., Signup, Enroll)] --> B{Next.js Server Action};
+    B --> C[Firebase Realtime DB<br/>/users, /courses];
+    
+    subgraph "Analytics Process"
+        D[Admin Analytics Page] --> E{fetchAnalytics()};
+        E -->|getAllUsers(), getAllCourses()| C;
+        E --> F[Process Data<br/>(Count totals, Aggregate signups)];
+        F --> G[Display in Charts & Cards];
+    end
+    
+    D --> G;
+
+    style "Analytics Process" fill:#D6EAF8,stroke:#333,stroke-width:1px
+```
+
 ## Database Framework
 
 This diagram shows a simplified version of the Firebase Realtime Database schema and relationships.
