@@ -16,8 +16,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Textarea } from '@/components/ui/textarea';
 
-
-const ALL_DOC_TYPES: readonly DocType[] = ['PITCH_DECK.md', 'FRAMEWORK.md', 'API.md', 'RESOLUTION_TO_REGISTER_A_COMPANY.md', 'PATENT_APPLICATION.md'] as const;
+const ALL_DOC_TYPES: readonly DocType[] = ['PITCH_DECK.md', 'FRAMEWORK.md', 'API.md', 'B2B_STRATEGY.md', 'SEO_STRATEGY.md', 'VISUAL_FRAMEWORK.md'] as const;
 type DocType = (typeof ALL_DOC_TYPES)[number];
 
 function DocumentEditor({ docType }: { docType: DocType }) {
@@ -88,23 +87,12 @@ function DocumentEditor({ docType }: { docType: DocType }) {
  };
 
 const formatGeneralContent = (markdownContent: string): string => {
-    const formatted = markdownContent
-        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/^- (.*$)/gim, '<li>$1</li>')
-        .replace(/<\/li>\n<li>/g, '</li><li>') // Handle consecutive list items
-        .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
-        .replace(/\n/g, '<br />');
-
-    return `<div class="pdf-general">${formatted}</div>`;
+     return `<div class="pdf-general ql-editor">${markdownContent}</div>`;
 };
 
 
   const handleDownload = async () => {
-    if (!pdfRef.current) return;
+    if (pdfRef.current === null) return;
     setIsDownloading(true);
 
     const isPitchDeck = docType === 'PITCH_DECK.md';
@@ -161,12 +149,12 @@ const formatGeneralContent = (markdownContent: string): string => {
           {isLoading ? (
              <div className="flex justify-center items-center flex-grow h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
           ) : (
-            <Textarea
+             <Textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base p-4"
                 placeholder="Start writing your document..."
-            />
+             />
           )}
         </div>
       
@@ -207,8 +195,9 @@ export default function AdminDocumentsPage() {
         { value: "pitch_deck", label: "Pitch Deck", docType: "PITCH_DECK.md" as DocType, icon: Presentation },
         { value: "framework", label: "Framework", docType: "FRAMEWORK.md" as DocType, icon: BookOpen },
         { value: "api", label: "API", docType: "API.md" as DocType, icon: FileText },
-        { value: "resolution", label: "Resolution", docType: "RESOLUTION_TO_REGISTER_A_COMPANY.md" as DocType, icon: FileSignature },
-        { value: "patent", label: "Patent", docType: "PATENT_APPLICATION.md" as DocType, icon: FileSignature },
+        { value: "b2b_strategy", label: "B2B Strategy", docType: "B2B_STRATEGY.md" as DocType, icon: FileSignature },
+        { value: "seo_strategy", label: "SEO Strategy", docType: "SEO_STRATEGY.md" as DocType, icon: FileSignature },
+        { value: "visual_framework", label: "Visual Framework", docType: "VISUAL_FRAMEWORK.md" as DocType, icon: FileSignature }
     ], []);
     
     if (authLoading || !isSuperAdmin) {
@@ -232,7 +221,7 @@ export default function AdminDocumentsPage() {
                   Manage Documents
                 </CardTitle>
                 <CardDescription>View, edit, and generate formal documentation for your application.</CardDescription>
-                 <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mt-4">
+                 <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 mt-4">
                     {TABS_CONFIG.map(tab => (
                         <TabsTrigger key={tab.value} value={tab.value}><tab.icon className="mr-2 h-4 w-4"/>{tab.label}</TabsTrigger>
                     ))}
@@ -302,25 +291,17 @@ export default function AdminDocumentsPage() {
                 font-size: 11pt;
                 line-height: 1.5;
             }
-            .pdf-general h1, .pdf-general h2, .pdf-general h3 {
-                font-family: 'PT Sans', sans-serif;
-                font-weight: bold;
-                margin-bottom: 11pt;
-                margin-top: 18pt;
-            }
-            .pdf-general h1 { font-size: 22pt; }
-            .pdf-general h2 { font-size: 16pt; }
-            .pdf-general h3 { font-size: 13pt; }
-            .pdf-general p { margin-bottom: 9pt; }
-            .pdf-general ul { padding-left: 20pt; margin-bottom: 9pt; }
-            .pdf-general li { margin-bottom: 5pt; }
-            .pdf-general strong { font-weight: bold; }
-            .pdf-general em { font-style: italic; }
-            .pdf-general code { 
-                font-family: monospace; 
-                background-color: #f0f0f0; 
-                padding: 2px 4px; 
-                border-radius: 3px;
+             .pdf-general h1 { font-size: 22pt; font-family: 'PT Sans', sans-serif; font-weight: bold; margin-top: 18pt; margin-bottom: 11pt; }
+             .pdf-general h2 { font-size: 16pt; font-family: 'PT Sans', sans-serif; font-weight: bold; margin-top: 18pt; margin-bottom: 11pt; }
+             .pdf-general h3 { font-size: 13pt; font-family: 'PT Sans', sans-serif; font-weight: bold; margin-top: 18pt; margin-bottom: 11pt; }
+             .pdf-general p { margin-bottom: 9pt; }
+             .pdf-general ul { padding-left: 20pt; margin-bottom: 9pt; }
+             .pdf-general li { margin-bottom: 5pt; }
+             .pdf-general strong { font-weight: bold; }
+             .pdf-general em { font-style: italic; }
+             .pdf-general code { font-family: monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; }
+            .ql-editor {
+                min-height: 40vh;
             }
         `}</style>
     </div>
