@@ -1,33 +1,34 @@
+
 {
   "rules": {
-    // Default security: Deny all reads and writes unless explicitly allowed below.
     ".read": false,
     ".write": false,
-
+    "bootcamps": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
     "courses": {
       ".read": true,
       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
     "bundles": {
-        ".read": true,
-        ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
     "programs": {
-         ".read": true,
-         ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
     "hero": {
       ".read": true,
       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
     "users": {
-      // ** FIX: This rule has been updated to allow authenticated users to read from the top-level `users` node. **
-      // This is necessary to allow queries like the one you were running (on public profiles).
       ".read": "auth != null",
-      // --- IMPORTANT: INDEXES ---
-      // This is needed for queries on the /users path that filter by public portfolio.
-      ".indexOn": ["organizationId", "portfolio/public"],
-      // --- END INDEXES ---
+      ".indexOn": [
+        "organizationId",
+        "portfolio/public"
+      ],
       "$uid": {
         ".read": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || data.child('portfolio').child('public').val() === true)",
         ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
@@ -35,7 +36,7 @@
           ".read": "auth != null"
         },
         "purchasedCourses": {
-           ".read": "auth != null && auth.uid === $uid"
+          ".read": "auth != null && auth.uid === $uid"
         }
       }
     },
@@ -46,7 +47,9 @@
     "submissions": {
       ".read": "auth != null",
       ".write": "auth != null",
-      ".indexOn": ["userId"],
+      ".indexOn": [
+        "userId"
+      ],
       "$submissionId": {
         ".read": "root.child('submissions').child($submissionId).child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true"
       }
@@ -72,29 +75,29 @@
       },
       "replies": {
         "$threadId": {
-           ".read": "auth != null",
-           ".write": "auth != null",
-           ".indexOn": "createdAt"
+          ".read": "auth != null",
+          ".write": "auth != null",
+          ".indexOn": "createdAt"
         }
       }
     },
     "userNotes": {
-        "$userId": {
-           "$courseId": {
-              ".read": "auth.uid === $userId",
-              ".write": "auth.uid === $userId"
-           }
+      "$userId": {
+        "$courseId": {
+          ".read": "auth.uid === $userId",
+          ".write": "auth.uid === $userId"
         }
+      }
     },
     "analytics": {
-        ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
-        ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
     "apiKeys": {
-        "$userId": {
-           ".read": "auth != null && auth.uid === $userId",
-           ".write": "auth != null && auth.uid === $userId"
-        }
+      "$userId": {
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null && auth.uid === $userId"
+      }
     },
     "apiUsage": {
       "$userId": {
@@ -133,30 +136,29 @@
       }
     },
     "liveChat": {
-        "$sessionId": {
-           ".read": "auth != null",
-           ".write": "auth != null"
-        }
+      "$sessionId": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
     },
     "courseFeedback": {
-        "$courseId": {
-          ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
-          ".write": "auth != null"
-        }
+      "$courseId": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+        ".write": "auth != null"
+      }
     },
     "projects": {
-       ".read": true,
-       "$courseId": {
-           ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
-       }
+      ".read": true,
+      "$courseId": {
+        ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      }
     },
     "permissionRequests": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+      ".indexOn": "userId",
       "$requestId": {
-          "status": {
-            ".write": "auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2'"
-          }
+        ".read": "auth != null && (root.child('users').child(auth.uid).child('isAdmin').val() === true || data.child('userId').val() === auth.uid)",
+        ".write": "auth != null && ( (newData.child('userId').val() === auth.uid && !data.exists()) || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
       }
     },
     "notifications": {
@@ -164,16 +166,16 @@
       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
     "organizations": {
-        ".indexOn": "ownerId",
-        ".read": "auth != null",
-        ".write": "auth != null"
+      ".indexOn": "ownerId",
+      ".read": "auth != null",
+      ".write": "auth != null"
     },
     "invitations": {
-        ".read": true,
-        ".write": "auth != null",
-        "$inviteId": {
-           ".write": "auth != null && root.child('organizations').child(newData.child('organizationId').val()).child('ownerId').val() === auth.uid"
-        }
+      ".read": true,
+      ".write": "auth != null",
+      "$inviteId": {
+        ".write": "auth != null && root.child('organizations').child(newData.child('organizationId').val()).child('ownerId').val() === auth.uid"
+      }
     }
   }
 }
