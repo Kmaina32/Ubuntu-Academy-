@@ -68,7 +68,6 @@ export function MpesaModal({
       });
 
       if (result.success) {
-        // You could poll a callback or just assume success for demo
         setIsLoading(false);
         setPaymentStep('success');
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -86,7 +85,6 @@ export function MpesaModal({
   };
   
   const handleClose = () => {
-    // only reset if not in success state, otherwise it clears too fast
     if(paymentStep !== 'success') {
       setPhoneNumber('');
       setPaymentStep('form');
