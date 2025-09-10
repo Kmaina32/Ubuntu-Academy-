@@ -145,9 +145,9 @@ function ProjectsList() {
     
     return (
     loading ? (
-       <div className="flex justify-center items-center py-10">
+       <div className="flex justify-center items-center py-1.5">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <p className="ml-2">Loading exams &amp; projects...</p>
+          <p className="ml-2">Loading exams & projects...</p>
        </div>
     ) : (
       <Table>
@@ -165,7 +165,7 @@ function ProjectsList() {
               <TableCell>
                 {course.project ? (
                     <Badge variant="default">Project</Badge>
-                ) : course.exam &amp;&amp; course.exam.length &gt; 0 ? (
+                ) : course.exam && course.exam.length > 0 ? (
                     <Badge variant="secondary">Exam</Badge>
                 ) : (
                     <Badge variant="outline">None</Badge>
@@ -229,7 +229,7 @@ export default function AdminAssignmentsPage() {
             <Tabs defaultValue="submissions">
               <Card>
                   <CardHeader>
-                      <CardTitle className="flex items-center gap-2"><Briefcase className="h-6 w-6"/>Manage Exams &amp; Projects</CardTitle>
+                      <CardTitle className="flex items-center gap-2"><Briefcase className="h-6 w-6"/>Manage Exams & Projects</CardTitle>
                       <CardDescription>Review student submissions and manage final assignments for courses.</CardDescription>
                       <TabsList className="grid w-full grid-cols-2 mt-4">
                         <TabsTrigger value="submissions">Submissions</TabsTrigger>
