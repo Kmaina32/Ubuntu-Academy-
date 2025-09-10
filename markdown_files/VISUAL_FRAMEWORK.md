@@ -227,3 +227,49 @@ erDiagram
     DISCUSSION_THREADS ||--o{ DISCUSSION_REPLIES : "has replies"
 
 ```
+## 7. Security and Access Control Flow
+
+This diagram shows how user requests are handled by the Firebase security rules to ensure data is accessed appropriately based on authentication and roles.
+
+```mermaid
+sequenceDiagram
+    participant User as User (Browser)
+    participant FirebaseClient as Firebase SDK
+    participant FirebaseAuth as Firebase Auth
+    participant FirebaseRules as Realtime Database Security Rules
+    participant FirebaseDB as Realtime Database
+
+    User->>FirebaseClient: Attempts to read or write data (e.g., `db.ref('/users/some-uid').set(...)`)
+    FirebaseClient->>FirebaseAuth: Automatically attaches Auth token to request
+    FirebaseAuth-->>FirebaseClient: Token contains user's UID
+    FirebaseClient->>FirebaseRules: Sends request with path, data, and Auth token
+
+    FirebaseRules->>FirebaseRules: Evaluates rules for the target path
+
+    alt Is Admin?
+        FirebaseRules->>FirebaseDB: Checks if `auth.uid` matches an admin UID
+        alt Admin Access
+            FirebaseRules-->>FirebaseClient: Allows Read/Write
+            FirebaseClient->>FirebaseDB: Executes operation
+            FirebaseDB-->>FirebaseClient: Returns data or success
+            FirebaseClient-->>User: Displays result
+        else Not Admin
+            FirebaseRules-->>FirebaseClient: Denies Read/Write
+            FirebaseClient-->>User: Shows permission denied error
+        end
+    else Is Standard User?
+        FirebaseRules->>FirebaseRules: Checks if `auth.uid` matches the requested resource ID (e.g., `/users/{auth.uid}`)
+         alt Own Data Access
+            FirebaseRules-->>FirebaseClient: Allows Read/Write
+            FirebaseClient->>FirebaseDB: Executes operation
+            FirebaseDB-->>FirebaseClient: Returns data or success
+            FirebaseClient-->>User: Displays result
+        else Other User's Data
+            FirebaseRules-->>FirebaseClient: Denies Read/Write
+            FirebaseClient-->>User: Shows permission denied error
+        end
+    else Unauthenticated
+        FirebaseRules-->>FirebaseClient: Denies Read/Write
+        FirebaseClient-->>User: Shows permission denied error
+    end
+```
