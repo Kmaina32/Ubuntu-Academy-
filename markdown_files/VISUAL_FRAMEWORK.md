@@ -273,3 +273,43 @@ sequenceDiagram
         FirebaseClient-->>User: Shows permission denied error
     end
 ```
+## 8. Component Architecture (Next.js)
+
+This diagram illustrates the Next.js component architecture for a key page, the Course Player. It shows how Server Components and Client Components work together to create a seamless user experience, separating static content rendering from dynamic, interactive UI.
+
+```mermaid
+graph TD
+    subgraph "Next.js Page: /courses/[id]/learn"
+        A[CoursePlayerPage (Server Component)]
+        
+        subgraph "Client Components (Interactive UI)"
+            direction LR
+            C["VideoPlayer ('use client')"]
+            D["AITutor ('use client')"]
+            E["CompletionButton ('use client')"]
+        end
+        
+        subgraph "Server Actions (Server-side Logic)"
+            F["courseTutor()"]
+            G["updateProgress()"]
+        end
+
+        B[LessonList (Server Component)]
+
+        A -- "Renders" --> B
+        A -- "Renders & passes data to" --> C
+        A -- "Renders" --> D
+        A -- "Renders" --> E
+
+        D -- "Calls" --> F
+        E -- "Calls" --> G
+    end
+
+    classDef server fill:#D5F5E3,stroke:#27AE60,color:#000
+    classDef client fill:#D6EAF8,stroke:#2980B9,color:#000
+    classDef action fill:#FCF3CF,stroke:#F39C12,color:#000
+    
+    class A,B server
+    class C,D,E client
+    class F,G action
+```
