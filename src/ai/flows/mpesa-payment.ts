@@ -84,13 +84,13 @@ const mpesaPaymentFlow = ai.defineFlow(
   },
   async ({ phoneNumber, amount, courseId }) => {
     
-    const shortCode = process.env.MPESA_SHORTCODE || '4268648'; // Your Till Number
+    const shortCode = process.env.MPESA_SHORTCODE;
     const passkey = process.env.MPESA_PASSKEY;
 
-    if (!passkey) {
+    if (!shortCode || !passkey) {
         return {
             success: false,
-            message: 'M-Pesa Passkey is not configured in environment variables.'
+            message: 'M-Pesa Shortcode or Passkey is not configured in environment variables.'
         }
     }
 
