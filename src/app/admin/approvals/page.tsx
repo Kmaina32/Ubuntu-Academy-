@@ -7,7 +7,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { getPermissionRequests, updatePermissionRequestStatus, deleteCourse, deleteProgram, deleteBundle, PermissionRequest } from '@/lib/firebase-service';
+import { getPermissionRequests, updatePermissionRequestStatus, deleteCourse, deleteProgram, deleteBundle, PermissionRequest, createBootcamp } from '@/lib/firebase-service';
 import { ArrowLeft, Loader2, CheckCircle, XCircle, ShieldCheck, Clock, Check, Ban } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
@@ -50,21 +50,24 @@ export default function AdminApprovalsPage() {
   const handleApprove = async (request: PermissionRequest) => {
     setIsProcessing(request.id);
     try {
-        let deletionSuccessful = false;
+        let actionCompleted = false;
         if (request.action === 'delete_course') {
             await deleteCourse(request.itemId);
-            deletionSuccessful = true;
+            actionCompleted = true;
         } else if (request.action === 'delete_program') {
             await deleteProgram(request.itemId);
-            deletionSuccessful = true;
+            actionCompleted = true;
         } else if (request.action === 'delete_bundle') {
             await deleteBundle(request.itemId);
-            deletionSuccessful = true;
+            actionCompleted = true;
+        } else if (request.action === 'create_bootcamp') {
+            await createBootcamp(request.itemData);
+            actionCompleted = true;
         }
 
-        if (deletionSuccessful) {
+        if (actionCompleted) {
             await updatePermissionRequestStatus(request.id, 'approved');
-            toast({ title: "Approved & Actioned", description: `Request to delete "${request.itemName}" has been completed.` });
+            toast({ title: "Approved & Actioned", description: `Request for "${request.itemName}" has been completed.` });
             fetchRequests();
         } else {
              throw new Error("Unknown action type");
@@ -112,7 +115,7 @@ export default function AdminApprovalsPage() {
                 <TableRow key={request.id}>
                   <TableCell className="font-medium">{request.requesterName}</TableCell>
                   <TableCell>
-                      <Badge variant="secondary">{request.action.replace('_', ' ')}</Badge>
+                      <Badge variant="secondary">{request.action.replace(/_/g, ' ')}</Badge>
                   </TableCell>
                   <TableCell>{request.itemName}</TableCell>
                   <TableCell>{formatDistanceToNow(new Date(request.createdAt), { addSuffix: true })}</TableCell>

@@ -1,5 +1,4 @@
 
-
 {
   "rules": {
     "courses": {
@@ -19,7 +18,7 @@
     },
     "bootcamps": {
       ".read": true,
-      ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true && auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2'"
     },
     "hero": {
       ".read": true,
@@ -146,11 +145,8 @@
     },
     "permissionRequests": {
       ".read": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
-      ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
       "$requestId": {
-        "status": {
-          ".write": "auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2'"
-        }
+        ".write": "(auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true && newData.exists() && !data.exists()) || (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2')"
       }
     },
     "notifications": {

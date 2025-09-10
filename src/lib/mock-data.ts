@@ -1,5 +1,4 @@
 
-
 import { z } from 'zod';
 
 export interface YoutubeLink {
@@ -273,9 +272,10 @@ export interface PermissionRequest {
     id: string;
     requesterId: string;
     requesterName: string;
-    action: 'delete_course' | 'delete_program' | 'delete_bundle';
+    action: 'delete_course' | 'delete_program' | 'delete_bundle' | 'create_bootcamp';
     itemId: string;
     itemName: string;
+    itemData?: any;
     status: 'pending' | 'approved' | 'denied';
     createdAt: string; // ISO String
     resolvedAt?: string; // ISO String
