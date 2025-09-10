@@ -47,8 +47,8 @@ function getTimestamp() {
 async function getMpesaAccessToken(): Promise<string> {
     // IMPORTANT: Store these credentials securely in environment variables.
     // Do not hardcode them in your application.
-    const consumerKey = process.env.NEXT_PUBLIC_MPESA_CONSUMER_KEY;
-    const consumerSecret = process.env.NEXT_PUBLIC_MPESA_CONSUMER_SECRET;
+    const consumerKey = process.env.MPESA_CONSUMER_KEY;
+    const consumerSecret = process.env.MPESA_CONSUMER_SECRET;
 
     if (!consumerKey || !consumerSecret) {
         throw new Error("M-Pesa consumer key or secret is not configured in environment variables.");
@@ -84,8 +84,8 @@ const mpesaPaymentFlow = ai.defineFlow(
   },
   async ({ phoneNumber, amount, courseId }) => {
     
-    const shortCode = process.env.NEXT_PUBLIC_MPESA_TILL_NUMBER;
-    const passkey = process.env.NEXT_PUBLIC_MPESA_PASSKEY;
+    const shortCode = process.env.MPESA_TILL_NUMBER;
+    const passkey = process.env.MPESA_PASSKEY;
 
     if (!shortCode || !passkey) {
         return {
@@ -107,7 +107,7 @@ const mpesaPaymentFlow = ai.defineFlow(
             BusinessShortCode: shortCode,
             Password: password,
             Timestamp: timestamp,
-            TransactionType: "CustomerBuyGoodsOnline", // Use for Business Tills
+            TransactionType: "CustomerBuyGoodsOnline",
             Amount: amount,
             PartyA: formattedPhoneNumber,
             PartyB: shortCode,
