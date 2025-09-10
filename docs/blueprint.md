@@ -1,4 +1,4 @@
-# **App Name**: Ubuntu Academy
+# **App Name**: Akili A.I Academy
 
 ## Core Features:
 

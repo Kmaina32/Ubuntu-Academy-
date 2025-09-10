@@ -1,7 +1,7 @@
 
-# Ubuntu Academy - AI-Powered Learning Platform
+# Akili A.I Academy - AI-Powered Learning Platform
 
-Welcome to Ubuntu Academy, a modern, AI-enhanced online learning platform built with Next.js and Firebase. This application is designed to provide a seamless and feature-rich experience for both students and administrators in the Kenyan market.
+Welcome to Akili A.I Academy, a modern, AI-enhanced online learning platform built with Next.js and Firebase. This application is designed to provide a seamless and feature-rich experience for both students and administrators in the Kenyan market.
 
 ## Key Features
 

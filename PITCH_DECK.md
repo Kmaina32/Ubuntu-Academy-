@@ -1,10 +1,10 @@
-# Ubuntu Academy Pitch Deck
+# Akili A.I Academy Pitch Deck
 
 ---
 
 ### Slide 1: Title
 
-**Ubuntu Academy**
+**Akili A.I Academy**
 
 *AI-Powered Learning for Kenya's Future*
 
@@ -22,7 +22,7 @@
 
 ### Slide 3: Our Solution
 
-**Ubuntu Academy: Localized, AI-Powered, and Accessible.**
+**Akili A.I Academy: Localized, AI-Powered, and Accessible.**
 
 We provide a mobile-first online learning platform that delivers practical skills tailored for the Kenyan market, enhanced by powerful AI tools for both students and administrators.
 
@@ -86,8 +86,8 @@ Kenya is in the midst of a digital transformation. A young, ambitious, and tech-
 3.  **Talent Placement & Job Board:** Charge companies a fee to list targeted job openings for certified graduates or take a percentage of the salary for successful placements.
 4.  **Live Workshops & Bootcamps:** Host paid, intensive, multi-day live workshops on high-demand topics (e.g., "AI for Business Leaders").
 5.  **Official Project Reviews:** Offer a paid service where students can have their final course projects professionally reviewed and graded by an expert instructor for personalized feedback.
-6.  **"White-Label" Platform Licensing:** License the Ubuntu Academy platform to other educational institutions or large corporations for their internal training programs.
-7.  **Content Marketplace:** Allow verified, expert instructors to create and sell their own courses, with Ubuntu Academy taking a percentage of each sale.
+6.  **"White-Label" Platform Licensing:** License the Akili A.I Academy platform to other educational institutions or large corporations for their internal training programs.
+7.  **Content Marketplace:** Allow verified, expert instructors to create and sell their own courses, with Akili A.I Academy taking a percentage of each sale.
 
 ---
 

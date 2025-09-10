@@ -75,7 +75,7 @@ export default function PortfoliosPage() {
                                             </CardHeader>
                                             <CardContent className="flex-grow text-center">
                                                 <p className="text-muted-foreground line-clamp-3">
-                                                    {profile.portfolio?.summary || 'A passionate learner from Ubuntu Academy.'}
+                                                    {profile.portfolio?.summary || 'A passionate learner from Akili A.I Academy.'}
                                                 </p>
                                             </CardContent>
                                             <CardContent className="flex justify-center gap-2">

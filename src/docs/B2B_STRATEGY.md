@@ -1,7 +1,7 @@
 
-# Akili AI Academy for Business - B2B Strategy
+# Akili A.I Academy for Business - B2B Strategy
 
-This document outlines the strategy for expanding Akili AI Academy into the Business-to-Business (B2B) market with a dedicated offering for organizations.
+This document outlines the strategy for expanding Akili A.I Academy into the Business-to-Business (B2B) market with a dedicated offering for organizations.
 
 ## 1. Vision & Goal
 
@@ -18,7 +18,7 @@ This document outlines the strategy for expanding Akili AI Academy into the Busi
 
 ## 3. Core Features for Organizations
 
-The "Akili AI Academy for Business" portal will provide a dedicated dashboard for organization administrators with the following features:
+The "Akili A.I Academy for Business" portal will provide a dedicated dashboard for organization administrators with the following features:
  
 -   **User Management:**
     -   Invite employees to join the organization's portal via email.

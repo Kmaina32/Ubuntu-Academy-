@@ -1,11 +1,11 @@
 
-# Akili AI Academy - API Documentation
+# Akili A.I Academy - API Documentation
 
-Welcome to the Akili AI Academy API documentation. This document provides all the information you need to interact with our platform programmatically.
+Welcome to the Akili A.I Academy API documentation. This document provides all the information you need to interact with our platform programmatically.
 
 ## 1. Introduction
 
-The Akili AI Academy API provides access to our course catalog and other platform features. It follows RESTful principles and uses standard HTTP response codes and JSON-formatted responses.
+The Akili A.I Academy API provides access to our course catalog and other platform features. It follows RESTful principles and uses standard HTTP response codes and JSON-formatted responses.
 
 ### Base URL
 

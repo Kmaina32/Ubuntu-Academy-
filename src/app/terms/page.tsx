@@ -26,7 +26,7 @@ export default function TermsPage() {
                   </CardHeader>
                   <CardContent className='space-y-6'>
                     <div className="space-y-4 prose max-w-none">
-                      <p>Welcome to Ubuntu Academy!</p>
+                      <p>Welcome to Akili A.I Academy!</p>
                       <h2 className="font-semibold text-xl">1. Acceptance of Terms</h2>
                       <p>By accessing or using our platform, you agree to be bound by these Terms of Service. If you do not agree to all the terms and conditions, then you may not access the platform.</p>
                       

@@ -63,14 +63,14 @@ const sendOrganizationInviteFlow = ai.defineFlow(
 
       // 4. Generate and log the email content
       // In a real application, you would use an email service like SendGrid, Mailgun, or Resend here.
-      const emailSubject = `You're invited to join ${organizationName} on Akili AI Academy`;
+      const emailSubject = `You're invited to join ${organizationName} on Akili A.I Academy`;
       const emailBody = `
         <p>Hello,</p>
-        <p>You have been invited to join the <strong>${organizationName}</strong> team on the Akili AI Academy learning platform.</p>
+        <p>You have been invited to join the <strong>${organizationName}</strong> team on the Akili A.I Academy learning platform.</p>
         <p>Click the link below to set your password and activate your account:</p>
         <p><a href="${resetLink}" style="background-color: #9D4EDD; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Set Your Password & Join</a></p>
         <p>If you have any questions, please contact your organization's administrator.</p>
-        <p>Thanks,<br>The Akili AI Academy Team</p>
+        <p>Thanks,<br>The Akili A.I Academy Team</p>
       `;
 
       console.log("--- SIMULATED EMAIL ---");

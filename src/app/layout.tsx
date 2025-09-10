@@ -8,7 +8,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { CookieConsent } from '@/components/shared/CookieConsent';
 
 export const metadata: Metadata = {
-  title: 'Akili AI Academy',
+  title: 'Akili A.I Academy',
   description: 'Online courses for Kenyans, by Kenyans.',
   verification: {
     google: 'qNZsueqgogEIZHV-vcsY-Kv7tkLo82P_-w7BQvJG1jY',

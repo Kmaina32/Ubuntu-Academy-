@@ -96,7 +96,7 @@ function CourseSchema({ course }: { course: Course }) {
     "description": course.longDescription,
     "provider": {
       "@type": "Organization",
-      "name": "Ubuntu Academy",
+      "name": "Akili A.I Academy",
       "sameAs": "https://mkenya-skilled.vercel.app"
     },
     "courseCode": course.category,
@@ -208,7 +208,7 @@ export default function CourseDetailPage() {
   return (
     <>
     <Head>
-        <title>{`${course.title} | Ubuntu Academy`}</title>
+        <title>{`${course.title} | Akili A.I Academy`}</title>
         <meta name="description" content={course.description} />
         {course && <CourseSchema course={course} />}
     </Head>

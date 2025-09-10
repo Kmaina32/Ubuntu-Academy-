@@ -202,7 +202,7 @@ export async function getHeroData(): Promise<HeroData> {
     recaptchaEnabled: true,
     theme: 'default',
     animationsEnabled: true,
-    orgHeroTitle: 'Akili AI Academy for Business',
+    orgHeroTitle: 'Akili A.I Academy for Business',
     orgHeroSubtitle: 'Empower your workforce with the skills they need to succeed.',
     orgHeroImageUrl: 'https://picsum.photos/1200/800',
     orgLoginImageUrl: 'https://picsum.photos/1200/900',

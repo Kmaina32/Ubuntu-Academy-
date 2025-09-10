@@ -1,6 +1,6 @@
-# Ubuntu Academy - Global SEO Strategy
+# Akili A.I Academy - Global SEO Strategy
 
-This document outlines a comprehensive Search Engine Optimization (SEO) strategy to scale Ubuntu Academy's online presence from a local Kenyan audience to a worldwide audience.
+This document outlines a comprehensive Search Engine Optimization (SEO) strategy to scale Akili A.I Academy's online presence from a local Kenyan audience to a worldwide audience.
 
 ## 1. Executive Summary
 
@@ -41,8 +41,8 @@ Our keyword strategy will shift from purely Kenyan-centric terms to a broader, t
 ## 4. On-Page SEO
 
 #### 4.1. Meta Titles & Descriptions:
--   **Template:** `[Course Title] Online Course - [Primary Benefit] | Ubuntu Academy`
--   **Example:** `Data Science with Python Online Course - Earn Your Certificate | Ubuntu Academy`
+-   **Template:** `[Course Title] Online Course - [Primary Benefit] | Akili A.I Academy`
+-   **Example:** `Data Science with Python Online Course - Earn Your Certificate | Akili A.I Academy`
 -   Descriptions must be compelling, include a call-to-action (CTA), and be localized where appropriate.
 
 #### 4.2. Content Optimization:

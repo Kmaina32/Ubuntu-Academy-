@@ -1,5 +1,5 @@
 
-# Akili AI Academy - Visual Framework
+# Akili A.I Academy - Visual Framework
 
 This document provides a graphical overview of the application's structure and key operational flows using Mermaid syntax. These diagrams can be rendered by GitHub or compatible Markdown editors.
 

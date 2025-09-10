@@ -14,7 +14,7 @@ jest.mock('@/components/Footer', () => ({
 describe('AboutPage', () => {
   it('renders the main heading', () => {
     render(<AboutPage />)
-    const heading = screen.getByRole('heading', { name: /About Akili AI Academy/i })
+    const heading = screen.getByRole('heading', { name: /About Akili A.I Academy/i })
     expect(heading).toBeInTheDocument()
   })
 

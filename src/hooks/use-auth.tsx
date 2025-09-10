@@ -30,7 +30,7 @@ import { useToast } from './use-toast';
 import { add } from 'date-fns';
 
 const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
-const SUPER_ADMIN_ORG_NAME = "Ubuntu Academy";
+const SUPER_ADMIN_ORG_NAME = "Akili A.I Academy";
 
 interface AuthContextType {
   user: User | null;
