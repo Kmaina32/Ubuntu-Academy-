@@ -43,11 +43,11 @@ graph TD
 ```
 
 ## Component Architecture Diagram
-This diagram shows how different UI components interact and form the user interface. It is organized into three main categories: Pages (which represent different routes), Shared Components (reusable elements like headers and footers), and UI Primitives (the basic building blocks from ShadCN). This helps visualize how the frontend is constructed in a modular way.
+This diagram shows how different UI components interact and form the user interface. It is organized into three main categories: "Pages" (which represent different routes), "Shared Components" (reusable elements like headers and footers), and "UI Primitives" (the basic building blocks from ShadCN). This helps visualize how the frontend is constructed in a modular way.
 
 ```mermaid
 graph TD
-    subgraph PAGES ["Pages"]
+    subgraph PAGES [Pages]
         P1["Course Player Page"]
         P2["Admin Dashboard"]
         P3["Home Page"]
@@ -108,7 +108,7 @@ graph LR
     C -->|"Auth Token (JWT)"| B;
     B -->|"Server Actions"| F["Next.js Backend"];
     F -->|"Authenticated Requests"| D;
-    D -- "Enforces" --> E;
+    D -- Enforces --> E;
     E -- "Defines Access" --> D;
 
     style FIREBASE fill:#FDEBD0,stroke:#F39C12,stroke-width:2px
@@ -132,17 +132,17 @@ graph TD
     end
     
     A -->|"XSS, CSRF"| C
-    A -->|DDoS| C
+    A -->|"DDoS"| C
     A -->|"API Abuse"| D
-    B -->|IDOR| D
+    B -->|"IDOR"| D
     B -->|"Unauthorized Access"| E
     
     subgraph MITIGATIONS ["Mitigations"]
-        M1("Input Sanitization, reCAPTCHA")
-        M2("Firebase Hosting DDoS Protection")
-        M3("Rate Limiting, Auth Middleware")
-        M4("DB Rules: auth.uid checks")
-        M5("DB Rules: isAdmin checks")
+        M1["Input Sanitization, reCAPTCHA"]
+        M2["Firebase Hosting DDoS Protection"]
+        M3["Rate Limiting, Auth Middleware"]
+        M4["DB Rules: auth.uid checks"]
+        M5["DB Rules: isAdmin checks"]
     end
     
     C -- "Mitigated by" --> M1
@@ -155,21 +155,44 @@ graph TD
     style MITIGATIONS fill:#A9DFBF,stroke:#333,stroke-width:2px
 ```
 
+## AI Course Generation Flow
+This sequence diagram visualizes the end-to-end process of the AI-powered course creation feature. It starts with the admin user, follows the request through the user interface to a Next.js Server Action, into the Genkit framework, out to the Google AI model, and back with the structured course content.
+
+```mermaid
+sequenceDiagram
+    participant Admin as Admin User
+    participant Page as "Create Course Page (UI)"
+    participant Action as "Next.js Server Action"
+    participant Genkit as "Genkit Flow"
+    participant LLM as "Google AI (Gemini)"
+
+    Admin->>Page: Enters title, clicks "Generate"
+    Page->>Action: generateCourseContent("Intro to Python")
+    note right of Action: Server Action is called
+    Action->>Genkit: Calls generateCourseContentFlow()
+    note right of Genkit: Genkit orchestrates AI call
+    Genkit->>LLM: generate(prompt with structured output schema)
+    LLM-->>Genkit: Returns structured JSON (modules, lessons, exam)
+    Genkit-->>Action: Returns course content object
+    Action-->>Page: Returns course content
+    Page->>Admin: Displays generated course in a review modal
+```
+
 ## Data Analytics Flow
 This diagram shows the flow of data from user actions to the analytics dashboard. It begins with a user performing an action (like enrolling in a course), which triggers a server action to save data to the Firebase Database. The analytics page then fetches this raw data, processes it into meaningful aggregates (like totals and counts), and finally displays it in the dashboard's charts and cards.
 
 ```mermaid
 graph LR
-    subgraph ACTION ["User Action"]
+    subgraph ACTION [User Action]
         A["User Action (e.g., Signup, Enroll)"]
     end
     
-    subgraph SERVER ["Server-Side Logic"]
+    subgraph SERVER [Server-Side Logic]
         B{"Next.js Server Action"}
     end
 
-    subgraph DATABASE ["Database"]
-         C["Firebase Realtime DB (/users, /courses)"]
+    subgraph DATABASE [Database]
+         C["Firebase Realtime DB </br> (/users, /courses)"]
     end
     
     A --> B;
@@ -178,7 +201,7 @@ graph LR
     subgraph ANALYTICS ["Analytics Process"]
         D["Admin Analytics Page"] --> E{"fetchAnalytics()"};
         E -->|"getAllUsers(), getAllCourses()"| C;
-        E --> F["Process Data (Count totals, Aggregate signups)"];
+        E --> F["Process Data </br> (Count totals, Aggregate signups)"];
         F --> G["Display in Charts & Cards"];
     end
     
