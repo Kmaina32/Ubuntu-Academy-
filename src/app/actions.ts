@@ -21,7 +21,6 @@ import type { GenerateProjectInput, GenerateProjectOutput } from '@/ai/flows/gen
 import type { SendOrgInviteInput, SendOrgInviteOutput } from '@/ai/flows/send-org-invite';
 import type { GenerateFormalDocumentInput, GenerateFormalDocumentOutput } from '@/ai/flows/generate-document';
 import { getDocument, saveDocument } from '@/lib/firebase-service';
-// Removed fs/promises and path to prevent serverless function errors.
 
 // Each function dynamically imports its corresponding flow, ensuring that the AI logic
 // is only loaded on the server when the action is executed.
@@ -99,8 +98,6 @@ export async function sendOrganizationInvite(input: SendOrgInviteInput): Promise
 }
 
 export async function getDocumentContent(docType: string): Promise<string> {
-    // This function now *only* reads from the database.
-    // If content doesn't exist, it returns an empty string to prevent errors.
     const dbContent = await getDocument(docType);
     return dbContent || '';
 }
@@ -112,9 +109,7 @@ export async function saveDocumentContent(docType: string, content: string): Pro
 
 export async function generateFormalDocument(input: GenerateFormalDocumentInput): Promise<GenerateFormalDocumentOutput> {
     const { generateFormalDocument } = await import('@/ai/flows/generate-document');
-    // The flow now reads the content from the text area, not the DB or file system directly.
     const result = await generateFormalDocument(input);
-    // We save the AI's output to the database.
     await saveDocument(input.docType, result.formal_document);
     return result;
 }

@@ -36,7 +36,7 @@ export interface TutorSettings {
 
 // Image Upload Service
 export async function uploadImage(userId: string, file: File): Promise<string> {
-    const filePath = `profile-pictures/${'userId'}/${file.name}`;
+    const filePath = `profile-pictures/${userId}/${file.name}`;
     const imageRef = storageRef(storage, filePath);
     await uploadBytes(imageRef, file);
     const downloadURL = await getDownloadURL(imageRef);
@@ -316,7 +316,7 @@ export async function saveTutorHistory(
   lessonId: string,
   messages: TutorMessage[]
 ): Promise<void> {
-  const historyRef = ref(db, `tutorHistory/${'userId'}/${courseId}/${lessonId}`);
+  const historyRef = ref(db, `tutorHistory/${userId}/${courseId}/${lessonId}`);
   await set(historyRef, messages);
 }
 
@@ -325,7 +325,7 @@ export async function getTutorHistory(
   courseId: string,
   lessonId: string
 ): Promise<TutorMessage[]> {
-  const historyRef = ref(db, `tutorHistory/${'userId'}/${courseId}/${lessonId}`);
+  const historyRef = ref(db, `tutorHistory/${userId}/${courseId}/${lessonId}`);
   const snapshot = await get(historyRef);
   if (snapshot.exists()) {
     return snapshot.val();
@@ -409,12 +409,12 @@ export async function getAllNotifications(): Promise<Notification[]> {
 
 // User Notes Functions
 export async function saveUserNotes(userId: string, courseId: string, notes: string): Promise<void> {
-    const notesRef = ref(db, `userNotes/${'userId'}/${courseId}`);
+    const notesRef = ref(db, `userNotes/${userId}/${courseId}`);
     await set(notesRef, { notes });
 }
 
 export async function getUserNotes(userId: string, courseId: string): Promise<string> {
-    const notesRef = ref(db, `userNotes/${'userId'}/${courseId}/notes`);
+    const notesRef = ref(db, `userNotes/${userId}/${courseId}/notes`);
     const snapshot = await get(notesRef);
     if (snapshot.exists()) {
         return snapshot.val();
@@ -556,14 +556,14 @@ export async function deleteBundle(id: string): Promise<void> {
 
 // API Key and Usage Functions
 export async function createApiKey(userId: string, keyData: Omit<ApiKey, 'id'>): Promise<string> {
-    const keysRef = ref(db, `apiKeys/${'userId'}`);
+    const keysRef = ref(db, `apiKeys/${userId}`);
     const newKeyRef = push(keysRef);
     await set(newKeyRef, keyData);
     return newKeyRef.key!;
 }
 
 export async function getUserApiKeys(userId: string): Promise<ApiKey[]> {
-    const keysRef = ref(db, `apiKeys/${'userId'}`);
+    const keysRef = ref(db, `apiKeys/${userId}`);
     const snapshot = await get(keysRef);
     if (snapshot.exists()) {
         const data = snapshot.val();
@@ -573,17 +573,17 @@ export async function getUserApiKeys(userId: string): Promise<ApiKey[]> {
 }
 
 export async function deleteApiKey(userId: string, keyId: string): Promise<void> {
-    const keyRef = ref(db, `apiKeys/${'userId'}/${keyId}`);
+    const keyRef = ref(db, `apiKeys/${userId}/${keyId}`);
     await remove(keyRef);
 }
 
 export async function logApiCall(userId: string, endpoint: string): Promise<void> {
-    const userRef = ref(db, `users/${'userId'}`);
+    const userRef = ref(db, `users/${userId}`);
     await update(userRef, {
         apiCallCount: increment(1)
     });
 
-    const usageLogRef = ref(db, `apiUsage/${'userId'}`);
+    const usageLogRef = ref(db, `apiUsage/${userId}`);
     const newLogRef = push(usageLogRef);
     await set(newLogRef, {
         endpoint,
@@ -619,7 +619,7 @@ export async function submitProject(courseId: string, userId: string, projectDat
 }
 
 export async function saveLearningGoals(userId: string, goals: Record<string, LearningGoal>): Promise<void> {
-    const goalsRef = ref(db, `users/${'userId'}/learningGoals`);
+    const goalsRef = ref(db, `users/${userId}/learningGoals`);
     await set(goalsRef, goals);
 }
 
