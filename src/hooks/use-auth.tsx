@@ -146,22 +146,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
   };
 
   const signup = async (email: string, pass: string, displayName: string, organizationName?: string, inviteOrgId?: string) => {
-    
-    const usersRef = ref(db, 'users');
-    const snapshot = await get(usersRef);
-    if(snapshot.exists()) {
-        const users = snapshot.val();
-        const emailExists = Object.values(users).some((u: any) => u.email === email);
-        if (emailExists) {
-             throw new Error('An account with this email already exists.');
-        }
-    }
-    
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      pass
-    );
+    const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     
     await updateProfile(userCredential.user, {
       displayName: displayName,
@@ -219,14 +204,22 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
       setUser(user);
     } catch (error: any) {
       console.error("Google Sign-In Error", error);
-      if (error.code === 'auth/internal-error') {
-          toast({
-              title: "Google Sign-In Error",
-              description: "Could not sign in with Google. Please ensure it is enabled in your Firebase project and the OAuth consent screen is configured.",
-              variant: "destructive",
-              duration: 10000,
-          });
+      let title = "Google Sign-In Error";
+      let description = "Could not sign in with Google. Please try again.";
+
+      if (error.code === 'auth/operation-not-allowed' || error.code === 'auth/invalid-credential') {
+        title = "Action Invalid";
+        description = "Google Sign-In may not be enabled for this project or your project support email is not set. Please check your Firebase console settings under Authentication > Sign-in method.";
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        return; // Don't show an error if the user just closes the popup
       }
+
+      toast({
+          title: title,
+          description: description,
+          variant: "destructive",
+          duration: 10000,
+      });
       throw error;
     }
   };
