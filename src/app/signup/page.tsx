@@ -48,7 +48,7 @@ const GoogleIcon = () => (
 export default function SignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signup, signInWithGoogle, user, loading, bypassLogin } = useAuth();
+  const { signup, signInWithGoogle, user, loading, bypassLogin, isBypassEnabled } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -56,7 +56,6 @@ export default function SignupPage() {
   const [siteSettings, setSiteSettings] = useState<HeroData | null>(null);
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
-  const isBypassEnabled = process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true';
   
   useEffect(() => {
     if (!loading && user) {

@@ -44,6 +44,7 @@ interface AuthContextType {
   isOrganizationAdmin: boolean;
   organization: Organization | null;
   isAiConfigured: boolean;
+  isBypassEnabled: boolean;
   login: (email: string, pass: string) => Promise<any>;
   signup: (email: string, pass: string, name: string, organizationName?: string, inviteOrgId?: string) => Promise<any>;
   logout: () => Promise<any>;
@@ -96,6 +97,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [members, setMembers] = useState<RegisteredUser[]>([]);
   const { toast } = useToast();
+  const isBypassEnabled = process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true';
   
   const isSuperAdmin = user?.uid === ADMIN_UID;
   const isAdmin = (dbUser?.isAdmin && (!dbUser.adminExpiresAt || new Date(dbUser.adminExpiresAt) > new Date())) || isSuperAdmin;
@@ -103,10 +105,9 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
 
 
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true') {
+    if (isBypassEnabled) {
         console.warn('%cAUTH BYPASS ACTIVE', 'color: red; font-weight: bold; font-size: 14px;');
         setLoading(false);
-        // Don't auto-login. Wait for bypass button.
         return;
     }
 
@@ -115,7 +116,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
       setLoading(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [isBypassEnabled]);
 
   const fetchUserData = useCallback(async (user: User) => {
     const userProfile = await getUserById(user.uid);
@@ -155,7 +156,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
   }, []);
 
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true') return;
+    if (isBypassEnabled) return;
 
     if (user) {
       fetchUserData(user);
@@ -182,7 +183,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
       setOrganization(null);
       setMembers([]);
     }
-  }, [user, fetchUserData]);
+  }, [user, fetchUserData, isBypassEnabled]);
 
 
   const login = (email: string, pass: string) => {
@@ -254,8 +255,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
   }
 
   const logout = () => {
-    if (process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true') {
-        // In bypass mode, "logging out" just resets the state to pre-bypass.
+    if (isBypassEnabled) {
         setUser(null);
         setDbUser(null);
         setOrganization(null);
@@ -270,7 +270,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
   };
 
   const bypassLogin = () => {
-    if (process.env.NEXT_PUBLIC_DISABLE_AUTH !== 'true') {
+    if (!isBypassEnabled) {
       console.error("Bypass login called but NEXT_PUBLIC_DISABLE_AUTH is not true.");
       return;
     }
@@ -282,7 +282,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
   };
 
 
-  const value = {
+  const value: AuthContextType = {
     user,
     dbUser,
     setUser,
@@ -294,6 +294,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
     isOrganizationAdmin,
     organization,
     isAiConfigured,
+    isBypassEnabled,
     login,
     signup,
     logout,

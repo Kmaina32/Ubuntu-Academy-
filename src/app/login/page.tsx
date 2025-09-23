@@ -34,13 +34,12 @@ const GoogleIcon = () => (
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, login, loading: authLoading, signInWithGoogle, bypassLogin } = useAuth();
+  const { user, login, loading: authLoading, signInWithGoogle, bypassLogin, isBypassEnabled } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState('');
-  const isBypassEnabled = process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true';
 
 
   useEffect(() => {
