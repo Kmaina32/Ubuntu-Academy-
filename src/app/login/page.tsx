@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Gem, ArrowLeft } from 'lucide-react';
+import { Loader2, Gem, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { getHeroData } from '@/lib/firebase-service';
 import { Separator } from '@/components/ui/separator';
 
@@ -67,9 +67,9 @@ export default function LoginPage() {
       await login(values.email, values.password);
       router.push('/');
     } catch (e: any) {
-      if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') {
+      if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-password') {
         setError('Incorrect password. Please try again.');
-      } else if (e.code === 'auth/user-not-found') {
+      } else if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-email') {
         setError('No account found with this email.');
       } else {
         setError(e.message || 'An error occurred. Please try again.');
@@ -126,6 +126,7 @@ export default function LoginPage() {
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                       {error && (
                       <Alert variant="destructive">
+                          <AlertTriangle className="h-4 w-4" />
                           <AlertTitle>Login Failed</AlertTitle>
                           <AlertDescription>{error}</AlertDescription>
                       </Alert>
