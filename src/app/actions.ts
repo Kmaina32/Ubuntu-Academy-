@@ -106,7 +106,7 @@ export async function saveDocumentContent(docType: string, content: string): Pro
     await saveDocument(docType, content);
 }
 
-export async function generateFormalDocument(input: GenerateFormalDocumentInput): Promise<GenerateFormalDocumentOutput> {
+export async function generateFormalDocument(input: Omit<GenerateFormalDocumentInput, 'content'>): Promise<GenerateFormalDocumentOutput> {
     const { generateFormalDocument } = await import('@/ai/flows/generate-document');
     const dbContent = await getDocument(input.docType);
     const result = await generateFormalDocument({ ...input, content: dbContent });
