@@ -145,38 +145,15 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
     return signInWithEmailAndPassword(auth, email, pass);
   };
 
-  const signup = async (email: string, pass: string, displayName: string, organizationName?: string, inviteOrgId?: string) => {
+  const signup = async (email: string, pass: string, displayName: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     
     await updateProfile(userCredential.user, {
       displayName: displayName,
     });
-
-    const newUser: Partial<Omit<RegisteredUser, 'uid'>> = {
-      email: userCredential.user.email,
-      displayName: displayName,
-      createdAt: userCredential.user.metadata.creationTime,
-    };
     
-    if (organizationName) {
-        const trialExpiry = add(new Date(), { days: 30 }).toISOString();
-        const orgId = await createOrganization({
-            name: organizationName,
-            ownerId: userCredential.user.uid,
-            createdAt: new Date().toISOString(),
-            subscriptionTier: 'trial',
-            subscriptionExpiresAt: trialExpiry,
-            memberLimit: 5,
-        });
-        newUser.organizationId = orgId;
-        newUser.isOrganizationAdmin = true;
-    } else if (inviteOrgId) {
-        newUser.organizationId = inviteOrgId;
-        newUser.isOrganizationAdmin = false;
-    }
-
-    await saveUser(userCredential.user.uid, newUser);
-
+    // The database record creation is now handled by the onUserCreate Cloud Function.
+    // We just need to send the verification email and update the local state.
     await sendEmailVerification(userCredential.user);
     
     await userCredential.user.reload();
@@ -189,19 +166,8 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      
-      const dbUser = await getUserById(user.uid);
-      
-      if (!dbUser) {
-        const newUser: Partial<RegisteredUser> = {
-          email: user.email,
-          displayName: user.displayName,
-          createdAt: user.metadata.creationTime,
-        };
-        await saveUser(user.uid, newUser);
-      }
-      setUser(user);
+      // The onUserCreate function will handle database record creation if it's a new user.
+      setUser(result.user);
     } catch (error: any) {
       console.error("Google Sign-In Error", error);
       let title = "Google Sign-In Error";
