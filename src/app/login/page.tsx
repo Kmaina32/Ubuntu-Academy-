@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Gem, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Loader2, Gem, ArrowLeft, AlertTriangle, Shield } from 'lucide-react';
 import { getHeroData } from '@/lib/firebase-service';
 import { Separator } from '@/components/ui/separator';
 
@@ -34,12 +34,14 @@ const GoogleIcon = () => (
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, login, loading: authLoading, signInWithGoogle } = useAuth();
+  const { user, login, loading: authLoading, signInWithGoogle, bypassLogin } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState('');
+  const isBypassEnabled = process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true';
+
 
   useEffect(() => {
     const fetchImage = async () => {
@@ -182,6 +184,17 @@ export default function LoginPage() {
                     {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
                     Sign in with Google
                 </Button>
+
+                {isBypassEnabled && (
+                    <>
+                    <Separator className="my-4" />
+                     <Button variant="destructive" className="w-full" onClick={bypassLogin}>
+                        <Shield className="mr-2 h-4 w-4" />
+                        Bypass Login (Dev)
+                    </Button>
+                    </>
+                )}
+
               <div className="mt-4 text-center text-sm">
                 Don&apos;t have an account?{" "}
                 <Link href="/signup" className="underline">

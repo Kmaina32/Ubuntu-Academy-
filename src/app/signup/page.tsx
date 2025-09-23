@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Gem, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Loader2, Gem, ArrowLeft, AlertTriangle, Shield } from 'lucide-react';
 import { getHeroData, getInvitation, deleteInvitation } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { Separator } from '@/components/ui/separator';
@@ -48,7 +48,7 @@ const GoogleIcon = () => (
 export default function SignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signup, signInWithGoogle, user, loading } = useAuth();
+  const { signup, signInWithGoogle, user, loading, bypassLogin } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -56,6 +56,7 @@ export default function SignupPage() {
   const [siteSettings, setSiteSettings] = useState<HeroData | null>(null);
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const isBypassEnabled = process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true';
   
   useEffect(() => {
     if (!loading && user) {
@@ -274,6 +275,15 @@ export default function SignupPage() {
                     {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
                     Sign up with Google
                 </Button>
+                {isBypassEnabled && (
+                    <>
+                    <Separator className="my-4" />
+                     <Button variant="destructive" className="w-full" onClick={bypassLogin}>
+                        <Shield className="mr-2 h-4 w-4" />
+                        Bypass Signup (Dev)
+                    </Button>
+                    </>
+                )}
               <div className="mt-4 text-center text-sm">
                 Already have an account?{' '}
                 <Link href="/login" className="underline">

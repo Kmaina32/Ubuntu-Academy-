@@ -50,9 +50,44 @@ interface AuthContextType {
   sendPasswordReset: (email: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
+  bypassLogin: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const createBypassUser = (): { user: User, dbUser: RegisteredUser, organization: Organization } => {
+    const bypassUID = ADMIN_UID; // Use super admin UID
+    const bypassUser = {
+        uid: bypassUID,
+        email: 'dev-admin@akili.ai',
+        displayName: 'Dev Super Admin',
+        emailVerified: true,
+        photoURL: '',
+        metadata: { creationTime: new Date().toISOString(), lastSignInTime: new Date().toISOString() },
+    } as unknown as User;
+
+    const bypassDbUser: RegisteredUser = {
+        uid: bypassUID,
+        email: 'dev-admin@akili.ai',
+        displayName: 'Dev Super Admin',
+        isAdmin: true,
+        isOrganizationAdmin: true,
+        organizationId: 'super-admin-org',
+    };
+
+    const bypassOrg: Organization = {
+        id: 'super-admin-org',
+        name: SUPER_ADMIN_ORG_NAME,
+        ownerId: bypassUID,
+        createdAt: new Date().toISOString(),
+        subscriptionTier: 'pro' as const,
+        subscriptionExpiresAt: null,
+        memberLimit: 999,
+    };
+
+    return { user: bypassUser, dbUser: bypassDbUser, organization: bypassOrg };
+};
+
 
 export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode; isAiConfigured: boolean }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -68,6 +103,13 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
 
 
   useEffect(() => {
+    if (process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true') {
+        console.warn('%cAUTH BYPASS ACTIVE', 'color: red; font-weight: bold; font-size: 14px;');
+        setLoading(false);
+        // Don't auto-login. Wait for bypass button.
+        return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
@@ -113,6 +155,8 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
   }, []);
 
   useEffect(() => {
+    if (process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true') return;
+
     if (user) {
       fetchUserData(user);
 
@@ -156,23 +200,13 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
     // The function will check for an invitation by email or create a new org.
     if (organizationName && !inviteOrgId) {
         const trialExpiry = add(new Date(), { days: 30 }).toISOString();
-        const newOrgRef = push(ref(db, 'organizations'));
-        await set(newOrgRef, {
+        await createOrganization({
             name: organizationName,
             ownerId: userCredential.user.uid,
             createdAt: new Date().toISOString(),
             subscriptionTier: 'trial',
             subscriptionExpiresAt: trialExpiry,
             memberLimit: 5,
-        });
-        await saveUser(userCredential.user.uid, {
-            organizationId: newOrgRef.key!,
-            isOrganizationAdmin: true,
-        });
-    } else if (inviteOrgId) {
-        await saveUser(userCredential.user.uid, {
-            organizationId: inviteOrgId,
-            isOrganizationAdmin: false,
         });
     }
 
@@ -188,16 +222,15 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      // The onUserCreate function will handle database record creation if it's a new user.
       setUser(result.user);
     } catch (error: any) {
       console.error("Google Sign-In Error", error);
       let title = "Google Sign-In Error";
       let description = "Could not sign in with Google. Please try again.";
 
-      if (error.code === 'auth/operation-not-allowed' || error.code === 'auth/invalid-credential') {
+      if (error.code === 'auth/operation-not-allowed' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-action') {
         title = "Action Invalid";
-        description = "Google Sign-In may not be enabled for this project or your project support email is not set. Please check your Firebase console settings under Authentication > Sign-in method.";
+        description = "Google Sign-In may not be enabled correctly in your Firebase project. Please ensure the Google provider is enabled and a project support email is set in your Firebase console.";
       } else if (error.code === 'auth/popup-closed-by-user') {
         return; // Don't show an error if the user just closes the popup
       }
@@ -221,12 +254,33 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
   }
 
   const logout = () => {
+    if (process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true') {
+        // In bypass mode, "logging out" just resets the state to pre-bypass.
+        setUser(null);
+        setDbUser(null);
+        setOrganization(null);
+        setMembers([]);
+        return Promise.resolve();
+    }
     return firebaseSignOut(auth);
   };
   
   const sendPasswordReset = (email: string) => {
     return sendPasswordResetEmail(auth, email);
   };
+
+  const bypassLogin = () => {
+    if (process.env.NEXT_PUBLIC_DISABLE_AUTH !== 'true') {
+      console.error("Bypass login called but NEXT_PUBLIC_DISABLE_AUTH is not true.");
+      return;
+    }
+    const { user, dbUser, organization } = createBypassUser();
+    setUser(user);
+    setDbUser(dbUser);
+    setOrganization(organization);
+    toast({ title: 'Auth Bypassed', description: 'Logged in as Dev Super Admin.' });
+  };
+
 
   const value = {
     user,
@@ -246,6 +300,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
     sendPasswordReset,
     signInWithGoogle,
     sendVerificationEmail,
+    bypassLogin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
