@@ -31,7 +31,7 @@
       ],
       "$uid": {
         ".read": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || (data.child('organizationId').val() != null && data.child('organizationId').val() === root.child('users').child(auth.uid).child('organizationId').val()))",
-        ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || (!data.exists() && newData.child('email').val() === auth.token.email))",
+        ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
         "cohort": {
           ".read": "auth != null"
         },
