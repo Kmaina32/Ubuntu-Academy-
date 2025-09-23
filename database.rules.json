@@ -24,14 +24,14 @@
       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
     "users": {
-      ".read": "auth != null",
+      ".read": "query.orderByChild === 'portfolio/public' && query.equalTo === true",
       ".indexOn": [
         "organizationId",
         "portfolio/public"
       ],
       "$uid": {
-        ".read": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || data.child('portfolio').child('public').val() === true)",
-        ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+        ".read": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || (data.child('organizationId').val() != null && data.child('organizationId').val() === root.child('users').child(auth.uid).child('organizationId').val()))",
+        ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || (!data.exists() && newData.child('email').val() === auth.token.email))",
         "cohort": {
           ".read": "auth != null"
         },
