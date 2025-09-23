@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Gem, ArrowLeft } from 'lucide-react';
+import { Loader2, Gem, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { getHeroData, getInvitation, deleteInvitation } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { Separator } from '@/components/ui/separator';
@@ -112,10 +112,8 @@ export default function SignupPage() {
       
       await signup(values.email, values.password, displayName, undefined, orgId);
       
-      if (invitation) {
-          await deleteInvitation(invitation.id);
-      }
-
+      // The cloud function will handle deleting the invitation now
+      
       toast({
         title: 'Account Created!',
         description: "A verification email has been sent. Please check your inbox.",
@@ -169,6 +167,7 @@ export default function SignupPage() {
             <CardContent>
                 {invitation && (
                     <Alert className="mb-4">
+                         <AlertTriangle className="h-4 w-4" />
                         <AlertTitle>You've been invited!</AlertTitle>
                         <AlertDescription>
                             You are joining the <strong>{invitation.organizationName}</strong> organization.
@@ -179,6 +178,7 @@ export default function SignupPage() {
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                       {error && (
                       <Alert variant="destructive">
+                            <AlertTriangle className="h-4 w-4" />
                           <AlertTitle>Signup Failed</AlertTitle>
                           <AlertDescription>{error}</AlertDescription>
                       </Alert>

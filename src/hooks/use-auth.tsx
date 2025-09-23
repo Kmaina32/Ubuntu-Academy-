@@ -145,7 +145,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
     return signInWithEmailAndPassword(auth, email, pass);
   };
 
-  const signup = async (email: string, pass: string, displayName: string) => {
+  const signup = async (email: string, pass: string, displayName: string, organizationName?: string, inviteOrgId?: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     
     await updateProfile(userCredential.user, {
@@ -153,7 +153,29 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
     });
     
     // The database record creation is now handled by the onUserCreate Cloud Function.
-    // We just need to send the verification email and update the local state.
+    // The function will check for an invitation by email or create a new org.
+    if (organizationName && !inviteOrgId) {
+        const trialExpiry = add(new Date(), { days: 30 }).toISOString();
+        const newOrgRef = push(ref(db, 'organizations'));
+        await set(newOrgRef, {
+            name: organizationName,
+            ownerId: userCredential.user.uid,
+            createdAt: new Date().toISOString(),
+            subscriptionTier: 'trial',
+            subscriptionExpiresAt: trialExpiry,
+            memberLimit: 5,
+        });
+        await saveUser(userCredential.user.uid, {
+            organizationId: newOrgRef.key!,
+            isOrganizationAdmin: true,
+        });
+    } else if (inviteOrgId) {
+        await saveUser(userCredential.user.uid, {
+            organizationId: inviteOrgId,
+            isOrganizationAdmin: false,
+        });
+    }
+
     await sendEmailVerification(userCredential.user);
     
     await userCredential.user.reload();

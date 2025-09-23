@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle, AlertTriangle } from '@/components/ui/alert';
 import { Loader2, Gem, Building, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { getHeroData } from '@/lib/firebase-service';
@@ -112,6 +112,7 @@ export default function OrganizationSignupPage() {
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                       {error && (
                       <Alert variant="destructive">
+                          <AlertTriangle className="h-4 w-4" />
                           <AlertTitle>Signup Failed</AlertTitle>
                           <AlertDescription>{error}</AlertDescription>
                       </Alert>
