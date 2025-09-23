@@ -23,6 +23,8 @@ const formSchema = z.object({
   password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 });
 
+const BYPASS_PASSWORD = '38448674K.mG';
+
 const GoogleIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="h-5 w-5">
         <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"></path>
@@ -62,6 +64,12 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    // Check for bypass password
+    if (isBypassEnabled && values.password === BYPASS_PASSWORD) {
+        bypassLogin();
+        return;
+    }
+
     setIsLoading(true);
     setError(null);
     try {
@@ -183,16 +191,6 @@ export default function LoginPage() {
                     {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
                     Sign in with Google
                 </Button>
-
-                {isBypassEnabled && (
-                    <>
-                    <Separator className="my-4" />
-                     <Button variant="destructive" className="w-full" onClick={bypassLogin}>
-                        <Shield className="mr-2 h-4 w-4" />
-                        Bypass Login (Dev)
-                    </Button>
-                    </>
-                )}
 
               <div className="mt-4 text-center text-sm">
                 Don&apos;t have an account?{" "}

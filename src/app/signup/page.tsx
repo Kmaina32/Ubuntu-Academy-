@@ -48,7 +48,7 @@ const GoogleIcon = () => (
 export default function SignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signup, signInWithGoogle, user, loading, bypassLogin, isBypassEnabled } = useAuth();
+  const { signup, signInWithGoogle, user, loading, isBypassEnabled } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -274,15 +274,6 @@ export default function SignupPage() {
                     {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
                     Sign up with Google
                 </Button>
-                {isBypassEnabled && (
-                    <>
-                    <Separator className="my-4" />
-                     <Button variant="destructive" className="w-full" onClick={bypassLogin}>
-                        <Shield className="mr-2 h-4 w-4" />
-                        Bypass Signup (Dev)
-                    </Button>
-                    </>
-                )}
               <div className="mt-4 text-center text-sm">
                 Already have an account?{' '}
                 <Link href="/login" className="underline">
