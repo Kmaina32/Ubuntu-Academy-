@@ -22,8 +22,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
-import { CohortManager } from '@/components/CohortManager';
-import { AdminAccessManager } from '@/components/AdminAccessManager';
+import { CohortManager } from '@/components/shared/CohortManager';
+import { AdminAccessManager } from '@/components/shared/AdminAccessManager';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { cn } from '@/lib/utils';
 
