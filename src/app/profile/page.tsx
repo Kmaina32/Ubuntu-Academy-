@@ -139,7 +139,7 @@ export default function ProfilePage() {
     if (!name) return 'U';
     const names = name.split(' ');
     if (names.length > 1 && names[1]) {
-      return `${'names[0][0]'}${names[names.length - 1][0]}`;
+      return `${names[0][0]}${names[names.length - 1][0]}`;
     }
     return names[0]?.[0] || 'U';
   };
@@ -255,7 +255,7 @@ export default function ProfilePage() {
                     <div className="relative group">
                         <Avatar className="h-24 w-24 mb-4">
                             <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'User'}/>
-                            <AvatarFallback className="text-3xl">{getInitials(user?.displayName)}</AvatarFallback>
+                            <AvatarFallback className="text-4xl">{getInitials(user?.displayName)}</AvatarFallback>
                         </Avatar>
                         <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             {isUploading ? <Loader2 className="h-8 w-8 animate-spin text-white" /> : <Camera className="h-8 w-8 text-white" />}
@@ -400,7 +400,7 @@ export default function ProfilePage() {
 
                               <div className="mt-6 space-y-2">
                                 <Button asChild variant="outline" className="w-full">
-                                    <Link href={`/portfolio/${'user.uid'}`}>
+                                    <Link href={`/portfolio/${user.uid}`}>
                                         <Eye className="mr-2 h-4 w-4" />
                                         View My Public Portfolio
                                     </Link>
