@@ -17,7 +17,7 @@ import {
 import { Gem, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, KeyRound, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library, Briefcase, Tag, Building, Users as PortfoliosIcon, Rocket, Trophy } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from './ui/separator';
-import pkg from '../../package.json';
+import pkg from '../package.json';
 import { useEffect, useMemo, useState } from 'react';
 import type { CalendarEvent } from '@/lib/mock-data';
 import { getAllCalendarEvents } from '@/lib/firebase-service';
@@ -107,14 +107,6 @@ export function AppSidebar() {
                                 <Link href="/bootcamps">
                                     <Rocket />
                                     <span>Bootcamps</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/hackathons')} tooltip="Hackathons" onClick={() => onLinkClick('/hackathons')}>
-                                <Link href="/hackathons">
-                                    <Trophy />
-                                    <span>Hackathons</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

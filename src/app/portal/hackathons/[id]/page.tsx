@@ -10,12 +10,11 @@ import { getHackathonById, getHackathonParticipants, registerForHackathon } from
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, ArrowRight, BookOpen, Layers, CheckCircle, Award, Calendar, Clock, Star, Trophy, Users, ExternalLink, GitBranch } from "lucide-react";
+import { Loader2, Trophy, Users, ExternalLink, GitBranch } from "lucide-react";
 import { useAuth } from '@/hooks/use-auth';
 import { format, isPast } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { MpesaModal } from '@/components/shared/MpesaModal';
-import { Separator } from '@/components/ui/separator';
+import { MpesaModal } from '@/components/MpesaModal';
 
 export default function HackathonDetailPage() {
   const params = useParams<{ id: string }>();
@@ -113,7 +112,7 @@ export default function HackathonDetailPage() {
             </p>
             <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 mt-6 text-sm">
               <div className="flex items-center gap-2"><Trophy /><span>Prize: Ksh {hackathon.prizeMoney.toLocaleString()}</span></div>
-              <div className="flex items-center gap-2"><Calendar /><span>{format(new Date(hackathon.startDate), 'PPP')} - {format(new Date(hackathon.endDate), 'PPP')}</span></div>
+              <div className="flex items-center gap-2"><span>{format(new Date(hackathon.startDate), 'PPP')} - {format(new Date(hackathon.endDate), 'PPP')}</span></div>
               <div className="flex items-center gap-2"><Users /><span>{participants.length} Participants</span></div>
             </div>
           </div>
@@ -149,7 +148,7 @@ export default function HackathonDetailPage() {
                       <Button size="lg" className="w-full" disabled>Submissions Closed</Button>
                     ) : (
                       <Button size="lg" className="w-full" asChild>
-                        <Link href={`/hackathons/${hackathon.id}/submit`}>
+                        <Link href={`/portal/hackathons/${hackathon.id}/submit`}>
                           <GitBranch className="mr-2 h-4 w-4" />
                           Submit Project
                         </Link>
@@ -157,7 +156,7 @@ export default function HackathonDetailPage() {
                     )
                   ) : (
                     <Button size="lg" className="w-full" onClick={() => setIsModalOpen(true)} disabled={isRegistering || hasEnded}>
-                      {isRegistering ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Award className="mr-2 h-5 w-5" />}
+                      {isRegistering ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
                       {hasEnded ? 'Event has ended' : 'Register Now'}
                     </Button>
                   )}

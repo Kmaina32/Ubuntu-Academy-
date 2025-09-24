@@ -3,11 +3,11 @@
 
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/components/shared/Header';
-import { Footer } from '@/components/shared/Footer';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import { Loader2 } from 'lucide-react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/Sidebar';
+import { PortalSidebar } from '@/components/PortalSidebar';
 
 export default function PortalLayout({
   children,
@@ -38,7 +38,7 @@ export default function PortalLayout({
 
   return (
     <SidebarProvider>
-        <AppSidebar />
+        <PortalSidebar />
         <SidebarInset>
             <Header />
              <div className="flex flex-col min-h-screen">
