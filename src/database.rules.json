@@ -25,7 +25,7 @@
       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
     "hackathonParticipants": {
-      ".read": true,
+      ".read": "auth != null",
       "$hackathonId": {
         ".write": "auth != null",
         "$userId": {
@@ -43,7 +43,7 @@
       }
     },
     "leaderboard": {
-      ".read": true,
+      ".read": "auth != null",
       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
     "hero": {
@@ -201,3 +201,4 @@
     }
   }
 }
+
