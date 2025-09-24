@@ -5,7 +5,7 @@
 // between server and client code. All functions exported from a 'use server' file must be async.
 
 import type { LearningPathInput, LearningPathOutput } from '@/ai/flows/career-coach';
-import type { ContentStrategyOutput } from '@/lib/mock-data';
+import type { ContentStrategyOutput } from '@/lib/types';
 import type { CourseTutorInput, CourseTutorOutput } from '@/ai/flows/course-tutor';
 import type { GenerateApiKeyInput } from '@/ai/flows/generate-api-key';
 import type { GenerateCourseContentInput, GenerateCourseContentOutput } from '@/ai/flows/generate-course-content';
@@ -16,7 +16,7 @@ import type { SiteHelpInput, SiteHelpOutput } from '@/ai/flows/site-help';
 import type { SpeechToTextOutput } from '@/ai/flows/speech-to-text';
 import type { StudentHelpInput, StudentHelpOutput } from '@/ai/flows/student-help';
 import type { TextToSpeechOutput } from '@/ai/flows/text-to-speech';
-import type { ApiKey } from '@/lib/mock-data';
+import type { ApiKey } from '@/lib/types';
 import type { GenerateProjectInput, GenerateProjectOutput } from '@/ai/flows/generate-project';
 import type { SendOrgInviteInput, SendOrgInviteOutput } from '@/ai/flows/send-org-invite';
 import type { GenerateFormalDocumentInput, GenerateFormalDocumentOutput } from '@/ai/flows/generate-document';
@@ -106,10 +106,9 @@ export async function saveDocumentContent(docType: string, content: string): Pro
     await saveDocument(docType, content);
 }
 
-export async function generateFormalDocument(input: Omit<GenerateFormalDocumentInput, 'content'>): Promise<GenerateFormalDocumentOutput> {
+export async function generateFormalDocument(input: GenerateFormalDocumentInput): Promise<GenerateFormalDocumentOutput> {
     const { generateFormalDocument } = await import('@/ai/flows/generate-document');
-    const dbContent = await getDocument(input.docType);
-    const result = await generateFormalDocument({ ...input, content: dbContent });
+    const result = await generateFormalDocument(input);
     await saveDocument(input.docType, result.formal_document);
     return result;
 }

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -14,16 +14,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Gem, ArrowLeft, AlertTriangle, Shield } from 'lucide-react';
+import { Loader2, Gem, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { getHeroData } from '@/lib/firebase-service';
-import { Separator } from '@/components/ui/separator';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 });
-
-const BYPASS_PASSWORD = '38448674K.mG';
 
 const GoogleIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="h-5 w-5">
@@ -36,8 +33,7 @@ const GoogleIcon = () => (
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, login, loading: authLoading, signInWithGoogle, bypassLogin, isBypassEnabled } = useAuth();
-  const { toast } = useToast();
+  const { user, login, loading: authLoading, signInWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +50,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      router.push('/');
+      router.push('/dashboard');
     }
   }, [user, authLoading, router]);
 
@@ -64,20 +60,14 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    // Check for bypass password
-    if (isBypassEnabled && values.password === BYPASS_PASSWORD) {
-        bypassLogin();
-        return;
-    }
-
     setIsLoading(true);
     setError(null);
     try {
       await login(values.email, values.password);
-      router.push('/');
+      router.push('/dashboard');
     } catch (e: any) {
       if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-password') {
-        setError('Incorrect password. Please try again.');
+        setError('Incorrect password or email. Please try again.');
       } else if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-email') {
         setError('No account found with this email.');
       } else {
@@ -93,7 +83,7 @@ export default function LoginPage() {
     setError(null);
     try {
         await signInWithGoogle();
-        router.push('/');
+        router.push('/dashboard');
     } catch(e: any) {
         setError(e.message || 'Failed to sign in with Google.');
     } finally {
