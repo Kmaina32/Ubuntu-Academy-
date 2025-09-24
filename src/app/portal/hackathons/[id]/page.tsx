@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { notFound, useParams } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from 'next/link';
 import type { Hackathon, RegisteredUser } from "@/lib/mock-data";
@@ -88,99 +89,101 @@ export default function HackathonDetailPage() {
   }
 
   return (
-        <main className="flex-grow bg-secondary/30">
-             <section className="relative py-12 md:py-20">
-                <div className="absolute inset-0">
-                    <Image
-                        src={hackathon.imageUrl}
-                        alt={hackathon.title}
-                        fill
-                        className="object-cover"
-                        data-ai-hint="tech conference students coding"
-                    />
-                     <div className="absolute inset-0 bg-black/60"></div>
-                </div>
-                <div className="container mx-auto px-4 md:px-6 relative text-white text-center">
-                    <Badge variant="secondary" className="mb-4 bg-primary text-white border-primary">Hackathon</Badge>
-                    <h1 className="text-4xl md:text-5xl font-bold mb-4 font-headline leading-tight">
-                        {hackathon.title}
-                    </h1>
-                    <p className="text-lg md:text-xl max-w-3xl mx-auto">
-                        {hackathon.description}
-                    </p>
-                    <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 mt-6 text-sm">
-                        <div className="flex items-center gap-2"><Trophy /><span>Prize: Ksh {hackathon.prizeMoney.toLocaleString()}</span></div>
-                        <div className="flex items-center gap-2"><Calendar /><span>{format(new Date(hackathon.startDate), 'PPP')} - {format(new Date(hackathon.endDate), 'PPP')}</span></div>
-                        <div className="flex items-center gap-2"><Users /><span>{participants.length} Participants</span></div>
-                    </div>
-                </div>
-             </section>
-             <div className="container mx-auto px-4 md:px-6 py-12 -mt-16 md:-mt-20 relative z-10">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-2">
-                        <Card className="shadow-xl">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-2xl">
-                                <Trophy className="h-6 w-6 text-primary" />
-                                Rules & Judging Criteria
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="prose max-w-none">
-                                   <p>Details about rules and how projects will be judged will be provided here. This includes information on team sizes, technology stacks, submission formats, and the specific criteria for scoring creativity, technical implementation, and impact.</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                     <div className="lg:col-span-1">
-                        <Card className="sticky top-24 shadow-xl">
-                            <CardHeader>
-                                <p className="text-3xl font-bold text-primary mb-2">
-                                    {hackathon.entryFee > 0 ? `Ksh ${hackathon.entryFee.toLocaleString()}` : 'Free'}
-                                </p>
-                                <CardDescription>Entry fee per participant.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                {isParticipant ? (
-                                    hasEnded ? (
-                                        <Button size="lg" className="w-full" disabled>Submissions Closed</Button>
-                                    ) : (
-                                        <Button size="lg" className="w-full" asChild>
-                                            <Link href={`/portal/hackathons/${hackathon.id}/submit`}>
-                                               <GitBranch className="mr-2 h-4 w-4" />
-                                               Submit Project
-                                            </Link>
-                                        </Button>
-                                    )
-                                ) : (
-                                    <Button size="lg" className="w-full" onClick={() => setIsModalOpen(true)} disabled={isRegistering || hasEnded}>
-                                        {isRegistering ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Award className="mr-2 h-5 w-5" />}
-                                        {hasEnded ? 'Event has ended' : 'Register Now'}
-                                    </Button>
-                                )}
-                                {hackathon.externalUrl && (
-                                     <Button size="lg" className="w-full" variant="outline" asChild>
-                                        <a href={hackathon.externalUrl} target="_blank" rel="noopener noreferrer">
-                                           <ExternalLink className="mr-2 h-4 w-4" />
-                                            Visit Event Page
-                                        </a>
-                                    </Button>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </div>
-                </div>
-             </div>
-        </main>
-        {hackathon.entryFee > 0 && (
-            <MpesaModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                courseId={hackathon.id}
-                courseName={hackathon.title}
-                price={hackathon.entryFee}
-                onPaymentSuccess={handleRegister}
+    <>
+      <main className="flex-grow bg-secondary/30">
+        <section className="relative py-12 md:py-20">
+          <div className="absolute inset-0">
+            <Image
+              src={hackathon.imageUrl}
+              alt={hackathon.title}
+              fill
+              className="object-cover"
+              data-ai-hint="tech conference students coding"
             />
-        )}
+            <div className="absolute inset-0 bg-black/60"></div>
+          </div>
+          <div className="container mx-auto px-4 md:px-6 relative text-white text-center">
+            <Badge variant="secondary" className="mb-4 bg-primary text-white border-primary">Hackathon</Badge>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 font-headline leading-tight">
+              {hackathon.title}
+            </h1>
+            <p className="text-lg md:text-xl max-w-3xl mx-auto">
+              {hackathon.description}
+            </p>
+            <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 mt-6 text-sm">
+              <div className="flex items-center gap-2"><Trophy /><span>Prize: Ksh {hackathon.prizeMoney.toLocaleString()}</span></div>
+              <div className="flex items-center gap-2"><Calendar /><span>{format(new Date(hackathon.startDate), 'PPP')} - {format(new Date(hackathon.endDate), 'PPP')}</span></div>
+              <div className="flex items-center gap-2"><Users /><span>{participants.length} Participants</span></div>
+            </div>
+          </div>
+        </section>
+        <div className="container mx-auto px-4 md:px-6 py-12 -mt-16 md:-mt-20 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <Card className="shadow-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-2xl">
+                    <Trophy className="h-6 w-6 text-primary" />
+                    Rules & Judging Criteria
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="prose max-w-none">
+                    <p>Details about rules and how projects will be judged will be provided here. This includes information on team sizes, technology stacks, submission formats, and the specific criteria for scoring creativity, technical implementation, and impact.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <div className="lg:col-span-1">
+              <Card className="sticky top-24 shadow-xl">
+                <CardHeader>
+                  <p className="text-3xl font-bold text-primary mb-2">
+                    {hackathon.entryFee > 0 ? `Ksh ${hackathon.entryFee.toLocaleString()}` : 'Free'}
+                  </p>
+                  <CardDescription>Entry fee per participant.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {isParticipant ? (
+                    hasEnded ? (
+                      <Button size="lg" className="w-full" disabled>Submissions Closed</Button>
+                    ) : (
+                      <Button size="lg" className="w-full" asChild>
+                        <Link href={`/portal/hackathons/${hackathon.id}/submit`}>
+                          <GitBranch className="mr-2 h-4 w-4" />
+                          Submit Project
+                        </Link>
+                      </Button>
+                    )
+                  ) : (
+                    <Button size="lg" className="w-full" onClick={() => setIsModalOpen(true)} disabled={isRegistering || hasEnded}>
+                      {isRegistering ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Award className="mr-2 h-5 w-5" />}
+                      {hasEnded ? 'Event has ended' : 'Register Now'}
+                    </Button>
+                  )}
+                  {hackathon.externalUrl && (
+                    <Button size="lg" className="w-full" variant="outline" asChild>
+                      <a href={hackathon.externalUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Visit Event Page
+                      </a>
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </main>
+      {hackathon.entryFee > 0 && (
+        <MpesaModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          courseId={hackathon.id}
+          courseName={hackathon.title}
+          price={hackathon.entryFee}
+          onPaymentSuccess={handleRegister}
+        />
+      )}
+    </>
   );
 }
