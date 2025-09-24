@@ -9,13 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getAllSubmissions, getCourseById, getAllCourses } from '@/lib/firebase-service';
 import type { Submission, Course } from '@/lib/mock-data';
-import { ArrowLeft, Loader2, Star, CheckCircle, Edit, Briefcase, Sparkles } from 'lucide-react';
+import { ArrowLeft, Loader2, Star, CheckCircle, Edit, Briefcase, BookCopy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { generateProject } from '@/app/actions';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 
 type SubmissionWithCourse = Submission & { course?: Course };
@@ -105,10 +103,9 @@ function SubmissionsList() {
   );
 }
 
-function ProjectsList() {
+function CourseAssignmentsList() {
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isGenerating, setIsGenerating] = useState<string | null>(null);
     const { toast } = useToast();
 
      const fetchCourses = async () => {
@@ -128,26 +125,12 @@ function ProjectsList() {
         fetchCourses();
     }, []);
     
-    const handleGenerateProject = async (course: Course) => {
-        setIsGenerating(course.id);
-        toast({ title: 'Generating Project...', description: 'The AI is creating a new final project for this course.' });
-        try {
-            await generateProject({ courseTitle: course.title, courseDescription: course.longDescription });
-            toast({ title: 'Project Generated!', description: 'The project has been added to the course. You can now edit it.' });
-            fetchCourses(); // Re-fetch to update the UI
-        } catch (error) {
-            console.error('Failed to generate project', error);
-            toast({ title: 'Error', description: 'Could not generate the project.', variant: 'destructive' });
-        } finally {
-            setIsGenerating(null);
-        }
-    }
     
     return (
     loading ? (
-       <div className="flex justify-center items-center py-1.5">
+       <div className="flex justify-center items-center py-10">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <p className="ml-2">Loading exams & projects...</p>
+          <p className="ml-2">Loading assignments...</p>
        </div>
     ) : (
       <Table>
@@ -175,38 +158,16 @@ function ProjectsList() {
                 <Button asChild size="sm" variant="outline">
                     <Link href={`/admin/assignments/edit/${course.id}`}>
                         <Edit className="mr-2 h-4 w-4" />
-                        Edit
+                        Edit / Create
                     </Link>
                 </Button>
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button size="sm" variant="outline" disabled={isGenerating === course.id}>
-                            {isGenerating === course.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4" />}
-                            Generate with AI
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Generate Final Assignment?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This will use AI to generate a final assignment for "{course.title}" based on its description. You can choose to generate an exam or a project. This will replace any existing assignment.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleGenerateProject(course)}>
-                                Generate Project
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
               </TableCell>
             </TableRow>
           ))}
            {courses.length === 0 && (
             <TableRow>
                 <TableCell colSpan={3} className="text-center text-muted-foreground py-10">
-                    No courses found.
+                    No courses found. Create a course first.
                 </TableCell>
             </TableRow>
            )}
@@ -241,7 +202,7 @@ export default function AdminAssignmentsPage() {
                         <SubmissionsList />
                     </TabsContent>
                     <TabsContent value="assignments">
-                        <ProjectsList />
+                        <CourseAssignmentsList />
                     </TabsContent>
                   </CardContent>
               </Card>

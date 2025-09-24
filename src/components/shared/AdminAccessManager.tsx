@@ -61,7 +61,6 @@ export function AdminAccessManager({ user, isOpen, onClose, onSuccess }: AdminAc
       }
 
       await saveUser(user.uid, {
-        ...user,
         isAdmin: true,
         adminExpiresAt: expirationDate,
       });
@@ -88,7 +87,6 @@ export function AdminAccessManager({ user, isOpen, onClose, onSuccess }: AdminAc
     setIsLoading(true);
     try {
         await saveUser(user.uid, {
-            ...user,
             isAdmin: false,
             adminExpiresAt: null,
         });
