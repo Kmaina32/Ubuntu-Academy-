@@ -7,9 +7,9 @@ import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { Hackathon } from "@/lib/mock-data";
-import { getAllHackathons, deleteHackathon } from '@/lib/firebase-service';
-import { FilePlus2, Pencil, Trash2, Loader2, ArrowLeft, Trophy } from "lucide-react";
+import type { Hackathon, RegisteredUser } from "@/lib/mock-data";
+import { getAllHackathons, deleteHackathon, getHackathonParticipants } from '@/lib/firebase-service';
+import { FilePlus2, Pencil, Trash2, Loader2, ArrowLeft, Trophy, Users } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -28,6 +28,7 @@ import { format } from 'date-fns';
 export default function AdminHackathonsPage() {
   const { user, isSuperAdmin } = useAuth();
   const [hackathons, setHackathons] = useState<Hackathon[]>([]);
+  const [participantsMap, setParticipantsMap] = useState<Record<string, RegisteredUser[]>>({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -36,6 +37,14 @@ export default function AdminHackathonsPage() {
       setLoading(true);
       const fetched = await getAllHackathons();
       setHackathons(fetched.reverse());
+      
+      const participantsData: Record<string, RegisteredUser[]> = {};
+      for (const hackathon of fetched) {
+        const participants = await getHackathonParticipants(hackathon.id);
+        participantsData[hackathon.id] = participants;
+      }
+      setParticipantsMap(participantsData);
+
     } catch (err) {
       toast({ title: "Error", description: "Failed to fetch hackathons.", variant: "destructive" });
       console.error(err);
@@ -105,8 +114,8 @@ export default function AdminHackathonsPage() {
                     <TableRow>
                       <TableHead>Title</TableHead>
                       <TableHead>Dates</TableHead>
+                      <TableHead>Participants</TableHead>
                       <TableHead>Prize</TableHead>
-                      <TableHead>Entry Fee</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -116,8 +125,13 @@ export default function AdminHackathonsPage() {
                         <TableRow key={hackathon.id}>
                           <TableCell className="font-medium">{hackathon.title}</TableCell>
                           <TableCell>{format(new Date(hackathon.startDate), 'PPP')} - {format(new Date(hackathon.endDate), 'PPP')}</TableCell>
+                           <TableCell>
+                                <div className="flex items-center gap-2">
+                                    <Users className="h-4 w-4 text-muted-foreground" />
+                                    {participantsMap[hackathon.id]?.length || 0}
+                                </div>
+                            </TableCell>
                           <TableCell>Ksh {hackathon.prizeMoney.toLocaleString()}</TableCell>
-                          <TableCell>Ksh {hackathon.entryFee.toLocaleString()}</TableCell>
                           <TableCell className="text-right">
                             <Button asChild variant="ghost" size="icon" className="mr-2">
                               <Link href={`/admin/hackathons/edit/${hackathon.id}`}>
@@ -166,4 +180,3 @@ export default function AdminHackathonsPage() {
     </div>
   );
 }
-
