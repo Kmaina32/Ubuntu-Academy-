@@ -14,32 +14,14 @@ export const onUserCreate = functions.auth.user().onCreate(async (user) => {
 
     const userRef = db.ref(`/users/${uid}`);
 
-    // Check if the user was created via an invitation.
-    // In a real app, the inviteId would be passed from the client during signup,
-    // but for this trigger, we'll check by email.
-    const inviteRef = db.ref('invitations').orderByChild('email').equalTo(email!).limitToFirst(1);
-    const inviteSnapshot = await inviteRef.once('value');
-    
-    let organizationId: string | undefined = undefined;
-    let isOrganizationAdmin = false;
-
-    if (inviteSnapshot.exists()) {
-        const inviteData = inviteSnapshot.val();
-        const inviteId = Object.keys(inviteData)[0];
-        organizationId = inviteData[inviteId].organizationId;
-        
-        // It's good practice to remove the invitation after it's been used.
-        await db.ref(`invitations/${inviteId}`).remove();
-    } 
-
+    // This function now only creates the basic user record.
+    // Complex logic like organization creation or invitation handling is
+    // managed on the client-side during the signup process for better reliability.
     try {
         await userRef.set({
             email: email,
             displayName: displayName || 'New User',
             createdAt: creationTime,
-            organizationId: organizationId || null,
-            // Only the owner of a new org should be an admin initially
-            isOrganizationAdmin: isOrganizationAdmin,
         });
         console.log(`Successfully created user record for ${uid}`);
     } catch (error) {

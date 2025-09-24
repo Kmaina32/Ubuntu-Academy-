@@ -152,6 +152,8 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
       displayName: displayName,
     });
     
+    // This is the single source of truth for org/invite logic on signup.
+    // The onUserCreate function is now only for basic record creation.
     if (organizationName && !inviteOrgId) {
         const trialExpiry = add(new Date(), { days: 30 }).toISOString();
         const newOrgId = await createOrganization({
@@ -170,10 +172,9 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
         });
 
     } else if (inviteOrgId) {
-        // If joining via invite, their user record will be created by the cloud function.
-        // We just need to make sure their local state is aware.
         await saveUser(userCredential.user.uid, {
-            organizationId: inviteOrgId
+            organizationId: inviteOrgId,
+            isOrganizationAdmin: false, // Invited members are not admins by default
         });
     }
 
