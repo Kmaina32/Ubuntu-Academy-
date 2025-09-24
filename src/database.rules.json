@@ -25,7 +25,7 @@
       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
     "hackathonParticipants": {
-        ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+        ".read": "auth != null",
         "$hackathonId": {
             ".write": "auth != null",
             "$userId": {
