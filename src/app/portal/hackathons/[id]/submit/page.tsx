@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
-import { getHackathonById } from '@/lib/firebase-service';
+import { getHackathonById, createHackathonSubmission } from '@/lib/firebase-service';
 import type { Hackathon } from '@/lib/mock-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -57,19 +57,26 @@ export default function HackathonSubmitPage() {
     const onSubmit = async (values: z.infer<typeof submissionSchema>) => {
         if (!user || !hackathon) return;
         setIsSubmitting(true);
-        // In a real app, you would save this submission to the database.
-        console.log({
-            hackathonId: hackathon.id,
-            userId: user.uid,
-            ...values
-        });
-        toast({
-            title: 'Project Submitted!',
-            description: 'Your project has been successfully submitted for review. Good luck!',
-        });
-        await new Promise(res => setTimeout(res, 1500));
-        router.push(`/portal/hackathons/${hackathon.id}`);
-        setIsSubmitting(false);
+        try {
+            await createHackathonSubmission({
+                hackathonId: hackathon.id,
+                hackathonTitle: hackathon.title,
+                userId: user.uid,
+                userName: user.displayName || 'Anonymous',
+                submittedAt: new Date().toISOString(),
+                ...values
+            });
+            toast({
+                title: 'Project Submitted!',
+                description: 'Your project has been successfully submitted for review. Good luck!',
+            });
+            router.push(`/portal/hackathons/${hackathon.id}`);
+        } catch (error) {
+            console.error("Failed to submit project:", error);
+            toast({ title: 'Error', description: 'Could not submit your project.', variant: 'destructive'});
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (loading || authLoading) {

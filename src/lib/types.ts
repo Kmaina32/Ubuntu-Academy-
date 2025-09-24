@@ -127,6 +127,19 @@ export interface Hackathon {
     externalUrl?: string;
 }
 
+export interface HackathonSubmission {
+    id: string;
+    hackathonId: string;
+    hackathonTitle: string;
+    userId: string;
+    userName: string;
+    projectName: string;
+    githubUrl: string;
+    liveUrl: string;
+    description: string;
+    submittedAt: string; // ISO String
+}
+
 
 export const user = {
     name: 'Jomo Kenyatta',
@@ -316,4 +329,12 @@ export interface PricingPlan {
     priceDetail: string; // e.g., 'per user / month'
     features: string[];
     isPrimary: boolean; // For highlighting a recommended plan
+}
+
+export interface LeaderboardEntry {
+    userId: string;
+    userName: string;
+    userAvatar: string;
+    score: number;
+    hackathonCount: number;
 }
