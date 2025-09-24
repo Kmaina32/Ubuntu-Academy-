@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -67,7 +68,7 @@ export default function HackathonSubmitPage() {
             description: 'Your project has been successfully submitted for review. Good luck!',
         });
         await new Promise(res => setTimeout(res, 1500));
-        router.push(`/portal/hackathons/${hackathon.id}`);
+        router.push(`/hackathons/${hackathon.id}`);
         setIsSubmitting(false);
     };
 

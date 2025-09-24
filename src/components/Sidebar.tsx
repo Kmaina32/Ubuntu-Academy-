@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -106,6 +107,14 @@ export function AppSidebar() {
                                 <Link href="/bootcamps">
                                     <Rocket />
                                     <span>Bootcamps</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/hackathons')} tooltip="Hackathons" onClick={() => onLinkClick('/hackathons')}>
+                                <Link href="/hackathons">
+                                    <Trophy />
+                                    <span>Hackathons</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -251,8 +260,8 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/portal/hackathons')} tooltip="Hackathons" onClick={() => onLinkClick('/portal/hackathons')}>
-                                <Link href="/portal/hackathons">
+                            <SidebarMenuButton asChild isActive={isActive('/hackathons')} tooltip="Hackathons" onClick={() => onLinkClick('/hackathons')}>
+                                <Link href="/hackathons">
                                     <Trophy />
                                     <span>Hackathons</span>
                                 </Link>

@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -13,7 +14,7 @@ import { Input } from '@/components/ui/input';
 const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
     const names = name.split(' ');
-    return names.length > 1 ? `${'names[0][0]'}${names[names.length - 1][0]}` : names[0]?.[0] || 'U';
+    return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}` : names[0]?.[0] || 'U';
 };
 
 export default function PortalProfilePage() {
@@ -25,8 +26,7 @@ export default function PortalProfilePage() {
     }
 
     if (!user) {
-        // This case should be handled by the layout, but as a fallback:
-        router.push('/login?redirect=/portal/hackathons');
+        router.push('/login?redirect=/hackathons');
         return null;
     }
 

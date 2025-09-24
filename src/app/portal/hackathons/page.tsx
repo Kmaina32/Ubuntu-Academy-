@@ -1,10 +1,10 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Footer } from "@/components/shared/Footer";
 import { getAllHackathons, Hackathon } from '@/lib/firebase-service';
 import { Loader2, Trophy } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ function HackathonCard({ hackathon }: { hackathon: Hackathon }) {
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
       <CardHeader className="p-0">
-        <Link href={`/portal/hackathons/${hackathon.id}`}>
+        <Link href={`/hackathons/${hackathon.id}`}>
           <div className="relative w-full h-48">
             <Image
               src={hackathon.imageUrl}
@@ -52,7 +52,7 @@ function HackathonCard({ hackathon }: { hackathon: Hackathon }) {
           {hackathon.entryFee > 0 ? `Ksh ${hackathon.entryFee.toLocaleString()}` : 'Free'}
         </p>
          <Button asChild>
-            <Link href={`/portal/hackathons/${hackathon.id}`}>View Details</Link>
+            <Link href={`/hackathons/${hackathon.id}`}>View Details</Link>
         </Button>
       </CardFooter>
     </Card>

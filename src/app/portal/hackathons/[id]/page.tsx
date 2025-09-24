@@ -10,11 +10,12 @@ import { getHackathonById, getHackathonParticipants, registerForHackathon } from
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, Award, Calendar, Trophy, Users, ExternalLink, GitBranch } from "lucide-react";
+import { Loader2, ArrowRight, BookOpen, Layers, CheckCircle, Award, Calendar, Clock, Star, Trophy, Users, ExternalLink, GitBranch } from "lucide-react";
 import { useAuth } from '@/hooks/use-auth';
 import { format, isPast } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { MpesaModal } from '@/components/shared/MpesaModal';
+import { Separator } from '@/components/ui/separator';
 
 export default function HackathonDetailPage() {
   const params = useParams<{ id: string }>();
@@ -148,7 +149,7 @@ export default function HackathonDetailPage() {
                       <Button size="lg" className="w-full" disabled>Submissions Closed</Button>
                     ) : (
                       <Button size="lg" className="w-full" asChild>
-                        <Link href={`/portal/hackathons/${hackathon.id}/submit`}>
+                        <Link href={`/hackathons/${hackathon.id}/submit`}>
                           <GitBranch className="mr-2 h-4 w-4" />
                           Submit Project
                         </Link>
