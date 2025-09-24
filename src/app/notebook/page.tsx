@@ -11,8 +11,8 @@ import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
-import type { UserCourse, Course } from '@/lib/mock-data';
-import { getUserCourses, getCourseById } from '@/lib/firebase-service';
+import type { UserCourse, Course } from '@/lib/types';
+import { getUserCourses, getAllCourses } from '@/lib/firebase-service';
 import { Button } from '@/components/ui/button';
 
 type EnrolledCourse = UserCourse & Partial<Course>;
@@ -32,13 +32,12 @@ export default function NotebooksListPage() {
       setLoading(true);
       try {
         const userCourses = await getUserCourses(user.uid);
-        const coursesDetails = await Promise.all(
-          userCourses.map(c => getCourseById(c.courseId))
-        );
+        const allCourses = await getAllCourses();
+        const courseMap = new Map(allCourses.map(c => [c.id, c]));
         
-        const enrolledCourses = userCourses.map((uc, index) => ({
+        const enrolledCourses = userCourses.map(uc => ({
             ...uc,
-            ...coursesDetails[index]
+            ...courseMap.get(uc.courseId)
         })).filter(c => c.title); // Filter out courses that couldn't be fetched
 
         setCourses(enrolledCourses);

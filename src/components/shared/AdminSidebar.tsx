@@ -14,7 +14,7 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library, Layers, BarChart3, Tag, ShieldCheck, Building, FileText, Rocket, ChevronRight, BookCopy, Contact, Users2, Speaker, LineChart } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library, Layers, BarChart3, Tag, ShieldCheck, Building, FileText, Rocket, ChevronRight, BookCopy, Contact, Users2, Speaker, LineChart, Book } from 'lucide-react';
 import pkg from '../../../package.json';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
@@ -49,7 +49,9 @@ export function AdminSidebar() {
     const { isSuperAdmin } = useAuth();
 
     const isActive = (path: string) => {
-        if (path === '/admin') return pathname === '/admin';
+        if (path === '/admin' && pathname === '/admin') return true;
+        // Don't mark /admin as active if we are on a sub-page like /admin/courses
+        if (path === '/admin' && pathname !== '/admin') return false;
         return pathname.startsWith(path);
     }
 
@@ -67,7 +69,7 @@ export function AdminSidebar() {
             </div>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/admin') && pathname === '/admin'} tooltip="Dashboard">
+                    <SidebarMenuButton asChild isActive={isActive('/admin')} tooltip="Dashboard">
                         <Link href="/admin">
                             <LayoutDashboard />
                             <span>Dashboard</span>
@@ -75,9 +77,12 @@ export function AdminSidebar() {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
 
-                <CollapsibleSidebarMenu title="Content" icon={BookCopy}>
-                     <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/assignments')} tooltip="Exams">
-                        <Link href="/admin/assignments">Exams</Link>
+                <CollapsibleSidebarMenu title="Content" icon={BookCopy} initialOpen={true}>
+                     <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/courses')} tooltip="Courses">
+                        <Link href="/admin/courses">Courses</Link>
+                    </SidebarMenuButton>
+                     <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/assignments')} tooltip="Exams & Projects">
+                        <Link href="/admin/assignments">Exams & Projects</Link>
                     </SidebarMenuButton>
                      <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/programs')} tooltip="Programs">
                         <Link href="/admin/programs">Programs</Link>
