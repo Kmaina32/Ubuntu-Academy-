@@ -259,7 +259,7 @@ export function AppSidebar() {
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
-                         <SidebarMenuItem>
+                        <SidebarMenuItem>
                             <SidebarMenuButton asChild isActive={isActive('/hackathons')} tooltip="Hackathons" onClick={() => onLinkClick('/hackathons')}>
                                 <Link href="/hackathons">
                                     <Trophy />
