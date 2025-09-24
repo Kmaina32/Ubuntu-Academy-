@@ -146,7 +146,7 @@
     "permissionRequests": {
       ".read": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
       "$requestId": {
-        ".write": "(auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true && newData.exists() && !data.exists()) || (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2')"
+        ".write": "(auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true && newData.exists() && !data.exists()) || (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' && data.exists() && newData.exists())"
       }
     },
     "notifications": {
