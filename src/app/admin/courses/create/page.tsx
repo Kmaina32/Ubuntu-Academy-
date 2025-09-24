@@ -148,12 +148,12 @@ export default function CreateCoursePage() {
                             {moduleFields.map((module, moduleIndex) => (
                                 <Card key={module.id} className="bg-secondary/50">
                                     <AccordionItem value={module.id} className="border-b-0">
-                                        <AccordionTrigger className="p-4">
-                                           <div className="flex items-center gap-2 w-full pr-4">
-                                                <FormField control={form.control} name={`modules.${moduleIndex}.title`} render={({ field }) => ( <FormItem className="flex-grow"> <FormControl> <Input placeholder="Module Title" {...field} className="font-semibold text-lg bg-transparent border-0 shadow-none focus-visible:ring-0" /> </FormControl> <FormMessage /> </FormItem> )}/>
-                                                <Button type="button" variant="ghost" size="icon" className="text-destructive rounded-full" onClick={(e) => { e.stopPropagation(); removeModule(moduleIndex); }}> <Trash2 className="h-4 w-4" /> </Button>
-                                            </div>
-                                        </AccordionTrigger>
+                                        <div className="flex items-center p-2">
+                                            <AccordionTrigger className="p-2 flex-grow">
+                                                <FormField control={form.control} name={`modules.${moduleIndex}.title`} render={({ field }) => ( <FormItem className="w-full"> <FormControl> <Input placeholder="Module Title" {...field} className="font-semibold text-lg bg-transparent border-0 shadow-none focus-visible:ring-0" /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                            </AccordionTrigger>
+                                            <Button type="button" variant="ghost" size="icon" className="text-destructive rounded-full" onClick={() => removeModule(moduleIndex)}> <Trash2 className="h-4 w-4" /> </Button>
+                                        </div>
                                         <AccordionContent className="p-4 pt-0">
                                             <LessonFields form={form} moduleIndex={moduleIndex} />
                                         </AccordionContent>
