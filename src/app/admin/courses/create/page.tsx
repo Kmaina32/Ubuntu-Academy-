@@ -167,7 +167,7 @@ export default function CreateCoursePage() {
                                                 )}
                                                 />
                                             </div>
-                                             <AccordionTrigger className="p-0 w-auto" />
+                                             <AccordionTrigger className="p-2"/>
                                             <Button
                                                 type="button"
                                                 variant="ghost"
