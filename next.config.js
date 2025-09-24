@@ -20,20 +20,6 @@ const nextConfig = {
       },
     ],
   },
-  serverExternalPackages: [
-    '@genkit-ai/ai-platform',
-    '@genkit-ai/googleai',
-    '@google-cloud/functions-framework',
-    'firebase-admin',
-    'gaxios',
-    'google-auth-library',
-    'google-gax',
-    'json-schema',
-    'long',
-    'protobufjs',
-    'zod',
-    'axios'
-  ],
 };
 
 export default nextConfig;
