@@ -2,7 +2,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Bootcamp, PricingPlan, ProjectSubmission } from './types';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Bootcamp, PricingPlan, ProjectSubmission, Hackathon } from './types';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -825,4 +825,41 @@ export async function getDocument(docType: string): Promise<string> {
     const docRef = ref(db, `documents/${docType.replace('.md', '')}/content`);
     const snapshot = await get(docRef);
     return snapshot.exists() ? snapshot.val() : '';
+}
+
+// Hackathon Functions
+export async function getAllHackathons(): Promise<Hackathon[]> {
+    const hackathonsRef = ref(db, 'hackathons');
+    const snapshot = await get(hackathonsRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        return Object.keys(data).map(key => ({ id: key, ...data[key] }));
+    }
+    return [];
+}
+
+export async function getHackathonById(id: string): Promise<Hackathon | null> {
+    const hackathonRef = ref(db, `hackathons/${id}`);
+    const snapshot = await get(hackathonRef);
+    if (snapshot.exists()) {
+        return { id, ...snapshot.val() };
+    }
+    return null;
+}
+
+export async function getHackathonParticipants(hackathonId: string): Promise<RegisteredUser[]> {
+    const participantsRef = ref(db, `hackathonParticipants/${hackathonId}`);
+    const snapshot = await get(participantsRef);
+    if (snapshot.exists()) {
+        const participantIds = Object.keys(snapshot.val());
+        const participantPromises = participantIds.map(uid => getUserById(uid));
+        const participants = await Promise.all(participantPromises);
+        return participants.filter(p => p !== null) as RegisteredUser[];
+    }
+    return [];
+}
+
+export async function registerForHackathon(hackathonId: string, userId: string): Promise<void> {
+    const registrationRef = ref(db, `hackathonParticipants/${hackathonId}/${userId}`);
+    await set(registrationRef, true);
 }

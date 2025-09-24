@@ -115,6 +115,18 @@ export interface Bootcamp {
   startDate: string; // ISO String
 }
 
+export interface Hackathon {
+    id: string;
+    title: string;
+    description: string;
+    entryFee: number;
+    prizeMoney: number;
+    startDate: string; // ISO string
+    endDate: string; // ISO string
+    imageUrl: string;
+    externalUrl?: string;
+}
+
 
 export const user = {
     name: 'Jomo Kenyatta',
