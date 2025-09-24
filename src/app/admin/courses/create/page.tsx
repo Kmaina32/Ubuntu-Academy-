@@ -149,11 +149,7 @@ export default function CreateCoursePage() {
                                 <Card key={module.id} className="bg-secondary/50">
                                     <AccordionItem value={module.id} className="border-b-0">
                                         <div className="p-4 flex items-center gap-2">
-                                            <AccordionTrigger className="p-0 hover:no-underline flex-grow">
-                                                <div className="flex items-center gap-2 w-full">
-                                                    <span className="font-semibold text-lg">{form.watch(`modules.${moduleIndex}.title`)}</span>
-                                                </div>
-                                            </AccordionTrigger>
+                                            <AccordionTrigger className="p-0 flex-shrink-0" />
                                             <FormField
                                                 control={form.control}
                                                 name={`modules.${moduleIndex}.title`}
