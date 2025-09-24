@@ -44,51 +44,15 @@ interface AuthContextType {
   isOrganizationAdmin: boolean;
   organization: Organization | null;
   isAiConfigured: boolean;
-  isBypassEnabled: boolean;
   login: (email: string, pass: string) => Promise<any>;
   signup: (email: string, pass: string, name: string, organizationName?: string, inviteOrgId?: string) => Promise<any>;
   logout: () => Promise<any>;
   sendPasswordReset: (email: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
-  bypassLogin: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const createBypassUser = (): { user: User, dbUser: RegisteredUser, organization: Organization } => {
-    const bypassUID = ADMIN_UID; // Use super admin UID
-    const bypassUser = {
-        uid: bypassUID,
-        email: 'dev-admin@akili.ai',
-        displayName: 'Dev Super Admin',
-        emailVerified: true,
-        photoURL: '',
-        metadata: { creationTime: new Date().toISOString(), lastSignInTime: new Date().toISOString() },
-    } as unknown as User;
-
-    const bypassDbUser: RegisteredUser = {
-        uid: bypassUID,
-        email: 'dev-admin@akili.ai',
-        displayName: 'Dev Super Admin',
-        isAdmin: true,
-        isOrganizationAdmin: true,
-        organizationId: 'super-admin-org',
-    };
-
-    const bypassOrg: Organization = {
-        id: 'super-admin-org',
-        name: SUPER_ADMIN_ORG_NAME,
-        ownerId: bypassUID,
-        createdAt: new Date().toISOString(),
-        subscriptionTier: 'pro' as const,
-        subscriptionExpiresAt: null,
-        memberLimit: 999,
-    };
-
-    return { user: bypassUser, dbUser: bypassDbUser, organization: bypassOrg };
-};
-
 
 export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode; isAiConfigured: boolean }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -97,7 +61,6 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [members, setMembers] = useState<RegisteredUser[]>([]);
   const { toast } = useToast();
-  const isBypassEnabled = process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true';
   
   const isSuperAdmin = user?.uid === ADMIN_UID;
   const isAdmin = (dbUser?.isAdmin && (!dbUser.adminExpiresAt || new Date(dbUser.adminExpiresAt) > new Date())) || isSuperAdmin;
@@ -105,18 +68,12 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
 
 
   useEffect(() => {
-    if (isBypassEnabled) {
-        console.warn('%cAUTH BYPASS ACTIVE', 'color: red; font-weight: bold; font-size: 14px;');
-        setLoading(false);
-        return;
-    }
-
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
     });
     return () => unsubscribe();
-  }, [isBypassEnabled]);
+  }, []);
 
   const fetchUserData = useCallback(async (user: User) => {
     const userProfile = await getUserById(user.uid);
@@ -156,8 +113,6 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
   }, []);
 
   useEffect(() => {
-    if (isBypassEnabled) return;
-
     if (user) {
       fetchUserData(user);
 
@@ -183,7 +138,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
       setOrganization(null);
       setMembers([]);
     }
-  }, [user, fetchUserData, isBypassEnabled]);
+  }, [user, fetchUserData]);
 
 
   const login = (email: string, pass: string) => {
@@ -197,17 +152,28 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
       displayName: displayName,
     });
     
-    // The database record creation is now handled by the onUserCreate Cloud Function.
-    // The function will check for an invitation by email or create a new org.
     if (organizationName && !inviteOrgId) {
         const trialExpiry = add(new Date(), { days: 30 }).toISOString();
-        await createOrganization({
+        const newOrgId = await createOrganization({
             name: organizationName,
             ownerId: userCredential.user.uid,
             createdAt: new Date().toISOString(),
             subscriptionTier: 'trial',
             subscriptionExpiresAt: trialExpiry,
             memberLimit: 5,
+        });
+
+        // Set the creating user as the organization admin in their user record.
+        await saveUser(userCredential.user.uid, { 
+            isOrganizationAdmin: true,
+            organizationId: newOrgId,
+        });
+
+    } else if (inviteOrgId) {
+        // If joining via invite, their user record will be created by the cloud function.
+        // We just need to make sure their local state is aware.
+        await saveUser(userCredential.user.uid, {
+            organizationId: inviteOrgId
         });
     }
 
@@ -233,7 +199,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
         title = "Action Invalid";
         description = "Google Sign-In may not be enabled correctly in your Firebase project. Please ensure the Google provider is enabled and a project support email is set in your Firebase console.";
       } else if (error.code === 'auth/popup-closed-by-user') {
-        return; // Don't show an error if the user just closes the popup
+        return; 
       }
 
       toast({
@@ -255,13 +221,6 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
   }
 
   const logout = () => {
-    if (isBypassEnabled) {
-        setUser(null);
-        setDbUser(null);
-        setOrganization(null);
-        setMembers([]);
-        return Promise.resolve();
-    }
     return firebaseSignOut(auth);
   };
   
@@ -269,20 +228,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
     return sendPasswordResetEmail(auth, email);
   };
 
-  const bypassLogin = () => {
-    if (!isBypassEnabled) {
-      console.error("Bypass login called but NEXT_PUBLIC_DISABLE_AUTH is not true.");
-      return;
-    }
-    const { user, dbUser, organization } = createBypassUser();
-    setUser(user);
-    setDbUser(dbUser);
-    setOrganization(organization);
-    toast({ title: 'Auth Bypassed', description: 'Logged in as Dev Super Admin.' });
-  };
-
-
-  const value: AuthContextType = {
+  const value = {
     user,
     dbUser,
     setUser,
@@ -294,14 +240,12 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
     isOrganizationAdmin,
     organization,
     isAiConfigured,
-    isBypassEnabled,
     login,
     signup,
     logout,
     sendPasswordReset,
     signInWithGoogle,
     sendVerificationEmail,
-    bypassLogin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

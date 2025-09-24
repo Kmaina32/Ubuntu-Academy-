@@ -14,6 +14,7 @@ import { z } from 'genkit';
 import axios from 'axios';
 
 const MpesaPaymentInputSchema = z.object({
+  userId: z.string().describe("The UID of the user making the payment."),
   phoneNumber: z.string().describe("The user's 10-digit phone number (e.g., 07xxxxxxxx)."),
   amount: z.number().describe("The amount to be charged."),
   courseId: z.string().describe("The ID of the course being purchased."),
@@ -76,7 +77,7 @@ const mpesaPaymentFlow = ai.defineFlow(
     inputSchema: MpesaPaymentInputSchema,
     outputSchema: MpesaPaymentOutputSchema,
   },
-  async ({ phoneNumber, amount, courseId }) => {
+  async ({ userId, phoneNumber, amount, courseId }) => {
     
     const shortCode = process.env.MPESA_TILL_NUMBER;
     const passkey = process.env.MPESA_PASSKEY;
@@ -102,13 +103,13 @@ const mpesaPaymentFlow = ai.defineFlow(
             BusinessShortCode: shortCode,
             Password: password,
             Timestamp: timestamp,
-            TransactionType: "CustomerBuyGoodsOnline", // Use for Business Tills
+            TransactionType: "CustomerBuyGoodsOnline",
             Amount: amount,
             PartyA: formattedPhoneNumber,
             PartyB: shortCode,
             PhoneNumber: formattedPhoneNumber,
-            CallBackURL: `${callbackUrl}?courseId=${courseId}`,
-            AccountReference: "AkiliAIAcademy", // Replace with your company name
+            CallBackURL: `${callbackUrl}?courseId=${courseId}&userId=${userId}`,
+            AccountReference: "AkiliAIAcademy",
             TransactionDesc: `Payment for ${courseId}`
         }, {
             headers: {
