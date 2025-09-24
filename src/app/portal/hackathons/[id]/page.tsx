@@ -18,6 +18,7 @@ import { MpesaModal } from '@/components/MpesaModal';
 
 export default function HackathonDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
 
@@ -31,6 +32,12 @@ export default function HackathonDetailPage() {
   const hasEnded = hackathon ? isPast(new Date(hackathon.endDate)) : false;
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+        router.push('/login');
+        return;
+    }
+
     const fetchDetails = async () => {
         setLoading(true);
         try {
@@ -54,7 +61,7 @@ export default function HackathonDetailPage() {
         }
     }
     fetchDetails();
-  }, [params.id]);
+  }, [params.id, user, authLoading, router]);
   
   const handleRegister = async () => {
       if (!user || !hackathon) return;

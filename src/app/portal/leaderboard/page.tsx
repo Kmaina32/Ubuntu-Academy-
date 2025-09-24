@@ -8,6 +8,8 @@ import { getLeaderboard } from '@/lib/firebase-service';
 import type { LeaderboardEntry } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
 
 const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
@@ -18,10 +20,18 @@ const getInitials = (name: string | null | undefined) => {
 const podiumColors = ['bg-yellow-400', 'bg-gray-400', 'bg-yellow-600'];
 
 export default function LeaderboardPage() {
+    const { user, loading: authLoading } = useAuth();
+    const router = useRouter();
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (authLoading) return;
+        if (!user) {
+            router.push('/login');
+            return;
+        }
+
         const fetchLeaderboard = async () => {
             setLoading(true);
             try {
@@ -34,7 +44,11 @@ export default function LeaderboardPage() {
             }
         };
         fetchLeaderboard();
-    }, []);
+    }, [user, authLoading, router]);
+
+    if (authLoading || loading) {
+        return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+    }
 
     return (
         <main className="flex-grow container mx-auto px-4 md:px-6 py-12">
@@ -49,11 +63,7 @@ export default function LeaderboardPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                     {loading ? (
-                         <div className="flex justify-center items-center py-20">
-                             <Loader2 className="h-8 w-8 animate-spin" />
-                         </div>
-                    ) : leaderboard.length > 0 ? (
+                     {leaderboard.length > 0 ? (
                         <Table>
                             <TableHeader>
                                 <TableRow>

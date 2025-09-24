@@ -9,16 +9,22 @@ import { getHackathonSubmissionsByUser } from '@/lib/firebase-service';
 import type { HackathonSubmission } from '@/lib/types';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function MySubmissionsPage() {
     const { user, loading: authLoading } = useAuth();
+    const router = useRouter();
     const [submissions, setSubmissions] = useState<HackathonSubmission[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (authLoading) return;
+        if (!user) {
+            router.push('/login');
+            return;
+        }
+
         const fetchSubmissions = async () => {
-            if (!user) return;
             setLoading(true);
             try {
                 const userSubmissions = await getHackathonSubmissionsByUser(user.uid);
@@ -30,10 +36,12 @@ export default function MySubmissionsPage() {
             }
         };
 
-        if (!authLoading) {
-            fetchSubmissions();
-        }
-    }, [user, authLoading]);
+        fetchSubmissions();
+    }, [user, authLoading, router]);
+
+    if (authLoading || loading) {
+        return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+    }
 
     return (
         <main className="flex-grow container mx-auto px-4 md:px-6 py-12">
@@ -48,11 +56,7 @@ export default function MySubmissionsPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {loading ? (
-                         <div className="flex justify-center items-center py-20">
-                             <Loader2 className="h-8 w-8 animate-spin" />
-                         </div>
-                    ) : submissions.length > 0 ? (
+                    {submissions.length > 0 ? (
                         <div className="space-y-4">
                             {submissions.map(sub => (
                                 <Card key={sub.id} className="p-4">
