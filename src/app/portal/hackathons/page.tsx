@@ -18,7 +18,7 @@ function HackathonCard({ hackathon }: { hackathon: Hackathon }) {
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
       <CardHeader className="p-0">
-        <Link href={`/hackathons/${hackathon.id}`}>
+        <Link href={`/portal/hackathons/${hackathon.id}`}>
           <div className="relative w-full h-48">
             <Image
               src={hackathon.imageUrl}
@@ -52,7 +52,7 @@ function HackathonCard({ hackathon }: { hackathon: Hackathon }) {
           {hackathon.entryFee > 0 ? `Ksh ${hackathon.entryFee.toLocaleString()}` : 'Free'}
         </p>
          <Button asChild>
-            <Link href={`/hackathons/${hackathon.id}`}>View Details</Link>
+            <Link href={`/portal/hackathons/${hackathon.id}`}>View Details</Link>
         </Button>
       </CardFooter>
     </Card>

@@ -68,17 +68,12 @@ export default function HackathonSubmitPage() {
             description: 'Your project has been successfully submitted for review. Good luck!',
         });
         await new Promise(res => setTimeout(res, 1500));
-        router.push(`/hackathons/${hackathon.id}`);
+        router.push(`/portal/hackathons/${hackathon.id}`);
         setIsSubmitting(false);
     };
 
     if (loading || authLoading) {
         return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
-    }
-
-    if (!user) {
-        router.push('/login');
-        return null;
     }
     
     if (!hackathon) notFound();
