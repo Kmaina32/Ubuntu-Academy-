@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -59,7 +60,7 @@ function DocumentEditor({ docType }: { docType: DocType }) {
     setIsGenerating(true);
     toast({ title: 'AI is generating the document...', description: 'This may take a moment.' });
     try {
-        const result = await generateFormalDocument({ docType, content });
+        const result = await generateFormalDocument({ docType, content: content });
         setContent(result.formal_document);
         toast({ title: 'Success', description: 'Document updated by AI.' });
     } catch (err) {
@@ -307,3 +308,5 @@ export default function AdminDocumentsPage() {
     </div>
   );
 }
+
+    
