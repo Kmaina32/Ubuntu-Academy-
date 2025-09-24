@@ -1,6 +1,6 @@
 {
   "database": {
-    "rules": "database.rules.json"
+    "rules": "src/database.rules.json"
   },
   "functions": {
     "source": "src/functions",
