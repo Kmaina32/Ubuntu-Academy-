@@ -244,7 +244,7 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                          <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/programs')} tooltip="Certificate Programs" onClick={() => onLinkClick('/programs')}>
+                            <SidebarMenuButton asChild isActive={isActive('/programs')} tooltip="Certificate Programs" onClick={onLinkClick}>
                                 <Link href="/programs">
                                     <Library />
                                     <span>Programs</span>
@@ -252,7 +252,7 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/bootcamps')} tooltip="Bootcamps" onClick={() => onLinkClick('/bootcamps')}>
+                            <SidebarMenuButton asChild isActive={isActive('/bootcamps')} tooltip="Bootcamps" onClick={onLinkClick}>
                                 <Link href="/bootcamps">
                                     <Rocket />
                                     <span>Bootcamps</span>
@@ -260,7 +260,7 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/hackathons')} tooltip="Hackathons" onClick={() => onLinkClick('/hackathons')}>
+                            <SidebarMenuButton asChild isActive={isActive('/hackathons')} tooltip="Hackathons" onClick={onLinkClick}>
                                 <Link href="/hackathons">
                                     <Trophy />
                                     <span>Hackathons</span>
@@ -268,7 +268,7 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/portfolios')} tooltip="Student Portfolios" onClick={() => onLinkClick('/portfolios')}>
+                            <SidebarMenuButton asChild isActive={isActive('/portfolios')} tooltip="Student Portfolios" onClick={onLinkClick}>
                                 <Link href="/portfolios">
                                     <PortfoliosIcon />
                                     <span>Student Portfolios</span>
@@ -276,7 +276,7 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/for-business')} tooltip="For Organizations" onClick={() => onLinkClick('/for-business')}>
+                            <SidebarMenuButton asChild isActive={isActive('/for-business')} tooltip="For Organizations" onClick={onLinkClick}>
                                 <Link href="/for-business">
                                     <Building />
                                     <span>Organization</span>
