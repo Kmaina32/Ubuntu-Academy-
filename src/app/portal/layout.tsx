@@ -8,6 +8,7 @@ import { Footer } from '@/components/Footer';
 import { Loader2 } from 'lucide-react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { PortalSidebar } from '@/components/PortalSidebar';
+import { useEffect } from 'react';
 
 export default function PortalLayout({
   children,
@@ -17,7 +18,14 @@ export default function PortalLayout({
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login?redirect=/portal/hackathons');
+    }
+  }, [user, loading, router]);
+
+
+  if (loading || !user) {
      return (
         <div className="flex h-screen items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin" />
@@ -26,15 +34,6 @@ export default function PortalLayout({
      )
   }
 
-  if (!user) {
-    router.push('/login?redirect=/hackathons');
-    return (
-        <div className="flex h-screen items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <p className="ml-2">Redirecting to login...</p>
-        </div>
-    )
-  }
 
   return (
     <SidebarProvider>
