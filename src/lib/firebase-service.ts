@@ -345,7 +345,7 @@ export async function getTutorSettings(): Promise<TutorSettings> {
     const defaults: TutorSettings = {
         voice: 'algenib',
         speed: 1.0,
-        prompts: "Welcome! To talk with me, your virtual tutor, just click the chat button.\nHow can I help you with this lesson?",
+        prompts: "Welcome! To talk with me, your virtual tutor, just click the chat button.\\nHow can I help you with this lesson?",
         avatarUrl: '/gina-avatar.png',
     };
     if (snapshot.exists()) {
@@ -828,6 +828,23 @@ export async function getDocument(docType: string): Promise<string> {
 }
 
 // Hackathon Functions
+export async function createHackathon(hackathonData: Omit<Hackathon, 'id'>): Promise<string> {
+    const hackathonsRef = ref(db, 'hackathons');
+    const newHackathonRef = push(hackathonsRef);
+    await set(newHackathonRef, hackathonData);
+    return newHackathonRef.key!;
+}
+
+export async function updateHackathon(id: string, hackathonData: Partial<Hackathon>): Promise<void> {
+    const hackathonRef = ref(db, `hackathons/${id}`);
+    await update(hackathonRef, hackathonData);
+}
+
+export async function deleteHackathon(id: string): Promise<void> {
+    const hackathonRef = ref(db, `hackathons/${id}`);
+    await remove(hackathonRef);
+}
+
 export async function getAllHackathons(): Promise<Hackathon[]> {
     const hackathonsRef = ref(db, 'hackathons');
     const snapshot = await get(hackathonsRef);

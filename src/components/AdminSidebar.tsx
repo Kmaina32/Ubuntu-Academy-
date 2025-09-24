@@ -94,7 +94,7 @@ export function AdminSidebar() {
                         <Link href="/admin/bootcamps">Bootcamps</Link>
                     </SidebarMenuButton>
                     <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/hackathons')} tooltip="Hackathons">
-                        <Link href="/admin/hackathons">Hackathons</Link>
+                        <Link href="/admin/hackathons"><Trophy className="mr-2 h-4 w-4" />Hackathons</Link>
                     </SidebarMenuButton>
                     <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/documents')} tooltip="Documents">
                         <Link href="/admin/documents">Documents</Link>
