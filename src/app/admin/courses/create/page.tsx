@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, useFieldArray, Controller, UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Footer } from '@/components/Footer';
@@ -53,6 +53,105 @@ const courseFormSchema = z.object({
 });
 
 type CourseFormValues = z.infer<typeof courseFormSchema>;
+
+function YouTubeLinkFields({ moduleIndex, lessonIndex, form }: { moduleIndex: number, lessonIndex: number, form: UseFormReturn<CourseFormValues>}) {
+    const { fields: linkFields, remove: removeLink, append: appendLink } = useFieldArray({
+        control: form.control,
+        name: `modules.${moduleIndex}.lessons.${lessonIndex}.youtubeLinks`
+    });
+
+    return (
+        <div className="space-y-2">
+            <FormLabel>YouTube Video Links</FormLabel>
+            {linkFields.map((link, linkIndex) => (
+                <div key={link.id} className="flex items-end gap-2">
+                     <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.youtubeLinks.${linkIndex}.title`} render={({ field }) => ( <FormItem className="flex-grow"> <FormLabel className="text-xs sr-only">Video Title</FormLabel> <FormControl> <Input placeholder="Video Title" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.youtubeLinks.${linkIndex}.url`} render={({ field }) => ( <FormItem className="flex-grow"> <FormLabel className="text-xs sr-only">URL</FormLabel> <FormControl> <Input placeholder="https://youtube.com/watch?v=..." {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                    <Button type="button" variant="ghost" size="icon" className="text-destructive shrink-0" onClick={() => removeLink(linkIndex)}> <Trash2 className="h-4 w-4" /> </Button>
+                </div>
+            ))}
+            <Button type="button" variant="outline" size="sm" onClick={() => appendLink({ title: '', url: ''})}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Add Video Link
+            </Button>
+        </div>
+    )
+}
+
+function LessonFields({ moduleIndex, form }: { moduleIndex: number, form: UseFormReturn<CourseFormValues>}) {
+    const { fields: lessonFields, remove: removeLesson, append: appendLesson } = useFieldArray({
+        control: form.control,
+        name: `modules.${moduleIndex}.lessons`
+    });
+
+    return (
+        <div className="space-y-4 pt-4">
+            {lessonFields.map((lesson, lessonIndex) => (
+                <div key={lesson.id} className="p-4 border rounded-md space-y-3 bg-background relative">
+                     <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeLesson(lessonIndex)}>
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                    <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.title`} render={({ field }) => ( <FormItem> <FormLabel>Lesson Title</FormLabel> <FormControl> <Input {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.duration`} render={({ field }) => ( <FormItem> <FormLabel>Duration</FormLabel> <FormControl> <Input placeholder="e.g., 15 min" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.content`} render={({ field }) => ( <FormItem> <FormLabel>Lesson Content</FormLabel> <FormControl> <Textarea {...field} className="min-h-[100px]" /> </FormControl> <FormMessage /> </FormItem> )}/>
+                    <YouTubeLinkFields moduleIndex={moduleIndex} lessonIndex={lessonIndex} form={form} />
+                </div>
+            ))}
+             <Button type="button" variant="outline" size="sm" onClick={() => appendLesson({ id: `lesson-${Date.now()}`, title: 'New Lesson', duration: '5 min', content: '', youtubeLinks: [] })}>
+                <PlusCircle className="mr-2 h-4 w-4"/> Add Lesson
+            </Button>
+        </div>
+    )
+}
+
+function ModuleAccordionItem({ module, moduleIndex, removeModule, form }: {
+  module: any;
+  moduleIndex: number;
+  removeModule: (index: number) => void;
+  form: UseFormReturn<CourseFormValues>;
+}) {
+  return (
+    <Card className="bg-secondary/50">
+        <AccordionItem value={module.id} className="border-b-0">
+            <div className="flex items-center p-2">
+                 <AccordionTrigger className="flex-grow text-left font-semibold text-lg p-2">
+                    {form.watch(`modules.${moduleIndex}.title`) || 'New Module'}
+                </AccordionTrigger>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive rounded-full"
+                    onClick={() => removeModule(moduleIndex)}
+                >
+                    <Trash2 className="h-4 w-4" />
+                </Button>
+            </div>
+            <AccordionContent className="p-4 pt-0">
+                <div className="space-y-4 pl-4 border-l-2 border-primary/20">
+                    <FormField
+                        control={form.control}
+                        name={`modules.${moduleIndex}.title`}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Module Title</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        placeholder="Module Title"
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <LessonFields form={form} moduleIndex={moduleIndex} />
+                </div>
+            </AccordionContent>
+        </AccordionItem>
+    </Card>
+  );
+}
+
 
 export default function CreateCoursePage() {
   const router = useRouter();
@@ -146,45 +245,13 @@ export default function CreateCoursePage() {
                         <h3 className="text-lg font-semibold mb-2">Modules & Lessons</h3>
                          <Accordion type="multiple" defaultValue={moduleFields.map(m => m.id)} className="w-full space-y-4">
                             {moduleFields.map((module, moduleIndex) => (
-                                <Card key={module.id} className="bg-secondary/50">
-                                    <AccordionItem value={module.id} className="border-b-0">
-                                        <div className="flex items-center p-2">
-                                            <AccordionTrigger className="flex-grow text-left">
-                                                <span className="font-semibold text-lg">{form.watch(`modules.${moduleIndex}.title`) || 'New Module'}</span>
-                                            </AccordionTrigger>
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-destructive rounded-full"
-                                                onClick={() => removeModule(moduleIndex)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                        <AccordionContent className="p-4 pt-0">
-                                            <div className="space-y-4 pl-4 border-l-2 border-primary/20">
-                                                <FormField
-                                                    control={form.control}
-                                                    name={`modules.${moduleIndex}.title`}
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormLabel>Module Title</FormLabel>
-                                                            <FormControl>
-                                                                <Input
-                                                                    placeholder="Module Title"
-                                                                    {...field}
-                                                                />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                                <LessonFields form={form} moduleIndex={moduleIndex} />
-                                            </div>
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                </Card>
+                                <ModuleAccordionItem
+                                    key={module.id}
+                                    module={module}
+                                    moduleIndex={moduleIndex}
+                                    removeModule={removeModule}
+                                    form={form}
+                                />
                             ))}
                         </Accordion>
                         <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendModule({ id: `module-${Date.now()}`, title: `Module ${moduleFields.length + 1}`, lessons: [{ id: `lesson-${Date.now()}`, title: 'New Lesson', duration: '5 min', content: '', youtubeLinks: [] }] })}>
@@ -210,54 +277,3 @@ export default function CreateCoursePage() {
     </div>
   );
 }
-
-
-function LessonFields({ moduleIndex, form }: { moduleIndex: number, form: any}) {
-    const { fields: lessonFields, remove: removeLesson, append: appendLesson } = useFieldArray({
-        control: form.control,
-        name: `modules.${moduleIndex}.lessons`
-    });
-
-    return (
-        <div className="space-y-4 pt-4">
-            {lessonFields.map((lesson, lessonIndex) => (
-                <div key={lesson.id} className="p-4 border rounded-md space-y-3 bg-background relative">
-                     <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeLesson(lessonIndex)}>
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
-                    <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.title`} render={({ field }) => ( <FormItem> <FormLabel>Lesson Title</FormLabel> <FormControl> <Input {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.duration`} render={({ field }) => ( <FormItem> <FormLabel>Duration</FormLabel> <FormControl> <Input placeholder="e.g., 15 min" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.content`} render={({ field }) => ( <FormItem> <FormLabel>Lesson Content</FormLabel> <FormControl> <Textarea {...field} className="min-h-[100px]" /> </FormControl> <FormMessage /> </FormItem> )}/>
-                    <YouTubeLinkFields moduleIndex={moduleIndex} lessonIndex={lessonIndex} form={form} />
-                </div>
-            ))}
-             <Button type="button" variant="outline" size="sm" onClick={() => appendLesson({ id: `lesson-${Date.now()}`, title: 'New Lesson', duration: '5 min', content: '', youtubeLinks: [] })}>
-                <PlusCircle className="mr-2 h-4 w-4"/> Add Lesson
-            </Button>
-        </div>
-    )
-}
-
-function YouTubeLinkFields({ moduleIndex, lessonIndex, form }: { moduleIndex: number, lessonIndex: number, form: any}) {
-    const { fields: linkFields, remove: removeLink, append: appendLink } = useFieldArray({
-        control: form.control,
-        name: `modules.${moduleIndex}.lessons.${lessonIndex}.youtubeLinks`
-    });
-
-    return (
-        <div className="space-y-2">
-            <FormLabel>YouTube Video Links</FormLabel>
-            {linkFields.map((link, linkIndex) => (
-                <div key={link.id} className="flex items-end gap-2">
-                     <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.youtubeLinks.${linkIndex}.title`} render={({ field }) => ( <FormItem className="flex-grow"> <FormLabel className="text-xs sr-only">Video Title</FormLabel> <FormControl> <Input placeholder="Video Title" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.youtubeLinks.${linkIndex}.url`} render={({ field }) => ( <FormItem className="flex-grow"> <FormLabel className="text-xs sr-only">URL</FormLabel> <FormControl> <Input placeholder="https://youtube.com/watch?v=..." {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                    <Button type="button" variant="ghost" size="icon" className="text-destructive shrink-0" onClick={() => removeLink(linkIndex)}> <Trash2 className="h-4 w-4" /> </Button>
-                </div>
-            ))}
-            <Button type="button" variant="outline" size="sm" onClick={() => appendLink({ title: '', url: ''})}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Video Link
-            </Button>
-        </div>
-    )
-}
-
