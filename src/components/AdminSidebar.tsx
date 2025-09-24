@@ -14,7 +14,7 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library, Layers, BarChart3, Tag, ShieldCheck, Building, FileText, Rocket, ChevronRight, BookCopy, Contact, Users2, Speaker, LineChart, Book } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library, Layers, BarChart3, Tag, ShieldCheck, Building, FileText, Rocket, ChevronRight, BookCopy, Contact, Users2, Speaker, LineChart, Book, Trophy } from 'lucide-react';
 import pkg from '../../package.json';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
@@ -92,6 +92,9 @@ export function AdminSidebar() {
                     </SidebarMenuButton>
                       <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/bootcamps')} tooltip="Bootcamps">
                         <Link href="/admin/bootcamps">Bootcamps</Link>
+                    </SidebarMenuButton>
+                    <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/hackathons')} tooltip="Hackathons">
+                        <Link href="/admin/hackathons">Hackathons</Link>
                     </SidebarMenuButton>
                     <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/documents')} tooltip="Documents">
                         <Link href="/admin/documents">Documents</Link>
