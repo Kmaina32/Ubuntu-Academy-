@@ -148,27 +148,11 @@ export default function CreateCoursePage() {
                             {moduleFields.map((module, moduleIndex) => (
                                 <Card key={module.id} className="bg-secondary/50">
                                     <AccordionItem value={module.id} className="border-b-0">
-                                        <AccordionTrigger>
-                                            <div className="flex-grow pr-4">
-                                                <FormField
-                                                    control={form.control}
-                                                    name={`modules.${moduleIndex}.title`}
-                                                    render={({ field }) => (
-                                                        <FormItem>
-                                                            <FormControl>
-                                                                <Input
-                                                                    placeholder="Module Title"
-                                                                    {...field}
-                                                                    className="font-semibold text-lg bg-transparent border-0 shadow-none focus-visible:ring-0 p-0"
-                                                                    onClick={(e) => e.stopPropagation()} // Prevent trigger from firing on input click
-                                                                />
-                                                            </FormControl>
-                                                            <FormMessage />
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                            </div>
-                                             <Button
+                                        <div className="flex items-center p-2">
+                                            <AccordionTrigger className="flex-grow text-left">
+                                                <span className="font-semibold text-lg">{form.watch(`modules.${moduleIndex}.title`) || 'New Module'}</span>
+                                            </AccordionTrigger>
+                                            <Button
                                                 type="button"
                                                 variant="ghost"
                                                 size="icon"
@@ -177,9 +161,27 @@ export default function CreateCoursePage() {
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
-                                        </AccordionTrigger>
+                                        </div>
                                         <AccordionContent className="p-4 pt-0">
-                                            <LessonFields form={form} moduleIndex={moduleIndex} />
+                                            <div className="space-y-4 pl-4 border-l-2 border-primary/20">
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`modules.${moduleIndex}.title`}
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Module Title</FormLabel>
+                                                            <FormControl>
+                                                                <Input
+                                                                    placeholder="Module Title"
+                                                                    {...field}
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <LessonFields form={form} moduleIndex={moduleIndex} />
+                                            </div>
                                         </AccordionContent>
                                     </AccordionItem>
                                 </Card>
@@ -217,7 +219,7 @@ function LessonFields({ moduleIndex, form }: { moduleIndex: number, form: any}) 
     });
 
     return (
-        <div className="space-y-4 pl-4 border-l-2 border-primary/20">
+        <div className="space-y-4 pt-4">
             {lessonFields.map((lesson, lessonIndex) => (
                 <div key={lesson.id} className="p-4 border rounded-md space-y-3 bg-background relative">
                      <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeLesson(lessonIndex)}>
@@ -258,3 +260,4 @@ function YouTubeLinkFields({ moduleIndex, lessonIndex, form }: { moduleIndex: nu
         </div>
     )
 }
+
