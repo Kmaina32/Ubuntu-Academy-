@@ -1,8 +1,8 @@
 
 import { initializeApp, getApp, getApps } from 'firebase/app';
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import { getDatabase, connectDatabaseEmulator } from 'firebase/database';
-import { getStorage, connectStorageEmulator } from 'firebase/storage';
+import { getAuth } from 'firebase/auth';
+import { getDatabase } from 'firebase/database';
+import { getStorage } from 'firebase/storage';
 import { getRemoteConfig } from 'firebase/remote-config';
 
 const firebaseConfig = {
