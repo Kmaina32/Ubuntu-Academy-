@@ -12,7 +12,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Gem, User, LogOut, Trophy, ExternalLink, Tag } from 'lucide-react';
+import { Gem, User, LogOut, Trophy, ExternalLink, Tag, GitBranch, Award } from 'lucide-react';
 import pkg from '../../package.json';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
@@ -50,6 +50,22 @@ export function PortalSidebar() {
                         <Link href="/portal/hackathons">
                             <Trophy />
                             <span>Hackathons</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/portal/submissions')} tooltip="My Submissions">
+                        <Link href="/portal/submissions">
+                            <GitBranch />
+                            <span>My Submissions</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/portal/leaderboard')} tooltip="Leaderboard">
+                        <Link href="/portal/leaderboard">
+                            <Award />
+                            <span>Leaderboard</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
