@@ -10,6 +10,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format, isPast } from 'date-fns';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
 
 function HackathonCard({ hackathon }: { hackathon: Hackathon }) {
     const hasEnded = isPast(new Date(hackathon.endDate));
@@ -63,8 +65,16 @@ export default function HackathonsPage() {
   const [hackathons, setHackathons] = useState<Hackathon[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+        router.push('/login');
+        return;
+    }
+
     const fetchHackathons = async () => {
       try {
         setLoading(true);
@@ -78,7 +88,15 @@ export default function HackathonsPage() {
       }
     };
     fetchHackathons();
-  }, []);
+  }, [user, authLoading, router]);
+
+  if (authLoading || loading) {
+     return (
+        <main className="flex-grow flex items-center justify-center">
+             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </main>
+     )
+  }
 
   return (
         <main className="flex-grow">
@@ -98,11 +116,6 @@ export default function HackathonsPage() {
             <div className="container mx-auto px-4 md:px-6">
               {error ? (
                 <p className="text-destructive text-center">{error}</p>
-              ) : loading ? (
-                <div className="flex justify-center items-center py-10">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                  <p className="ml-2">Loading hackathons...</p>
-                </div>
               ) : hackathons.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {hackathons.map((hackathon) => (
