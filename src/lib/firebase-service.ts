@@ -1,8 +1,9 @@
 
+
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Bootcamp, PricingPlan, ProjectSubmission, Hackathon } from './types';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Bootcamp, PricingPlan, ProjectSubmission, Hackathon, HackathonSubmission } from './types';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -879,4 +880,21 @@ export async function getHackathonParticipants(hackathonId: string): Promise<Reg
 export async function registerForHackathon(hackathonId: string, userId: string): Promise<void> {
     const registrationRef = ref(db, `hackathonParticipants/${hackathonId}/${userId}`);
     await set(registrationRef, true);
+}
+
+export async function createHackathonSubmission(submissionData: Omit<HackathonSubmission, 'id'>): Promise<string> {
+    const submissionsRef = ref(db, `hackathonSubmissions`);
+    const newSubmissionRef = push(submissionsRef);
+    await set(newSubmissionRef, submissionData);
+    return newSubmissionRef.key!;
+}
+
+export async function getHackathonSubmissions(hackathonId: string): Promise<HackathonSubmission[]> {
+    const submissionsRef = query(ref(db, 'hackathonSubmissions'), orderByChild('hackathonId'), equalTo(hackathonId));
+    const snapshot = await get(submissionsRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        return Object.keys(data).map(key => ({ id: key, ...data[key] }));
+    }
+    return [];
 }

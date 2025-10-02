@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -9,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Hackathon, RegisteredUser } from "@/lib/mock-data";
 import { getAllHackathons, deleteHackathon, getHackathonParticipants } from '@/lib/firebase-service';
-import { FilePlus2, Pencil, Trash2, Loader2, ArrowLeft, Trophy, Users } from "lucide-react";
+import { FilePlus2, Pencil, Trash2, Loader2, Library, Rocket, Users, GitBranch } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -22,6 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { format } from 'date-fns';
 
@@ -84,7 +86,7 @@ export default function AdminHackathonsPage() {
           </Link>
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
-              <Trophy className="h-8 w-8" />
+              <Rocket className="h-8 w-8" />
               <div>
                 <h1 className="text-3xl font-bold font-headline">Hackathons</h1>
                 <p className="text-muted-foreground">Manage competitive coding events.</p>
@@ -107,6 +109,7 @@ export default function AdminHackathonsPage() {
               {loading ? (
                 <div className="flex justify-center items-center py-10">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  <p className="ml-2">Loading hackathons...</p>
                 </div>
               ) : (
                 <Table>
@@ -132,8 +135,13 @@ export default function AdminHackathonsPage() {
                                 </div>
                             </TableCell>
                           <TableCell>Ksh {hackathon.prizeMoney.toLocaleString()}</TableCell>
-                          <TableCell className="text-right">
-                            <Button asChild variant="ghost" size="icon" className="mr-2">
+                          <TableCell className="text-right space-x-1">
+                             <Button asChild variant="ghost" size="icon">
+                              <Link href={`/admin/hackathons/${hackathon.id}/submissions`}>
+                                <GitBranch className="h-4 w-4" />
+                              </Link>
+                            </Button>
+                            <Button asChild variant="ghost" size="icon">
                               <Link href={`/admin/hackathons/edit/${hackathon.id}`}>
                                 <Pencil className="h-4 w-4" />
                               </Link>
