@@ -174,6 +174,15 @@ export interface Notification {
     link?: string;
     createdAt: string;
     cohort?: string;
+    userId?: string; // For targeted notifications
+    actions?: Array<{
+        title: string;
+        action: 'accept_org_invite';
+        payload: {
+            inviteId: string;
+            organizationId: string;
+        };
+    }>
 }
 
 export interface DiscussionReply {
@@ -320,7 +329,9 @@ export interface Invitation {
     email: string;
     organizationId: string;
     organizationName: string;
+    status: 'pending' | 'accepted';
     createdAt: string; // ISO String
+    userId?: string; // Added to link to the user being invited
 }
 
 export interface PricingPlan {

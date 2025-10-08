@@ -9,17 +9,17 @@ import { Badge } from '@/components/ui/badge';
 import { PlusCircle, Trash2, Mail, Loader2, Copy } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useEffect, useState } from 'react';
-import { RegisteredUser, deleteUser, getOrganizationMembers } from '@/lib/firebase-service';
+import { RegisteredUser, deleteUser, getOrganizationMembers, getUserByEmail } from '@/lib/firebase-service';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { createOrganizationInvite } from '@/app/actions';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { createInvitation } from '@/lib/firebase-service';
 
 const inviteFormSchema = z.object({
     email: z.string().email({ message: "Please enter a valid email address." }),
@@ -30,7 +30,6 @@ function InviteDialog() {
     const { toast } = useToast();
     const [isOpen, setIsOpen] = useState(false);
     const [isSending, setIsSending] = useState(false);
-    const [generatedLink, setGeneratedLink] = useState('');
 
     const form = useForm<z.infer<typeof inviteFormSchema>>({
         resolver: zodResolver(inviteFormSchema),
@@ -52,40 +51,43 @@ function InviteDialog() {
 
         setIsSending(true);
         try {
-            const result = await createOrganizationInvite({
+            const userToInvite = await getUserByEmail(values.email);
+
+            if (!userToInvite) {
+                toast({ title: "User Not Found", description: "No user with this email exists on the platform. Please ask them to sign up first.", variant: 'destructive'});
+                setIsSending(false);
+                return;
+            }
+            
+            if (userToInvite.organizationId === organization.id) {
+                toast({ title: "Already a Member", description: "This user is already a member of your organization.", variant: 'destructive'});
+                setIsSending(false);
+                return;
+            }
+
+            await createInvitation({
                 email: values.email,
+                userId: userToInvite.uid,
                 organizationId: organization.id,
                 organizationName: organization.name,
+                status: 'pending',
+                createdAt: new Date().toISOString(),
             });
-            
-            if (result.success && result.inviteId) {
-                const inviteLink = `${window.location.origin}/signup?invite=${result.inviteId}`;
-                setGeneratedLink(inviteLink);
-            } else {
-                 toast({ title: "Error", description: result.message, variant: 'destructive'});
-            }
-           
+
+            toast({ title: "Invitation Sent", description: `${userToInvite.displayName} has been sent an invitation to join your organization.`});
+            setIsOpen(false);
+            form.reset();
+
         } catch (error) {
             console.error(error);
-            toast({ title: "Error", description: "Could not create the invitation link.", variant: 'destructive'});
+            toast({ title: "Error", description: "Could not send the invitation.", variant: 'destructive'});
         } finally {
             setIsSending(false);
         }
     }
     
-    const copyLink = () => {
-        navigator.clipboard.writeText(generatedLink);
-        toast({ title: "Copied!", description: "Invitation link copied to clipboard."});
-    }
-    
-    const resetAndClose = () => {
-        setIsOpen(false);
-        setGeneratedLink('');
-        form.reset();
-    }
-
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && resetAndClose()}>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
                 <Button>
                     <Mail className="mr-2 h-4 w-4" />
@@ -96,17 +98,9 @@ function InviteDialog() {
                 <DialogHeader>
                     <DialogTitle>Invite a new member</DialogTitle>
                     <DialogDescription>
-                        {generatedLink ? "Share this link with the new member." : "Enter an email to generate a unique invitation link."}
+                        Enter the email of an existing Edgewood International A.I College user to invite them to your organization. They will receive a notification to accept.
                     </DialogDescription>
                 </DialogHeader>
-                {generatedLink ? (
-                    <div className="space-y-4">
-                        <Input value={generatedLink} readOnly />
-                        <Button onClick={copyLink} className="w-full">
-                            <Copy className="mr-2 h-4 w-4" /> Copy Link
-                        </Button>
-                    </div>
-                ) : (
                      <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                             <FormField
@@ -125,12 +119,11 @@ function InviteDialog() {
                             <DialogFooter>
                                 <Button type="submit" disabled={isSending}>
                                     {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                                    Generate Invitation Link
+                                    Send Invitation
                                 </Button>
                             </DialogFooter>
                         </form>
                     </Form>
-                )}
             </DialogContent>
         </Dialog>
     )

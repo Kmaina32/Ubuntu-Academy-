@@ -124,6 +124,17 @@ export async function getUserById(uid: string): Promise<RegisteredUser | null> {
     return null;
 }
 
+export async function getUserByEmail(email: string): Promise<RegisteredUser | null> {
+    const usersRef = query(ref(db, 'users'), orderByChild('email'), equalTo(email));
+    const snapshot = await get(usersRef);
+    if (snapshot.exists()) {
+        const usersData = snapshot.val();
+        const uid = Object.keys(usersData)[0];
+        return { uid, ...usersData[uid] };
+    }
+    return null;
+}
+
 
 export async function enrollUserInCourse(userId: string, courseId: string): Promise<void> {
     const enrollmentRef = ref(db, `users/${userId}/purchasedCourses/${courseId}`);
@@ -718,6 +729,21 @@ export async function deleteOrganization(orgId: string): Promise<void> {
 export async function createInvitation(inviteData: Omit<Invitation, 'id'>): Promise<string> {
     const invitesRef = ref(db, 'invitations');
     const newInviteRef = push(invitesRef);
+    
+    await createNotification({
+        userId: inviteData.userId!,
+        title: 'Organization Invitation',
+        body: `You have been invited to join ${inviteData.organizationName}.`,
+        actions: [{
+            title: 'Accept',
+            action: 'accept_org_invite',
+            payload: {
+                inviteId: newInviteRef.key!,
+                organizationId: inviteData.organizationId,
+            }
+        }]
+    });
+
     await set(newInviteRef, inviteData);
     return newInviteRef.key!;
 }
@@ -729,6 +755,11 @@ export async function getInvitation(inviteId: string): Promise<Invitation | null
         return { id: inviteId, ...snapshot.val() };
     }
     return null;
+}
+
+export async function updateInvitationStatus(inviteId: string, status: 'accepted'): Promise<void> {
+    const inviteRef = ref(db, `invitations/${inviteId}`);
+    await update(inviteRef, { status });
 }
 
 export async function deleteInvitation(inviteId: string): Promise<void> {
