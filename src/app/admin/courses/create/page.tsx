@@ -103,50 +103,43 @@ function LessonFields({ moduleIndex, form }: { moduleIndex: number, form: UseFor
     )
 }
 
-function ModuleAccordionItem({ module, moduleIndex, removeModule, form }: {
-  module: any;
+function ModuleCardItem({ moduleIndex, removeModule, form }: {
   moduleIndex: number;
   removeModule: (index: number) => void;
   form: UseFormReturn<CourseFormValues>;
 }) {
-  const title = form.watch(`modules.${moduleIndex}.title`);
-
   return (
     <Card className="bg-secondary/50">
-      <AccordionItem value={module.id} className="border-b-0">
-        <div className="flex items-center w-full px-4">
-            <AccordionTrigger className="flex-grow hover:no-underline text-left">
-                <span className="font-semibold text-lg">{title || `Module ${moduleIndex + 1}`}</span>
-            </AccordionTrigger>
-            <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="text-destructive rounded-full hover:bg-destructive/10 h-8 w-8 ml-2"
-                onClick={() => removeModule(moduleIndex)}
-            >
-                <Trash2 className="h-4 w-4" />
-            </Button>
-        </div>
-        <AccordionContent className="p-4 pt-0">
-          <div className="space-y-4 pl-4 border-l-2 border-primary/20">
+      <CardHeader className="flex flex-row items-center justify-between">
+         <CardTitle>Module {moduleIndex + 1}</CardTitle>
+         <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="text-destructive rounded-full hover:bg-destructive/10 h-8 w-8 ml-2"
+            onClick={() => removeModule(moduleIndex)}
+        >
+            <Trash2 className="h-4 w-4" />
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
             <FormField
-              control={form.control}
-              name={`modules.${moduleIndex}.title`}
-              render={({ field }) => (
+                control={form.control}
+                name={`modules.${moduleIndex}.title`}
+                render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Module Title</FormLabel>
-                  <FormControl>
+                    <FormLabel>Module Title</FormLabel>
+                    <FormControl>
                     <Input placeholder="e.g., Introduction to..." {...field} />
-                  </FormControl>
-                  <FormMessage />
+                    </FormControl>
+                    <FormMessage />
                 </FormItem>
-              )}
+                )}
             />
             <LessonFields form={form} moduleIndex={moduleIndex} />
-          </div>
-        </AccordionContent>
-      </AccordionItem>
+        </div>
+      </CardContent>
     </Card>
   );
 }
@@ -242,17 +235,16 @@ export default function CreateCoursePage() {
 
                     <div>
                         <h3 className="text-lg font-semibold mb-2">Modules & Lessons</h3>
-                         <Accordion type="multiple" defaultValue={moduleFields.map(m => m.id)} className="w-full space-y-4">
+                         <div className="w-full space-y-4">
                             {moduleFields.map((module, moduleIndex) => (
-                                <ModuleAccordionItem
+                                <ModuleCardItem
                                     key={module.id}
-                                    module={module}
                                     moduleIndex={moduleIndex}
                                     removeModule={removeModule}
                                     form={form}
                                 />
                             ))}
-                        </Accordion>
+                        </div>
                         <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendModule({ id: `module-${Date.now()}`, title: `Module ${moduleFields.length + 1}`, lessons: [{ id: `lesson-${Date.now()}`, title: 'New Lesson', duration: '5 min', content: '', youtubeLinks: [] }] })}>
                             <PlusCircle className="mr-2 h-4 w-4"/> Add Module
                         </Button>
@@ -276,5 +268,3 @@ export default function CreateCoursePage() {
     </div>
   );
 }
-
-    
