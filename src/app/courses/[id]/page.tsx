@@ -95,7 +95,7 @@ function CourseSchema({ course }: { course: Course }) {
     "description": course.longDescription,
     "provider": {
       "@type": "Organization",
-      "name": "Akili A.I Academy",
+      "name": "Manda Network",
       "sameAs": "https://mkenya-skilled.vercel.app"
     },
     "courseCode": course.category,
@@ -179,10 +179,16 @@ export default function CourseDetailPage() {
     notFound();
   }
   
-  const handlePaymentSuccess = () => {
-    setIsModalOpen(false);
-    setIsEnrolled(true);
-    toast({ title: 'Payment Successful!', description: `You have successfully enrolled in ${course.title}.` });
+  const handlePaymentSuccess = async () => {
+    if (!user) return;
+    try {
+      await enrollUserInCourse(user.uid, course.id);
+      toast({ title: 'Payment Successful!', description: `You have successfully enrolled in ${course.title}.` });
+      setIsEnrolled(true);
+      setIsModalOpen(false);
+    } catch(error) {
+       toast({ title: 'Enrollment Failed', description: 'Your payment was successful, but we failed to enroll you in the course. Please contact support.', variant: 'destructive'});
+    }
   }
 
   const handleEnrollFree = async () => {
@@ -207,7 +213,7 @@ export default function CourseDetailPage() {
   return (
     <>
     <Head>
-        <title>{`${course.title} | Akili A.I Academy`}</title>
+        <title>{`${course.title} | Manda Network`}</title>
         <meta name="description" content={course.description} />
         {course && <CourseSchema course={course} />}
     </Head>

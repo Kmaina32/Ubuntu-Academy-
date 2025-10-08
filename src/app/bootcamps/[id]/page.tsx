@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,13 +7,13 @@ import Image from "next/image";
 import Link from 'next/link';
 import type { Bootcamp, Course, UserCourse } from "@/lib/mock-data";
 import { getBootcampById, getAllCourses, getUserCourses, enrollUserInCourse } from '@/lib/firebase-service';
-import { Footer } from "@/components/shared/Footer";
+import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, ArrowRight, BookOpen, Layers, CheckCircle, Award, Calendar, Clock, Star } from "lucide-react";
-import { AppSidebar } from '@/components/shared/Sidebar';
-import { Header } from '@/components/shared/Header';
+import { AppSidebar } from '@/components/Sidebar';
+import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
 import { slugify } from '@/lib/utils';
