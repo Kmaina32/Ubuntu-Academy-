@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -358,7 +359,7 @@ export default function AdminHeroPage() {
                             <FormItem>
                               <FormLabel>Organization "For Business" Page Title</FormLabel>
                               <FormControl>
-                                <Input placeholder="e.g., Akili A.I Academy for Business" {...field} />
+                                <Input placeholder="e.g., Manda Network for Business" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -463,3 +464,4 @@ export default function AdminHeroPage() {
     </div>
   );
 }
+

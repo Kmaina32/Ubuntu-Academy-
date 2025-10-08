@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -12,7 +13,7 @@ export function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Gem className="h-6 w-6 text-primary" />
-            <span className="font-bold font-headline">Edgewood International A.I College</span>
+            <span className="font-bold font-headline">Manda Network</span>
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
              <Link href="/terms" className="text-sm hover:text-primary">Terms of Service</Link>
@@ -41,7 +42,7 @@ export function Footer() {
           </div>
         </div>
          <p className="text-center text-xs text-muted-foreground mt-4">
-            © {new Date().getFullYear()} Edgewood International A.I College. All rights reserved.
+            © {new Date().getFullYear()} Manda Network. All rights reserved.
           </p>
       </div>
     </footer>

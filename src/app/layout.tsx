@@ -1,4 +1,5 @@
 
+
 import type {Metadata} from 'next';
 import '@/styles/globals.css';
 import { Toaster } from "@/components/ui/toaster";
@@ -8,7 +9,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { CookieConsent } from '@/components/shared/CookieConsent';
 
 export const metadata: Metadata = {
-  title: 'Edgewood International A.I College',
+  title: 'Manda Network',
   description: 'Online courses for Kenyans, by Kenyans.',
   verification: {
     google: 'qNZsueqgogEIZHV-vcsY-Kv7tkLo82P_-w7BQvJG1jY',

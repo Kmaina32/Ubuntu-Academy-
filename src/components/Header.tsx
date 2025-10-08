@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -100,7 +101,7 @@ function NotificationsPopover() {
                     combinedNotifications.push({
                         id: 'welcome',
                         icon: PartyPopper,
-                        title: 'Welcome to Akili A.I Academy!',
+                        title: 'Welcome to Manda Network!',
                         description: 'We are glad to have you here. Explore our courses.',
                         href: '/',
                         date: userCreationTime.toISOString()
@@ -314,7 +315,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
              <div className='block md:hidden'>
                  <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
                     <Gem className="h-6 w-6 text-primary" />
-                    <span>Akili A.I Academy</span>
+                    <span>Manda Network</span>
                 </Link>
             </div>
         </div>

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Footer } from "@/components/Footer";
@@ -26,7 +27,7 @@ export default function PrivacyPage() {
                   </CardHeader>
                   <CardContent className='space-y-6'>
                     <div className="space-y-4 prose max-w-none">
-                      <p>Your privacy is important to us. It is Akili A.I Academy's policy to respect your privacy regarding any information we may collect from you across our website.</p>
+                      <p>Your privacy is important to us. It is Manda Network's policy to respect your privacy regarding any information we may collect from you across our website.</p>
                       
                       <h2 className="font-semibold text-xl">1. Information We Collect</h2>
                       <p>We only ask for personal information when we truly need it to provide a service to you. We collect it by fair and lawful means, with your knowledge and consent. We also let you know why we’re collecting it and how it will be used. The information we collect may include your name, email address, and course progress.</p>

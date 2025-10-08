@@ -24,12 +24,12 @@ export default function AboutPage() {
                       <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
                           <Users className="h-10 w-10 text-primary" />
                       </div>
-                    <CardTitle className="text-3xl font-headline">About Edgewood International A.I College</CardTitle>
+                    <CardTitle className="text-3xl font-headline">About Manda Network</CardTitle>
                     <CardDescription className="text-lg text-muted-foreground">Empowering Kenyans with modern, practical skills.</CardDescription>
                   </CardHeader>
                   <CardContent className='flex flex-col items-center gap-6 text-left'>
                     <p className="text-foreground">
-                      Edgewood International A.I College is a premier online learning platform dedicated to providing high-quality, affordable, and accessible education tailored for the Kenyan market. We believe in the power of knowledge to transform lives and drive economic growth. Our mission is to equip individuals with the practical skills needed to thrive in today's dynamic job market.
+                      Manda Network is a premier online learning platform dedicated to providing high-quality, affordable, and accessible education tailored for the Kenyan market. We believe in the power of knowledge to transform lives and drive economic growth. Our mission is to equip individuals with the practical skills needed to thrive in today's dynamic job market.
                     </p>
                     <Separator />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
