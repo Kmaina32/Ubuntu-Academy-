@@ -151,7 +151,7 @@ export default function CreateHackathonPage() {
                           <FormItem className="flex flex-col">
                             <FormLabel>End Date</FormLabel>
                             <Popover>
-                              <PopoverTrigger asChild>
+                               <PopoverTrigger asChild>
                                 <FormControl>
                                   <Button
                                     variant={"outline"}
