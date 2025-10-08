@@ -5,7 +5,7 @@
 // between server and client code. All functions exported from a 'use server' file must be async.
 
 import type { LearningPathInput, LearningPathOutput } from '@/ai/flows/career-coach';
-import type { ContentStrategyOutput } from '@/lib/types';
+import type { ContentStrategyOutput, CardPaymentInput, PayPalPaymentInput } from '@/lib/types';
 import type { CourseTutorInput, CourseTutorOutput } from '@/ai/flows/course-tutor';
 import type { GenerateApiKeyInput } from '@/ai/flows/generate-api-key';
 import type { GenerateCourseContentInput, GenerateCourseContentOutput } from '@/ai/flows/generate-course-content';
@@ -71,6 +71,32 @@ export async function processMpesaPayment(input: MpesaPaymentInput): Promise<Mpe
   return processMpesaPayment(input);
 }
 
+// Placeholder for card payment processing
+export async function processCardPayment(input: CardPaymentInput): Promise<{ success: boolean; message: string }> {
+    console.log('Simulating card payment for:', input);
+    // In a real app, you would integrate with Stripe here using the secret key.
+    // This is a placeholder that simulates a successful payment.
+    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+    return {
+        success: true,
+        message: 'Card payment processed successfully.',
+    };
+}
+
+// Placeholder for PayPal payment processing
+export async function processPayPalPayment(input: PayPalPaymentInput): Promise<{ success: boolean; message: string; approvalUrl?: string }> {
+    console.log('Simulating PayPal payment for:', input);
+    // In a real app, you would make an API call to PayPal to create a payment order.
+    // This would return an approval URL to redirect the user to.
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+    return {
+        success: true,
+        message: 'PayPal order created. Redirecting for approval...',
+        approvalUrl: `/payment-success?item=${input.itemName}`, // Simulate a redirect URL
+    };
+}
+
+
 export async function siteHelp(input: SiteHelpInput): Promise<SiteHelpOutput> {
   const { siteHelp } = await import('@/ai/flows/site-help');
   return siteHelp(input);
@@ -113,5 +139,3 @@ export async function generateFormalDocument(input: { docType: string }): Promis
     await saveDocumentContent(input.docType, result.formal_document);
     return result;
 }
-
-    

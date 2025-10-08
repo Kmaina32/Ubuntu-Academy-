@@ -339,3 +339,16 @@ export interface LeaderboardEntry {
     score: number;
     hackathonCount: number;
 }
+
+// Payment Input Types
+export interface CardPaymentInput {
+    itemId: string;
+    itemName: string;
+    amount: number;
+}
+
+export interface PayPalPaymentInput {
+    itemId: string;
+    itemName: string;
+    amount: number;
+}

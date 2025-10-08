@@ -17,7 +17,7 @@ import { Loader2, CreditCard, MoveRight } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { processMpesaPayment } from '@/app/actions';
+import { processMpesaPayment, processCardPayment, processPayPalPayment } from '@/app/actions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Icon } from '@iconify/react';
 
@@ -83,13 +83,44 @@ export function PaymentModal({
     }
   };
   
-  const handleCardPay = (e: React.FormEvent) => {
+  const handleCardPay = async (e: React.FormEvent) => {
       e.preventDefault();
-      toast({ title: "Coming Soon", description: "Card payments are not yet enabled. Please use M-Pesa."});
+      if (!user) return;
+      setIsLoading(true);
+      try {
+          const result = await processCardPayment({ itemId, itemName, amount: price });
+          if (result.success) {
+              toast({ title: 'Payment Successful!', description: 'Your payment has been processed.' });
+              onPaymentSuccess();
+          } else {
+              throw new Error(result.message);
+          }
+      } catch (error: any) {
+          toast({ title: 'Card Payment Failed', description: error.message, variant: 'destructive'});
+      } finally {
+          setIsLoading(false);
+      }
   }
 
-  const handlePayPalPay = () => {
-      toast({ title: "Coming Soon", description: "PayPal payments are not yet enabled. Please use M-Pesa."});
+  const handlePayPalPay = async () => {
+       if (!user) return;
+      setIsLoading(true);
+       try {
+          const result = await processPayPalPayment({ itemId, itemName, amount: price });
+          if (result.success && result.approvalUrl) {
+              toast({ title: 'Redirecting to PayPal...', description: 'Please complete your payment on the PayPal website.' });
+              // In a real app, you would redirect to the approval URL.
+              // For this simulation, we'll just call the success handler.
+              // window.location.href = result.approvalUrl;
+              onPaymentSuccess();
+          } else {
+              throw new Error(result.message);
+          }
+      } catch (error: any) {
+          toast({ title: 'PayPal Error', description: error.message, variant: 'destructive'});
+      } finally {
+          setIsLoading(false);
+      }
   }
   
   const handleClose = () => {
@@ -159,8 +190,8 @@ export function PaymentModal({
                         </div>
                     </div>
                      <DialogFooter>
-                        <Button type="submit" className="w-full" disabled>
-                           Pay with Card (Coming Soon)
+                        <Button type="submit" className="w-full" disabled={isLoading}>
+                           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : `Pay Ksh ${price.toLocaleString()}`}
                         </Button>
                     </DialogFooter>
                  </form>
@@ -168,8 +199,9 @@ export function PaymentModal({
              <TabsContent value="paypal">
                 <div className="py-10 text-center">
                     <p className="text-muted-foreground mb-4">You will be redirected to PayPal to complete your payment securely.</p>
-                     <Button onClick={handlePayPalPay} className="w-full" disabled>
-                        Continue with PayPal <MoveRight className="ml-2 h-4 w-4" />
+                     <Button onClick={handlePayPalPay} className="w-full" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Continue with PayPal'}
+                        <MoveRight className="ml-2 h-4 w-4" />
                     </Button>
                 </div>
             </TabsContent>
