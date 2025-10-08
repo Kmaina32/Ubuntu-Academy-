@@ -70,8 +70,9 @@ export default function AdminDashboardPage() {
                 const thirtyDaysAgo = subDays(new Date(), 30);
 
                  users.forEach(user => {
-                    const signupDateISO = user.createdAt ? parseISO(user.createdAt) : null;
-                    const signupDate = signupDateISO && isValid(signupDateISO) ? signupDateISO : new Date();
+                    // Ensure createdAt is a valid date string before parsing
+                    const signupDateISO = user.createdAt && typeof user.createdAt === 'string' ? parseISO(user.createdAt) : new Date(0);
+                    const signupDate = isValid(signupDateISO) ? signupDateISO : new Date(0);
 
 
                      if (signupDate > thirtyDaysAgo) {
