@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -98,9 +97,45 @@ function LessonFields({ moduleIndex, form }: { moduleIndex: number, form: UseFor
                      <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeLesson(lessonIndex)}>
                         <Trash2 className="h-4 w-4" />
                     </Button>
-                    <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.title`} render={({ field }) => ( <FormItem> <FormLabel>Lesson Title</FormLabel> <FormControl> <Input {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.duration`} render={({ field }) => ( <FormItem> <FormLabel>Duration</FormLabel> <FormControl> <Input placeholder="e.g., 15 min" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.content`} render={({ field }) => ( <FormItem> <FormLabel>Lesson Content</FormLabel> <FormControl> <Textarea {...field} className="min-h-[100px]" /> </FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField 
+                        control={form.control} 
+                        name={`modules.${moduleIndex}.lessons.${lessonIndex}.title`} 
+                        render={({ field }) => ( 
+                            <FormItem> 
+                                <FormLabel>Lesson Title</FormLabel> 
+                                <FormControl> 
+                                    <Input {...field} /> 
+                                </FormControl> 
+                                <FormMessage /> 
+                            </FormItem> 
+                        )}
+                    />
+                    <FormField 
+                        control={form.control} 
+                        name={`modules.${moduleIndex}.lessons.${lessonIndex}.duration`} 
+                        render={({ field }) => ( 
+                            <FormItem> 
+                                <FormLabel>Duration</FormLabel> 
+                                <FormControl> 
+                                    <Input placeholder="e.g., 15 min" {...field} /> 
+                                </FormControl> 
+                                <FormMessage /> 
+                            </FormItem> 
+                        )}
+                    />
+                    <FormField 
+                        control={form.control} 
+                        name={`modules.${moduleIndex}.lessons.${lessonIndex}.content`} 
+                        render={({ field }) => ( 
+                            <FormItem> 
+                                <FormLabel>Lesson Content</FormLabel> 
+                                <FormControl> 
+                                    <Textarea {...field} className="min-h-[100px]" /> 
+                                </FormControl> 
+                                <FormMessage /> 
+                            </FormItem> 
+                        )}
+                    />
                     <YouTubeLinkFields moduleIndex={moduleIndex} lessonIndex={lessonIndex} form={form} />
                 </div>
             ))}
@@ -126,7 +161,7 @@ function ModuleCardItem({ moduleIndex, removeModule, form }: {
                 render={({ field }) => (
                 <FormItem className="flex-grow">
                     <FormControl>
-                    <Input placeholder="e.g., Introduction to..." {...field} className="text-lg font-semibold border-0 bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
+                        <Input placeholder="e.g., Introduction to..." {...field} className="text-lg font-semibold border-0 bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
                     </FormControl>
                     <FormMessage />
                 </FormItem>
@@ -222,27 +257,112 @@ export default function CreateCoursePage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   
-                    <FormField control={form.control} name="title" render={({ field }) => ( <FormItem> <FormLabel>Course Title</FormLabel> <FormControl> <Input placeholder="e.g., Introduction to Digital Marketing" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField 
+                        control={form.control} 
+                        name="title" 
+                        render={({ field }) => ( 
+                            <FormItem> 
+                                <FormLabel>Course Title</FormLabel> 
+                                <FormControl> 
+                                    <Input placeholder="e.g., Introduction to Digital Marketing" {...field} /> 
+                                </FormControl> 
+                                <FormMessage /> 
+                            </FormItem> 
+                        )}
+                    />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField control={form.control} name="instructor" render={({ field }) => ( <FormItem> <FormLabel>Instructor Name</FormLabel> <FormControl> <Input placeholder="e.g., Jane Doe" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                        <FormField control={form.control} name="category" render={({ field }) => ( <FormItem> <FormLabel>Category</FormLabel> <FormControl> <Input placeholder="e.g., Business, Technology" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                        <FormField 
+                            control={form.control} 
+                            name="instructor" 
+                            render={({ field }) => ( 
+                                <FormItem> 
+                                    <FormLabel>Instructor Name</FormLabel> 
+                                    <FormControl> 
+                                        <Input placeholder="e.g., Jane Doe" {...field} /> 
+                                    </FormControl> 
+                                    <FormMessage /> 
+                                </FormItem> 
+                            )}
+                        />
+                        <FormField 
+                            control={form.control} 
+                            name="category" 
+                            render={({ field }) => ( 
+                                <FormItem> 
+                                    <FormLabel>Category</FormLabel> 
+                                    <FormControl> 
+                                        <Input placeholder="e.g., Business, Technology" {...field} /> 
+                                    </FormControl> 
+                                    <FormMessage /> 
+                                </FormItem> 
+                            )}
+                        />
                     </div>
 
-                    <FormField control={form.control} name="description" render={({ field }) => ( <FormItem> <FormLabel>Short Description</FormLabel> <FormControl> <Textarea placeholder="A brief, one-sentence summary for course cards." {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name="longDescription" render={({ field }) => ( <FormItem> <FormLabel>Long Description</FormLabel> <FormControl> <Textarea placeholder="A detailed course description for the main course page." className="min-h-32" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField 
+                        control={form.control} 
+                        name="description" 
+                        render={({ field }) => ( 
+                            <FormItem> 
+                                <FormLabel>Short Description</FormLabel> 
+                                <FormControl> 
+                                    <Textarea placeholder="A brief, one-sentence summary for course cards." {...field} /> 
+                                </FormControl> 
+                                <FormMessage /> 
+                            </FormItem> 
+                        )}
+                    />
+                    <FormField 
+                        control={form.control} 
+                        name="longDescription" 
+                        render={({ field }) => ( 
+                            <FormItem> 
+                                <FormLabel>Long Description</FormLabel> 
+                                <FormControl> 
+                                    <Textarea placeholder="A detailed course description for the main course page." className="min-h-32" {...field} /> 
+                                </FormControl> 
+                                <FormMessage /> 
+                            </FormItem> 
+                        )}
+                    />
 
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <FormField control={form.control} name="price" render={({ field }) => ( <FormItem> <FormLabel>Price (Ksh)</FormLabel> <FormControl> <Input type="number" placeholder="e.g., 4999" {...field} /> </FormControl> <p className="text-sm text-muted-foreground">Enter 0 for a free course.</p> <FormMessage /> </FormItem> )}/>
-                        <FormField control={form.control} name="duration" render={({ field }) => ( <FormItem> <FormLabel>Course Duration</FormLabel> <FormControl> <Input placeholder="e.g., 5 Weeks" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                        <FormField 
+                            control={form.control} 
+                            name="price" 
+                            render={({ field }) => ( 
+                                <FormItem> 
+                                    <FormLabel>Price (Ksh)</FormLabel> 
+                                    <FormControl> 
+                                        <Input type="number" placeholder="e.g., 4999" {...field} /> 
+                                    </FormControl> 
+                                    <p className="text-sm text-muted-foreground">Enter 0 for a free course.</p> 
+                                    <FormMessage /> 
+                                </FormItem> 
+                            )}
+                        />
+                        <FormField 
+                            control={form.control} 
+                            name="duration" 
+                            render={({ field }) => ( 
+                                <FormItem> 
+                                    <FormLabel>Course Duration</FormLabel> 
+                                    <FormControl> 
+                                        <Input placeholder="e.g., 5 Weeks" {...field} /> 
+                                    </FormControl> 
+                                    <FormMessage /> 
+                                </FormItem> 
+                            )}
+                        />
                         <FormField
                           control={form.control}
                           name="dripFeed"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Content Drip Schedule</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select a schedule..." />
