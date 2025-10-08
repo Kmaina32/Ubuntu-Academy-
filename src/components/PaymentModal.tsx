@@ -71,6 +71,7 @@ export function PaymentModal({
                 description: "Please check your phone to complete the M-Pesa transaction. Your purchase will be confirmed automatically."
             });
             onClose();
+            onPaymentSuccess();
         } else {
             throw new Error(result.message);
         }
@@ -109,9 +110,9 @@ export function PaymentModal({
         
         <Tabs defaultValue="mpesa" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="mpesa"><Icon icon="simple-icons:mpesa" className="h-5 w-5"/></TabsTrigger>
-                <TabsTrigger value="card"><CreditCard /></TabsTrigger>
-                <TabsTrigger value="paypal"><Icon icon="logos:paypal" className="h-5 w-5"/></TabsTrigger>
+                <TabsTrigger value="mpesa">Mpesa</TabsTrigger>
+                <TabsTrigger value="card">Card</TabsTrigger>
+                <TabsTrigger value="paypal">PayPal</TabsTrigger>
             </TabsList>
             <TabsContent value="mpesa">
                 <form onSubmit={handleMpesaPay}>
@@ -136,6 +137,11 @@ export function PaymentModal({
             </TabsContent>
             <TabsContent value="card">
                  <form onSubmit={handleCardPay}>
+                    <div className="flex justify-center items-center gap-4 my-4">
+                        <Icon icon="logos:stripe" className="h-6" />
+                        <Icon icon="logos:visa" className="h-6" />
+                        <Icon icon="logos:mastercard" className="h-6" />
+                    </div>
                     <div className="grid gap-4 py-4">
                         <div className="space-y-2">
                             <Label htmlFor="card-number">Card Number</Label>
