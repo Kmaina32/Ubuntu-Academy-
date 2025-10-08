@@ -19,7 +19,6 @@ import { createCourse } from '@/lib/firebase-service';
 import type { Course } from '@/lib/mock-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/use-auth';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const youtubeLinkSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -121,7 +120,18 @@ function ModuleCardItem({ moduleIndex, removeModule, form }: {
     <Card className="bg-secondary/50">
       <CardHeader>
         <div className="flex justify-between items-center">
-            <CardTitle>Module {moduleIndex + 1}</CardTitle>
+            <FormField
+                control={form.control}
+                name={`modules.${moduleIndex}.title`}
+                render={({ field }) => (
+                <FormItem className="flex-grow">
+                    <FormControl>
+                    <Input placeholder="e.g., Introduction to..." {...field} className="text-lg font-semibold border-0 bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
             <Button
                 type="button"
                 variant="ghost"
@@ -134,22 +144,7 @@ function ModuleCardItem({ moduleIndex, removeModule, form }: {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-            <FormField
-                control={form.control}
-                name={`modules.${moduleIndex}.title`}
-                render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Module Title</FormLabel>
-                    <FormControl>
-                    <Input placeholder="e.g., Introduction to..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
             <LessonFields form={form} moduleIndex={moduleIndex} />
-        </div>
       </CardContent>
     </Card>
   );
@@ -241,7 +236,31 @@ export default function CreateCoursePage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <FormField control={form.control} name="price" render={({ field }) => ( <FormItem> <FormLabel>Price (Ksh)</FormLabel> <FormControl> <Input type="number" placeholder="e.g., 4999" {...field} /> </FormControl> <p className="text-sm text-muted-foreground">Enter 0 for a free course.</p> <FormMessage /> </FormItem> )}/>
                         <FormField control={form.control} name="duration" render={({ field }) => ( <FormItem> <FormLabel>Course Duration</FormLabel> <FormControl> <Input placeholder="e.g., 5 Weeks" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                        <FormField control={form.control} name="dripFeed" render={({ field }) => ( <FormItem> <FormLabel>Content Drip Schedule</FormLabel> <FormControl> <Select onValueChange={field.onChange} defaultValue={field.value}> <SelectTrigger> <SelectValue placeholder="Select a schedule..." /> </SelectTrigger> <SelectContent> <SelectItem value="daily">Unlock lessons daily</SelectItem> <SelectItem value="weekly">Unlock lessons weekly</SelectItem> <SelectItem value="off">Unlock all at once</SelectItem> </SelectContent> </Select> </FormControl> <FormMessage /> </FormItem> )}/>
+                        <FormField
+                          control={form.control}
+                          name="dripFeed"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Content Drip Schedule</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                               <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a schedule..." />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="daily">Unlock lessons daily</SelectItem>
+                                  <SelectItem value="weekly">Unlock lessons weekly</SelectItem>
+                                  <SelectItem value="off">Unlock all at once</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                     </div>
 
                     <div>
@@ -279,4 +298,3 @@ export default function CreateCoursePage() {
     </div>
   );
 }
-
