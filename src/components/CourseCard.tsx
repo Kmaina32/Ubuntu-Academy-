@@ -42,7 +42,7 @@ export function CourseCard({ course, isEnrolled, aiHint }: CourseCardProps) {
           {course.price > 0 ? `Ksh ${course.price.toLocaleString()}` : 'Free'}
         </p>
         {isEnrolled ? (
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" size="sm">
                 <Link href={learnUrl}>
                     Go to Course
                     <ArrowRight className="ml-2 h-4 w-4" />
