@@ -1,6 +1,6 @@
 # B2B Sales and Partnership Strategy
 
-This document outlines the strategy for Akili A.I. Academy to engage in Business-to-Business (B2B) sales and form strategic partnerships.
+This document outlines the strategy for Edgewood International A.I College to engage in Business-to-Business (B2B) sales and form strategic partnerships.
 
 ## 1. Target B2B Segments
 

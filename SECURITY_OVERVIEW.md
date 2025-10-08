@@ -1,5 +1,5 @@
 ![Akili AI](/public/Akili%20AI.png)
-# Akili AI
+# Edgewood International A.I College
 
 # Security Overview for the AI-Powered Education Platform
 

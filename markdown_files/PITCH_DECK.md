@@ -1,4 +1,4 @@
-# Akili A.I. Academy - Investor Pitch Deck
+# Edgewood International A.I College - Investor Pitch Deck
 
 This document contains the core content and narrative for our investor pitch deck. Each section corresponds to a slide or a key talking point.
 
@@ -7,7 +7,7 @@ This document contains the core content and narrative for our investor pitch dec
 ### **Slide 1: Title Slide**
 
 - **Image:** A powerful, aspirational image of a young Kenyan professional using a computer.
-- **Title:** Akili A.I. Academy
+- **Title:** Edgewood International A.I College
 - **Tagline:** Upskilling Kenya for the A.I. Revolution.
 
 ---
@@ -23,7 +23,7 @@ This document contains the core content and narrative for our investor pitch dec
 
 ### **Slide 3: The Solution**
 
-- **Headline:** Akili A.I. Academy: Your A.I.-Powered Learning Partner.
+- **Headline:** Edgewood International A.I College: Your A.I.-Powered Learning Partner.
 - **What We Do:** We provide high-quality, affordable, and hyper-relevant online courses in technology, data science, and artificial intelligence.
 - **Our Unique Edge:** We leverage the power of A.I. at every stage of the learning process:
     1.  **A.I.-Generated Content:** To create up-to-date, world-class courses in a fraction of the time.
@@ -92,5 +92,5 @@ This document contains the core content and narrative for our investor pitch dec
 
 - **Headline:** To become the leading platform for technology education in East Africa.
 - **Long-term Goal:** To empower a generation of African innovators and leaders who will build the future with A.I.
-- **Closing Image:** A diverse group of smiling, successful Akili graduates.
+- **Closing Image:** A diverse group of smiling, successful graduates.
 - **Contact Info:** [Your Email], [Website URL]

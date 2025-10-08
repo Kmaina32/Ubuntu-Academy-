@@ -1,6 +1,6 @@
-# Akili A.I. Academy - Technical Framework
+# Edgewood International A.I College - Technical Framework
 
-This document outlines the core technologies and architectural principles that power the Akili A.I. Academy platform.
+This document outlines the core technologies and architectural principles that power the Edgewood International A.I College platform.
 
 ## 1. Core Technologies
 

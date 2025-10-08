@@ -1,6 +1,6 @@
 # SEO and Content Marketing Strategy
 
-This document outlines the Search Engine Optimization (SEO) and content marketing strategy for Akili A.I. Academy to increase organic traffic, generate leads, and establish brand authority.
+This document outlines the Search Engine Optimization (SEO) and content marketing strategy for Edgewood International A.I College to increase organic traffic, generate leads, and establish brand authority.
 
 ## 1. Target Audience and Keywords
 
@@ -18,7 +18,7 @@ Our primary audience consists of individuals in Kenya and East Africa searching 
 - "Affordable Python courses for beginners"
 - "Cybersecurity certification in East Africa"
 - "What is generative AI?"
-- "Akili A.I. Academy reviews"
+- "Edgewood International A.I College reviews"
 
 ## 2. Content Strategy
 
@@ -33,7 +33,7 @@ We will create high-quality, relevant, and engaging content that addresses the n
 2.  **Career-Focused Content:**
     - Articles on career paths in tech (e.g., "A Day in the Life of a Data Scientist").
     - Salary guides and job market analysis for the Kenyan tech industry.
-    - Interviews with industry professionals and Akili alumni.
+    - Interviews with industry professionals and alumni.
 
 3.  **Course Previews and Spotlights:**
     - Blog posts that provide a sneak peek into our courses.

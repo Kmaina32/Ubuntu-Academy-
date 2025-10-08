@@ -1,8 +1,8 @@
-# Akili AI Academy
+# Edgewood International A.I College
 
 ![Akili AI](/public/Akili%20AI.png)
 
-Akili AI Academy is an AI-powered online learning platform designed to provide high-quality, affordable, and accessible education tailored for the Kenyan market. It leverages generative AI to create course content, assist students, and automate administrative tasks, creating a modern and scalable educational experience.
+Edgewood International A.I College is an AI-powered online learning platform designed to provide high-quality, affordable, and accessible education tailored for the Kenyan market. It leverages generative AI to create course content, assist students, and automate administrative tasks, creating a modern and scalable educational experience.
 
 ## ✨ Key Features
 
@@ -39,8 +39,8 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/akili-ai-academy.git
-    cd akili-ai-academy
+    git clone https://github.com/your-username/edgewood-international-ai-college.git
+    cd edgewood-international-ai-college
     ```
 
 2.  **Install dependencies:**
@@ -101,4 +101,3 @@ Follow these instructions to get a copy of the project up and running on your lo
 
     Navigate to `http://localhost:9002` to see the application in action.
     The Genkit inspection UI will be available at `http://localhost:4000`.
-

@@ -79,7 +79,7 @@ export function AppSidebar() {
         <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
                 <Gem className="h-6 w-6 text-primary" />
-                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Akili A.I Academy</span>
+                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Edgewood</span>
             </div>
         </SidebarHeader>
         <SidebarContent>
@@ -320,4 +320,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
