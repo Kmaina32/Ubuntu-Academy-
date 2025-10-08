@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -79,7 +80,7 @@ export function AppSidebar() {
         <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
                 <Gem className="h-6 w-6 text-primary" />
-                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Akili A.I Academy</span>
+                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Manda Network</span>
             </div>
         </SidebarHeader>
         <SidebarContent>
@@ -91,6 +92,14 @@ export function AppSidebar() {
                                 <Link href="/">
                                     <Book />
                                     <span>Browse Courses</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/dashboard')} tooltip="Dashboard" onClick={() => onLinkClick('/dashboard')}>
+                                <Link href="/dashboard">
+                                    <LayoutDashboard />
+                                    <span>Dashboard</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -110,11 +119,11 @@ export function AppSidebar() {
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/dashboard')} tooltip="Dashboard" onClick={() => onLinkClick('/dashboard')}>
-                                <Link href="/dashboard">
-                                    <LayoutDashboard />
-                                    <span>Dashboard</span>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/portal/hackathons')} tooltip="Hackathons" onClick={() => onLinkClick('/portal/hackathons')}>
+                                <Link href="/portal/hackathons">
+                                    <Trophy />
+                                    <span>Hackathons</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -205,7 +214,7 @@ export function AppSidebar() {
                         
                         {(isAdmin || isOrganizationAdmin) && (
                             <SidebarMenuItem>
-                                <SidebarMenuButton asChild isActive={isActive('/organization')} tooltip="Manage Organization" onClick={() => onLinkClick('/organization')}>
+                                <SidebarMenuButton asChild isActive={isActive('/organization')} tooltip="Manage Organization" onClick={() => onLinkClick('/organization/dashboard')}>
                                     <Link href="/organization/dashboard">
                                         <Building />
                                         <span>Manage Organization</span>
@@ -312,3 +321,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
