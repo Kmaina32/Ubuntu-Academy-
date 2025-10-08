@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -16,10 +17,7 @@ import Link from 'next/link';
 import { ArrowLeft, Loader2, Trophy, Calendar as CalendarIcon } from 'lucide-react';
 import { getHackathonById, updateHackathon } from '@/lib/firebase-service';
 import type { Hackathon } from '@/lib/mock-data';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { Calendar } from '@/components/ui/calendar';
+import { FormDatePicker } from '@/components/ui/form-datepicker';
 
 const hackathonFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -136,76 +134,28 @@ export default function EditHackathonPage() {
                             control={form.control}
                             name="startDate"
                             render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                                <FormLabel>Start Date</FormLabel>
-                                <Popover>
-                                <FormControl>
-                                    <PopoverTrigger asChild>
-                                    <Button
-                                        variant={"outline"}
-                                        className={cn(
-                                        "w-full pl-3 text-left font-normal",
-                                        !field.value && "text-muted-foreground"
-                                        )}
-                                    >
-                                        {field.value ? (
-                                        format(field.value, "PPP")
-                                        ) : (
-                                        <span>Pick a date</span>
-                                        )}
-                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                    </Button>
-                                    </PopoverTrigger>
-                                </FormControl>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
-                                    mode="single"
-                                    selected={field.value}
-                                    onSelect={field.onChange}
-                                    initialFocus
+                                <FormItem className="flex flex-col">
+                                    <FormLabel>Start Date</FormLabel>
+                                    <FormDatePicker
+                                        value={field.value}
+                                        onSelect={field.onChange}
                                     />
-                                </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                            </FormItem>
+                                    <FormMessage />
+                                </FormItem>
                             )}
                         />
                         <FormField
                             control={form.control}
                             name="endDate"
                             render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                                <FormLabel>End Date</FormLabel>
-                                <Popover>
-                                <FormControl>
-                                    <PopoverTrigger asChild>
-                                    <Button
-                                        variant={"outline"}
-                                        className={cn(
-                                        "w-full pl-3 text-left font-normal",
-                                        !field.value && "text-muted-foreground"
-                                        )}
-                                    >
-                                        {field.value ? (
-                                        format(field.value, "PPP")
-                                        ) : (
-                                        <span>Pick a date</span>
-                                        )}
-                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                    </Button>
-                                    </PopoverTrigger>
-                                </FormControl>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
-                                    mode="single"
-                                    selected={field.value}
-                                    onSelect={field.onChange}
-                                    initialFocus
+                                <FormItem className="flex flex-col">
+                                    <FormLabel>End Date</FormLabel>
+                                    <FormDatePicker
+                                        value={field.value}
+                                        onSelect={field.onChange}
                                     />
-                                </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                            </FormItem>
+                                    <FormMessage />
+                                </FormItem>
                             )}
                         />
                     </div>
