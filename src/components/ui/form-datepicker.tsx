@@ -14,7 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { FormControl } from './form';
+import { useFormField } from './form';
 
 interface FormDatePickerProps {
   value?: Date;
@@ -24,13 +24,13 @@ interface FormDatePickerProps {
 
 export const FormDatePicker = React.forwardRef<HTMLButtonElement, FormDatePickerProps>(
   ({ value, onSelect, disabled }, ref) => {
+    const { formItemId } = useFormField();
+    
     return (
       <Popover>
         <PopoverTrigger asChild>
-          {/* FormControl MUST wrap exactly one direct React element.
-              Here it wraps the Button (single element). */}
-          <FormControl>
             <Button
+              id={formItemId}
               variant={"outline"}
               ref={ref}
               className={cn(
@@ -41,10 +41,7 @@ export const FormDatePicker = React.forwardRef<HTMLButtonElement, FormDatePicker
               {value ? format(value, 'PPP') : <span>Pick a date</span>}
               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
             </Button>
-          </FormControl>
         </PopoverTrigger>
-
-        {/* PopoverContent is outside FormControl — it must not be a sibling inside FormControl */}
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             mode="single"
