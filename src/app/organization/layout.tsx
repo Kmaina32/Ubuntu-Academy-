@@ -24,7 +24,7 @@ function OrgAccessDenied() {
                             <AlertTriangle className="h-8 w-8 text-destructive" />
                         </div>
                         <CardTitle className="text-2xl font-headline">Access Denied</CardTitle>
-                        <CardDescription>You are not authorized to view this page.</CardDescription>
+                        <CardDescription>You are not a member of an organization.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Button asChild>
@@ -46,18 +46,18 @@ export default function OrganizationLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading, isAdmin, isOrganizationAdmin } = useAuth();
+  const { user, loading, organization } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
   const isPublicOrgPage = pathname === '/organization/login' || pathname === '/organization/signup';
 
   useEffect(() => {
-    // This effect handles redirection for logged-in admins trying to access public org pages.
-    if (!loading && (isOrganizationAdmin || isAdmin) && isPublicOrgPage) {
-      router.replace('/organization/dashboard');
+    // If done loading and there's a user, but they're not part of any org, deny access to protected pages
+    if (!loading && user && !organization && !isPublicOrgPage) {
+      router.replace('/'); 
     }
-  }, [loading, isAdmin, isOrganizationAdmin, isPublicOrgPage, router]);
+  }, [loading, user, organization, isPublicOrgPage, router]);
 
 
   if (loading) {
@@ -69,22 +69,13 @@ export default function OrganizationLayout({
      )
   }
 
-  // If on a public page (login/signup), render children without the dashboard layout
+  // If on a public page (login/signup), render children
   if (isPublicOrgPage) {
-    if (user && (isOrganizationAdmin || isAdmin)) {
-      // Show loader while redirecting
-      return (
-        <div className="flex h-screen items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin" />
-          <p className="ml-2">Redirecting to dashboard...</p>
-        </div>
-      );
-    }
     return <>{children}</>;
   }
-
-  // For all other org pages, enforce authentication
-  if (!user || (!isOrganizationAdmin && !isAdmin)) {
+  
+  // For protected org pages, user must be logged in AND part of an org
+  if (!user || !organization) {
     return <OrgAccessDenied />;
   }
 

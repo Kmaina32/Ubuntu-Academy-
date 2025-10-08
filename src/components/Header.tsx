@@ -49,6 +49,7 @@ type Notification = {
 
 function NotificationsPopover() {
     const { user, loading: authLoading, fetchUserData } = useAuth();
+    const router = useRouter();
     const { toast } = useToast();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
@@ -202,6 +203,7 @@ function NotificationsPopover() {
             });
             await fetchUserData(user); // Re-fetch user and org data
             setNotifications(prev => prev.filter(n => n.actions?.[0].payload.inviteId !== payload.inviteId));
+            router.push('/organization/home'); // Redirect to new member dashboard
         } catch (error) {
             console.error("Failed to accept invitation:", error);
             toast({ title: 'Error', description: 'Could not accept the invitation.', variant: 'destructive'});
