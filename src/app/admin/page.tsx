@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, BookOpen, UserPlus, DollarSign, BarChart3, Activity, UserPlus2, BookCopy, Trophy } from "lucide-react";
+import { Users, BookOpen, UserPlus, DollarSign, BarChart3, Activity, UserPlus2, BookCopy, Trophy, User } from "lucide-react";
 import type { Course, RegisteredUser, UserCourse } from '@/lib/mock-data';
 import { getAllCourses, getAllUsers } from '@/lib/firebase-service';
 import { Loader2 } from 'lucide-react';
