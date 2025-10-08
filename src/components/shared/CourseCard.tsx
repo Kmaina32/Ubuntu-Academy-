@@ -35,7 +35,7 @@ export function CourseCard({ course, isEnrolled, aiHint }: CourseCardProps) {
       <CardContent className="p-6 flex-grow">
         <Badge variant="secondary" className="mb-2">{course.category}</Badge>
         <CardTitle className="text-xl mb-2 font-headline">{course.title}</CardTitle>
-        <p className="text-muted-foreground text-sm">{course.description}</p>
+        <p className="text-muted-foreground text-sm line-clamp-3">{course.description}</p>
       </CardContent>
       <CardFooter className="p-6 pt-0 flex justify-between items-center">
         <p className="text-lg font-bold text-primary">
