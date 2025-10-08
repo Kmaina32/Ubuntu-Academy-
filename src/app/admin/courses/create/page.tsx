@@ -114,40 +114,40 @@ function ModuleAccordionItem({ module, moduleIndex, removeModule, form }: {
   return (
     <Card className="bg-secondary/50">
       <AccordionItem value={module.id} className="border-b-0">
-        <div className="flex items-center p-2">
-            <AccordionTrigger className="w-full">
-                <div className="flex-grow text-left font-semibold text-lg p-2">
-                    {title || `Module ${moduleIndex + 1}`}
-                </div>
-            </AccordionTrigger>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="text-destructive rounded-full"
-            onClick={(e) => {
-              e.stopPropagation();
-              removeModule(moduleIndex);
-            }}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
+        <AccordionTrigger className="p-2">
+            <div className="w-full text-left font-semibold text-lg">
+                {title || `Module ${moduleIndex + 1}`}
+            </div>
+        </AccordionTrigger>
         <AccordionContent className="p-4 pt-0">
           <div className="space-y-4 pl-4 border-l-2 border-primary/20">
-            <FormField
-              control={form.control}
-              name={`modules.${moduleIndex}.title`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Module Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Introduction to..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="flex items-end gap-2">
+                <FormField
+                control={form.control}
+                name={`modules.${moduleIndex}.title`}
+                render={({ field }) => (
+                    <FormItem className="flex-grow">
+                    <FormLabel>Module Title</FormLabel>
+                    <FormControl>
+                        <Input placeholder="e.g., Introduction to..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive rounded-full"
+                    onClick={(e) => {
+                    e.stopPropagation();
+                    removeModule(moduleIndex);
+                    }}
+                >
+                    <Trash2 className="h-4 w-4" />
+                </Button>
+            </div>
             <LessonFields form={form} moduleIndex={moduleIndex} />
           </div>
         </AccordionContent>
