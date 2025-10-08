@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Trash2, Mail, Loader2 } from 'lucide-react';
+import { PlusCircle, Trash2, Mail, Loader2, Copy } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useEffect, useState } from 'react';
 import { RegisteredUser, deleteUser, getOrganizationMembers } from '@/lib/firebase-service';
@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { sendOrganizationInvite } from '@/app/actions';
+import { createOrganizationInvite } from '@/app/actions';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -30,6 +30,7 @@ function InviteDialog() {
     const { toast } = useToast();
     const [isOpen, setIsOpen] = useState(false);
     const [isSending, setIsSending] = useState(false);
+    const [generatedLink, setGeneratedLink] = useState('');
 
     const form = useForm<z.infer<typeof inviteFormSchema>>({
         resolver: zodResolver(inviteFormSchema),
@@ -51,33 +52,40 @@ function InviteDialog() {
 
         setIsSending(true);
         try {
-            const result = await sendOrganizationInvite({
+            const result = await createOrganizationInvite({
                 email: values.email,
                 organizationId: organization.id,
                 organizationName: organization.name,
             });
             
-            if (result.success) {
-                toast({
-                    title: "Invitation Sent!",
-                    description: `An invitation has been sent to ${values.email}.`
-                });
-                 setIsOpen(false);
-                 form.reset();
+            if (result.success && result.inviteId) {
+                const inviteLink = `${window.location.origin}/signup?invite=${result.inviteId}`;
+                setGeneratedLink(inviteLink);
             } else {
                  toast({ title: "Error", description: result.message, variant: 'destructive'});
             }
            
         } catch (error) {
             console.error(error);
-            toast({ title: "Error", description: "Could not send the invitation.", variant: 'destructive'});
+            toast({ title: "Error", description: "Could not create the invitation link.", variant: 'destructive'});
         } finally {
             setIsSending(false);
         }
     }
+    
+    const copyLink = () => {
+        navigator.clipboard.writeText(generatedLink);
+        toast({ title: "Copied!", description: "Invitation link copied to clipboard."});
+    }
+    
+    const resetAndClose = () => {
+        setIsOpen(false);
+        setGeneratedLink('');
+        form.reset();
+    }
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && resetAndClose()}>
             <DialogTrigger asChild>
                 <Button>
                     <Mail className="mr-2 h-4 w-4" />
@@ -88,32 +96,41 @@ function InviteDialog() {
                 <DialogHeader>
                     <DialogTitle>Invite a new member</DialogTitle>
                     <DialogDescription>
-                        Enter the email address of the person you want to invite. They will receive an email with instructions to join your organization.
+                        {generatedLink ? "Share this link with the new member." : "Enter an email to generate a unique invitation link."}
                     </DialogDescription>
                 </DialogHeader>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Email Address</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="name@company.com" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                         <DialogFooter>
-                            <Button type="submit" disabled={isSending}>
-                                {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                                Send Invitation
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
+                {generatedLink ? (
+                    <div className="space-y-4">
+                        <Input value={generatedLink} readOnly />
+                        <Button onClick={copyLink} className="w-full">
+                            <Copy className="mr-2 h-4 w-4" /> Copy Link
+                        </Button>
+                    </div>
+                ) : (
+                     <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email Address</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="name@company.com" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <DialogFooter>
+                                <Button type="submit" disabled={isSending}>
+                                    {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                                    Generate Invitation Link
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </Form>
+                )}
             </DialogContent>
         </Dialog>
     )
