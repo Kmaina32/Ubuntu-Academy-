@@ -113,40 +113,40 @@ function ModuleAccordionItem({ module, moduleIndex, removeModule, form }: {
 
   return (
     <Card className="bg-secondary/50">
-        <AccordionItem value={module.id} className="border-b-0">
-            <div className="flex items-center p-2">
-                <AccordionTrigger className="flex-grow text-left font-semibold text-lg p-2 w-full hover:no-underline">
-                   {title || `Module ${moduleIndex + 1}`}
-                </AccordionTrigger>
-                <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="text-destructive rounded-full"
-                    onClick={() => removeModule(moduleIndex)}
-                >
-                    <Trash2 className="h-4 w-4" />
-                </Button>
-            </div>
-            <AccordionContent className="p-4 pt-0">
-                <div className="space-y-4 pl-4 border-l-2 border-primary/20">
-                    <FormField
-                        control={form.control}
-                        name={`modules.${moduleIndex}.title`}
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Module Title</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="e.g., Introduction to..." {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <LessonFields form={form} moduleIndex={moduleIndex} />
-                </div>
-            </AccordionContent>
-        </AccordionItem>
+      <AccordionItem value={module.id} className="border-b-0">
+        <div className="flex items-center p-2">
+          <AccordionTrigger className="flex-grow text-left font-semibold text-lg p-2 w-full hover:no-underline">
+            {title || `Module ${moduleIndex + 1}`}
+          </AccordionTrigger>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="text-destructive rounded-full"
+            onClick={() => removeModule(moduleIndex)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+        <AccordionContent className="p-4 pt-0">
+          <div className="space-y-4 pl-4 border-l-2 border-primary/20">
+            <FormField
+              control={form.control}
+              name={`modules.${moduleIndex}.title`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Module Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Introduction to..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <LessonFields form={form} moduleIndex={moduleIndex} />
+          </div>
+        </AccordionContent>
+      </AccordionItem>
     </Card>
   );
 }
