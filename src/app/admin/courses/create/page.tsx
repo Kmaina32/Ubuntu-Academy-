@@ -110,17 +110,19 @@ function ModuleCardItem({ moduleIndex, removeModule, form }: {
 }) {
   return (
     <Card className="bg-secondary/50">
-      <CardHeader className="flex flex-row items-center justify-between">
-         <CardTitle>Module {moduleIndex + 1}</CardTitle>
-         <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="text-destructive rounded-full hover:bg-destructive/10 h-8 w-8 ml-2"
-            onClick={() => removeModule(moduleIndex)}
-        >
-            <Trash2 className="h-4 w-4" />
-        </Button>
+      <CardHeader>
+        <div className="flex justify-between items-center">
+            <CardTitle>Module {moduleIndex + 1}</CardTitle>
+            <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-destructive rounded-full hover:bg-destructive/10 h-8 w-8"
+                onClick={() => removeModule(moduleIndex)}
+            >
+                <Trash2 className="h-4 w-4" />
+            </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
