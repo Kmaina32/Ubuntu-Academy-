@@ -114,23 +114,20 @@ function ModuleAccordionItem({ module, moduleIndex, removeModule, form }: {
   return (
     <Card className="bg-secondary/50">
       <AccordionItem value={module.id} className="border-b-0">
-        <AccordionTrigger>
-          <div className="flex justify-between items-center w-full pr-2">
-            <span className="font-semibold text-lg">{title || `Module ${moduleIndex + 1}`}</span>
+        <div className="flex items-center w-full px-4 py-2">
+            <AccordionTrigger className="flex-grow hover:no-underline">
+                <span className="font-semibold text-lg text-left">{title || `Module ${moduleIndex + 1}`}</span>
+            </AccordionTrigger>
             <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-destructive rounded-full hover:bg-destructive/10 h-8 w-8"
-              onClick={(e) => {
-                e.stopPropagation();
-                removeModule(moduleIndex);
-              }}
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-destructive rounded-full hover:bg-destructive/10 h-8 w-8 ml-2"
+                onClick={() => removeModule(moduleIndex)}
             >
-              <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" />
             </Button>
-          </div>
-        </AccordionTrigger>
+        </div>
         <AccordionContent className="p-4 pt-0">
           <div className="space-y-4 pl-4 border-l-2 border-primary/20">
             <FormField
