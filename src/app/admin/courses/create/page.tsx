@@ -114,9 +114,9 @@ function ModuleAccordionItem({ module, moduleIndex, removeModule, form }: {
   return (
     <Card className="bg-secondary/50">
       <AccordionItem value={module.id} className="border-b-0">
-        <div className="flex items-center w-full px-4 py-2">
-            <AccordionTrigger className="flex-grow hover:no-underline">
-                <span className="font-semibold text-lg text-left">{title || `Module ${moduleIndex + 1}`}</span>
+        <div className="flex items-center w-full px-4">
+            <AccordionTrigger className="flex-grow hover:no-underline text-left">
+                <span className="font-semibold text-lg">{title || `Module ${moduleIndex + 1}`}</span>
             </AccordionTrigger>
             <Button
                 type="button"
@@ -276,3 +276,5 @@ export default function CreateCoursePage() {
     </div>
   );
 }
+
+    
