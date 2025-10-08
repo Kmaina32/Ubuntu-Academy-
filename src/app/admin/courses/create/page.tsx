@@ -242,11 +242,8 @@ export default function CreateCoursePage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Content Drip Schedule</FormLabel>
-                              <Select
-                                onValueChange={field.onChange}
-                                value={field.value}
-                              >
-                               <FormControl>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select a schedule..." />
                                   </SelectTrigger>
@@ -298,3 +295,5 @@ export default function CreateCoursePage() {
     </div>
   );
 }
+
+    
