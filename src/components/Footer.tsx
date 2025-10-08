@@ -1,10 +1,8 @@
-
 'use client';
 
 import Link from 'next/link';
 import { Gem, Twitter, Facebook, Linkedin } from 'lucide-react';
 import { Button } from './ui/button';
-import Image from 'next/image';
 
 export function Footer() {
   return (
@@ -41,23 +39,6 @@ export function Footer() {
              </Button>
           </div>
         </div>
-        
-        <div className="text-center py-4 mt-4 border-t">
-            <h3 className="mb-3 text-sm font-semibold uppercase text-muted-foreground">Payment Methods</h3>
-            <div className="flex justify-center items-center gap-4 flex-wrap">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/3/30/M-Pesa_logo.svg" 
-                    alt="M-Pesa" className="h-10" />
-                <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x26.jpg"
-                    alt="PayPal" className="h-10" />
-                <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_2016.svg"
-                    alt="Stripe" className="h-10" />
-                <img src="https://upload.wikimedia.org/wikipedia/commons/0/0e/MasterCardLogo.svg" 
-                    alt="Mastercard" className="h-10" />
-                <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" 
-                    alt="Visa" className="h-10" />
-            </div>
-        </div>
-        
          <p className="text-center text-xs text-muted-foreground mt-4">
             © {new Date().getFullYear()} Manda Network. All rights reserved.
           </p>
