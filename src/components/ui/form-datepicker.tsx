@@ -13,6 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { FormControl } from './form';
 
 interface FormDatePickerProps {
   value?: Date;
@@ -20,34 +21,35 @@ interface FormDatePickerProps {
   disabled?: (date: Date) => boolean;
 }
 
-export function FormDatePicker({
-  value,
-  onSelect,
-  disabled,
-}: FormDatePickerProps) {
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant={'outline'}
-          className={cn(
-            'w-full justify-start text-left font-normal',
-            !value && 'text-muted-foreground'
-          )}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {value ? format(value, 'PPP') : <span>Pick a date</span>}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0">
-        <Calendar
-          mode="single"
-          selected={value}
-          onSelect={onSelect}
-          disabled={disabled}
-          initialFocus
-        />
-      </PopoverContent>
-    </Popover>
-  );
-}
+export const FormDatePicker = React.forwardRef<HTMLDivElement, FormDatePickerProps>(
+  ({ value, onSelect, disabled }, ref) => {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <FormControl>
+            <Button
+              variant={'outline'}
+              className={cn(
+                'w-full pl-3 text-left font-normal',
+                !value && 'text-muted-foreground'
+              )}
+            >
+              {value ? format(value, 'PPP') : <span>Pick a date</span>}
+              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+            </Button>
+          </FormControl>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={value}
+            onSelect={onSelect}
+            disabled={disabled}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+    );
+  }
+);
+FormDatePicker.displayName = 'FormDatePicker';
