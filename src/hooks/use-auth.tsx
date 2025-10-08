@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -50,6 +51,7 @@ interface AuthContextType {
   sendPasswordReset: (email: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
+  fetchUserData: (user: User) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -247,6 +249,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
     sendPasswordReset,
     signInWithGoogle,
     sendVerificationEmail,
+    fetchUserData
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

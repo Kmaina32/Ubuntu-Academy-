@@ -21,11 +21,13 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Separator } from './ui/separator';
 import { useEffect, useState, useMemo } from 'react';
 import type { Course, CalendarEvent, Notification as DbNotification } from '@/lib/mock-data';
-import { getAllCourses, getAllCalendarEvents, getAllNotifications, getUserById, getLiveSession } from '@/lib/firebase-service';
+import { getAllCourses, getAllCalendarEvents, getAllNotifications, getUserById, getLiveSession, saveUser, updateInvitationStatus } from '@/lib/firebase-service';
 import { differenceInDays, isToday, parseISO, formatDistanceToNow } from 'date-fns';
 import { usePathname, useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { onValue, ref } from 'firebase/database';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 type Notification = {
     id: string;
@@ -35,14 +37,24 @@ type Notification = {
     href?: string;
     date: string;
     isLive?: boolean;
+    actions?: Array<{
+        title: string;
+        action: 'accept_org_invite';
+        payload: {
+            inviteId: string;
+            organizationId: string;
+        };
+    }>
 };
 
 function NotificationsPopover() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading, fetchUserData } = useAuth();
+    const { toast } = useToast();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
     const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(new Set());
     const [isLive, setIsLive] = useState(false);
+    const [isAccepting, setIsAccepting] = useState<string | null>(null);
 
     useEffect(() => {
         const storedIds = localStorage.getItem('readNotificationIds');
@@ -79,8 +91,8 @@ function NotificationsPopover() {
                 const dbNotifications = await getAllNotifications();
                 const formattedDbNotifications = dbNotifications
                     .filter(n => new Date(n.createdAt) > userCreationTime)
-                     // Filter based on cohort
-                    .filter(n => !n.cohort || n.cohort === userCohort)
+                     // Filter based on cohort or if it's a targeted notification for the user
+                    .filter(n => !n.cohort || n.cohort === userCohort || n.userId === user.uid)
                     .map((n: DbNotification) => ({
                         id: `db-${n.id}`,
                         icon: n.title.includes('Live Now') ? Clapperboard : BellRing,
@@ -89,6 +101,7 @@ function NotificationsPopover() {
                         href: n.link || '#',
                         date: n.createdAt,
                         isLive: n.title.includes('Live Now'),
+                        actions: n.actions,
                     }));
                 combinedNotifications.push(...formattedDbNotifications);
             } catch (error) {
@@ -176,6 +189,26 @@ function NotificationsPopover() {
          setReadNotificationIds(allIds);
          localStorage.setItem('readNotificationIds', JSON.stringify(Array.from(allIds)));
     }
+
+    const handleAcceptInvitation = async (payload: { inviteId: string, organizationId: string }) => {
+        if (!user) return;
+        setIsAccepting(payload.inviteId);
+        try {
+            await saveUser(user.uid, { organizationId: payload.organizationId });
+            await updateInvitationStatus(payload.inviteId, 'accepted');
+            toast({
+                title: 'Invitation Accepted!',
+                description: "You have successfully joined the organization.",
+            });
+            await fetchUserData(user); // Re-fetch user and org data
+            setNotifications(prev => prev.filter(n => n.actions?.[0].payload.inviteId !== payload.inviteId));
+        } catch (error) {
+            console.error("Failed to accept invitation:", error);
+            toast({ title: 'Error', description: 'Could not accept the invitation.', variant: 'destructive'});
+        } finally {
+            setIsAccepting(null);
+        }
+    }
     
     const renderNotificationItem = (notification: Notification, isUnread: boolean) => {
         const title = notification.isLive && !isLive 
@@ -184,16 +217,50 @@ function NotificationsPopover() {
         
         const iconColor = notification.isLive && isLive ? 'text-red-500' : isUnread ? 'text-primary' : 'text-muted-foreground';
 
+        const hasAction = notification.actions && notification.actions.length > 0;
+
+        const content = (
+            <div className="flex items-start gap-3 p-2">
+                <notification.icon className={`h-5 w-5 ${iconColor} mt-1 flex-shrink-0`} />
+                <div className="flex-grow">
+                    <p className="font-semibold text-sm">{title}</p>
+                    <p className="text-xs text-muted-foreground">{notification.description}</p>
+                    <p className="text-xs text-muted-foreground/80 mt-1">{formatDistanceToNow(new Date(notification.date), { addSuffix: true })}</p>
+                    {hasAction && (
+                        <div className="flex gap-2 mt-2">
+                            {notification.actions?.map((action, index) => (
+                                <Button 
+                                    key={index} 
+                                    size="sm" 
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        if (action.action === 'accept_org_invite') {
+                                            handleAcceptInvitation(action.payload);
+                                        }
+                                    }}
+                                    disabled={isAccepting === action.payload.inviteId}
+                                >
+                                    {isAccepting === action.payload.inviteId ? <Loader2 className="h-4 w-4 animate-spin"/> : action.title}
+                                </Button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+
+        if (hasAction) {
+            return (
+                 <div key={notification.id} className="block hover:bg-secondary rounded-md cursor-pointer">
+                    {content}
+                </div>
+            )
+        }
+
         return (
             <Link href={notification.href || '#'} key={notification.id} className="block hover:bg-secondary rounded-md">
-                <div className="flex items-start gap-3 p-2">
-                    <notification.icon className={`h-5 w-5 ${iconColor} mt-1 flex-shrink-0`} />
-                    <div>
-                        <p className="font-semibold text-sm">{title}</p>
-                        <p className="text-xs text-muted-foreground">{notification.description}</p>
-                         <p className="text-xs text-muted-foreground/80 mt-1">{formatDistanceToNow(new Date(notification.date), { addSuffix: true })}</p>
-                    </div>
-                </div>
+                {content}
             </Link>
         )
     }
