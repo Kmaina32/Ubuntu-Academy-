@@ -60,7 +60,7 @@ export function AdminSidebar() {
         <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
                 <Gem className="h-6 w-6 text-primary" />
-                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Edgewood</span>
+                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Manda Network</span>
             </div>
         </SidebarHeader>
         <SidebarContent>
@@ -94,7 +94,7 @@ export function AdminSidebar() {
                         <Link href="/admin/bootcamps">Bootcamps</Link>
                     </SidebarMenuButton>
                     <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/hackathons')} tooltip="Hackathons">
-                        <Link href="/admin/hackathons"><Trophy className="mr-2 h-4 w-4" />Hackathons</Link>
+                        <Link href="/admin/hackathons"><span><Trophy className="mr-2 h-4 w-4" />Hackathons</span></Link>
                     </SidebarMenuButton>
                     <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/documents')} tooltip="Documents">
                         <Link href="/admin/documents">Documents</Link>
