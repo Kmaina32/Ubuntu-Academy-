@@ -42,26 +42,6 @@ export function Footer() {
           </div>
         </div>
         
-        <div className="container text-center py-4">
-          <h5 className="mb-3 font-semibold text-muted-foreground">We Accept</h5>
-          <div className="flex justify-center items-center gap-4 flex-wrap">
-            <Image src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Lipa_na_M-PESA_logo.svg/1280px-Lipa_na_M-PESA_logo.svg.png" 
-                 alt="Lipa Na M-Pesa" width={120} height={40} style={{ height: '25px', width: 'auto' }} />
-
-            <Image src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x26.jpg"
-                 alt="PayPal" width={80} height={40} style={{ height: '25px', width: 'auto' }} />
-
-            <Image src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_2016.svg"
-                 alt="Stripe" width={80} height={40} style={{ height: '25px', width: 'auto' }} />
-
-            <Image src="https://upload.wikimedia.org/wikipedia/commons/0/0e/MasterCardLogo.svg" 
-                 alt="Mastercard" width={80} height={40} style={{ height: '25px', width: 'auto' }} />
-
-            <Image src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" 
-                 alt="Visa" width={80} height={40} style={{ height: '25px', width: 'auto' }} />
-          </div>
-        </div>
-
          <p className="text-center text-xs text-muted-foreground mt-4">
             © {new Date().getFullYear()} Manda Network. All rights reserved.
           </p>
