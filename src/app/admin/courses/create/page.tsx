@@ -65,8 +65,10 @@ function YouTubeLinkFields({ moduleIndex, lessonIndex, form }: { moduleIndex: nu
             <FormLabel>YouTube Video Links</FormLabel>
             {linkFields.map((link, linkIndex) => (
                 <div key={link.id} className="flex items-end gap-2">
-                     <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.youtubeLinks.${linkIndex}.title`} render={({ field }) => ( <FormItem className="flex-grow"> <FormLabel className="text-xs sr-only">Video Title</FormLabel> <FormControl> <Input placeholder="Video Title" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                    <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.youtubeLinks.${linkIndex}.url`} render={({ field }) => ( <FormItem className="flex-grow"> <FormLabel className="text-xs sr-only">URL</FormLabel> <FormControl> <Input placeholder="https://youtube.com/watch?v=..." {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                    <div className="flex-grow grid grid-cols-2 gap-2">
+                         <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.youtubeLinks.${linkIndex}.title`} render={({ field }) => ( <FormItem> <FormControl> <Input placeholder="Video Title" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                        <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.youtubeLinks.${linkIndex}.url`} render={({ field }) => ( <FormItem> <FormControl> <Input placeholder="https://youtube.com/watch?v=..." {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                    </div>
                     <Button type="button" variant="ghost" size="icon" className="text-destructive shrink-0" onClick={() => removeLink(linkIndex)}> <Trash2 className="h-4 w-4" /> </Button>
                 </div>
             ))}
