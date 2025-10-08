@@ -109,28 +109,15 @@ function ModuleAccordionItem({ module, moduleIndex, removeModule, form }: {
   removeModule: (index: number) => void;
   form: UseFormReturn<CourseFormValues>;
 }) {
+  const title = form.watch(`modules.${moduleIndex}.title`);
+
   return (
     <Card className="bg-secondary/50">
         <AccordionItem value={module.id} className="border-b-0">
             <div className="flex items-center p-2">
-                <FormField
-                    control={form.control}
-                    name={`modules.${moduleIndex}.title`}
-                    render={({ field }) => (
-                        <FormItem className="flex-grow">
-                            <AccordionTrigger className="flex-grow text-left font-semibold text-lg p-2 w-full hover:no-underline">
-                                <FormControl>
-                                    <Input
-                                        placeholder="Module Title"
-                                        {...field}
-                                        className="text-lg font-semibold border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-auto"
-                                    />
-                                </FormControl>
-                            </AccordionTrigger>
-                             <FormMessage className="pl-2 pt-1" />
-                        </FormItem>
-                    )}
-                />
+                <AccordionTrigger className="flex-grow text-left font-semibold text-lg p-2 w-full hover:no-underline">
+                   {title || `Module ${moduleIndex + 1}`}
+                </AccordionTrigger>
                 <Button
                     type="button"
                     variant="ghost"
@@ -143,6 +130,19 @@ function ModuleAccordionItem({ module, moduleIndex, removeModule, form }: {
             </div>
             <AccordionContent className="p-4 pt-0">
                 <div className="space-y-4 pl-4 border-l-2 border-primary/20">
+                    <FormField
+                        control={form.control}
+                        name={`modules.${moduleIndex}.title`}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Module Title</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="e.g., Introduction to..." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                     <LessonFields form={form} moduleIndex={moduleIndex} />
                 </div>
             </AccordionContent>
