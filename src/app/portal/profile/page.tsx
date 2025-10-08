@@ -1,15 +1,31 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, Github, Linkedin } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { getUserById, saveUser } from '@/lib/firebase-service';
+import type { RegisteredUser } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
+import { Icon } from '@iconify/react';
+
+const profileSchema = z.object({
+  github: z.string().url().optional().or(z.literal('')),
+  gitlab: z.string().url().optional().or(z.literal('')),
+  bitbucket: z.string().url().optional().or(z.literal('')),
+});
+
+type ProfileFormValues = z.infer<typeof profileSchema>;
 
 const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
@@ -20,14 +36,60 @@ const getInitials = (name: string | null | undefined) => {
 export default function PortalProfilePage() {
     const { user, loading } = useAuth();
     const router = useRouter();
+    const { toast } = useToast();
+    const [dbUser, setDbUser] = useState<RegisteredUser | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-    if (loading) {
-        return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin"/></div>
+    const form = useForm<ProfileFormValues>({
+        resolver: zodResolver(profileSchema),
+        defaultValues: {
+            github: '',
+            gitlab: '',
+            bitbucket: '',
+        }
+    });
+
+    useEffect(() => {
+        if (!loading && !user) {
+            router.push('/login?redirect=/hackathons');
+        }
+        if (user) {
+            getUserById(user.uid).then(profile => {
+                if (profile) {
+                    setDbUser(profile);
+                    form.reset({
+                        github: profile.portfolio?.socialLinks?.github || '',
+                        gitlab: profile.portfolio?.socialLinks?.gitlab || '',
+                        bitbucket: profile.portfolio?.socialLinks?.bitbucket || '',
+                    });
+                }
+            });
+        }
+    }, [user, loading, router, form]);
+    
+    const onSubmit = async (values: ProfileFormValues) => {
+        if (!user || !dbUser) return;
+        setIsLoading(true);
+        try {
+            const updatedPortfolio = {
+                ...dbUser.portfolio,
+                socialLinks: {
+                    ...dbUser.portfolio?.socialLinks,
+                    ...values
+                }
+            };
+            await saveUser(user.uid, { portfolio: updatedPortfolio });
+            toast({ title: 'Success', description: 'Your repository links have been updated.' });
+        } catch (error) {
+            console.error('Failed to update profile:', error);
+            toast({ title: 'Error', description: 'Could not update your profile.', variant: 'destructive'});
+        } finally {
+            setIsLoading(false);
+        }
     }
 
-    if (!user) {
-        router.push('/login?redirect=/hackathons');
-        return null;
+    if (loading || !user || !dbUser) {
+        return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin"/></div>
     }
 
     return (
@@ -46,14 +108,25 @@ export default function PortalProfilePage() {
                     <CardDescription>Your hackathon portal profile.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className='space-y-2'>
-                        <Label htmlFor='email'>Email Address</Label>
-                        <Input id='email' value={user.email || ''} readOnly disabled />
-                    </div>
+                     <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            <div>
+                                <h3 className="text-lg font-semibold mb-4">Your Repositories</h3>
+                                <div className="space-y-4">
+                                     <FormField control={form.control} name="github" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center"><Icon icon="mdi:github" className="mr-2 h-5 w-5" /> GitHub</FormLabel> <FormControl> <Input placeholder="https://github.com/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                                     <FormField control={form.control} name="gitlab" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center"><Icon icon="mdi:gitlab" className="mr-2 h-5 w-5" /> GitLab</FormLabel> <FormControl> <Input placeholder="https://gitlab.com/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                                     <FormField control={form.control} name="bitbucket" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center"><Icon icon="mdi:bitbucket" className="mr-2 h-5 w-5" /> Bitbucket</FormLabel> <FormControl> <Input placeholder="https://bitbucket.org/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                                </div>
+                            </div>
+                            <CardFooter className="px-0 pt-6">
+                               <Button type="submit" className="w-full" disabled={isLoading}>
+                                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                                 Save Changes
+                               </Button>
+                            </CardFooter>
+                        </form>
+                    </Form>
                 </CardContent>
-                <CardFooter>
-                    {/* Add any profile actions here in the future */}
-                </CardFooter>
             </Card>
         </div>
     );

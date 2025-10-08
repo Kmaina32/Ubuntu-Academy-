@@ -245,6 +245,8 @@ export interface Portfolio {
         github?: string;
         linkedin?: string;
         twitter?: string;
+        gitlab?: string;
+        bitbucket?: string;
     };
     public?: boolean;
 }
