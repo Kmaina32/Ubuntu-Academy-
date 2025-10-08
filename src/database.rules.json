@@ -52,7 +52,7 @@
     },
     "users": {
       ".read": "auth != null",
-      ".indexOn": ["portfolio/public", "organizationId", "email"],
+      ".indexOn": ["email", "portfolio/public", "organizationId"],
       "$uid": {
         ".read": "(data.child('portfolio').child('public').val() === true) || (auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || (data.child('organizationId').val() != null && data.child('organizationId').val() === root.child('users').child(auth.uid).child('organizationId').val() && root.child('users').child(auth.uid).child('isOrganizationAdmin').val() === true)))",
         ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
@@ -117,7 +117,7 @@
     },
     "apiUsage": {
       "$userId": {
-        ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+        ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true) && (root.child('users').child(auth.uid).child('apiCallCount').val() < root.child('users').child(auth.uid).child('apiLimit').val())",
         ".read": "auth != null && auth.uid === $userId"
       }
     },
@@ -188,7 +188,7 @@
       ".read": true,
       ".write": "auth != null",
       "$inviteId": {
-        ".write": "auth != null && (root.child('organizations').child(newData.child('organizationId').val()).child('ownerId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+        ".write": "auth != null && (root.child('organizations').child(newData.child('organizationId').val()).child('ownerId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || auth.uid === newData.child('userId').val())"
       }
     },
     "pricingPlans": {
@@ -201,5 +201,3 @@
     }
   }
 }
-
-    
