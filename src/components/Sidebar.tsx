@@ -94,6 +94,14 @@ export function AppSidebar() {
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/dashboard')} tooltip="Dashboard" onClick={() => onLinkClick('/dashboard')}>
+                                <Link href="/dashboard">
+                                    <LayoutDashboard />
+                                    <span>Dashboard</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
                          <SidebarMenuItem>
                             <SidebarMenuButton asChild isActive={isActive('/programs')} tooltip="Certificate Programs" onClick={() => onLinkClick('/programs')}>
                                 <Link href="/programs">
@@ -115,14 +123,6 @@ export function AppSidebar() {
                                 <Link href="/portal/hackathons">
                                     <Trophy />
                                     <span>Hackathons</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/dashboard')} tooltip="Dashboard" onClick={() => onLinkClick('/dashboard')}>
-                                <Link href="/dashboard">
-                                    <LayoutDashboard />
-                                    <span>Dashboard</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
