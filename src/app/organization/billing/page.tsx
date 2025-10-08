@@ -13,6 +13,7 @@ import { PaymentModal } from '@/components/PaymentModal';
 import { useToast } from '@/hooks/use-toast';
 import type { PricingPlan } from '@/lib/types';
 import { getAllPlans } from '@/lib/firebase-service';
+import PaymentIcons from '@/components/PaymentIcons';
 
 export default function OrganizationBillingPage() {
     const { organization, loading: authLoading } = useAuth();
@@ -91,6 +92,16 @@ export default function OrganizationBillingPage() {
                     </div>
                 </CardContent>
             </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Accepted Payment Methods</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <PaymentIcons />
+                </CardContent>
+            </Card>
+
              <Card>
                 <CardHeader>
                     <CardTitle>Billing History</CardTitle>

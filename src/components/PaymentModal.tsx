@@ -18,8 +18,6 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { processMpesaPayment } from '@/app/actions';
-import { RadioGroup, RadioGroupItem } from './ui/radio-group';
-import { cn } from '@/lib/utils';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -44,7 +42,6 @@ export function PaymentModal({
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [paymentStep, setPaymentStep] = useState<'form' | 'processing' | 'success'>('form');
-  const [paymentMethod, setPaymentMethod] = useState('mpesa');
 
   const handlePay = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,39 +51,35 @@ export function PaymentModal({
         return;
     }
 
-    if (paymentMethod === 'mpesa') {
-        if (!/^\d{10}$/.test(phoneNumber)) {
-            toast({ title: 'Invalid Phone Number', description: 'Please enter a valid 10-digit phone number.', variant: 'destructive' });
-            return;
-        }
-        setIsLoading(true);
-        setPaymentStep('processing');
-        try {
-            const result = await processMpesaPayment({
-                userId: user.uid,
-                phoneNumber,
-                amount: 1, // Using 1 KES for sandbox testing
-                courseId: itemId,
-            });
+    if (!/^\d{10}$/.test(phoneNumber)) {
+        toast({ title: 'Invalid Phone Number', description: 'Please enter a valid 10-digit phone number.', variant: 'destructive' });
+        return;
+    }
+    setIsLoading(true);
+    setPaymentStep('processing');
+    try {
+        const result = await processMpesaPayment({
+            userId: user.uid,
+            phoneNumber,
+            amount: 1, // Using 1 KES for sandbox testing
+            courseId: itemId,
+        });
 
-            if (result.success) {
-                toast({
-                    title: "Processing Payment...",
-                    description: "Please check your phone to complete the M-Pesa transaction. Your purchase will be confirmed automatically."
-                });
-                onClose();
-            } else {
-                throw new Error(result.message);
-            }
-        } catch (error: any) {
-            console.error("Payment initiation failed:", error);
-            toast({ title: 'Payment Failed', description: error.message || 'Something went wrong. Please try again.', variant: 'destructive'});
-            setPaymentStep('form');
-        } finally {
-            setIsLoading(false);
+        if (result.success) {
+            toast({
+                title: "Processing Payment...",
+                description: "Please check your phone to complete the M-Pesa transaction. Your purchase will be confirmed automatically."
+            });
+            onClose();
+        } else {
+            throw new Error(result.message);
         }
-    } else {
-        toast({ title: 'Coming Soon', description: 'This payment method is not yet implemented.' });
+    } catch (error: any) {
+        console.error("Payment initiation failed:", error);
+        toast({ title: 'Payment Failed', description: error.message || 'Something went wrong. Please try again.', variant: 'destructive'});
+        setPaymentStep('form');
+    } finally {
+        setIsLoading(false);
     }
   };
   
@@ -114,37 +107,19 @@ export function PaymentModal({
                         <p className='text-sm text-muted-foreground'>Total Amount</p>
                         <p className='text-3xl font-bold'>Ksh {price.toLocaleString()}</p>
                     </div>
-
-                     <RadioGroup defaultValue="mpesa" onValueChange={setPaymentMethod} className="grid gap-2">
-                        <Label>Select Payment Method</Label>
-                        <div className="grid grid-cols-1 gap-2">
-                             <Label className={cn("flex items-center gap-3 rounded-md border p-3", paymentMethod === 'mpesa' && "border-primary")}>
-                                <RadioGroupItem value="mpesa" /> M-Pesa
-                            </Label>
-                             <Label className={cn("flex items-center gap-3 rounded-md border p-3 text-muted-foreground cursor-not-allowed", paymentMethod === 'card' && "border-primary text-primary")}>
-                                <RadioGroupItem value="card" disabled/> Card (Coming Soon)
-                            </Label>
-                             <Label className={cn("flex items-center gap-3 rounded-md border p-3 text-muted-foreground cursor-not-allowed", paymentMethod === 'paypal' && "border-primary text-primary")}>
-                                <RadioGroupItem value="paypal" disabled/> PayPal (Coming Soon)
-                            </Label>
-                        </div>
-                     </RadioGroup>
-                    
-                    {paymentMethod === 'mpesa' && (
-                         <div className="space-y-2">
-                            <Label htmlFor="phone">M-Pesa Phone Number</Label>
-                            <Input
-                            id="phone"
-                            value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
-                            placeholder="0712345678"
-                            required
-                            />
-                        </div>
-                    )}
+                     <div className="space-y-2">
+                        <Label htmlFor="phone">M-Pesa Phone Number</Label>
+                        <Input
+                        id="phone"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        placeholder="0712345678"
+                        required
+                        />
+                    </div>
                 </div>
                 <DialogFooter>
-                    <Button type="submit" className="w-full" disabled={isLoading || paymentMethod !== 'mpesa'}>
+                    <Button type="submit" className="w-full" disabled={isLoading}>
                         {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : `Pay Ksh ${price.toLocaleString()}`}
                     </Button>
                 </DialogFooter>
