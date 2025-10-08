@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -94,7 +93,7 @@ export function AdminSidebar() {
                         <Link href="/admin/bootcamps">Bootcamps</Link>
                     </SidebarMenuButton>
                     <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/hackathons')} tooltip="Hackathons">
-                        <Link href="/admin/hackathons"><span><Trophy className="mr-2 h-4 w-4" />Hackathons</span></Link>
+                        <Link href="/admin/hackathons">Hackathons</Link>
                     </SidebarMenuButton>
                     <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/documents')} tooltip="Documents">
                         <Link href="/admin/documents">Documents</Link>
