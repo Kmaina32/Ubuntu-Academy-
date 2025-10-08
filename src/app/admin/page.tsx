@@ -5,11 +5,11 @@
 import { useEffect, useState } from 'react';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, BookOpen, UserPlus, DollarSign, BarChart3, Activity, UserPlus2, BookCopy, Trophy, User } from "lucide-react";
+import { Users, BookOpen, UserPlus, DollarSign, BarChart3, Activity, UserPlus2, BookCopy, Trophy, User, Building, Rocket } from "lucide-react";
 import type { Course, RegisteredUser, UserCourse } from '@/lib/mock-data';
-import { getAllCourses, getAllUsers } from '@/lib/firebase-service';
+import { getAllCourses, getAllUsers, getAllOrganizations, getAllHackathons } from '@/lib/firebase-service';
 import { Loader2 } from 'lucide-react';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Line, ComposedChart, Legend } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Line, ComposedChart, Legend, PieChart, Pie, Cell } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { format, subDays, parseISO, isValid, formatDistanceToNow } from 'date-fns';
 import { useAuth } from '@/hooks/use-auth';
@@ -19,6 +19,8 @@ type AnalyticsData = {
   totalCourses: number;
   totalEnrollments: number;
   totalRevenue: number;
+  totalOrganizations: number;
+  totalHackathons: number;
   userSignups: { date: string, count: number }[];
   courseEnrollments: { title: string, enrollments: number }[];
   courseRevenue: { title: string, revenue: number }[];
@@ -44,6 +46,9 @@ const chartConfig = {
   }
 };
 
+const PIE_CHART_COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE"];
+
+
 export default function AdminDashboardPage() {
     const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -54,7 +59,12 @@ export default function AdminDashboardPage() {
         const fetchAnalytics = async () => {
             setLoading(true);
             try {
-                const [users, courses] = await Promise.all([getAllUsers(), getAllCourses()]);
+                const [users, courses, organizations, hackathons] = await Promise.all([
+                    getAllUsers(), 
+                    getAllCourses(),
+                    getAllOrganizations(),
+                    getAllHackathons(),
+                ]);
                 
                 let totalEnrollments = 0;
                 let totalRevenue = 0;
@@ -125,6 +135,8 @@ export default function AdminDashboardPage() {
                 setAnalyticsData({
                     totalUsers: users.length,
                     totalCourses: courses.length,
+                    totalOrganizations: organizations.length,
+                    totalHackathons: hackathons.length,
                     totalEnrollments,
                     totalRevenue,
                     courseEnrollments,
@@ -161,7 +173,7 @@ export default function AdminDashboardPage() {
              <p className="text-destructive text-center py-10">Failed to load dashboard data.</p>
         ) : (
           <div className="grid gap-6">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                  <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                        <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -189,17 +201,37 @@ export default function AdminDashboardPage() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">{analyticsData.totalCourses}</div>
-                       <p className="text-xs text-muted-foreground">available in catalog</p>
+                       <p className="text-xs text-muted-foreground">in catalog</p>
                     </CardContent>
                   </Card>
                    <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                       <CardTitle className="text-sm font-medium">Total Enrollments</CardTitle>
+                       <CardTitle className="text-sm font-medium">Enrollments</CardTitle>
                        <UserPlus className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">{analyticsData.totalEnrollments}</div>
                       <p className="text-xs text-muted-foreground">across all courses</p>
+                    </CardContent>
+                  </Card>
+                   <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                       <CardTitle className="text-sm font-medium">Organizations</CardTitle>
+                       <Building className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{analyticsData.totalOrganizations}</div>
+                      <p className="text-xs text-muted-foreground">B2B partners</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                       <CardTitle className="text-sm font-medium">Hackathons</CardTitle>
+                       <Rocket className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{analyticsData.totalHackathons}</div>
+                      <p className="text-xs text-muted-foreground">events hosted</p>
                     </CardContent>
                   </Card>
             </div>
@@ -246,8 +278,8 @@ export default function AdminDashboardPage() {
                     </CardContent>
                  </Card>
             </div>
-            <div className="grid gap-6 md:grid-cols-2">
-                <Card>
+            <div className="grid gap-6 md:grid-cols-5">
+                <Card className="md:col-span-3">
                     <CardHeader>
                         <CardTitle>Top 5 Enrolled Courses</CardTitle>
                     </CardHeader>
@@ -263,20 +295,34 @@ export default function AdminDashboardPage() {
                       </ChartContainer>
                     </CardContent>
                   </Card>
-                 <Card>
+                 <Card className="md:col-span-2">
                     <CardHeader>
                         <CardTitle>Top 5 Courses by Revenue</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-                        <BarChart data={analyticsData.courseRevenue} layout="vertical" margin={{ left: 150 }}>
-                          <XAxis type="number" hide />
-                          <YAxis dataKey="title" type="category" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} width={200} />
-                          <CartesianGrid horizontal={false} />
-                           <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                          <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
-                        </BarChart>
-                      </ChartContainer>
+                       <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+                            <ResponsiveContainer width="100%" height={300}>
+                                <PieChart>
+                                <Pie
+                                    data={analyticsData.courseRevenue}
+                                    cx="50%"
+                                    cy="50%"
+                                    labelLine={false}
+                                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                    outerRadius={80}
+                                    fill="#8884d8"
+                                    dataKey="revenue"
+                                    nameKey="title"
+                                >
+                                    {analyticsData.courseRevenue.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={PIE_CHART_COLORS[index % PIE_CHART_COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip content={<ChartTooltipContent />} />
+                                <Legend />
+                                </PieChart>
+                            </ResponsiveContainer>
+                       </ChartContainer>
                     </CardContent>
                   </Card>
             </div>
