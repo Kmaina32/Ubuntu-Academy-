@@ -25,11 +25,12 @@ interface FormDatePickerProps {
 export const FormDatePicker = React.forwardRef<HTMLDivElement, FormDatePickerProps>(
   ({ value, onSelect, disabled }, ref) => {
     return (
-      <Popover>
-        <PopoverTrigger asChild>
-          <FormControl>
+      // The fix: <FormControl> wraps the entire Popover component.
+      <FormControl>
+        <Popover>
+          <PopoverTrigger asChild>
             <Button
-              variant={'outline'}
+              variant="outline"
               className={cn(
                 'w-full pl-3 text-left font-normal',
                 !value && 'text-muted-foreground'
@@ -38,18 +39,18 @@ export const FormDatePicker = React.forwardRef<HTMLDivElement, FormDatePickerPro
               {value ? format(value, 'PPP') : <span>Pick a date</span>}
               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
             </Button>
-          </FormControl>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={value}
-            onSelect={onSelect}
-            disabled={disabled}
-            initialFocus
-          />
-        </PopoverContent>
-      </Popover>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={value}
+              onSelect={onSelect}
+              disabled={disabled}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
+      </FormControl>
     );
   }
 );
