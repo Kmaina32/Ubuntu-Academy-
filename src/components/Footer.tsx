@@ -40,7 +40,7 @@ export function Footer() {
           </div>
         </div>
          <p className="text-center text-xs text-muted-foreground mt-4">
-            © {new Date().getFullYear()} Manda Network. All rights reserved.
+            © {new Date().getFullYear()} Manda Network. All rights reserved. | ISO 9001 Certified
           </p>
       </div>
     </footer>
