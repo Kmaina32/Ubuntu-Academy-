@@ -129,8 +129,8 @@
     },
     "webrtc-answers": {
       "live-session": {
+        ".read": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
         "$uid": {
-          ".read": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
           ".write": "auth != null && auth.uid == $uid"
         }
       }
@@ -144,8 +144,8 @@
           }
         },
         "student": {
+          ".read": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
           "$uid": {
-            ".read": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
             ".write": "auth != null && auth.uid == $uid"
           }
         }
@@ -188,7 +188,7 @@
       ".read": true,
       ".write": "auth != null",
       "$inviteId": {
-        ".write": "auth != null && root.child('organizations').child(newData.child('organizationId').val()).child('ownerId').val() === auth.uid"
+        ".write": "auth != null && (root.child('organizations').child(newData.child('organizationId').val()).child('ownerId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
       }
     },
     "pricingPlans": {
@@ -201,3 +201,5 @@
     }
   }
 }
+
+    
