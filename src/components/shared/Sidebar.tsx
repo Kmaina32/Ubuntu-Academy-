@@ -25,7 +25,7 @@ import { getAllCalendarEvents } from '@/lib/firebase-service';
 
 export function AppSidebar() {
     const pathname = usePathname();
-    const { user, isAdmin, isOrganizationAdmin } = useAuth();
+    const { user, isAdmin, isOrganizationAdmin, organization } = useAuth();
     const { setOpenMobile } = useSidebar();
     const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
     const [readEventIds, setReadEventIds] = useState<Set<string>>(new Set());
@@ -212,12 +212,12 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         
-                        {(isAdmin || isOrganizationAdmin) && (
+                        {organization && (
                             <SidebarMenuItem>
-                                <SidebarMenuButton asChild isActive={isActive('/organization')} tooltip="Manage Organization" onClick={() => onLinkClick('/organization/dashboard')}>
-                                    <Link href="/organization/dashboard">
+                                <SidebarMenuButton asChild isActive={isActive('/organization')} tooltip="Organization" onClick={() => onLinkClick(isAdmin || isOrganizationAdmin ? '/organization/dashboard' : '/organization/home')}>
+                                    <Link href={isAdmin || isOrganizationAdmin ? '/organization/dashboard' : '/organization/home'}>
                                         <Building />
-                                        <span>Manage Organization</span>
+                                        <span>{isAdmin || isOrganizationAdmin ? 'Manage Organization' : 'Organization'}</span>
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
@@ -321,4 +321,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
