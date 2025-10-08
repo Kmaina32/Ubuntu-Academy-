@@ -112,8 +112,8 @@ export default function CreateHackathonPage() {
                           <FormItem className="flex flex-col">
                             <FormLabel>Start Date</FormLabel>
                             <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
+                              <FormControl>
+                                <PopoverTrigger asChild>
                                   <Button
                                     variant={"outline"}
                                     className={cn(
@@ -128,8 +128,8 @@ export default function CreateHackathonPage() {
                                     )}
                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                   </Button>
-                                </FormControl>
-                              </PopoverTrigger>
+                                </PopoverTrigger>
+                              </FormControl>
                               <PopoverContent className="w-auto p-0" align="start">
                                 <Calendar
                                   mode="single"
@@ -151,8 +151,8 @@ export default function CreateHackathonPage() {
                           <FormItem className="flex flex-col">
                             <FormLabel>End Date</FormLabel>
                             <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
+                               <FormControl>
+                                <PopoverTrigger asChild>
                                   <Button
                                     variant={"outline"}
                                     className={cn(
@@ -167,8 +167,8 @@ export default function CreateHackathonPage() {
                                     )}
                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                   </Button>
-                                </FormControl>
-                              </PopoverTrigger>
+                                </PopoverTrigger>
+                              </FormControl>
                               <PopoverContent className="w-auto p-0" align="start">
                                 <Calendar
                                   mode="single"
