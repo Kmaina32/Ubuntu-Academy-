@@ -64,20 +64,27 @@ function YouTubeLinkFields({ moduleIndex, lessonIndex, form }: { moduleIndex: nu
         <div className="space-y-2">
             <FormLabel>YouTube Video Links</FormLabel>
             {linkFields.map((link, linkIndex) => (
-                <div key={link.id} className="flex items-end gap-2">
+                <div key={link.id} className="flex items-start gap-2">
                     <div className="flex-grow grid grid-cols-2 gap-2">
-                         <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.youtubeLinks.${linkIndex}.title`} render={({ field }) => ( <FormItem> <FormControl> <Input placeholder="Video Title" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                        <FormField control={form.control} name={`modules.${moduleIndex}.lessons.${lessonIndex}.youtubeLinks.${linkIndex}.url`} render={({ field }) => ( <FormItem> <FormControl> <Input placeholder="https://youtube.com/watch?v=..." {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                        <Input
+                            placeholder="Video Title"
+                            {...form.register(`modules.${moduleIndex}.lessons.${lessonIndex}.youtubeLinks.${linkIndex}.title`)}
+                        />
+                         <Input
+                            placeholder="https://youtube.com/watch?v=..."
+                            {...form.register(`modules.${moduleIndex}.lessons.${lessonIndex}.youtubeLinks.${linkIndex}.url`)}
+                        />
                     </div>
                     <Button type="button" variant="ghost" size="icon" className="text-destructive shrink-0" onClick={() => removeLink(linkIndex)}> <Trash2 className="h-4 w-4" /> </Button>
                 </div>
             ))}
-            <Button type="button" variant="outline" size="sm" onClick={() => appendLink({ title: '', url: ''})}>
+             <Button type="button" variant="outline" size="sm" onClick={() => appendLink({ title: '', url: ''})}>
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Video Link
             </Button>
         </div>
     )
 }
+
 
 function LessonFields({ moduleIndex, form }: { moduleIndex: number, form: UseFormReturn<CourseFormValues>}) {
     const { fields: lessonFields, remove: removeLesson, append: appendLesson } = useFieldArray({
@@ -272,3 +279,4 @@ export default function CreateCoursePage() {
     </div>
   );
 }
+
