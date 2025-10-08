@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getAllUsers, RegisteredUser, deleteUser, saveUser } from '@/lib/firebase-service';
-import { ArrowLeft, Loader2, Trash2, Users2, ShieldCheck, ShieldOff } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2, Users2, ShieldCheck, Eye } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -92,7 +92,7 @@ export default function AdminUsersPage() {
     <>
         <div className="flex flex-col min-h-screen">
         <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-6xl mx-auto">
                 <Link href="/admin" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
                 <ArrowLeft className="h-4 w-4" />
                 Back to Admin Dashboard
@@ -144,6 +144,11 @@ export default function AdminUsersPage() {
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-right">
+                                        <Button asChild variant="ghost" size="icon" title="View Enrollments">
+                                            <Link href={`/admin/users/${user.uid}`}>
+                                                <Eye className="h-4 w-4" />
+                                            </Link>
+                                        </Button>
                                         <Button variant="ghost" size="icon" className="mr-2" title="Manage Cohort" onClick={() => handleOpenCohortManager(user)}>
                                             <Users2 className="h-4 w-4" />
                                         </Button>

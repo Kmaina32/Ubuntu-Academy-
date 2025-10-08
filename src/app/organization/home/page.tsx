@@ -30,7 +30,13 @@ export default function OrganizationHomePage() {
                     getAllCourses(),
                     getUserCourses(user.uid)
                 ]);
+                
                 const courseMap = new Map(allCourses.map(c => [c.id, c]));
+
+                // Filter user courses to only include those assigned by the organization
+                // This assumes an org admin assigns courses, which isn't fully implemented yet.
+                // For now, we'll assume any course a member is in is an org course if they're in an org.
+                // A better approach would be to have an "assignedCourses" list in the organization data.
                 const coursesForOrg = userCourses
                     .filter(uc => courseMap.has(uc.courseId))
                     .map(uc => ({
