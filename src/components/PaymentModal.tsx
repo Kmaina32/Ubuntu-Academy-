@@ -13,11 +13,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CreditCard, MoveRight } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { processMpesaPayment } from '@/app/actions';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Icon } from '@iconify/react';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -41,9 +43,8 @@ export function PaymentModal({
   const { toast } = useToast();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [paymentStep, setPaymentStep] = useState<'form' | 'processing' | 'success'>('form');
 
-  const handlePay = async (e: React.FormEvent) => {
+  const handleMpesaPay = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
         toast({ title: 'Not Logged In', description: 'You must be logged in to make a purchase.', variant: 'destructive' });
@@ -56,7 +57,6 @@ export function PaymentModal({
         return;
     }
     setIsLoading(true);
-    setPaymentStep('processing');
     try {
         const result = await processMpesaPayment({
             userId: user.uid,
@@ -77,15 +77,22 @@ export function PaymentModal({
     } catch (error: any) {
         console.error("Payment initiation failed:", error);
         toast({ title: 'Payment Failed', description: error.message || 'Something went wrong. Please try again.', variant: 'destructive'});
-        setPaymentStep('form');
     } finally {
         setIsLoading(false);
     }
   };
   
+  const handleCardPay = (e: React.FormEvent) => {
+      e.preventDefault();
+      toast({ title: "Coming Soon", description: "Card payments are not yet enabled. Please use M-Pesa."});
+  }
+
+  const handlePayPalPay = () => {
+      toast({ title: "Coming Soon", description: "PayPal payments are not yet enabled. Please use M-Pesa."});
+  }
+  
   const handleClose = () => {
       setPhoneNumber('');
-      setPaymentStep('form');
       setIsLoading(false);
       onClose();
   }
@@ -96,53 +103,72 @@ export function PaymentModal({
         <DialogHeader>
           <DialogTitle>Complete Your Purchase</DialogTitle>
           <DialogDescription>
-            You are purchasing "{itemName}".
+            You are purchasing "{itemName}" for Ksh {price.toLocaleString()}.
           </DialogDescription>
         </DialogHeader>
         
-        {paymentStep === 'form' && (
-            <form onSubmit={handlePay}>
-                <div className="grid gap-6 py-4">
-                    <div className='p-4 bg-secondary rounded-md text-center'>
-                        <p className='text-sm text-muted-foreground'>Total Amount</p>
-                        <p className='text-3xl font-bold'>Ksh {price.toLocaleString()}</p>
+        <Tabs defaultValue="mpesa" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="mpesa"><Icon icon="simple-icons:mpesa" className="h-5 w-5"/></TabsTrigger>
+                <TabsTrigger value="card"><CreditCard /></TabsTrigger>
+                <TabsTrigger value="paypal"><Icon icon="logos:paypal" className="h-5 w-5"/></TabsTrigger>
+            </TabsList>
+            <TabsContent value="mpesa">
+                <form onSubmit={handleMpesaPay}>
+                    <div className="grid gap-6 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="phone">M-Pesa Phone Number</Label>
+                            <Input
+                            id="phone"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            placeholder="0712345678"
+                            required
+                            />
+                        </div>
                     </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="phone">M-Pesa Phone Number</Label>
-                        <Input
-                        id="phone"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        placeholder="0712345678"
-                        required
-                        />
+                    <DialogFooter>
+                        <Button type="submit" className="w-full" disabled={isLoading}>
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : `Pay Ksh ${price.toLocaleString()} via M-Pesa`}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </TabsContent>
+            <TabsContent value="card">
+                 <form onSubmit={handleCardPay}>
+                    <div className="grid gap-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="card-number">Card Number</Label>
+                            <Input id="card-number" placeholder="•••• •••• •••• ••••" required />
+                        </div>
+                         <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="expiry">Expiry Date</Label>
+                                <Input id="expiry" placeholder="MM / YY" required />
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="cvc">CVC</Label>
+                                <Input id="cvc" placeholder="•••" required />
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <DialogFooter>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : `Pay Ksh ${price.toLocaleString()}`}
+                     <DialogFooter>
+                        <Button type="submit" className="w-full" disabled>
+                           Pay with Card (Coming Soon)
+                        </Button>
+                    </DialogFooter>
+                 </form>
+            </TabsContent>
+             <TabsContent value="paypal">
+                <div className="py-10 text-center">
+                    <p className="text-muted-foreground mb-4">You will be redirected to PayPal to complete your payment securely.</p>
+                     <Button onClick={handlePayPalPay} className="w-full" disabled>
+                        Continue with PayPal <MoveRight className="ml-2 h-4 w-4" />
                     </Button>
-                </DialogFooter>
-            </form>
-        )}
-
-        {paymentStep === 'processing' && (
-            <div className="flex flex-col items-center justify-center py-10">
-                <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-                <p className="font-semibold">Processing Payment...</p>
-                <p className="text-sm text-muted-foreground">Please check your phone to complete.</p>
-            </div>
-        )}
-
-         {paymentStep === 'success' && (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-                 <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-green-500 mb-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <p className="font-semibold">Payment Successful!</p>
-                <p className="text-sm text-muted-foreground">You now have access to the course.</p>
-            </div>
-        )}
+                </div>
+            </TabsContent>
+        </Tabs>
+        
       </DialogContent>
     </Dialog>
   );
