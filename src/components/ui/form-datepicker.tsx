@@ -22,35 +22,35 @@ interface FormDatePickerProps {
   disabled?: (date: Date) => boolean;
 }
 
-export const FormDatePicker = React.forwardRef<HTMLDivElement, FormDatePickerProps>(
+export const FormDatePicker = React.forwardRef<HTMLButtonElement, FormDatePickerProps>(
   ({ value, onSelect, disabled }, ref) => {
     return (
-      // The fix: <FormControl> wraps the entire Popover component.
-      <FormControl>
-        <Popover>
-          <PopoverTrigger asChild>
+      <Popover>
+        <PopoverTrigger asChild>
+          <FormControl>
             <Button
-              variant="outline"
+              variant={"outline"}
+              ref={ref}
               className={cn(
-                'w-full pl-3 text-left font-normal',
-                !value && 'text-muted-foreground'
+                "w-full pl-3 text-left font-normal",
+                !value && "text-muted-foreground"
               )}
             >
-              {value ? format(value, 'PPP') : <span>Pick a date</span>}
+              {value ? format(value, "PPP") : <span>Pick a date</span>}
               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={value}
-              onSelect={onSelect}
-              disabled={disabled}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-      </FormControl>
+          </FormControl>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={value}
+            onSelect={onSelect}
+            disabled={disabled}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
     );
   }
 );
