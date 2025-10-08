@@ -20,7 +20,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { slugify } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { MpesaModal } from '@/components/shared/MpesaModal';
+import { PaymentModal } from '@/components/PaymentModal';
 
 export default function BootcampDetailPage() {
   const params = useParams<{ id: string }>();
@@ -200,11 +200,11 @@ export default function BootcampDetailPage() {
              </div>
         </main>
         {bootcamp.price > 0 && (
-            <MpesaModal
+            <PaymentModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                courseId={bootcamp.id}
-                courseName={bootcamp.title}
+                itemId={bootcamp.id}
+                itemName={bootcamp.title}
                 price={bootcamp.price}
                 onPaymentSuccess={handleEnroll}
             />

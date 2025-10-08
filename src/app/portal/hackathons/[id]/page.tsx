@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -14,7 +15,7 @@ import { Loader2, Trophy, Users, ExternalLink, GitBranch } from "lucide-react";
 import { useAuth } from '@/hooks/use-auth';
 import { format, isPast } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { MpesaModal } from '@/components/MpesaModal';
+import { PaymentModal } from '@/components/PaymentModal';
 
 export default function HackathonDetailPage() {
   const params = useParams<{ id: string }>();
@@ -162,7 +163,7 @@ export default function HackathonDetailPage() {
                       </Button>
                     )
                   ) : (
-                    <Button size="lg" className="w-full" onClick={() => setIsModalOpen(true)} disabled={isRegistering || hasEnded}>
+                    <Button size="lg" className="w-full" onClick={() => hackathon.entryFee > 0 ? setIsModalOpen(true) : handleRegister()} disabled={isRegistering || hasEnded}>
                       {isRegistering ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
                       {hasEnded ? 'Event has ended' : 'Register Now'}
                     </Button>
@@ -182,11 +183,11 @@ export default function HackathonDetailPage() {
         </div>
       </main>
       {hackathon.entryFee > 0 && (
-        <MpesaModal
+        <PaymentModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          courseId={hackathon.id}
-          courseName={hackathon.title}
+          itemId={hackathon.id}
+          itemName={hackathon.title}
           price={hackathon.entryFee}
           onPaymentSuccess={handleRegister}
         />

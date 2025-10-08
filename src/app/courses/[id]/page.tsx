@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
 import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen, Clock, Check } from "lucide-react";
-import { MpesaModal } from '@/components/MpesaModal';
+import { PaymentModal } from '@/components/PaymentModal';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -52,9 +52,8 @@ function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolle
                 ) : course.price > 0 ? (
                 <>
                     <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground text-sm" onClick={onPurchase}>
-                        Purchase with M-Pesa
+                        Purchase Course
                     </Button>
-                    <p className="text-xs text-center mt-2 text-muted-foreground px-2">This is a demo. No payment will be processed.</p>
                 </>
                 ) : (
                     <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground text-sm" onClick={onEnrollFree} disabled={isEnrolling}>
@@ -312,11 +311,11 @@ export default function CourseDetailPage() {
           </div>
         </main>
         {course.price > 0 && (
-            <MpesaModal
+            <PaymentModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
-            courseId={course.id}
-            courseName={course.title}
+            itemId={course.id}
+            itemName={course.title}
             price={course.price}
             onPaymentSuccess={handlePaymentSuccess}
             />

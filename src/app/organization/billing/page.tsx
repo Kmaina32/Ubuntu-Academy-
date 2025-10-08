@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +9,7 @@ import { Download, Loader2, CheckCircle, Mail } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { formatDistanceToNow } from 'date-fns';
 import { useState, useEffect } from 'react';
-import { MpesaModal } from '@/components/MpesaModal';
+import { PaymentModal } from '@/components/PaymentModal';
 import { useToast } from '@/hooks/use-toast';
 import type { PricingPlan } from '@/lib/types';
 import { getAllPlans } from '@/lib/firebase-service';
@@ -60,7 +59,7 @@ const MastercardIcon = (props: React.SVGProps<SVGSVGElement>) => (
 export default function OrganizationBillingPage() {
     const { organization, loading: authLoading } = useAuth();
     const { toast } = useToast();
-    const [isMpesaModalOpen, setIsMpesaModalOpen] = useState(false);
+    const [paymentModalState, setPaymentModalState] = useState<{isOpen: boolean, plan: PricingPlan | null}>({ isOpen: false, plan: null });
     const [plans, setPlans] = useState<PricingPlan[]>([]);
     const [loadingPlans, setLoadingPlans] = useState(true);
 
@@ -80,8 +79,8 @@ export default function OrganizationBillingPage() {
         fetchPlans();
     }, [toast]);
 
-    const showNotImplementedToast = () => {
-        toast({ title: 'Coming Soon', description: 'This payment method is not yet implemented.' });
+    const handleUpgradeClick = (plan: PricingPlan) => {
+        setPaymentModalState({ isOpen: true, plan: plan });
     };
 
     if (authLoading || loadingPlans) {
@@ -124,11 +123,11 @@ export default function OrganizationBillingPage() {
                                                 Contact Support to Upgrade
                                             </Button>
                                             <div className="flex justify-around items-center pt-2">
-                                                 <Button variant="ghost" size="icon" title="Pay with M-Pesa" onClick={() => setIsMpesaModalOpen(true)}><MpesaIcon className="h-6"/></Button>
-                                                 <Button variant="ghost" size="icon" title="Pay with Visa" onClick={showNotImplementedToast}><VisaIcon className="h-4"/></Button>
-                                                 <Button variant="ghost" size="icon" title="Pay with Mastercard" onClick={showNotImplementedToast}><MastercardIcon className="h-6"/></Button>
-                                                 <Button variant="ghost" size="icon" title="Pay with PayPal" onClick={showNotImplementedToast}><PayPalIcon className="h-5"/></Button>
-                                                 <Button variant="ghost" size="icon" title="Pay with Stripe" onClick={showNotImplementedToast}><StripeIcon className="h-5"/></Button>
+                                                 <Button variant="ghost" size="icon" title="Pay with M-Pesa" onClick={() => handleUpgradeClick(tier)}><MpesaIcon className="h-6"/></Button>
+                                                 <Button variant="ghost" size="icon" title="Pay with Visa" onClick={() => handleUpgradeClick(tier)}><VisaIcon className="h-4"/></Button>
+                                                 <Button variant="ghost" size="icon" title="Pay with Mastercard" onClick={() => handleUpgradeClick(tier)}><MastercardIcon className="h-6"/></Button>
+                                                 <Button variant="ghost" size="icon" title="Pay with PayPal" onClick={() => handleUpgradeClick(tier)}><PayPalIcon className="h-5"/></Button>
+                                                 <Button variant="ghost" size="icon" title="Pay with Stripe" onClick={() => handleUpgradeClick(tier)}><StripeIcon className="h-5"/></Button>
                                             </div>
                                         </div>
                                     )}
@@ -164,17 +163,19 @@ export default function OrganizationBillingPage() {
                    </Table>
                 </CardContent>
             </Card>
-             <MpesaModal
-                isOpen={isMpesaModalOpen}
-                onClose={() => setIsMpesaModalOpen(false)}
-                courseId="org-upgrade"
-                courseName="Organization Plan Upgrade"
-                price={70000}
-                onPaymentSuccess={() => {
-                     toast({ title: 'Success', description: 'Your plan has been upgraded!'});
-                     setIsMpesaModalOpen(false);
-                }}
-            />
+            {paymentModalState.plan && (
+                <PaymentModal
+                    isOpen={paymentModalState.isOpen}
+                    onClose={() => setPaymentModalState({ isOpen: false, plan: null })}
+                    itemId="org-upgrade"
+                    itemName={`Upgrade to ${paymentModalState.plan.name} Plan`}
+                    price={paymentModalState.plan.price}
+                    onPaymentSuccess={() => {
+                        toast({ title: 'Success', description: 'Your plan has been upgraded!'});
+                        setPaymentModalState({ isOpen: false, plan: null });
+                    }}
+                />
+            )}
         </div>
     );
 }
