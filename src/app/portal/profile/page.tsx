@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -113,9 +113,9 @@ export default function PortalProfilePage() {
                             <div>
                                 <h3 className="text-lg font-semibold mb-4">Your Repositories</h3>
                                 <div className="space-y-4">
-                                     <FormField control={form.control} name="github" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center"><Icon icon="mdi:github" className="mr-2 h-5 w-5" /> GitHub</FormLabel> <FormControl> <Input placeholder="https://github.com/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                                     <FormField control={form.control} name="gitlab" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center"><Icon icon="mdi:gitlab" className="mr-2 h-5 w-5" /> GitLab</FormLabel> <FormControl> <Input placeholder="https://gitlab.com/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                                     <FormField control={form.control} name="bitbucket" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center"><Icon icon="mdi:bitbucket" className="mr-2 h-5 w-5" /> Bitbucket</FormLabel> <FormControl> <Input placeholder="https://bitbucket.org/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                                     <FormField control={form.control} name="github" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center"><Icon icon="mdi:github" className="mr-2 h-5 w-5" /> GitHub</div></FormLabel> <FormControl> <Input placeholder="https://github.com/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                                     <FormField control={form.control} name="gitlab" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center"><Icon icon="mdi:gitlab" className="mr-2 h-5 w-5" /> GitLab</div></FormLabel> <FormControl> <Input placeholder="https://gitlab.com/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                                     <FormField control={form.control} name="bitbucket" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center"><Icon icon="mdi:bitbucket" className="mr-2 h-5 w-5" /> Bitbucket</div></FormLabel> <FormControl> <Input placeholder="https://bitbucket.org/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
                                 </div>
                             </div>
                             <CardFooter className="px-0 pt-6">
