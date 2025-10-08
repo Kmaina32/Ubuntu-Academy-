@@ -45,8 +45,8 @@ export function Footer() {
         <div className="container text-center py-4">
           <h5 className="mb-3 font-semibold text-muted-foreground">We Accept</h5>
           <div className="flex justify-center items-center gap-4 flex-wrap">
-            <Image src="https://upload.wikimedia.org/wikipedia/commons/3/30/M-Pesa_logo.svg" 
-                 alt="M-Pesa" width={80} height={40} style={{ height: '25px', width: 'auto' }} />
+            <Image src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Lipa_na_M-PESA_logo.svg/1280px-Lipa_na_M-PESA_logo.svg.png" 
+                 alt="Lipa Na M-Pesa" width={120} height={40} style={{ height: '25px', width: 'auto' }} />
 
             <Image src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x26.jpg"
                  alt="PayPal" width={80} height={40} style={{ height: '25px', width: 'auto' }} />
