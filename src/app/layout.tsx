@@ -1,12 +1,11 @@
 
-
 import type {Metadata} from 'next';
 import '@/styles/globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from '@/hooks/use-auth';
 import { ThemeEffects } from '@/components/ThemeEffects';
 import { Analytics } from "@vercel/analytics/next"
 import { CookieConsent } from '@/components/shared/CookieConsent';
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'Manda Network',
@@ -53,11 +52,11 @@ export default async function RootLayout({
             `,
           }}
         />
-        <AuthProvider isAiConfigured={isAiConfigured}>
+        <Providers isAiConfigured={isAiConfigured}>
             <ThemeEffects />
             {children}
             <Analytics />
-        </AuthProvider>
+        </Providers>
         <Toaster />
         <CookieConsent />
       </body>
