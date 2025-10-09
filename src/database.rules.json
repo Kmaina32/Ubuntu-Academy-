@@ -54,7 +54,7 @@
       ".read": "auth != null",
       ".indexOn": ["email", "portfolio/public", "organizationId"],
       "$uid": {
-        ".read": "(data.child('portfolio').child('public').val() === true) || (auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || (data.child('organizationId').val() != null && data.child('organizationId').val() === root.child('users').child(auth.uid).child('organizationId').val() && root.child('users').child(auth.uid).child('isOrganizationAdmin').val() === true)))",
+        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || (data.child('portfolio').child('public').val() === true) || (data.child('organizationId').val() != null && data.child('organizationId').val() === root.child('users').child(auth.uid).child('organizationId').val() && root.child('users').child(auth.uid).child('isOrganizationAdmin').val() === true))",
         ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
       }
     },
