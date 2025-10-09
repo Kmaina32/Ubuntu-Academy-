@@ -1,6 +1,6 @@
 # Edgewood International A.I College
 
-![Akili AI](/public/Akili%20AI.png)
+![Manda Network](/public/Akili%20AI.png)
 
 Edgewood International A.I College is an AI-powered online learning platform designed to provide high-quality, affordable, and accessible education tailored for the Kenyan market. It leverages generative AI to create course content, assist students, and automate administrative tasks, creating a modern and scalable educational experience.
 

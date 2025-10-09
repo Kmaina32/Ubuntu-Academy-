@@ -1,5 +1,5 @@
 
-# Akili AI - Visual Framework
+# Manda Network - Visual Framework
 
 This document provides a visual representation of the application's architecture, user flows, and component interactions using Mermaid diagrams.
 

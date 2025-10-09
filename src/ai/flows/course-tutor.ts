@@ -13,6 +13,7 @@ import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
 import { textToSpeech } from './text-to-speech';
 import { googleAI } from '@genkit-ai/googleai';
+import { openai } from '@genkit-ai/openai';
 
 const CourseTutorInputSchema = z.object({
   question: z.string().optional().describe('The student\'s question about the lesson, or a command like "Tutor me".'),
@@ -20,6 +21,7 @@ const CourseTutorInputSchema = z.object({
   courseContext: z.string().describe('The full text content of the current lesson.'),
   voice: z.string().optional().describe('The selected voice for the TTS.'),
   speed: z.number().optional().describe('The selected speed for the TTS.'),
+  provider: z.enum(['google', 'openai']).optional().default('google').describe('The AI provider to use for the response.'),
 });
 export type CourseTutorInput = z.infer<typeof CourseTutorInputSchema>;
 
@@ -38,7 +40,6 @@ export async function courseTutor(
 
 const prompt = ai.definePrompt({
   name: 'courseTutorPrompt',
-  model: googleAI.model('gemini-1.5-flash'),
   input: {schema: CourseTutorInputSchema},
   output: {schema: CourseTutorOutputSchema},
   prompt: `You are Gina, an expert AI Tutor for the Edgewood International A.I College online learning platform. Your tone is encouraging, friendly, and very helpful.
@@ -89,7 +90,16 @@ const courseTutorFlow = ai.defineFlow(
     outputSchema: CourseTutorOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+
+    const model = input.provider === 'openai' ? openai.gpt4o : googleAI.model('gemini-1.5-flash');
+    
+    const {output} = await ai.generate({
+        prompt: prompt.prompt,
+        model: model,
+        input: input,
+        output: { schema: CourseTutorOutputSchema },
+    });
+
     if (!output) {
       throw new Error('Failed to generate a text answer.');
     }

@@ -1,9 +1,11 @@
+
 // This file is for SERVER-SIDE use only.
 // It initializes the Genkit instance with plugins that have server dependencies.
 // Do NOT import this file in any client-side components.
 
 import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
+import { openai } from '@genkit-ai/openai';
 
 const plugins = [];
 
@@ -11,11 +13,23 @@ if (process.env.GEMINI_API_KEY) {
     plugins.push(googleAI());
 } else {
     if (process.env.NODE_ENV === 'production') {
-        // In production, we should fail hard if the key is missing.
-        throw new Error("GEMINI_API_KEY is not set. AI features will be disabled. Please set this environment variable in your Vercel project settings.");
+        console.warn("GEMINI_API_KEY is not set. Google AI features will be disabled.");
+    }
+}
+
+if (process.env.OPENAI_API_KEY) {
+    plugins.push(openai());
+} else {
+    if (process.env.NODE_ENV === 'production') {
+        console.warn("OPENAI_API_KEY is not set. OpenAI features will be disabled.");
+    }
+}
+
+if(plugins.length === 0) {
+    if (process.env.NODE_ENV === 'production') {
+        throw new Error("No AI provider API keys are set. AI features will be disabled. Please set at least one API key in your environment variables.");
     } else {
-        // In development, a warning is sufficient.
-        console.warn("GEMINI_API_KEY is not set. Genkit Google AI plugin will be disabled.");
+        console.warn("No AI provider API keys are set. All AI features will be disabled.");
     }
 }
 

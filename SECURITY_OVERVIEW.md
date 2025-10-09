@@ -1,4 +1,4 @@
-![Akili AI](/public/Akili%20AI.png)
+![Manda Network](/public/Akili%20AI.png)
 # Edgewood International A.I College
 
 # Security Overview for the AI-Powered Education Platform
