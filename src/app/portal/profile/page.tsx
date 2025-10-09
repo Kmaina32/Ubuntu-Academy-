@@ -2,20 +2,32 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft } from 'lucide-react';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
+import { useRouter, useParams, notFound } from 'next/navigation';
+import Link from 'next/link';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { getUserById, saveUser } from '@/lib/firebase-service';
-import type { RegisteredUser } from '@/lib/types';
+import { Footer } from "@/components/Footer";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, Loader2, User as UserIcon, Camera, Upload, Eye, Building, Share2 } from 'lucide-react';
+import { AppSidebar } from '@/components/Sidebar';
+import { Header } from '@/components/Header';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { useAuth } from '@/hooks/use-auth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
+import { updateProfile } from 'firebase/auth';
+import { uploadImage, saveUser, getUserById } from '@/lib/firebase-service';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Alert, AlertTitle, AlertDescription as AlertDescriptionComponent } from '@/components/ui/alert';
+import { auth } from '@/lib/firebase';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import type { RegisteredUser } from '@/lib/mock-data';
 import { Icon } from '@iconify/react';
 
 const profileSchema = z.object({
@@ -112,9 +124,9 @@ export default function PortalProfilePage() {
                             <div>
                                 <h3 className="text-lg font-semibold mb-4">Your Repositories</h3>
                                 <div className="space-y-4">
-                                     <FormField control={form.control} name="github" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center"><Icon icon="mdi:github" className="mr-2 h-5 w-5" /> GitHub</div></FormLabel> <FormControl> <Input placeholder="https://github.com/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                                     <FormField control={form.control} name="gitlab" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center"><Icon icon="mdi:gitlab" className="mr-2 h-5 w-5" /> GitLab</div></FormLabel> <FormControl> <Input placeholder="https://gitlab.com/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                                     <FormField control={form.control} name="bitbucket" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center"><Icon icon="mdi:bitbucket" className="mr-2 h-5 w-5" /> Bitbucket</div></FormLabel> <FormControl> <Input placeholder="https://bitbucket.org/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                                     <FormField control={form.control} name="github" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:github" className="h-5 w-5" /> GitHub</div></FormLabel> <FormControl> <Input placeholder="https://github.com/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                                     <FormField control={form.control} name="gitlab" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:gitlab" className="h-5 w-5" /> GitLab</div></FormLabel> <FormControl> <Input placeholder="https://gitlab.com/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                                     <FormField control={form.control} name="bitbucket" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:bitbucket" className="h-5 w-5" /> Bitbucket</div></FormLabel> <FormControl> <Input placeholder="https://bitbucket.org/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
                                 </div>
                             </div>
                             <CardFooter className="px-0 pt-6">
