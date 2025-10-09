@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +15,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { formatDistanceToNow } from 'date-fns';
 
 const settingsSchema = z.object({
     name: z.string().min(2, 'Organization name is required.'),
@@ -24,7 +25,7 @@ const settingsSchema = z.object({
 });
 
 export default function OrganizationSettingsPage() {
-    const { organization, loading: authLoading } = useAuth();
+    const { organization, loading: authLoading, isOrganizationAdmin } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
     
@@ -60,6 +61,8 @@ export default function OrganizationSettingsPage() {
             setIsLoading(false);
         }
     }
+
+    const expiryDate = organization?.subscriptionExpiresAt ? new Date(organization.subscriptionExpiresAt) : null;
     
     if (authLoading) {
          return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
@@ -70,7 +73,9 @@ export default function OrganizationSettingsPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Organization Settings</CardTitle>
-                    <CardDescription>Update your organization's name, logo, and other details.</CardDescription>
+                    <CardDescription>
+                        {isOrganizationAdmin ? "Update your organization's name, logo, and other details." : "View your organization's details."}
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
@@ -82,7 +87,7 @@ export default function OrganizationSettingsPage() {
                                     <FormItem>
                                         <FormLabel>Organization Name</FormLabel>
                                         <FormControl>
-                                            <Input {...field} />
+                                            <Input {...field} disabled={!isOrganizationAdmin} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -95,7 +100,7 @@ export default function OrganizationSettingsPage() {
                                     <FormItem>
                                         <FormLabel>Logo URL</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="https://example.com/logo.png" {...field} />
+                                            <Input placeholder="https://example.com/logo.png" {...field} disabled={!isOrganizationAdmin} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -108,37 +113,50 @@ export default function OrganizationSettingsPage() {
                                     <FormItem>
                                         <FormLabel>Dashboard Welcome Message</FormLabel>
                                         <FormControl>
-                                            <Textarea placeholder="e.g., Welcome to our team's learning portal!" {...field} />
+                                            <Textarea placeholder="e.g., Welcome to our team's learning portal!" {...field} disabled={!isOrganizationAdmin} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-                            <div className="flex justify-end">
-                                <Button type="submit" disabled={isLoading}>
-                                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Save Changes
-                                </Button>
-                            </div>
+                             <div className="space-y-2">
+                                <FormLabel>Subscription Plan</FormLabel>
+                                <div>
+                                    <Badge variant="default" className="capitalize text-base">
+                                        {organization?.subscriptionTier || '...'}
+                                    </Badge>
+                                </div>
+                                <p className="text-xs text-muted-foreground">{expiryDate ? `Expires ${formatDistanceToNow(expiryDate, { addSuffix: true })}` : 'No expiry date'}</p>
+                             </div>
+                            {isOrganizationAdmin && (
+                                <div className="flex justify-end">
+                                    <Button type="submit" disabled={isLoading}>
+                                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        Save Changes
+                                    </Button>
+                                </div>
+                            )}
                         </form>
                     </Form>
                 </CardContent>
             </Card>
-             <Card className="border-destructive">
-                <CardHeader>
-                    <CardTitle className="text-destructive">Danger Zone</CardTitle>
-                    <CardDescription>These actions are irreversible. Please proceed with caution.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex justify-between items-center p-4 border border-destructive/20 rounded-md">
-                        <div>
-                            <h4 className="font-semibold">Delete Organization</h4>
-                            <p className="text-sm text-muted-foreground">This will permanently delete your organization and all associated data.</p>
+            {isOrganizationAdmin && (
+                <Card className="border-destructive">
+                    <CardHeader>
+                        <CardTitle className="text-destructive">Danger Zone</CardTitle>
+                        <CardDescription>These actions are irreversible. Please proceed with caution.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex justify-between items-center p-4 border border-destructive/20 rounded-md">
+                            <div>
+                                <h4 className="font-semibold">Delete Organization</h4>
+                                <p className="text-sm text-muted-foreground">This will permanently delete your organization and all associated data.</p>
+                            </div>
+                            <Button variant="destructive">Delete</Button>
                         </div>
-                         <Button variant="destructive">Delete</Button>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 }
