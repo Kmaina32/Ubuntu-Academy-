@@ -1,4 +1,5 @@
 
+
 'use client'
 
 import { useState, useMemo, useEffect, useRef } from 'react';
@@ -20,7 +21,7 @@ import { Button } from '@/components/ui/button';
 const COURSES_PER_PAGE = 6;
 
 export default function Home() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [userCourses, setUserCourses] = useState<UserCourse[]>([]);
   const [heroData, setHeroData] = useState({ title: '', subtitle: '', imageUrl: '' });
@@ -76,10 +77,10 @@ export default function Home() {
     };
     
     // Run if user is logged in or initial load is finished and we have courses to check against for admin
-    if (user || (!loading && courses.length > 0)) { 
+    if (!authLoading) { 
         fetchUserSpecificData();
     }
-  }, [user, isAdmin, courses, loading]);
+  }, [user, isAdmin, courses, authLoading]);
   
   const enrolledCourseIds = useMemo(() => new Set(userCourses.map(c => c.courseId)), [userCourses]);
 

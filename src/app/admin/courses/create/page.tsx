@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -18,6 +19,9 @@ import { createCourse } from '@/lib/firebase-service';
 import type { Course } from '@/lib/mock-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/use-auth';
+import { generateCourseContent } from '@/app/actions';
+import { CourseReviewModal } from '@/components/shared/CourseReviewModal';
+import { GenerateCourseContentOutput } from '@/ai/flows/generate-course-content';
 
 const youtubeLinkSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -191,6 +195,9 @@ export default function CreateCoursePage() {
   const { toast } = useToast();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState<GenerateCourseContentOutput | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseFormSchema),
@@ -207,10 +214,38 @@ export default function CreateCoursePage() {
     },
   });
 
-  const { fields: moduleFields, append: appendModule, remove: removeModule } = useFieldArray({
+  const { fields: moduleFields, append: appendModule, remove: removeModule, replace: replaceModules } = useFieldArray({
       control: form.control,
       name: "modules",
   });
+
+  const handleGenerate = async () => {
+    const courseTitle = prompt("Enter a course title to generate content:");
+    if (!courseTitle) return;
+
+    setIsGenerating(true);
+    toast({ title: "Generating Course...", description: "The AI is creating your course. This might take a moment." });
+
+    try {
+        const result = await generateCourseContent({ courseTitle });
+        setGeneratedContent(result);
+        setIsModalOpen(true);
+    } catch (error) {
+        console.error("Failed to generate course content", error);
+        toast({ title: "Error", description: "Could not generate course content.", variant: "destructive" });
+    } finally {
+        setIsGenerating(false);
+    }
+  };
+  
+  const handleContentSave = (editedContent: GenerateCourseContentOutput) => {
+    form.setValue('longDescription', editedContent.longDescription);
+    form.setValue('duration', editedContent.duration);
+    replaceModules(editedContent.modules);
+    // Note: Exam is handled in a separate flow, so we don't set it here.
+    toast({ title: "Content Loaded!", description: "AI-generated content has been loaded into the form. Review and save." });
+    setIsModalOpen(false);
+  }
 
   const onSubmit = async (values: CourseFormValues) => {
     if (!user) return;
@@ -226,7 +261,7 @@ export default function CreateCoursePage() {
             title: 'Course Created!',
             description: `The course "${values.title}" has been successfully saved.`,
         });
-        router.push(`/admin`);
+        router.push(`/admin/courses`);
      } catch (error) {
          console.error("Failed to save course:", error);
          toast({
@@ -241,19 +276,28 @@ export default function CreateCoursePage() {
 
 
   return (
+    <>
     <div className="flex flex-col min-h-screen">
       <main className="flex-grow container mx-auto px-4 md:px-6 py-12">
         <div className="max-w-4xl mx-auto">
-          <Link href="/admin" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+          <Link href="/admin/courses" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
              <ArrowLeft className="h-4 w-4" />
-             Back to Admin Dashboard
+             Back to Courses
           </Link>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-2xl font-headline flex items-center gap-2"><BookText /> Create New Course</CardTitle>
-                  <CardDescription>Manually create a new course by filling in all the required details below.</CardDescription>
+                  <div className="flex justify-between items-start">
+                    <div>
+                        <CardTitle className="text-2xl font-headline flex items-center gap-2"><BookText /> Create New Course</CardTitle>
+                        <CardDescription>Manually create a new course or use AI to generate one from a title.</CardDescription>
+                    </div>
+                     <Button type="button" onClick={handleGenerate} disabled={isGenerating}>
+                        {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                        Generate with AI
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   
@@ -399,7 +443,7 @@ export default function CreateCoursePage() {
 
 
                     <div className="flex justify-end gap-2">
-                        <Button type="button" variant="outline" onClick={() => router.push('/admin')}> Cancel </Button>
+                        <Button type="button" variant="outline" onClick={() => router.push('/admin/courses')}> Cancel </Button>
                         <Button type="submit" disabled={isLoading}>
                             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                             Create Course
@@ -413,5 +457,15 @@ export default function CreateCoursePage() {
       </main>
       <Footer />
     </div>
+    {generatedContent && (
+        <CourseReviewModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            courseContent={generatedContent}
+            onSave={handleContentSave}
+            isSaving={isLoading}
+        />
+    )}
+    </>
   );
 }

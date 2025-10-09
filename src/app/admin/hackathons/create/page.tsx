@@ -14,9 +14,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, Trophy } from 'lucide-react';
+import { ArrowLeft, Loader2, Trophy, Sparkles } from 'lucide-react';
 import { createHackathon } from '@/lib/firebase-service';
 import { FormDatePicker } from '@/components/ui/form-datepicker';
+import { generateHackathonIdeas } from '@/app/actions';
 
 const hackathonFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -33,6 +34,7 @@ export default function CreateHackathonPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const form = useForm<z.infer<typeof hackathonFormSchema>>({
     resolver: zodResolver(hackathonFormSchema),
@@ -45,6 +47,32 @@ export default function CreateHackathonPage() {
       externalUrl: '',
     },
   });
+
+  const handleGenerate = async () => {
+    const theme = prompt('Enter a theme for the hackathon (e.g., "Fintech in Kenya", "Sustainable Agriculture"):');
+    if (!theme) return;
+    
+    setIsGenerating(true);
+    toast({ title: "Generating Ideas...", description: "The AI is brainstorming hackathon ideas."});
+    try {
+        const result = await generateHackathonIdeas({ theme, count: 1 });
+        if (result.ideas.length > 0) {
+            const idea = result.ideas[0];
+            form.reset({
+                ...form.getValues(), // keep existing values like dates if set
+                title: idea.title,
+                description: idea.description,
+                prizeMoney: idea.prizeMoney,
+            });
+            toast({ title: "Idea Generated!", description: "An idea has been loaded into the form."});
+        }
+    } catch(error) {
+        console.error("Failed to generate hackathon ideas", error);
+        toast({ title: "Error", description: "Could not generate ideas.", variant: "destructive"});
+    } finally {
+        setIsGenerating(false);
+    }
+  }
 
   const onSubmit = async (values: z.infer<typeof hackathonFormSchema>) => {
     setIsLoading(true);
@@ -81,13 +109,21 @@ export default function CreateHackathonPage() {
           </Link>
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl font-headline flex items-center gap-2">
-                <Trophy />
-                Create Hackathon
-              </CardTitle>
-              <CardDescription>
-                Set up a new competitive event for your community.
-              </CardDescription>
+             <div className="flex justify-between items-start">
+                <div>
+                    <CardTitle className="text-2xl font-headline flex items-center gap-2">
+                        <Trophy />
+                        Create Hackathon
+                    </CardTitle>
+                    <CardDescription>
+                        Set up a new competitive event for your community.
+                    </CardDescription>
+                </div>
+                 <Button type="button" onClick={handleGenerate} disabled={isGenerating}>
+                    {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                    Generate Idea
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Form {...form}>

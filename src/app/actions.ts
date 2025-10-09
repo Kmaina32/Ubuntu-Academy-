@@ -20,6 +20,7 @@ import type { ApiKey } from '@/lib/types';
 import type { GenerateProjectInput, GenerateProjectOutput } from '@/ai/flows/generate-project';
 import type { SendOrgInviteInput, SendOrgInviteOutput } from '@/ai/flows/send-org-invite';
 import type { GenerateFormalDocumentInput, GenerateFormalDocumentOutput } from '@/ai/flows/generate-document';
+import type { GenerateHackathonIdeasInput, GenerateHackathonIdeasOutput } from '@/ai/flows/generate-hackathon-ideas';
 import { getDocument, saveDocument } from '@/lib/firebase-service';
 
 
@@ -138,4 +139,9 @@ export async function generateFormalDocument(input: { docType: string }): Promis
     const result = await generateFormalDocument({ docType: input.docType as any, content });
     await saveDocumentContent(input.docType, result.formal_document);
     return result;
+}
+
+export async function generateHackathonIdeas(input: GenerateHackathonIdeasInput): Promise<GenerateHackathonIdeasOutput> {
+    const { generateHackathonIdeasFlow } = await import('@/ai/flows/generate-hackathon-ideas');
+    return generateHackathonIdeasFlow(input);
 }
