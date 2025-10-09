@@ -13,7 +13,6 @@ import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
 import { textToSpeech } from './text-to-speech';
 import { googleAI } from '@genkit-ai/googleai';
-import { openai } from '@genkit-ai/openai';
 
 const CourseTutorInputSchema = z.object({
   question: z.string().optional().describe('The student\'s question about the lesson, or a command like "Tutor me".'),
@@ -21,7 +20,6 @@ const CourseTutorInputSchema = z.object({
   courseContext: z.string().describe('The full text content of the current lesson.'),
   voice: z.string().optional().describe('The selected voice for the TTS.'),
   speed: z.number().optional().describe('The selected speed for the TTS.'),
-  provider: z.enum(['google', 'openai']).optional().default('google').describe('The AI provider to use for the response.'),
 });
 export type CourseTutorInput = z.infer<typeof CourseTutorInputSchema>;
 
@@ -91,7 +89,7 @@ const courseTutorFlow = ai.defineFlow(
   },
   async input => {
 
-    const model = input.provider === 'openai' ? openai.gpt4o : googleAI.model('gemini-1.5-flash');
+    const model = googleAI.model('gemini-1.5-flash');
     
     const {output} = await ai.generate({
         prompt: prompt.prompt,

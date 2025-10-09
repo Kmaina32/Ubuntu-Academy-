@@ -5,7 +5,6 @@
 
 import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
-import { openai } from '@genkit-ai/openai';
 
 const plugins = [];
 
@@ -14,14 +13,6 @@ if (process.env.GEMINI_API_KEY) {
 } else {
     if (process.env.NODE_ENV === 'production') {
         console.warn("GEMINI_API_KEY is not set. Google AI features will be disabled.");
-    }
-}
-
-if (process.env.OPENAI_API_KEY) {
-    plugins.push(openai());
-} else {
-    if (process.env.NODE_ENV === 'production') {
-        console.warn("OPENAI_API_KEY is not set. OpenAI features will be disabled.");
     }
 }
 
