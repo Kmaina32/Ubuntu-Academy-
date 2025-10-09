@@ -364,7 +364,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
     if (!name) return 'U';
     const names = name.split(' ');
     if (names.length > 1 && names[1]) {
-      return `${'names[0][0]'}${names[names.length - 1][0]}`;
+      return `${names[0][0]}${names[names.length - 1][0]}`;
     }
     return names[0]?.[0] || 'U';
   };
@@ -439,4 +439,3 @@ export function Header({ children }: { children?: React.ReactNode }) {
     </header>
   );
 }
-

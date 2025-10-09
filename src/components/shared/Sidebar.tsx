@@ -214,7 +214,7 @@ export function AppSidebar() {
                         
                         {organization && (
                             <SidebarMenuItem>
-                                <SidebarMenuButton asChild isActive={isActive('/organization')} tooltip="Organization" onClick={() => onLinkClick(isAdmin || isOrganizationAdmin ? '/organization/dashboard' : '/organization/home')}>
+                                <SidebarMenuButton asChild isActive={isActive('/organization')} tooltip={isAdmin || isOrganizationAdmin ? "Manage Organization" : organization.name} onClick={() => onLinkClick(isAdmin || isOrganizationAdmin ? '/organization/dashboard' : '/organization/home')}>
                                     <Link href={isAdmin || isOrganizationAdmin ? '/organization/dashboard' : '/organization/home'}>
                                         <Building />
                                         <span>{isAdmin || isOrganizationAdmin ? 'Manage Organization' : organization.name}</span>
