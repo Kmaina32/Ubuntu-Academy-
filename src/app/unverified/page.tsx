@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Gem, MailCheck, MailWarning } from 'lucide-react';
+import { Loader2, GitBranch, MailCheck, MailWarning } from 'lucide-react';
 import { Footer } from '@/components/Footer';
 
 export default function UnverifiedPage() {
@@ -66,7 +66,7 @@ export default function UnverifiedPage() {
         <div className="w-full max-w-md">
            <div className="grid gap-2 text-center mb-6">
               <Link href="/" className="flex items-center justify-center gap-2 font-bold text-2xl font-headline">
-                  <Gem className="h-7 w-7 text-primary" />
+                  <GitBranch className="h-7 w-7 text-primary" />
                   <span>Manda Network</span>
               </Link>
             </div>

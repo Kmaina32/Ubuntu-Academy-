@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Gem, Twitter, Facebook, Linkedin } from 'lucide-react';
+import { GitBranch, Twitter, Facebook, Linkedin } from 'lucide-react';
 import { Button } from './ui/button';
 
 export function Footer() {
@@ -10,7 +10,7 @@ export function Footer() {
       <div className="container mx-auto py-6 px-4 md:px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Gem className="h-6 w-6 text-primary" />
+            <GitBranch className="h-6 w-6 text-primary" />
             <span className="font-bold font-headline">Manda Network</span>
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">

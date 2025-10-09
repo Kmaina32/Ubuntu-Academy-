@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Gem, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Loader2, GitBranch, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { getHeroData } from '@/lib/firebase-service';
 
 const formSchema = z.object({
@@ -109,7 +109,7 @@ export default function LoginPage() {
             </Button>
            <div className="grid gap-2 text-center">
               <Link href="/" className="flex items-center justify-center gap-2 font-bold text-2xl font-headline">
-                  <Gem className="h-7 w-7 text-primary" />
+                  <GitBranch className="h-7 w-7 text-primary" />
                   <span>Manda Network</span>
               </Link>
           </div>
