@@ -18,6 +18,17 @@ import { ArrowLeft, Loader2, Trophy, Sparkles } from 'lucide-react';
 import { createHackathon } from '@/lib/firebase-service';
 import { FormDatePicker } from '@/components/ui/form-datepicker';
 import { generateHackathonIdeas } from '@/app/actions';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose
+} from "@/components/ui/dialog"
+import { Label } from '@/components/ui/label';
 
 const hackathonFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -35,6 +46,8 @@ export default function CreateHackathonPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generateTheme, setGenerateTheme] = useState('');
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
   const form = useForm<z.infer<typeof hackathonFormSchema>>({
     resolver: zodResolver(hackathonFormSchema),
@@ -49,13 +62,13 @@ export default function CreateHackathonPage() {
   });
 
   const handleGenerate = async () => {
-    const theme = prompt('Enter a theme for the hackathon (e.g., "Fintech in Kenya", "Sustainable Agriculture"):');
-    if (!theme) return;
+    if (!generateTheme) return;
     
     setIsGenerating(true);
+    setIsGenerateDialogOpen(false);
     toast({ title: "Generating Ideas...", description: "The AI is brainstorming hackathon ideas."});
     try {
-        const result = await generateHackathonIdeas({ theme, count: 1 });
+        const result = await generateHackathonIdeas({ theme: generateTheme, count: 1 });
         if (result.ideas.length > 0) {
             const idea = result.ideas[0];
             form.reset({
@@ -71,6 +84,7 @@ export default function CreateHackathonPage() {
         toast({ title: "Error", description: "Could not generate ideas.", variant: "destructive"});
     } finally {
         setIsGenerating(false);
+        setGenerateTheme('');
     }
   }
 
@@ -119,10 +133,39 @@ export default function CreateHackathonPage() {
                         Set up a new competitive event for your community.
                     </CardDescription>
                 </div>
-                 <Button type="button" onClick={handleGenerate} disabled={isGenerating}>
-                    {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                    Generate Idea
-                </Button>
+                <Dialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button type="button" disabled={isGenerating}>
+                        {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                        Generate Idea
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Generate Hackathon Idea</DialogTitle>
+                      <DialogDescription>
+                        Enter a theme and the AI will generate an idea for you.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-2">
+                        <Label htmlFor="theme">Theme</Label>
+                        <Input
+                            id="theme"
+                            value={generateTheme}
+                            onChange={(e) => setGenerateTheme(e.target.value)}
+                            placeholder='e.g., "Fintech in Kenya", "Sustainable Agriculture"'
+                        />
+                    </div>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button type="button" variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button onClick={handleGenerate} disabled={!generateTheme || isGenerating}>
+                        {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Generate"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </CardHeader>
             <CardContent>
@@ -168,13 +211,10 @@ export default function CreateHackathonPage() {
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormLabel>Start Date</FormLabel>
-                          <FormControl>
-                            <FormDatePicker
-                              value={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) => date < new Date('1900-01-01')}
-                            />
-                          </FormControl>
+                          <FormDatePicker
+                            value={field.value}
+                            onSelect={field.onChange}
+                          />
                           <FormMessage />
                         </FormItem>
                       )}
@@ -185,13 +225,10 @@ export default function CreateHackathonPage() {
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormLabel>End Date</FormLabel>
-                          <FormControl>
-                            <FormDatePicker
-                              value={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) => date < new Date('1900-01-01')}
-                            />
-                          </FormControl>
+                          <FormDatePicker
+                            value={field.value}
+                            onSelect={field.onChange}
+                          />
                           <FormMessage />
                         </FormItem>
                       )}
