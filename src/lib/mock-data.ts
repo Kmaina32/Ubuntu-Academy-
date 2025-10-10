@@ -123,6 +123,7 @@ export interface UserCourse {
     progress: number;
     completed: boolean;
     certificateAvailable: boolean;
+    certificateId?: string;
     enrollmentDate: string; // ISO String
     completedLessons?: string[];
     feedbackSubmitted?: boolean;

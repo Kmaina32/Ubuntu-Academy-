@@ -1,9 +1,10 @@
+
 'use client'
 
 import { useState, useEffect } from 'react';
 import { notFound, useParams, useRouter } from "next/navigation";
-import { getCourseById, getAllCourses } from "@/lib/firebase-service";
-import type { Course } from "@/lib/mock-data";
+import { getCourseById, getAllCourses, getUserCourses, getCertificateSettings } from "@/lib/firebase-service";
+import type { Course, UserCourse } from "@/lib/mock-data";
 import { Footer } from "@/components/Footer";
 import { Certificate } from "@/components/Certificate";
 import { useAuth } from "@/hooks/use-auth";
@@ -17,40 +18,60 @@ export default function CertificatePage() {
   const params = useParams<{ courseId: string }>(); // This 'courseId' is the slug
   const router = useRouter();
   const [course, setCourse] = useState<Course | null>(null);
-  const [loadingCourse, setLoadingCourse] = useState(true);
+  const [userCourse, setUserCourse] = useState<UserCourse | null>(null);
+  const [academicDirector, setAcademicDirector] = useState<string>('');
+  const [loading, setLoading] = useState(true);
   const { user, loading: loadingAuth } = useAuth();
 
   useEffect(() => {
-    if (!loadingAuth) {
-      if (!user) {
-        router.push('/login');
-      }
+    if (!loadingAuth && !user) {
+      router.push('/login');
     }
   }, [user, loadingAuth, router]);
 
   useEffect(() => {
     const fetchCourse = async () => {
         if (!user) return;
-        setLoadingCourse(true);
+        setLoading(true);
         const allCourses = await getAllCourses();
         const courseSlug = params.courseId;
         const fetchedCourse = allCourses.find(c => slugify(c.title) === courseSlug);
+        
+        if (!fetchedCourse) {
+            notFound();
+            return;
+        }
+        
+        const [userCoursesData, certSettings] = await Promise.all([
+            getUserCourses(user.uid),
+            getCertificateSettings(),
+        ]);
+        
+        const currentUserCourse = userCoursesData.find(uc => uc.courseId === fetchedCourse.id);
+
+        if (!currentUserCourse?.certificateAvailable) {
+            notFound(); // User is not entitled to this certificate
+            return;
+        }
+
         setCourse(fetchedCourse || null);
-        setLoadingCourse(false);
+        setUserCourse(currentUserCourse);
+        setAcademicDirector(certSettings.academicDirector);
+        setLoading(false);
     }
     if(user) {
       fetchCourse();
     }
   }, [params.courseId, user]);
 
-  if (loadingAuth || loadingCourse) {
+  if (loadingAuth || loading) {
     return <div className="flex justify-center items-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         <p className="ml-2">Loading certificate...</p>
     </div>
   }
   
-  if (!course) {
+  if (!course || !userCourse) {
     notFound();
   }
 
@@ -74,7 +95,12 @@ export default function CertificatePage() {
                         Back to Dashboard
                     </button>
                 </div>
-                <Certificate course={course} userName={user.displayName || 'Student'} />
+                <Certificate 
+                    course={course} 
+                    userName={user.displayName || 'Student'} 
+                    certificateId={userCourse.certificateId!}
+                    academicDirector={academicDirector}
+                />
             </div>
           </main>
           <div className="print:hidden">

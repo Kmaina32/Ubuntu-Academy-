@@ -13,6 +13,8 @@ import { Separator } from './ui/separator';
 interface CertificateProps {
   course: Course;
   userName: string;
+  certificateId: string;
+  academicDirector: string;
 }
 
 const CertificateSeal = ({ className, color = '#002147' }: { className?: string, color?: string }) => (
@@ -55,11 +57,9 @@ const CertificateSeal = ({ className, color = '#002147' }: { className?: string,
 );
 
 
-export function Certificate({ course, userName }: CertificateProps) {
+export function Certificate({ course, userName, certificateId, academicDirector }: CertificateProps) {
   const certificateRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
-
-  const certificateId = `${course.id}-${Date.now()}`;
 
   const handlePrint = () => {
     window.print();
@@ -160,7 +160,7 @@ export function Certificate({ course, userName }: CertificateProps) {
 
           <div className="flex justify-between items-end mt-12 text-sm">
             <div className="text-center w-2/5">
-                 <p className="font-signature text-4xl text-gray-800 -mb-4">J. Kamau</p>
+                 <p className="font-signature text-4xl text-gray-800 -mb-4">{course.instructor}</p>
                 <Separator className="bg-gray-600 mt-1"/>
                 <p className="uppercase text-gray-600 mt-2 text-xs tracking-wider font-sans">Lead Instructor</p>
             </div>
@@ -170,7 +170,7 @@ export function Certificate({ course, userName }: CertificateProps) {
             </div>
 
             <div className="text-center w-2/5">
-                <p className="font-signature text-4xl text-gray-800 -mb-4">E. Wanjala</p>
+                <p className="font-signature text-4xl text-gray-800 -mb-4">{academicDirector}</p>
                 <Separator className="bg-gray-600 mt-1"/>
                 <p className="uppercase text-gray-600 mt-2 text-xs tracking-wider font-sans">Academic Director</p>
             </div>
@@ -178,10 +178,10 @@ export function Certificate({ course, userName }: CertificateProps) {
            <div className="flex justify-between items-end text-[10px] text-gray-500 mt-4">
                 <span>Issued on: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                 <div className="flex items-center gap-2">
-                    <QRCode value={`https://manda.network/verify/${certificateId}`} size={24} bgColor="transparent" fgColor="#002147" />
+                    <QRCode value={`${window.location.origin}/verify/${certificateId}`} size={24} bgColor="transparent" fgColor="#002147" />
                     <span>Verify at manda.network/verify</span>
                 </div>
-                <span>ID: {certificateId.substring(0,20)}...</span>
+                <span>ID: {certificateId}</span>
            </div>
 
         </div>

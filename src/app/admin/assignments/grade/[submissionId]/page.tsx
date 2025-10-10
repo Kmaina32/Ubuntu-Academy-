@@ -18,6 +18,7 @@ import { Loader2, ArrowLeft, Sparkles, CheckCircle, MessageSquare, Star, XCircle
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { v4 as uuidv4 } from 'uuid';
 
 const CERTIFICATE_THRESHOLD_PERCENTAGE = 80;
 
@@ -123,8 +124,10 @@ export default function GradeSubmissionPage() {
         });
 
         if (finalPercentage >= CERTIFICATE_THRESHOLD_PERCENTAGE) {
+            const certificateId = `${submission.userId.slice(0, 5)}-${course.id.slice(0, 5)}-${uuidv4().slice(0, 8)}`;
             await updateUserCourseProgress(submission.userId, submission.courseId, {
                 certificateAvailable: true,
+                certificateId: certificateId,
             });
             toast({ title: 'Grade Saved! Certificate Awarded.', description: `Final score: ${totalPointsAwarded}/${totalMaxPoints} (${Math.round(finalPercentage)}%)` });
         } else {
