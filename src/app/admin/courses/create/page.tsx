@@ -22,6 +22,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { generateCourseContent } from '@/app/actions';
 import { CourseReviewModal } from '@/components/shared/CourseReviewModal';
 import { GenerateCourseContentOutput } from '@/ai/flows/generate-course-content';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 
 const youtubeLinkSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -197,7 +198,9 @@ export default function CreateCoursePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<GenerateCourseContentOutput | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
+  const [generateCourseTitle, setGenerateCourseTitle] = useState('');
 
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseFormSchema),
@@ -220,21 +223,23 @@ export default function CreateCoursePage() {
   });
 
   const handleGenerate = async () => {
-    const courseTitle = prompt("Enter a course title to generate content:");
-    if (!courseTitle) return;
+    if (!generateCourseTitle) return;
 
     setIsGenerating(true);
+    setIsGenerateModalOpen(false);
     toast({ title: "Generating Course...", description: "The AI is creating your course. This might take a moment." });
 
     try {
-        const result = await generateCourseContent({ courseTitle });
+        const result = await generateCourseContent({ courseTitle: generateCourseTitle });
         setGeneratedContent(result);
-        setIsModalOpen(true);
+        setIsReviewModalOpen(true);
+        form.setValue('title', generateCourseTitle); // Pre-fill the main form title
     } catch (error) {
         console.error("Failed to generate course content", error);
         toast({ title: "Error", description: "Could not generate course content.", variant: "destructive" });
     } finally {
         setIsGenerating(false);
+        setGenerateCourseTitle('');
     }
   };
   
@@ -244,7 +249,7 @@ export default function CreateCoursePage() {
     replaceModules(editedContent.modules);
     // Note: Exam is handled in a separate flow, so we don't set it here.
     toast({ title: "Content Loaded!", description: "AI-generated content has been loaded into the form. Review and save." });
-    setIsModalOpen(false);
+    setIsReviewModalOpen(false);
   }
 
   const onSubmit = async (values: CourseFormValues) => {
@@ -293,10 +298,35 @@ export default function CreateCoursePage() {
                         <CardTitle className="text-2xl font-headline flex items-center gap-2"><BookText /> Create New Course</CardTitle>
                         <CardDescription>Manually create a new course or use AI to generate one from a title.</CardDescription>
                     </div>
-                     <Button type="button" onClick={handleGenerate} disabled={isGenerating}>
-                        {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                        Generate with AI
-                    </Button>
+                     <Dialog open={isGenerateModalOpen} onOpenChange={setIsGenerateModalOpen}>
+                        <DialogTrigger asChild>
+                            <Button type="button" disabled={isGenerating}>
+                                {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                Generate with AI
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Generate Course with AI</DialogTitle>
+                                <DialogDescription>
+                                    Enter a course title and the AI will generate the full curriculum, lessons, and descriptions for you.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-2">
+                                <FormLabel htmlFor="course-title-ai">Course Title</FormLabel>
+                                <Input
+                                    id="course-title-ai"
+                                    value={generateCourseTitle}
+                                    onChange={(e) => setGenerateCourseTitle(e.target.value)}
+                                    placeholder="e.g., Introduction to Plumbing"
+                                />
+                            </div>
+                            <DialogFooter>
+                                <Button type="button" variant="outline" onClick={() => setIsGenerateModalOpen(false)}>Cancel</Button>
+                                <Button type="button" onClick={handleGenerate} disabled={!generateCourseTitle}>Generate</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -459,8 +489,8 @@ export default function CreateCoursePage() {
     </div>
     {generatedContent && (
         <CourseReviewModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
+            isOpen={isReviewModalOpen}
+            onClose={() => setIsReviewModalOpen(false)}
             courseContent={generatedContent}
             onSave={handleContentSave}
             isSaving={isLoading}
