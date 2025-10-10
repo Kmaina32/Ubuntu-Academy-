@@ -16,6 +16,7 @@ import { LiveChat } from '@/components/LiveChat';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { format, isPast, isToday, formatDistanceToNow } from 'date-fns';
+import { useRouter } from 'next/navigation';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -154,6 +155,7 @@ function NoSessionCard({ onSchedule }: { onSchedule: () => void }) {
 
 export default function AdminLivePage() {
     const { toast } = useToast();
+    const router = useRouter();
     const [isLive, setIsLive] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isFetchingEvents, setIsFetchingEvents] = useState(true);
