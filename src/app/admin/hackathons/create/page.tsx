@@ -144,11 +144,13 @@ export default function CreateHackathonPage() {
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormLabel>Start Date</FormLabel>
-                            <FormDatePicker
-                              value={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) => date < new Date('1900-01-01')}
-                            />
+                            <FormControl>
+                                <FormDatePicker
+                                  value={field.value}
+                                  onSelect={field.onChange}
+                                  disabled={(date) => date < new Date('1900-01-01')}
+                                />
+                            </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -159,11 +161,13 @@ export default function CreateHackathonPage() {
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormLabel>End Date</FormLabel>
-                           <FormDatePicker
-                              value={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) => date < new Date('1900-01-01')}
-                            />
+                           <FormControl>
+                                <FormDatePicker
+                                  value={field.value}
+                                  onSelect={field.onChange}
+                                  disabled={(date) => date < new Date('1900-01-01')}
+                                />
+                            </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
