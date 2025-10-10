@@ -87,13 +87,15 @@ export default function BootcampsPage() {
           <section className="relative bg-secondary/50 py-12 md:py-16">
             <div className="container mx-auto px-4 md:px-6">
                <div className="relative rounded-xl overflow-hidden min-h-[400px] flex items-center justify-center text-center p-4">
-                    <Image
-                        src={heroData.bootcampsImageUrl || "https://picsum.photos/seed/boot/1600/400"}
-                        alt="A group of people working on laptops in a workshop"
-                        fill
-                        className="object-cover"
-                        data-ai-hint="coding workshop"
-                    />
+                    {heroData.bootcampsImageUrl && (
+                      <Image
+                          src={heroData.bootcampsImageUrl}
+                          alt="A group of people working on laptops in a workshop"
+                          fill
+                          className="object-cover"
+                          data-ai-hint="coding workshop"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-black/60"></div>
                     <div className="relative z-10 text-white">
                         <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">

@@ -46,13 +46,15 @@ export default function ProgramsPage() {
           <section className="relative bg-secondary/50 py-12 md:py-16">
              <div className="container mx-auto px-4 md:px-6">
                 <div className="relative rounded-xl overflow-hidden min-h-[400px] flex items-center justify-center text-center p-4">
-                    <Image
-                        src={heroData.programsImageUrl || "https://picsum.photos/seed/prog/1600/400"}
-                        alt="Students learning in a modern classroom"
-                        fill
-                        className="object-cover"
-                        data-ai-hint="modern classroom"
-                    />
+                    {heroData.programsImageUrl && (
+                      <Image
+                          src={heroData.programsImageUrl}
+                          alt="Students learning in a modern classroom"
+                          fill
+                          className="object-cover"
+                          data-ai-hint="modern classroom"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-black/60"></div>
                     <div className="relative z-10 text-white">
                         <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
