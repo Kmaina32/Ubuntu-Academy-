@@ -9,6 +9,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { getAllPrograms, Program } from '@/lib/firebase-service';
 import { Loader2, Library } from 'lucide-react';
 import { ProgramCard } from '@/components/ProgramCard';
+import Image from 'next/image';
 
 export default function ProgramsPage() {
   const [programs, setPrograms] = useState<Program[]>([]);
@@ -37,8 +38,18 @@ export default function ProgramsPage() {
       <SidebarInset>
         <Header />
         <main className="flex-grow">
-          <section className="py-12 md:py-16 bg-secondary/50">
-            <div className="container mx-auto px-4 md:px-6 text-center">
+          <section className="relative bg-secondary/50 py-20 md:py-28">
+            <div className="absolute inset-0">
+                <Image
+                    src="https://picsum.photos/seed/prog/1600/400"
+                    alt="Students learning in a modern classroom"
+                    fill
+                    className="object-cover"
+                    data-ai-hint="modern classroom"
+                />
+                <div className="absolute inset-0 bg-black/60"></div>
+            </div>
+            <div className="container mx-auto px-4 md:px-6 text-center relative text-white">
                <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
                   <Library className="h-10 w-10 text-primary" />
                 </div>

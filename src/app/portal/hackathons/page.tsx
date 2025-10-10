@@ -100,8 +100,18 @@ export default function HackathonsPage() {
 
   return (
         <main className="flex-grow">
-          <section className="py-12 md:py-16 bg-secondary/50">
-            <div className="container mx-auto px-4 md:px-6 text-center">
+          <section className="relative bg-secondary/50 py-20 md:py-28">
+             <div className="absolute inset-0">
+                <Image
+                    src="https://picsum.photos/seed/hack/1600/400"
+                    alt="A group of developers collaborating at a hackathon"
+                    fill
+                    className="object-cover"
+                    data-ai-hint="developers collaboration"
+                />
+                <div className="absolute inset-0 bg-black/60"></div>
+            </div>
+            <div className="container mx-auto px-4 md:px-6 text-center relative text-white">
                <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
                   <Trophy className="h-10 w-10 text-primary" />
                 </div>

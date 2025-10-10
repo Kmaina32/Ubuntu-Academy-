@@ -1,11 +1,10 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { Footer } from "@/components/shared/Footer";
-import { AppSidebar } from '@/components/shared/Sidebar';
-import { Header } from '@/components/shared/Header';
+import { AppSidebar } from "@/components/shared/Sidebar";
+import { Header } from "@/components/shared/Header";
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { getAllBootcamps, Bootcamp } from '@/lib/firebase-service';
 import { Loader2, Rocket } from 'lucide-react';
@@ -80,8 +79,18 @@ export default function BootcampsPage() {
       <SidebarInset>
         <Header />
         <main className="flex-grow">
-          <section className="py-12 md:py-16 bg-secondary/50">
-            <div className="container mx-auto px-4 md:px-6 text-center">
+          <section className="relative bg-secondary/50 py-20 md:py-28">
+            <div className="absolute inset-0">
+                <Image
+                    src="https://picsum.photos/seed/boot/1600/400"
+                    alt="A group of people working on laptops in a workshop"
+                    fill
+                    className="object-cover"
+                    data-ai-hint="coding workshop"
+                />
+                <div className="absolute inset-0 bg-black/60"></div>
+            </div>
+            <div className="container mx-auto px-4 md:px-6 text-center relative text-white">
                <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
                   <Rocket className="h-10 w-10 text-primary" />
                 </div>
