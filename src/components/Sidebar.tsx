@@ -20,30 +20,6 @@ import pkg from '../../package.json';
 import { useEffect, useMemo, useState } from 'react';
 import type { CalendarEvent } from '@/lib/mock-data';
 import { getAllCalendarEvents } from '@/lib/firebase-service';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
-import { cn } from '@/lib/utils';
-
-const CollapsibleSidebarMenu = ({ title, icon, children, initialOpen = false }: { title: string, icon: React.ElementType, children: React.ReactNode, initialOpen?: boolean }) => {
-    const Icon = icon;
-    const [isOpen, setIsOpen] = useState(initialOpen);
-
-    return (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-            <CollapsibleTrigger asChild>
-                <SidebarMenuButton variant="ghost" className="w-full justify-start gap-2 px-2">
-                     <Icon className="h-5 w-5" />
-                     <span className="group-data-[collapsible=icon]:hidden">{title}</span>
-                     <ChevronRight className={cn("ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[collapsible=icon]:hidden", isOpen && "rotate-90")} />
-                </SidebarMenuButton>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-                <div className="flex flex-col gap-1 py-1 pl-6 group-data-[collapsible=icon]:hidden">
-                    {children}
-                </div>
-            </CollapsibleContent>
-        </Collapsible>
-    )
-}
 
 export function AppSidebar() {
     const pathname = usePathname();
@@ -109,34 +85,51 @@ export function AppSidebar() {
             <SidebarMenu>
                  {user ? (
                     <>
-                        <CollapsibleSidebarMenu title="Main Navigation" icon={Home} initialOpen={true}>
-                           <SidebarMenuButton asChild size="sm" isActive={isActive('/') && pathname === '/'} tooltip="Browse Courses" onClick={() => onLinkClick('/')}>
+                        <p className="text-xs font-semibold text-muted-foreground px-2 mb-2 group-data-[collapsible=icon]:hidden">Main Navigation</p>
+                        <SidebarMenuItem>
+                           <SidebarMenuButton asChild size="sm" isActive={isActive('/')} tooltip="Browse Courses" onClick={() => onLinkClick('/')}>
                                 <Link href="/">Browse Courses</Link>
                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/dashboard')} tooltip="Dashboard" onClick={() => onLinkClick('/dashboard')}>
                                 <Link href="/dashboard">Dashboard</Link>
                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
                             <SidebarMenuButton asChild size="sm" isActive={isActive('/programs')} tooltip="Certificate Programs" onClick={() => onLinkClick('/programs')}>
                                 <Link href="/programs">Programs</Link>
                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/bootcamps')} tooltip="Bootcamps" onClick={() => onLinkClick('/bootcamps')}>
                                 <Link href="/bootcamps">Bootcamps</Link>
                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/portal/hackathons')} tooltip="Hackathons" onClick={() => onLinkClick('/portal/hackathons')}>
                                 <Link href="/portal/hackathons">Hackathons</Link>
                            </SidebarMenuButton>
-                        </CollapsibleSidebarMenu>
-
-                        <CollapsibleSidebarMenu title="Learning Tools" icon={GraduationCap}>
+                        </SidebarMenuItem>
+                        
+                        <Separator className="my-2"/>
+                        <p className="text-xs font-semibold text-muted-foreground px-2 mb-2 group-data-[collapsible=icon]:hidden">Learning Tools</p>
+                         <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/assignments')} tooltip="My Exams" onClick={() => onLinkClick('/assignments')}>
                                 <Link href="/assignments">My Exams</Link>
                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/notebook')} tooltip="Notebook" onClick={() => onLinkClick('/notebook')}>
                                 <Link href="/notebook">Notebook</Link>
                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/live')} tooltip="Live Classroom" onClick={() => onLinkClick('/live')}>
                                 <Link href="/live">Live Classroom</Link>
                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
                             <SidebarMenuButton asChild size="sm" isActive={isActive('/calendar')} tooltip="Calendar" onClick={() => onLinkClick('/calendar')}>
                                 <Link href="/calendar" className="relative">
                                     <span>Calendar</span>
@@ -148,29 +141,39 @@ export function AppSidebar() {
                                     )}
                                 </Link>
                             </SidebarMenuButton>
-                        </CollapsibleSidebarMenu>
-                        
-                        <CollapsibleSidebarMenu title="Career & Support" icon={LifeBuoy}>
+                        </SidebarMenuItem>
+
+                        <Separator className="my-2"/>
+                        <p className="text-xs font-semibold text-muted-foreground px-2 mb-2 group-data-[collapsible=icon]:hidden">Career & Support</p>
+                        <SidebarMenuItem>
                              <SidebarMenuButton asChild size="sm" isActive={isActive('/coach')} tooltip="AI Career Coach" onClick={() => onLinkClick('/coach')}>
                                 <Link href="/coach">Career Coach</Link>
                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/about')} tooltip="About Us" onClick={() => onLinkClick('/about')}>
                                 <Link href="/about">About Us</Link>
                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/help')} tooltip="Help" onClick={() => onLinkClick('/help')}>
                                 <Link href="/help">Help</Link>
                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/contact')} tooltip="Contact Us" onClick={() => onLinkClick('/contact')}>
                                 <Link href="/contact">Contact</Link>
                            </SidebarMenuButton>
-                        </CollapsibleSidebarMenu>
+                        </SidebarMenuItem>
 
                          <Separator className="my-2" />
-
-                        <CollapsibleSidebarMenu title="Account" icon={User}>
+                        <p className="text-xs font-semibold text-muted-foreground px-2 mb-2 group-data-[collapsible=icon]:hidden">Account</p>
+                        <SidebarMenuItem>
                             <SidebarMenuButton asChild size="sm" isActive={isActive('/profile')} tooltip="Profile" onClick={() => onLinkClick('/profile')}>
                                 <Link href="/profile">My Profile</Link>
                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
                             {organization && (
                                 <SidebarMenuButton asChild size="sm" isActive={isActive('/organization')} tooltip={isAdmin || isOrganizationAdmin ? "Manage Organization" : organization.name} onClick={() => onLinkClick(isAdmin || isOrganizationAdmin ? '/organization/dashboard' : '/organization/home')}>
                                     <Link href={isAdmin || isOrganizationAdmin ? '/organization/dashboard' : '/organization/home'}>
@@ -178,17 +181,18 @@ export function AppSidebar() {
                                     </Link>
                                 </SidebarMenuButton>
                             )}
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
                             {isAdmin && (
                                 <SidebarMenuButton asChild size="sm" isActive={isActive('/admin')} tooltip="Admin Dashboard" onClick={() => onLinkClick('/admin')}>
                                     <Link href="/admin">Admin Dashboard</Link>
                                 </SidebarMenuButton>
                             )}
-                        </CollapsibleSidebarMenu>
-
+                        </SidebarMenuItem>
                     </>
                 ) : (
                     <>
-                        <SidebarMenuItem>
+                         <SidebarMenuItem>
                             <SidebarMenuButton asChild isActive={isActive('/')} tooltip="Courses" onClick={onLinkClick}>
                                 <Link href="/">
                                     <Home />
