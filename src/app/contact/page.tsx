@@ -44,7 +44,7 @@ export default function ContactPage() {
                         </div>
                         <div>
                             <h3 className="font-semibold">Email Us</h3>
-                            <p className="text-muted-foreground">For support or inquiries, email us at <a href="mailto:info@edgewood.co.ke" className="text-primary underline">info@edgewood.co.ke</a>.</p>
+                            <p className="text-muted-foreground">For support or inquiries, email us at <a href="mailto:info@manda.network" className="text-primary underline">info@manda.network</a>.</p>
                         </div>
                     </div>
                      <div className="flex items-start gap-4">
