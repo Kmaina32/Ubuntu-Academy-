@@ -305,9 +305,9 @@ export default function AdminLivePage() {
                                     </>
                                 )}
                                  {!isLive && hasCameraPermission !== true && (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-muted-foreground">
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-muted-foreground p-4">
                                         <Video className="h-16 w-16 mx-auto mb-4" />
-                                        <p>Your video feed will appear here.</p>
+                                        <p>Your video feed will appear here once you go live.</p>
                                     </div>
                                  )}
                             </div>
