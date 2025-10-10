@@ -4,10 +4,11 @@
 import { useRef, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Course } from "@/lib/mock-data";
-import { Download, Printer, Loader2 } from "lucide-react";
+import { Download, Printer, Loader2, GitBranch } from "lucide-react";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import QRCode from "react-qr-code";
+import { Separator } from './ui/separator';
 
 interface CertificateProps {
   course: Course;
@@ -32,6 +33,7 @@ export function Certificate({ course, userName }: CertificateProps) {
       const canvas = await html2canvas(certificateRef.current, {
         scale: 3,
         useCORS: true,
+        backgroundColor: null,
       });
 
       const imgData = canvas.toDataURL('image/png');
@@ -55,7 +57,7 @@ export function Certificate({ course, userName }: CertificateProps) {
   };
 
   return (
-    <div className="font-sans">
+    <div className="font-serif">
       {/* Action Buttons */}
       <div className="flex justify-end gap-2 mb-4 print:hidden">
         <Button onClick={handlePrint} variant="outline">
@@ -75,73 +77,77 @@ export function Certificate({ course, userName }: CertificateProps) {
       {/* Certificate Container */}
       <div 
         ref={certificateRef} 
-        className="max-w-5xl mx-auto bg-white border-[12px] border-gray-800 p-12 shadow-2xl relative aspect-[1.414/1] print:shadow-none print:border-4"
+        className="max-w-5xl mx-auto bg-white p-2 shadow-2xl relative aspect-[1.414/1] print:shadow-none print:border-0"
+        style={{ fontFamily: "'Times New Roman', Times, serif" }}
       >
-        {/* Inner Accent Border */}
-        <div className="absolute inset-0 border-4 border-red-600 m-6 rounded-xl"></div>
+        {/* Intricate Border */}
+        <div className="absolute inset-0 border-[10px] border-[#002147] p-2">
+            <div className="w-full h-full border-2 border-[#C8A465]"></div>
+        </div>
 
         {/* Watermark Seal */}
         <div className="absolute inset-0 flex justify-center items-center opacity-10 pointer-events-none">
           <img 
             src="/seal.png" 
             alt="Watermark Seal" 
-            className="w-2/3 h-auto object-contain"
+            className="w-1/2 h-auto object-contain"
           />
         </div>
 
         {/* Certificate Content */}
-        <div className="relative z-10 flex flex-col h-full text-center">
+        <div className="relative z-10 flex flex-col h-full text-center p-8">
           
-          {/* Logo + Header */}
-          <div className="flex justify-between items-center mb-8 print:mb-4">
-            <img src="/logo.png" alt="Academy Logo" className="h-12 md:h-16" />
-            <p className="text-xl md:text-2xl text-gray-600 uppercase tracking-widest">
-              Certificate of Completion
-            </p>
-            <div className="w-12"></div> {/* Spacer */}
+          <div className="flex justify-between items-center mb-4">
+            <div className="text-left">
+                <h1 className="font-bold text-2xl text-[#002147] font-headline">Manda Network</h1>
+                <p className="text-sm text-gray-600">Online Professional Development</p>
+            </div>
+             <img src="/logo.png" alt="Academy Logo" className="h-16" />
           </div>
 
-          {/* Recipient Section */}
-          <div className="flex-grow flex flex-col justify-center">
-            <p className="text-lg text-gray-700 mb-2">This certificate is proudly presented to</p>
-            <h1 className="text-5xl md:text-7xl font-bold text-green-700 my-4 underline underline-offset-4">
+          <div className="flex-grow flex flex-col justify-center items-center">
+            <p className="text-xl text-gray-700 tracking-wider">CERTIFICATE OF ACHIEVEMENT</p>
+            <Separator className="my-2 bg-[#C8A465] h-[2px] w-1/3 mx-auto"/>
+            <p className="text-md text-gray-600 mt-4">This certificate is hereby presented to</p>
+            
+            <p className="font-signature text-6xl text-gray-800 my-4">
               {userName}
-            </h1>
-            <p className="text-lg text-gray-700 mt-2">
-              for successfully completing the online course
             </p>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-4">
+
+            <p className="text-md text-gray-600">
+              for successfully completing the course
+            </p>
+            <p className="text-2xl font-bold text-[#002147] mt-2">
               {course.title}
-            </h2>
+            </p>
           </div>
 
-          {/* Signatures + QR */}
           <div className="flex justify-between items-end mt-12 text-sm">
-            {/* Instructor */}
-            <div className="text-center w-1/3">
-              <img src="/signatures/instructor.png" alt="Instructor Signature" className="h-12 mx-auto mb-2" />
-              <hr className="border-gray-400 mx-auto w-3/4"/>
-              <p className="uppercase text-gray-500 mt-2 tracking-wider">Instructor</p>
+            <div className="text-center w-2/5">
+                <img src="/signatures/instructor.png" alt="Instructor Signature" className="h-12 mx-auto" />
+                <Separator className="bg-gray-600 mt-1"/>
+                <p className="uppercase text-gray-600 mt-2 text-xs tracking-wider font-sans">Lead Instructor</p>
+            </div>
+            
+             <div className="flex flex-col items-center">
+                <img src="/seal.png" alt="Official Seal" className="h-24 w-24"/>
             </div>
 
-            {/* QR Code */}
-            <div className="flex flex-col items-center">
-              <QRCode value={`https://academy.com/verify/${certificateId}`} size={80} />
-              <p className="text-[10px] text-gray-500 mt-1">Scan to Verify</p>
-            </div>
-
-            {/* Director */}
-            <div className="text-center w-1/3">
-              <img src="/signatures/director.png" alt="Director Signature" className="h-12 mx-auto mb-2" />
-              <hr className="border-gray-400 mx-auto w-3/4"/>
-              <p className="uppercase text-gray-500 mt-2 tracking-wider">Academic Director</p>
+            <div className="text-center w-2/5">
+                <img src="/signatures/director.png" alt="Director Signature" className="h-12 mx-auto" />
+                <Separator className="bg-gray-600 mt-1"/>
+                <p className="uppercase text-gray-600 mt-2 text-xs tracking-wider font-sans">Academic Director</p>
             </div>
           </div>
+           <div className="flex justify-between items-end text-[10px] text-gray-500 mt-4">
+                <span>Issued on: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                <div className="flex items-center gap-2">
+                    <QRCode value={`https://manda.network/verify/${certificateId}`} size={24} bgColor="transparent" fgColor="#002147" />
+                    <span>Verify at manda.network/verify</span>
+                </div>
+                <span>ID: {certificateId.substring(0,20)}...</span>
+           </div>
 
-          {/* Footer Info */}
-          <p className="text-[10px] md:text-xs text-gray-500 mt-6">
-            Issued on: {new Date().toLocaleDateString('en-GB')} | Certificate ID: {certificateId}
-          </p>
         </div>
       </div>
 
@@ -150,6 +156,8 @@ export function Certificate({ course, userName }: CertificateProps) {
         @media print {
           body, html {
             background-color: white;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
           }
           @page {
             size: A4 landscape;
