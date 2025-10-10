@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, GitBranch, MailCheck, MailWarning } from 'lucide-react';
 import { Footer } from '@/components/Footer';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 export default function UnverifiedPage() {
   const router = useRouter();
@@ -55,7 +56,7 @@ export default function UnverifiedPage() {
   if (loading || !user || user.emailVerified) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <LoadingAnimation />
       </div>
     );
   }

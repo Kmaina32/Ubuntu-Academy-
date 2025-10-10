@@ -33,6 +33,7 @@ import { Input } from '@/components/ui/input';
 import { updateProfile } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 type PurchasedCourseDetail = UserCourse & Partial<Course>;
 
@@ -218,8 +219,7 @@ export default function DashboardPage() {
     if (authLoading || (loadingCourses && user) || (isOrganizationAdmin && !isAdmin)) {
         return (
             <div className="flex justify-center items-center py-10 h-full">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                <p className="ml-2">Loading your dashboard...</p>
+                <LoadingAnimation />
             </div>
         )
     }

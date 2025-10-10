@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, GitBranch, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { getHeroData } from '@/lib/firebase-service';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
@@ -95,7 +96,7 @@ export default function LoginPage() {
   if (authLoading || user) {
       return (
           <div className="flex flex-col min-h-screen items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <LoadingAnimation />
           </div>
       )
   }

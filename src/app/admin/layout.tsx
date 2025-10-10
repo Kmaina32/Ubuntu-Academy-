@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { AlertTriangle, Home, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 function AdminAccessDenied() {
     return (
@@ -49,8 +50,7 @@ export default function AdminLayout({
   if (loading) {
      return (
         <div className="flex h-screen items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <p className="ml-2">Verifying credentials...</p>
+            <LoadingAnimation />
         </div>
      )
   }
@@ -69,8 +69,7 @@ export default function AdminLayout({
   if (user && !dbUser) {
     return (
        <div className="flex h-screen items-center justify-center">
-           <Loader2 className="h-8 w-8 animate-spin" />
-           <p className="ml-2">Loading user profile...</p>
+           <LoadingAnimation />
        </div>
     )
   }

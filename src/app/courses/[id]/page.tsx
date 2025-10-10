@@ -22,6 +22,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
 import Head from 'next/head';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolled }: { course: Course, onEnrollFree: () => void, onPurchase: () => void, isEnrolling: boolean, isEnrolled: boolean }) {
     return (
@@ -167,10 +168,7 @@ export default function CourseDetailPage() {
   if (loading || authLoading || !user) {
     return (
         <div className="flex justify-center items-center min-h-screen px-4">
-            <div className="flex items-center">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                <p className="ml-2 text-sm sm:text-base">Loading course details...</p>
-            </div>
+            <LoadingAnimation />
         </div>
     )
   }

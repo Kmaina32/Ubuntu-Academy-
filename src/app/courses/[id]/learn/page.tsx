@@ -31,6 +31,7 @@ import html2canvas from 'html2canvas';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DiscussionForum } from '@/components/shared/DiscussionForum';
 import { slugify } from '@/lib/utils';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 
 function getYouTubeEmbedUrl(url: string | undefined): string | null {
@@ -848,8 +849,7 @@ export default function CoursePlayerPage() {
   if (loading || authLoading) {
     return (
         <div className="flex justify-center items-center h-screen bg-secondary">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            <p className="ml-2">Loading course player...</p>
+            <LoadingAnimation showText={false} />
         </div>
     )
   }

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useAuth } from '@/hooks/use-auth';
@@ -13,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { useEffect } from 'react';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 function OrgAccessDenied() {
     return (
@@ -63,8 +63,7 @@ export default function OrganizationLayout({
   if (loading) {
      return (
         <div className="flex h-screen items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <p className="ml-2">Verifying organization credentials...</p>
+            <LoadingAnimation />
         </div>
      )
   }
