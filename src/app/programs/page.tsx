@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -44,25 +43,27 @@ export default function ProgramsPage() {
       <SidebarInset>
         <Header />
         <main className="flex-grow">
-          <section className="relative bg-secondary/50 py-20 md:py-28">
-            <div className="absolute inset-0">
-                <Image
-                    src={heroData.programsImageUrl || "https://picsum.photos/seed/prog/1600/400"}
-                    alt="Students learning in a modern classroom"
-                    fill
-                    className="object-cover"
-                    data-ai-hint="modern classroom"
-                />
-                <div className="absolute inset-0 bg-black/60"></div>
-            </div>
-            <div className="container mx-auto px-4 md:px-6 text-center relative text-white">
-               <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
-                  <Library className="h-10 w-10 text-primary" />
+          <section className="relative bg-secondary/50 py-12 md:py-16">
+             <div className="container mx-auto px-4 md:px-6">
+                <div className="relative rounded-xl overflow-hidden min-h-[400px] flex items-center justify-center text-center p-4">
+                    <Image
+                        src={heroData.programsImageUrl || "https://picsum.photos/seed/prog/1600/400"}
+                        alt="Students learning in a modern classroom"
+                        fill
+                        className="object-cover"
+                        data-ai-hint="modern classroom"
+                    />
+                    <div className="absolute inset-0 bg-black/60"></div>
+                    <div className="relative z-10 text-white">
+                        <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
+                        <Library className="h-10 w-10 text-primary" />
+                        </div>
+                        <h1 className="text-4xl md:text-5xl font-bold font-headline">Certificate Programs</h1>
+                        <p className="mt-4 text-lg max-w-3xl mx-auto">
+                            Commit to a structured learning path, master a new domain, and earn a special certificate to showcase your achievement.
+                        </p>
+                    </div>
                 </div>
-              <h1 className="text-4xl md:text-5xl font-bold font-headline">Certificate Programs</h1>
-              <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">
-                Commit to a structured learning path, master a new domain, and earn a special certificate to showcase your achievement.
-              </p>
             </div>
           </section>
 
