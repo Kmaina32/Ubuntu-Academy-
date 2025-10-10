@@ -1,8 +1,8 @@
-# Edgewood International A.I College
+# Manda Network
 
-![Manda Network](/public/Akili%20AI.png)
+![Manda Network](/public/logo.png)
 
-Edgewood International A.I College is an AI-powered online learning platform designed to provide high-quality, affordable, and accessible education tailored for the Kenyan market. It leverages generative AI to create course content, assist students, and automate administrative tasks, creating a modern and scalable educational experience.
+Manda Network is an AI-powered online learning platform designed to provide high-quality, affordable, and accessible education tailored for the Kenyan market. It leverages generative AI to create course content, assist students, and automate administrative tasks, creating a modern and scalable educational experience.
 
 ## ✨ Key Features
 
@@ -39,8 +39,8 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/edgewood-international-ai-college.git
-    cd edgewood-international-ai-college
+    git clone https://github.com/your-username/manda-network.git
+    cd manda-network
     ```
 
 2.  **Install dependencies:**

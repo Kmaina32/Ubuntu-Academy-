@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, BookOpen, Download, FileText, Loader2, Sparkles, Gem, Power, Presentation, FileSignature } from 'lucide-react';
+import { ArrowLeft, BookOpen, Download, FileText, Loader2, Sparkles, Gem, Power, Presentation, FileSignature, View, Pencil } from 'lucide-react';
 import { generateFormalDocument } from '@/app/actions';
 import { useAuth } from '@/hooks/use-auth';
 import jsPDF from 'jspdf';
@@ -20,6 +20,7 @@ import html2canvas from 'html2canvas';
 import { Textarea } from '@/components/ui/textarea';
 import { getDocument, saveDocument } from '@/lib/firebase-service';
 import { PITCH_DECK, FRAMEWORK, API, B2B_STRATEGY, SEO_STRATEGY, VISUAL_FRAMEWORK } from '@/lib/document-templates';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 const ALL_DOC_TYPES = ['PITCH_DECK', 'FRAMEWORK', 'API', 'B2B_STRATEGY', 'SEO_STRATEGY', 'VISUAL_FRAMEWORK'] as const;
@@ -58,6 +59,7 @@ function DocumentEditor({ docType }: { docType: DocType }) {
   const [isDownloading, setIsDownloading] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
   const isVisualFramework = docType === 'VISUAL_FRAMEWORK';
+  const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -144,16 +146,28 @@ function DocumentEditor({ docType }: { docType: DocType }) {
         <PdfRenderer content={content} docType={docType} forwardRef={pdfRef} />
       </div>
       <div className="space-y-4 h-full flex flex-col">
+           <div className="flex justify-end">
+            <Button variant="outline" size="sm" onClick={() => setViewMode(viewMode === 'edit' ? 'preview' : 'edit')}>
+              {viewMode === 'edit' ? <View className="mr-2 h-4 w-4" /> : <Pencil className="mr-2 h-4 w-4" />}
+              {viewMode === 'edit' ? 'Preview' : 'Edit'}
+            </Button>
+          </div>
           <div className="bg-background rounded-md border min-h-[50vh] flex-grow">
             {isLoading ? (
                <div className="flex justify-center items-center flex-grow h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
-            ) : (
+            ) : viewMode === 'edit' ? (
                <Textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   className="w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base p-4"
                   placeholder="Start writing your document..."
                />
+            ) : (
+                <ScrollArea className="h-[50vh]">
+                    <div className="prose max-w-none p-4">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+                    </div>
+                </ScrollArea>
             )}
           </div>
         
@@ -280,4 +294,3 @@ export default function AdminDocumentsPage() {
     </div>
   );
 }
-

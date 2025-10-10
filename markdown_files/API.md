@@ -1,6 +1,6 @@
-# Edgewood International A.I College - API Documentation
+# Manda Network - API Documentation
 
-This document outlines the API endpoints for the Edgewood International A.I College application, detailing their purpose, request/response formats, and required permissions.
+This document outlines the API endpoints for the Manda Network application, detailing their purpose, request/response formats, and required permissions.
 
 ## 1. Authentication
 

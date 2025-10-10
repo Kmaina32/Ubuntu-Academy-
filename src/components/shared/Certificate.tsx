@@ -46,7 +46,7 @@ export function Certificate({ course, userName }: CertificateProps) {
       const pdfHeight = pdf.internal.pageSize.getHeight();
 
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Akili_AI_Academy_Certificate_${course.title.replace(/\s+/g, '_')}.pdf`);
+      pdf.save(`Manda_Network_Certificate_${course.title.replace(/\s+/g, '_')}.pdf`);
     } catch (error) {
       console.error("Error generating PDF:", error);
     } finally {
@@ -94,7 +94,7 @@ export function Certificate({ course, userName }: CertificateProps) {
           
           {/* Logo + Header */}
           <div className="flex justify-between items-center mb-8 print:mb-4">
-            <img src="/logo.png" alt="Academy Logo" className="h-12 md:h-16" />
+            <img src="/logo.png" alt="Manda Network Logo" className="h-12 md:h-16" />
             <p className="text-xl md:text-2xl text-gray-600 uppercase tracking-widest">
               Certificate of Completion
             </p>
@@ -126,7 +126,7 @@ export function Certificate({ course, userName }: CertificateProps) {
 
             {/* QR Code */}
             <div className="flex flex-col items-center">
-              <QRCode value={`https://academy.com/verify/${certificateId}`} size={80} />
+              <QRCode value={`https://manda.network/verify/${certificateId}`} size={80} />
               <p className="text-[10px] text-gray-500 mt-1">Scan to Verify</p>
             </div>
 

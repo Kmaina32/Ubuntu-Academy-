@@ -1,6 +1,6 @@
 
 export const PITCH_DECK = `
-# Edgewood International A.I College - Investor Pitch Deck
+# Manda Network - Investor Pitch Deck
 
 This document contains the core content and narrative for our investor pitch deck. Each section corresponds to a slide or a key talking point.
 
@@ -9,7 +9,7 @@ This document contains the core content and narrative for our investor pitch dec
 ### **Slide 1: Title Slide**
 
 - **Image:** A powerful, aspirational image of a young Kenyan professional using a computer.
-- **Title:** Edgewood International A.I College
+- **Title:** Manda Network
 - **Tagline:** Upskilling Kenya for the A.I. Revolution.
 
 ---
@@ -25,7 +25,7 @@ This document contains the core content and narrative for our investor pitch dec
 
 ### **Slide 3: The Solution**
 
-- **Headline:** Edgewood International A.I College: Your A.I.-Powered Learning Partner.
+- **Headline:** Manda Network: Your A.I.-Powered Learning Partner.
 - **What We Do:** We provide high-quality, affordable, and hyper-relevant online courses in technology, data science, and artificial intelligence.
 - **Our Unique Edge:** We leverage the power of A.I. at every stage of the learning process:
     1.  **A.I.-Generated Content:** To create up-to-date, world-class courses in a fraction of the time.
@@ -99,9 +99,9 @@ This document contains the core content and narrative for our investor pitch dec
 `;
 
 export const FRAMEWORK = `
-# Edgewood International A.I College - Technical Framework
+# Manda Network - Technical Framework
 
-This document outlines the core technologies and architectural principles that power the Edgewood International A.I College platform.
+This document outlines the core technologies and architectural principles that power the Manda Network platform.
 
 ## 1. Core Technologies
 
@@ -146,9 +146,9 @@ The application follows a modern, serverless architecture that is scalable, main
 `;
 
 export const API = `
-# Edgewood International A.I College - API Documentation
+# Manda Network - API Documentation
 
-This document outlines the API endpoints for the Edgewood International A.I College application, detailing their purpose, request/response formats, and required permissions.
+This document outlines the API endpoints for the Manda Network application, detailing their purpose, request/response formats, and required permissions.
 
 ## 1. Authentication
 
@@ -241,7 +241,7 @@ These endpoints are for authenticated students.
 export const B2B_STRATEGY = `
 # B2B Sales and Partnership Strategy
 
-This document outlines the strategy for Edgewood International A.I College to engage in Business-to-Business (B2B) sales and form strategic partnerships.
+This document outlines the strategy for Manda Network to engage in Business-to-Business (B2B) sales and form strategic partnerships.
 
 ## 1. Target B2B Segments
 
@@ -280,7 +280,7 @@ We will offer tailored packages to meet the specific needs of each organization.
 export const SEO_STRATEGY = `
 # SEO and Content Marketing Strategy
 
-This document outlines the Search Engine Optimization (SEO) and content marketing strategy for Edgewood International A.I College to increase organic traffic, generate leads, and establish brand authority.
+This document outlines the Search Engine Optimization (SEO) and content marketing strategy for Manda Network to increase organic traffic, generate leads, and establish brand authority.
 
 ## 1. Target Audience and Keywords
 
@@ -319,7 +319,7 @@ We will create high-quality, relevant, and engaging content that addresses the n
 `;
 
 export const VISUAL_FRAMEWORK = `
-# Edgewood International A.I College - Visual Framework
+# Manda Network - Visual Framework
 
 This document provides a visual representation of the application's architecture, user flows, and component interactions using Mermaid diagrams.
 

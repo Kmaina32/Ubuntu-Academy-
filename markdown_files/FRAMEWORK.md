@@ -1,6 +1,6 @@
-# Edgewood International A.I College - Technical Framework
+# Manda Network - Technical Framework
 
-This document outlines the core technologies and architectural principles that power the Edgewood International A.I College platform.
+This document outlines the core technologies and architectural principles that power the Manda Network platform.
 
 ## 1. Core Technologies
 
