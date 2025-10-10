@@ -15,6 +15,46 @@ interface CertificateProps {
   userName: string;
 }
 
+const CertificateSeal = ({ className, color = '#002147' }: { className?: string, color?: string }) => (
+  <svg
+    viewBox="0 0 200 200"
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <defs>
+      <path
+        id="circlePath"
+        d="M 100, 100 m -60, 0 a 60,60 0 1,1 120,0 a 60,60 0 1,1 -120,0"
+      />
+    </defs>
+    <circle cx="100" cy="100" r="95" fill="none" stroke={color} strokeWidth="2" />
+    <circle cx="100" cy="100" r="90" fill="none" stroke={color} strokeWidth="1" strokeDasharray="5,5" />
+    
+    <g fill={color}>
+      {Array.from({ length: 48 }).map((_, i) => (
+        <path
+          key={i}
+          d="M100 15 L102 25 L98 25 Z"
+          transform={`rotate(${i * 7.5}, 100, 100)`}
+        />
+      ))}
+    </g>
+
+    <circle cx="100" cy="100" r="75" fill="none" stroke={color} strokeWidth="2" />
+    
+    <text>
+      <textPath href="#circlePath" fill={color} style={{ fontSize: '16px', letterSpacing: '2px', textTransform: 'uppercase' }}>
+        Manda Network • Certified Professional •
+      </textPath>
+    </text>
+    
+    <g transform="translate(75, 75)">
+        <path d="M22.5 0 L30 15 L45 15 L33.75 24 L37.5 39 L22.5 30 L7.5 39 L11.25 24 L0 15 L15 15 Z" fill={color} />
+    </g>
+  </svg>
+);
+
+
 export function Certificate({ course, userName }: CertificateProps) {
   const certificateRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -87,11 +127,7 @@ export function Certificate({ course, userName }: CertificateProps) {
 
         {/* Watermark Seal */}
         <div className="absolute inset-0 flex justify-center items-center opacity-10 pointer-events-none">
-          <img 
-            src="/seal.png" 
-            alt="Watermark Seal" 
-            className="w-1/2 h-auto object-contain"
-          />
+          <CertificateSeal className="w-2/3 h-2/3" color="#002147" />
         </div>
 
         {/* Certificate Content */}
@@ -130,7 +166,7 @@ export function Certificate({ course, userName }: CertificateProps) {
             </div>
             
              <div className="flex flex-col items-center">
-                <img src="/seal.png" alt="Official Seal" className="h-24 w-24"/>
+                <CertificateSeal className="h-28 w-28" color="#002147" />
             </div>
 
             <div className="text-center w-2/5">
