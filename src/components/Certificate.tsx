@@ -160,7 +160,7 @@ export function Certificate({ course, userName }: CertificateProps) {
 
           <div className="flex justify-between items-end mt-12 text-sm">
             <div className="text-center w-2/5">
-                <img src="/signatures/instructor.png" alt="Instructor Signature" className="h-12 mx-auto" />
+                 <p className="font-signature text-4xl text-gray-800 -mb-4">J. Kamau</p>
                 <Separator className="bg-gray-600 mt-1"/>
                 <p className="uppercase text-gray-600 mt-2 text-xs tracking-wider font-sans">Lead Instructor</p>
             </div>
@@ -170,7 +170,7 @@ export function Certificate({ course, userName }: CertificateProps) {
             </div>
 
             <div className="text-center w-2/5">
-                <img src="/signatures/director.png" alt="Director Signature" className="h-12 mx-auto" />
+                <p className="font-signature text-4xl text-gray-800 -mb-4">E. Wanjala</p>
                 <Separator className="bg-gray-600 mt-1"/>
                 <p className="uppercase text-gray-600 mt-2 text-xs tracking-wider font-sans">Academic Director</p>
             </div>
