@@ -2,19 +2,17 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ArrowLeft, VideoOff, Video } from 'lucide-react';
 import Link from 'next/link';
 import { db } from '@/lib/firebase';
 import { ref, onValue, set, remove, onChildAdded } from 'firebase/database';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/Sidebar';
-import { Header } from '@/components/Header';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { LiveChat } from '@/components/LiveChat';
+import { Button } from '@/components/ui/button';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -34,6 +32,15 @@ export default function StudentLivePage() {
     const videoRef = useRef<HTMLVideoElement>(null);
     const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
     const connectionStateRef = useRef<ConnectionState>('new');
+    const [showInfo, setShowInfo] = useState(true);
+
+     useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (isLive) {
+            timer = setTimeout(() => setShowInfo(false), 5000);
+        }
+        return () => clearTimeout(timer);
+    }, [isLive]);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -57,6 +64,7 @@ export default function StudentLivePage() {
                 setLiveSessionDetails(sessionData);
                 setIsLive(true);
                 setIsLoading(false);
+                setShowInfo(true);
                 
                 const offerDescription = sessionData;
                 const pc = new RTCPeerConnection(ICE_SERVERS);
@@ -131,53 +139,47 @@ export default function StudentLivePage() {
     }, [user]);
 
     return (
-        <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-                <Header />
-                <div className="flex flex-col h-[calc(100vh-var(--header-height))]">
-                <main className="flex-grow flex flex-col">
-                     <div className="container mx-auto px-4 md:px-6 py-4 flex-shrink-0">
-                        <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-                            <ArrowLeft className="h-4 w-4" />
-                            Back to Dashboard
-                        </Link>
-                     </div>
-                     <div className="flex-grow relative flex flex-col">
-                        <div className="flex-grow bg-black flex items-center justify-center text-muted-foreground relative">
-                            {isLoading ? (
-                                <div className="flex flex-col items-center gap-2">
-                                    <Loader2 className="h-8 w-8 animate-spin" />
-                                    <span>Connecting to live session...</span>
-                                </div>
-                            ) : isLive ? (
-                                <>
-                                    <video ref={videoRef} className="w-full h-full object-contain" autoPlay playsInline />
-                                    <LiveChat sessionId="live-session" />
-                                </>
-                            ) : (
-                                <div className="flex flex-col items-center gap-2">
-                                    <VideoOff className="h-12 w-12" />
-                                    <p className="font-semibold">No active live session</p>
-                                    <p className="text-sm">Please check back later.</p>
-                                </div>
-                            )}
-                        </div>
-                        {isLive && !isLoading && (
-                             <div className="p-4 bg-background border-t">
-                                <Alert variant="default">
-                                    <Video className="h-4 w-4" />
-                                    <AlertTitle>{liveSessionDetails?.title || 'Receiving Live Stream'}</AlertTitle>
-                                    <AlertDescription>
-                                        {liveSessionDetails?.description || 'You are connected to the classroom.'}
-                                    </AlertDescription>
-                                </Alert>
-                            </div>
-                        )}
-                     </div>
-                </main>
-                </div>
-            </SidebarInset>
-        </SidebarProvider>
+        <main className="h-screen w-screen bg-black">
+             <div className="absolute top-4 left-4 z-20">
+                <Button variant="secondary" size="icon" asChild>
+                    <Link href="/dashboard">
+                        <ArrowLeft className="h-5 w-5" />
+                    </Link>
+                </Button>
+            </div>
+            
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground relative">
+                {isLoading ? (
+                    <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                        <span>Connecting to live session...</span>
+                    </div>
+                ) : isLive ? (
+                    <>
+                        <video ref={videoRef} className="w-full h-full object-contain" autoPlay playsInline />
+                        <AnimatePresence>
+                           {showInfo && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/50 text-white p-2 px-4 rounded-lg text-center"
+                            >
+                                <p className="font-bold">{liveSessionDetails?.title || 'Live Session'}</p>
+                                <p className="text-xs">{liveSessionDetails?.description || 'Welcome to the class!'}</p>
+                            </motion.div>
+                           )}
+                        </AnimatePresence>
+                        <LiveChat sessionId="live-session" />
+                    </>
+                ) : (
+                    <div className="flex flex-col items-center gap-2">
+                        <VideoOff className="h-12 w-12" />
+                        <p className="font-semibold">No active live session</p>
+                        <p className="text-sm">Please check back later.</p>
+                    </div>
+                )}
+            </div>
+        </main>
     );
 }

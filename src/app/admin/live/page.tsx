@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -264,46 +263,43 @@ export default function AdminLivePage() {
                     </Link>
                     <div className="grid lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-2">
-                             <Card>
-                                <CardHeader>
-                                    <CardTitle>Live Classroom</CardTitle>
-                                    <CardDescription>Start or stop a live video session for all students.</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center relative">
-                                        <video ref={videoRef} className="w-full h-full rounded-lg" autoPlay muted playsInline />
-                                        {isLive && (
-                                            <>
-                                                <ViewerList />
-                                                <LiveChat sessionId="live-session" />
-                                                <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20">
-                                                    <Button size="icon" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="rounded-full h-12 w-12 shadow-lg">
-                                                        {isLoading ? <Loader2 className="h-6 w-6 animate-spin"/> : <PhoneOff className="h-6 w-6" />}
-                                                    </Button>
-                                                </div>
-                                            </>
-                                        )}
+                             <div className="aspect-video bg-black rounded-lg flex items-center justify-center relative shadow-lg">
+                                <video ref={videoRef} className="w-full h-full rounded-lg object-cover" autoPlay muted playsInline />
+                                {isLive && (
+                                    <>
+                                        <ViewerList />
+                                        <LiveChat sessionId="live-session" />
+                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
+                                            <Button size="icon" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="rounded-full h-14 w-14 shadow-lg">
+                                                {isLoading ? <Loader2 className="h-6 w-6 animate-spin"/> : <PhoneOff className="h-6 w-6" />}
+                                            </Button>
+                                        </div>
+                                    </>
+                                )}
+                                 {!isLive && hasCameraPermission === null && (
+                                    <div className="text-center text-muted-foreground">
+                                        <Video className="h-16 w-16 mx-auto mb-4" />
+                                        <p>Your video feed will appear here.</p>
                                     </div>
-                                    
-                                    {hasCameraPermission === false && (
-                                        <Alert variant="destructive">
-                                            <AlertTitle>Camera Access Required</AlertTitle>
-                                            <AlertDescription>
-                                                Please allow camera access in your browser to use this feature.
-                                            </AlertDescription>
-                                        </Alert>
-                                    )}
-                                </CardContent>
-                            </Card>
+                                 )}
+                            </div>
                         </div>
                         <div className="lg:col-span-1">
-                             {!isLive && (
+                             {!isLive ? (
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Start a New Session</CardTitle>
                                         <CardDescription>Configure and start your live broadcast.</CardDescription>
                                     </CardHeader>
                                     <CardContent>
+                                        {hasCameraPermission === false && (
+                                            <Alert variant="destructive" className="mb-4">
+                                                <AlertTitle>Camera Access Required</AlertTitle>
+                                                <AlertDescription>
+                                                    Please allow camera access in your browser to use this feature.
+                                                </AlertDescription>
+                                            </Alert>
+                                        )}
                                         <Form {...form}>
                                             <form onSubmit={form.handleSubmit(handleGoLive)} className="space-y-4">
                                                 <FormField control={form.control} name="title" render={({ field }) => (
@@ -339,6 +335,22 @@ export default function AdminLivePage() {
                                                 </Button>
                                             </form>
                                         </Form>
+                                    </CardContent>
+                                </Card>
+                            ) : (
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Session is Live</CardTitle>
+                                        <CardDescription>Your broadcast is currently active.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <Alert>
+                                            <Video className="h-4 w-4" />
+                                            <AlertTitle>Streaming</AlertTitle>
+                                            <AlertDescription>
+                                                Students can now view your live stream. You can end the session using the button on the video player.
+                                            </AlertDescription>
+                                        </Alert>
                                     </CardContent>
                                 </Card>
                             )}
