@@ -5,11 +5,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Video, VideoOff, PhoneOff, Users, Mic, MicOff, Hand } from 'lucide-react';
+import { ArrowLeft, Loader2, Video, PhoneOff, Users, Mic, MicOff, Hand } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
-import { ref, onValue, set, remove, onChildAdded, get } from 'firebase/database';
+import { ref, onValue, set, remove, onChildAdded, query } from 'firebase/database';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -56,22 +56,9 @@ function ViewerList() {
             }
         };
 
-        const handleChildChanged = (snapshot: any) => {
-             const studentId = snapshot.key;
-             const handRaised = snapshot.val()?.handRaised || false;
-             setViewers(prev => {
-                const newViewers = new Map(prev);
-                const currentViewer = newViewers.get(studentId);
-                if (currentViewer) {
-                    newViewers.set(studentId, { ...currentViewer, handRaised });
-                }
-                return newViewers;
-             });
-        }
-
         const answersQuery = query(answersRef);
         const addedUnsubscribe = onChildAdded(answersQuery, handleChildAdded);
-        const changedUnsubscribe = onValue(answersRef, (snapshot) => {
+        const valueUnsubscribe = onValue(answersRef, (snapshot) => {
              if (!snapshot.exists()) {
                 setViewers(new Map());
                 return;
@@ -79,7 +66,7 @@ function ViewerList() {
             const connectedData = snapshot.val();
             const connectedIds = Object.keys(connectedData);
             
-            // Handle removals
+            // Handle removals and updates
             setViewers(prev => {
                 const newViewers = new Map<string, {name: string, handRaised: boolean}>();
                 connectedIds.forEach(id => {
@@ -88,21 +75,12 @@ function ViewerList() {
                 });
                 return newViewers;
             });
-
-             // Fetch names for any new viewers that might have been missed
-            for (const id of connectedIds) {
-                if (!viewers.has(id)) {
-                    getUserById(id).then(user => {
-                        setViewers(prev => new Map(prev).set(id, { name: user?.displayName || 'Anonymous', handRaised: connectedData[id]?.handRaised || false }));
-                    });
-                }
-            }
         });
 
 
         return () => {
             addedUnsubscribe();
-            changedUnsubscribe();
+            valueUnsubscribe();
         };
     }, []);
 
@@ -285,10 +263,11 @@ export default function AdminLivePage() {
 
     const toggleMute = () => {
         if(localStreamRef.current) {
+            const wasMuted = isMuted;
             localStreamRef.current.getAudioTracks().forEach(track => {
-                track.enabled = !track.enabled;
+                track.enabled = wasMuted;
             });
-            setIsMuted(prev => !prev);
+            setIsMuted(!wasMuted);
         }
     }
 
@@ -302,11 +281,11 @@ export default function AdminLivePage() {
                     </Link>
                     <div className="grid lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-2">
-                             <div className="aspect-video bg-black rounded-lg flex items-center justify-center relative shadow-lg">
+                             <div className="aspect-video bg-black rounded-lg flex items-center justify-center relative shadow-lg border">
                                 <video ref={videoRef} className="w-full h-full rounded-lg object-cover" autoPlay muted playsInline />
                                 
                                 {isLive && (
-                                    <div className="absolute inset-x-0 top-4 flex justify-end px-4 z-20 pointer-events-auto">
+                                    <div className="absolute top-4 right-4 z-20 pointer-events-auto">
                                         <ViewerList />
                                     </div>
                                 )}
@@ -315,7 +294,7 @@ export default function AdminLivePage() {
                                     <>
                                         <LiveChat sessionId="live-session" />
                                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
-                                            <Button size="icon" variant="secondary" onClick={toggleMute} className="rounded-full h-12 w-12 shadow-lg">
+                                            <Button size="icon" variant={isMuted ? 'destructive' : 'secondary'} onClick={toggleMute} className="rounded-full h-12 w-12 shadow-lg">
                                                 {isMuted ? <MicOff className="h-6 w-6"/> : <Mic className="h-6 w-6" />}
                                             </Button>
                                             <Button size="icon" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="rounded-full h-14 w-14 shadow-lg">
@@ -325,7 +304,7 @@ export default function AdminLivePage() {
                                         </div>
                                     </>
                                 )}
-                                 {!isLive && hasCameraPermission === null && (
+                                 {!isLive && hasCameraPermission !== true && (
                                     <div className="text-center text-muted-foreground">
                                         <Video className="h-16 w-16 mx-auto mb-4" />
                                         <p>Your video feed will appear here.</p>
