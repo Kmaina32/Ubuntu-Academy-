@@ -129,26 +129,14 @@
     },
     "webrtc-answers": {
       "live-session": {
-        ".read": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
-        "$uid": {
-          ".write": "auth != null && auth.uid == $uid"
-        }
+        ".read": "auth != null",
+        ".write": "auth != null"
       }
     },
     "webrtc-candidates": {
       "live-session": {
-        "admin": {
-          "$studentId": {
-            ".read": "auth != null && auth.uid === $studentId",
-            ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
-          }
-        },
-        "student": {
-          ".read": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
-          "$uid": {
-            ".write": "auth != null && auth.uid == $uid"
-          }
-        }
+        ".read": "auth != null",
+        ".write": "auth != null"
       }
     },
     "liveChat": {
