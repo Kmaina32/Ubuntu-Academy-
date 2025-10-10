@@ -21,9 +21,6 @@ import type { GenerateFormalDocumentInput, GenerateFormalDocumentOutput } from '
 import type { GenerateHackathonIdeasInput, GenerateHackathonIdeasOutput } from '@/ai/flows/generate-hackathon-ideas';
 import type { TextToSpeechOutput, TextToSpeechInput } from '@/ai/flows/text-to-speech';
 
-import fs from 'fs/promises';
-import path from 'path';
-
 // Each function dynamically imports its corresponding flow, ensuring that the AI logic
 // is only loaded on the server when the action is executed.
 
@@ -122,32 +119,6 @@ export async function textToSpeech(input: TextToSpeechInput): Promise<TextToSpee
 export async function sendOrganizationInvite(input: SendOrgInviteInput): Promise<SendOrgInviteOutput> {
     const { createOrganizationInvite } = await import('@/ai/flows/send-org-invite');
     return createOrganizationInvite(input);
-}
-
-// Document Management Actions
-const getDocPath = (docType: string) => {
-    return path.join(process.cwd(), 'src', 'markdown_files', docType);
-}
-
-export async function getDocumentContent(docType: string): Promise<string> {
-    try {
-        const filePath = getDocPath(docType);
-        const content = await fs.readFile(filePath, 'utf-8');
-        return content;
-    } catch (error) {
-        console.error(`Failed to read document ${docType}:`, error);
-        return `# Error: Could not load ${docType}`;
-    }
-}
-
-export async function saveDocumentContent(docType: string, content: string): Promise<void> {
-    try {
-        const filePath = getDocPath(docType);
-        await fs.writeFile(filePath, content, 'utf-8');
-    } catch (error) {
-        console.error(`Failed to save document ${docType}:`, error);
-        throw new Error(`Could not save ${docType}`);
-    }
 }
 
 export async function generateFormalDocument(input: { docType: string; content: string; }): Promise<GenerateFormalDocumentOutput> {

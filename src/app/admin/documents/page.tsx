@@ -11,14 +11,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, BookOpen, Download, FileText, Loader2, Sparkles, Gem, Power, Presentation, FileSignature } from 'lucide-react';
-import { getDocumentContent, saveDocumentContent, generateFormalDocument } from '@/app/actions';
+import { generateFormalDocument } from '@/app/actions';
 import { useAuth } from '@/hooks/use-auth';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Textarea } from '@/components/ui/textarea';
+import { getDocument, saveDocument } from '@/lib/firebase-service';
+import { PITCH_DECK, FRAMEWORK, API, B2B_STRATEGY, SEO_STRATEGY, VISUAL_FRAMEWORK } from '@/lib/document-templates';
 
-const ALL_DOC_TYPES = ['PITCH_DECK.md', 'FRAMEWORK.md', 'API.md', 'B2B_STRATEGY.md', 'SEO_STRATEGY.md', 'VISUAL_FRAMEWORK.md'] as const;
+
+const ALL_DOC_TYPES = ['PITCH_DECK', 'FRAMEWORK', 'API', 'B2B_STRATEGY', 'SEO_STRATEGY', 'VISUAL_FRAMEWORK'] as const;
 type DocType = (typeof ALL_DOC_TYPES)[number];
+
+const docTemplates: Record<DocType, string> = {
+    PITCH_DECK: PITCH_DECK,
+    FRAMEWORK: FRAMEWORK,
+    API: API,
+    B2B_STRATEGY: B2B_STRATEGY,
+    SEO_STRATEGY: SEO_STRATEGY,
+    VISUAL_FRAMEWORK: VISUAL_FRAMEWORK
+};
 
 function DocumentEditor({ docType }: { docType: DocType }) {
   const { toast } = useToast();
@@ -33,10 +45,11 @@ function DocumentEditor({ docType }: { docType: DocType }) {
     const fetchContent = async () => {
       setIsLoading(true);
       try {
-        const docContent = await getDocumentContent(docType);
-        setContent(docContent);
+        const docContent = await getDocument(docType);
+        setContent(docContent || docTemplates[docType]);
       } catch (err) {
-        toast({ title: 'Error loading document', variant: 'destructive' });
+        toast({ title: 'Error loading document', description: 'Using default template.', variant: 'destructive' });
+        setContent(docTemplates[docType]);
       } finally {
         setIsLoading(false);
       }
@@ -47,7 +60,7 @@ function DocumentEditor({ docType }: { docType: DocType }) {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await saveDocumentContent(docType, content);
+      await saveDocument(docType, content);
       toast({ title: 'Success', description: `${docType} saved successfully.` });
     } catch (err) {
       toast({ title: 'Error saving document', variant: 'destructive' });
@@ -60,11 +73,9 @@ function DocumentEditor({ docType }: { docType: DocType }) {
     setIsGenerating(true);
     toast({ title: 'AI is generating the document...', description: 'This may take a moment.' });
     try {
-        const result = await generateFormalDocument({ docType: docType, content: content });
+        const result = await generateFormalDocument({ docType: `${docType}.md` as any, content: content });
         setContent(result.formal_document);
-        // Automatically save the AI-generated content
-        await saveDocumentContent(docType, result.formal_document);
-        toast({ title: 'Success', description: 'Document updated by AI and saved.' });
+        toast({ title: 'Success', description: 'Document updated by AI.' });
     } catch (err) {
         toast({ title: 'Error generating document', variant: 'destructive' });
     } finally {
@@ -126,7 +137,7 @@ function DocumentEditor({ docType }: { docType: DocType }) {
     }
 
     document.body.removeChild(renderDiv);
-    pdf.save(`${docType.replace('.md','')}.pdf`);
+    pdf.save(`${docType}.pdf`);
     setIsDownloading(false);
   };
   
@@ -176,12 +187,12 @@ export default function AdminDocumentsPage() {
     }, [isSuperAdmin, authLoading, router]);
 
     const TABS_CONFIG = useMemo(() => [
-        { value: "pitch_deck", label: "Pitch Deck", docType: "PITCH_DECK.md" as DocType, icon: Presentation },
-        { value: "framework", label: "Framework", docType: "FRAMEWORK.md" as DocType, icon: BookOpen },
-        { value: "api", label: "API", docType: "API.md" as DocType, icon: FileText },
-        { value: "b2b_strategy", label: "B2B Strategy", docType: "B2B_STRATEGY.md" as DocType, icon: FileSignature },
-        { value: "seo_strategy", label: "SEO Strategy", docType: "SEO_STRATEGY.md" as DocType, icon: FileSignature },
-        { value: "visual_framework", label: "Visual Framework", docType: "VISUAL_FRAMEWORK.md" as DocType, icon: FileSignature }
+        { value: "pitch_deck", label: "Pitch Deck", docType: "PITCH_DECK" as DocType, icon: Presentation },
+        { value: "framework", label: "Framework", docType: "FRAMEWORK" as DocType, icon: BookOpen },
+        { value: "api", label: "API", docType: "API" as DocType, icon: FileText },
+        { value: "b2b_strategy", label: "B2B Strategy", docType: "B2B_STRATEGY" as DocType, icon: FileSignature },
+        { value: "seo_strategy", label: "SEO Strategy", docType: "SEO_STRATEGY" as DocType, icon: FileSignature },
+        { value: "visual_framework", label: "Visual Framework", docType: "VISUAL_FRAMEWORK" as DocType, icon: FileSignature }
     ], []);
     
     if (authLoading || !isSuperAdmin) {

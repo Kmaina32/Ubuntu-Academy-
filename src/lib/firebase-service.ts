@@ -848,12 +848,12 @@ export async function deletePlan(id: string): Promise<void> {
 
 // Document Management Functions
 export async function saveDocument(docType: string, content: string): Promise<void> {
-    const docRef = ref(db, `documents/${docType.replace('.md', '')}`);
+    const docRef = ref(db, `documents/${docType}`);
     await set(docRef, { content });
 }
 
 export async function getDocument(docType: string): Promise<string> {
-    const docRef = ref(db, `documents/${docType.replace('.md', '')}/content`);
+    const docRef = ref(db, `documents/${docType}/content`);
     const snapshot = await get(docRef);
     return snapshot.exists() ? snapshot.val() : '';
 }
