@@ -19,6 +19,7 @@ import { format, isPast, isToday, formatDistanceToNow } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { EventForm } from '@/components/EventForm';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -201,7 +202,7 @@ export default function AdminLivePage() {
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
     const [isMuted, setIsMuted] = useState(false);
 
-    const [upcomingEvent, setUpcomingEvent] = useState<CalendarEvent | null>(null);
+    const [upcomingEvents, setUpcomingEvents] = useState<CalendarEvent[]>([]);
     const [pastEvents, setPastEvents] = useState<CalendarEvent[]>([]);
 
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -223,7 +224,7 @@ export default function AdminLivePage() {
             .filter(e => isPast(new Date(e.date)))
             .sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-        setUpcomingEvent(upcoming[0] || null);
+        setUpcomingEvents(upcoming);
         setPastEvents(past.slice(0, 5)); // show last 5
         setIsFetchingEvents(false);
     }
@@ -418,12 +419,38 @@ export default function AdminLivePage() {
                                         </Alert>
                                     </CardContent>
                                 </Card>
-                            ) : upcomingEvent ? (
-                                <UpcomingSessionCard event={upcomingEvent} onGoLive={handleGoLive} />
+                            ) : upcomingEvents.length > 0 && isToday(new Date(upcomingEvents[0].date)) ? (
+                                <UpcomingSessionCard event={upcomingEvents[0]} onGoLive={handleGoLive} />
                             ) : (
                                 <NoSessionCard onGoLive={handleGoLive} onScheduleSuccess={fetchEvents} />
                             )}
                             
+                            {upcomingEvents.length > 0 && !isLive && (
+                               <Card>
+                                 <CardHeader>
+                                     <CardTitle>Upcoming Sessions</CardTitle>
+                                     <CardDescription>Your next scheduled live events.</CardDescription>
+                                 </CardHeader>
+                                 <CardContent>
+                                    <ScrollArea>
+                                      <div className="flex space-x-4 pb-4">
+                                        {upcomingEvents.map(event => (
+                                          <div key={event.id} className="min-w-[250px]">
+                                            <Card>
+                                              <CardHeader>
+                                                <CardTitle className="text-base truncate">{event.title}</CardTitle>
+                                                <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
+                                              </CardHeader>
+                                            </Card>
+                                          </div>
+                                        ))}
+                                      </div>
+                                      <ScrollBar orientation="horizontal" />
+                                    </ScrollArea>
+                                 </CardContent>
+                            </Card>
+                            )}
+
                              <Card>
                                  <CardHeader>
                                      <CardTitle>Past Sessions</CardTitle>
@@ -453,7 +480,3 @@ export default function AdminLivePage() {
         </div>
     );
 }
-
-    
-
-    
