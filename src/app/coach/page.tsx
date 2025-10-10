@@ -226,7 +226,7 @@ export default function CareerCoachPage() {
                         <CardContent className="p-6 space-y-4">
                             <p><strong className="font-semibold">Why this course:</strong> {step.reasoning}</p>
                              <Button asChild>
-                                <Link href={`/courses/${'slugify(step.courseTitle)'}`}>
+                                <Link href={`/courses/${slugify(step.courseTitle)}`}>
                                     View Course
                                     <ArrowRight className="ml-2 h-4 w-4" />
                                 </Link>
