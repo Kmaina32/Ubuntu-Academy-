@@ -128,8 +128,32 @@ export default function CreateHackathonPage() {
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField control={form.control} name="title" render={({ field }) => ( <FormItem> <FormLabel>Title</FormLabel> <FormControl> <Input placeholder="e.g., Manda Network Fintech Challenge" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                  <FormField control={form.control} name="description" render={({ field }) => ( <FormItem> <FormLabel>Description</FormLabel> <FormControl> <Textarea placeholder="A description of the hackathon..." {...field} className="min-h-[120px]" /> </FormControl> <FormMessage /> </FormItem> )}/>
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Title</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Manda Network Fintech Challenge" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="A description of the hackathon..." {...field} className="min-h-[120px]" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField control={form.control} name="imageUrl" render={({ field }) => ( <FormItem> <FormLabel>Image URL</FormLabel> <FormControl> <Input placeholder="https://placehold.co/1200x400" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -144,11 +168,13 @@ export default function CreateHackathonPage() {
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormLabel>Start Date</FormLabel>
-                          <FormDatePicker
-                            value={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date < new Date('1900-01-01')}
-                          />
+                          <FormControl>
+                            <FormDatePicker
+                              value={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) => date < new Date('1900-01-01')}
+                            />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -159,11 +185,13 @@ export default function CreateHackathonPage() {
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormLabel>End Date</FormLabel>
-                          <FormDatePicker
-                            value={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date < new Date('1900-01-01')}
-                          />
+                          <FormControl>
+                            <FormDatePicker
+                              value={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) => date < new Date('1900-01-01')}
+                            />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
