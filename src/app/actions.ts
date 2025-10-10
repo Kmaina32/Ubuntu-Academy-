@@ -14,14 +14,13 @@ import type { GradeShortAnswerExamInput, GradeShortAnswerExamOutput } from '@/ai
 import type { MpesaPaymentInput, MpesaPaymentOutput } from '@/ai/flows/mpesa-payment';
 import type { SiteHelpInput, SiteHelpOutput } from '@/ai/flows/site-help';
 import type { SpeechToTextOutput } from '@/ai/flows/speech-to-text';
-import type { StudentHelpInput, StudentHelpOutput } from '@/ai/flows/student-help';
-import type { TextToSpeechOutput } from '@/ai/flows/text-to-speech';
 import type { ApiKey } from '@/lib/types';
 import type { GenerateProjectInput, GenerateProjectOutput } from '@/ai/flows/generate-project';
 import type { SendOrgInviteInput, SendOrgInviteOutput } from '@/ai/flows/send-org-invite';
 import type { GenerateFormalDocumentInput, GenerateFormalDocumentOutput } from '@/ai/flows/generate-document';
 import type { GenerateHackathonIdeasInput, GenerateHackathonIdeasOutput } from '@/ai/flows/generate-hackathon-ideas';
 import { getDocument, saveDocument } from '@/lib/firebase-service';
+import type { TextToSpeechOutput, TextToSpeechInput } from '@/ai/flows/text-to-speech';
 
 
 // Each function dynamically imports its corresponding flow, ensuring that the AI logic
@@ -114,10 +113,9 @@ export async function studentHelp(input: StudentHelpInput): Promise<StudentHelpO
   return studentHelp(input);
 }
 
-export async function textToSpeech(input: { text: string; voice?: string; speed?: number; }): Promise<TextToSpeechOutput> {
-    const { textToSpeech } = await import('@/ai/flows/text-to-speech');
-    // @ts-ignore
-    return textToSpeech(input);
+export async function textToSpeech(input: TextToSpeechInput): Promise<TextToSpeechOutput> {
+    const { textToSpeechFlow } = await import('@/ai/flows/text-to-speech');
+    return textToSpeechFlow(input);
 }
 
 export async function sendOrganizationInvite(input: SendOrgInviteInput): Promise<SendOrgInviteOutput> {

@@ -39,19 +39,21 @@ async function toWav(
   });
 }
 
-const TextToSpeechInputSchema = z.object({
+export const TextToSpeechInputSchema = z.object({
   text: z.string(),
   voice: z.string().optional(),
   speed: z.number().optional(),
 });
+export type TextToSpeechInput = z.infer<typeof TextToSpeechInputSchema>;
 
-const TextToSpeechOutputSchema = z.object({
+export const TextToSpeechOutputSchema = z.object({
   media: z.string().describe("The base64-encoded WAV audio data URI."),
 });
+export type TextToSpeechOutput = z.infer<typeof TextToSpeechOutputSchema>;
 
-export const textToSpeech = ai.defineFlow(
+export const textToSpeechFlow = ai.defineFlow(
   {
-    name: 'textToSpeech',
+    name: 'textToSpeechFlow',
     inputSchema: TextToSpeechInputSchema,
     outputSchema: TextToSpeechOutputSchema,
   },
