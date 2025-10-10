@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 import { getUserById, getAllCalendarEvents } from '@/lib/firebase-service';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Hand, Loader2, PhoneOff, Users, VideoOff, Maximize, Calendar } from 'lucide-react';
+import { Hand, Loader2, PhoneOff, Users, VideoOff, Maximize, Calendar, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { onValue, ref, onChildAdded, set, remove } from 'firebase/database';
 import Link from 'next/link';
