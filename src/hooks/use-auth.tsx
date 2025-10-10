@@ -29,9 +29,10 @@ import { RegisteredUser, saveUser, getUserById, createOrganization, getOrganizat
 import { ref, onValue, onDisconnect, set, serverTimestamp, update, get } from 'firebase/database';
 import { useToast } from './use-toast';
 import { add } from 'date-fns';
+import { useRouter } from 'next/navigation';
 
 const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
-const SUPER_ADMIN_ORG_NAME = "Akili A.I Academy";
+const SUPER_ADMIN_ORG_NAME = "Manda Network";
 
 interface AuthContextType {
   user: User | null;
@@ -63,6 +64,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [members, setMembers] = useState<RegisteredUser[]>([]);
   const { toast } = useToast();
+  const router = useRouter();
   
   const isSuperAdmin = user?.uid === ADMIN_UID;
   const isAdmin = (dbUser?.isAdmin && (!dbUser.adminExpiresAt || new Date(dbUser.adminExpiresAt) > new Date())) || isSuperAdmin;
@@ -223,8 +225,9 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
       }
   }
 
-  const logout = () => {
-    return firebaseSignOut(auth);
+  const logout = async () => {
+    await firebaseSignOut(auth);
+    router.push('/');
   };
   
   const sendPasswordReset = (email: string) => {
