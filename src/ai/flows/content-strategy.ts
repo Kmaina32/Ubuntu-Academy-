@@ -18,6 +18,9 @@ const CourseIdeasSchema = z.object({
     title: z.string().describe('A compelling and marketable title for a new course.'),
     category: z.string().describe('A relevant category for the course (e.g., Technology, Business, Arts).'),
     instructor: z.string().describe('A plausible Kenyan-sounding instructor name.'),
+    price: z.number().describe('A realistic price in Kenyan Shillings (e.g., 2500, 4999).'),
+    description: z.string().describe('A short, marketable description for the course (1-2 sentences).'),
+    duration: z.string().describe('An estimated duration, like "4 Weeks" or "6 Hours".'),
   })).length(10).describe('An array of exactly 10 unique and relevant course ideas for a Kenyan audience.'),
 });
 
@@ -51,7 +54,7 @@ const runContentStrategyFlow = ai.defineFlow(
     // Step 1: Generate 10 course ideas
     console.log('Generating course ideas...');
     const ideasResponse = await ai.generate({
-      prompt: `You are a Content Strategist for Edgewood International A.I College, an online learning platform for a Kenyan audience. Your task is to brainstorm 10 highly relevant and marketable course ideas that would appeal to students looking to upskill. Provide a title, a category, and a plausible instructor name for each.`,
+      prompt: `You are a Content Strategist for Manda Network, an online learning platform for a Kenyan audience. Your task is to brainstorm 10 highly relevant and marketable course ideas that would appeal to students looking to upskill. Provide a title, category, instructor, price, short description, and duration for each.`,
       model: googleAI.model('gemini-1.5-pro'),
       output: {
         schema: CourseIdeasSchema,
@@ -59,42 +62,41 @@ const runContentStrategyFlow = ai.defineFlow(
     });
 
     const courseIdeas = ideasResponse.output?.courseIdeas;
-    if (!courseIdeas) {
+    if (!courseIdeas || courseIdeas.length === 0) {
       throw new Error('Failed to generate course ideas.');
     }
 
-    // Step 2: Generate content for each course idea and save it
-    console.log('Generating content for 10 courses...');
-    const generatedCourses = [];
+    // Step 2: Create draft courses from the ideas
+    console.log('Creating draft courses from 10 ideas...');
+    const createdCourses = [];
     for (const idea of courseIdeas) {
       try {
-        const content = await generateCourseContent({ courseTitle: idea.title });
         const courseData = {
           ...idea,
-          ...content,
-          price: Math.floor(Math.random() * 5000) + 1000, // Random price
-          description: content.longDescription ? content.longDescription.substring(0, 150) + '...' : 'New course available now!',
+          longDescription: 'This course content is AI-generated and needs to be reviewed. You can use the AI generator on the course edit page to create the full curriculum.',
           dripFeed: 'daily' as const,
-          imageUrl: 'https://placehold.co/600x400'
+          imageUrl: 'https://placehold.co/600x400',
+          modules: [],
+          exam: []
         };
         const courseId = await createCourse(courseData);
-        generatedCourses.push({ id: courseId, ...courseData });
+        createdCourses.push({ id: courseId, ...courseData });
         console.log(`- Course "${idea.title}" created.`);
       } catch (e) {
           console.error(`Failed to create course "${idea.title}"`, e);
       }
     }
     
-    if(generatedCourses.length === 0) {
-        throw new Error('No courses were successfully generated.');
+    if(createdCourses.length === 0) {
+        throw new Error('No courses were successfully created.');
     }
 
-    const generatedCourseTitles = generatedCourses.map(c => c.title);
+    const createdCourseTitles = createdCourses.map(c => c.title);
 
     // Step 3: Suggest and create a program from the new courses
     console.log('Generating program suggestion...');
     const programResponse = await ai.generate({
-        prompt: `Based on the following list of newly created courses, create a compelling Certificate Program that groups a logical subset of them together. The courses are: ${generatedCourseTitles.join(', ')}`,
+        prompt: `Based on the following list of newly created courses, create a compelling Certificate Program that groups a logical subset of them together. The courses are: ${createdCourseTitles.join(', ')}`,
         model: googleAI.model('gemini-1.5-pro'),
         output: {
             schema: ProgramSuggestionSchema,
@@ -104,7 +106,7 @@ const runContentStrategyFlow = ai.defineFlow(
     const programSuggestion = programResponse.output;
     if (!programSuggestion) throw new Error('Failed to generate program suggestion.');
 
-    const programCourseIds = programSuggestion.courseIndices.map(i => generatedCourses[i].id);
+    const programCourseIds = programSuggestion.courseIndices.map(i => createdCourses[i].id);
     await createProgram({
         title: programSuggestion.programTitle,
         description: programSuggestion.programDescription,
@@ -116,7 +118,7 @@ const runContentStrategyFlow = ai.defineFlow(
     // Step 4: Suggest and create a bundle from the new courses
     console.log('Generating bundle suggestion...');
     const bundleResponse = await ai.generate({
-        prompt: `Based on the following list of newly created courses, create a compelling Course Bundle for marketing purposes that groups a logical subset of them together. The courses are: ${generatedCourseTitles.join(', ')}`,
+        prompt: `Based on the following list of newly created courses, create a compelling Course Bundle for marketing purposes that groups a logical subset of them together. The courses are: ${createdCourseTitles.join(', ')}`,
         model: googleAI.model('gemini-1.5-pro'),
         output: {
             schema: BundleSuggestionSchema,
@@ -126,7 +128,7 @@ const runContentStrategyFlow = ai.defineFlow(
     const bundleSuggestion = bundleResponse.output;
     if (!bundleSuggestion) throw new Error('Failed to generate bundle suggestion.');
 
-    const bundleCourseIds = bundleSuggestion.courseIndices.map(i => generatedCourses[i].id);
+    const bundleCourseIds = bundleSuggestion.courseIndices.map(i => createdCourses[i].id);
     await createBundle({
         title: bundleSuggestion.bundleTitle,
         description: bundleSuggestion.bundleDescription,
@@ -137,7 +139,7 @@ const runContentStrategyFlow = ai.defineFlow(
     console.log(`- Bundle "${bundleSuggestion.bundleTitle}" created.`);
     
     return {
-        coursesCreated: generatedCourses.length,
+        coursesCreated: createdCourses.length,
         programTitle: programSuggestion.programTitle,
         bundleTitle: bundleSuggestion.bundleTitle
     }
