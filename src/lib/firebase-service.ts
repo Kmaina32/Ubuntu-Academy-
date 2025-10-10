@@ -1,5 +1,4 @@
 
-
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -357,7 +356,7 @@ export async function getTutorSettings(): Promise<TutorSettings> {
     const defaults: TutorSettings = {
         voice: 'algenib',
         speed: 1.0,
-        prompts: "Welcome! To talk with me, your virtual tutor, just click the chat button.\\nHow can I help you with this lesson?",
+        prompts: "Welcome! To talk with me, your virtual tutor, just click the chat button.\nHow can I help you with this lesson?",
         avatarUrl: '/gina-avatar.png',
     };
     if (snapshot.exists()) {
