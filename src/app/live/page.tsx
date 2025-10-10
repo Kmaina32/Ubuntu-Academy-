@@ -87,7 +87,7 @@ function ViewerList() {
                 <TooltipContent>
                    {viewerList.length > 0 ? (
                     <ul className="text-sm space-y-1">
-                        {viewerList.map(viewer => <li key={viewer.name} className="flex items-center gap-2">{viewer.name} {viewer.handRaised && <Hand className="h-4 w-4 text-blue-500"/>}</li>)}
+                        {viewerList.map((viewer, index) => <li key={index} className="flex items-center gap-2">{viewer.name} {viewer.handRaised && <Hand className="h-4 w-4 text-blue-500"/>}</li>)}
                     </ul>
                    ) : <p>No viewers yet.</p>}
                 </TooltipContent>
@@ -306,7 +306,7 @@ export default function StudentLivePage() {
                           </div>
                       )}
                   </div>
-                   {upcomingEvents.length > 0 && (
+                  {upcomingEvents.length > 0 && !isLive && (
                       <div className="mt-8">
                           <h2 className="text-2xl font-bold mb-4 font-headline flex items-center gap-2">
                             <Calendar className="h-6 w-6"/>

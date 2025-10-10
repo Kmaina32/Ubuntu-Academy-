@@ -43,8 +43,6 @@ function ViewerList() {
             }
         };
 
-        const answersQuery = query(answersRef);
-        const addedUnsubscribe = onChildAdded(answersQuery, handleChildAdded);
         const valueUnsubscribe = onValue(answersRef, (snapshot) => {
              if (!snapshot.exists()) {
                 setViewers(new Map());
@@ -64,6 +62,8 @@ function ViewerList() {
             });
         });
 
+
+        const addedUnsubscribe = onChildAdded(answersRef, handleChildAdded);
 
         return () => {
             addedUnsubscribe();
@@ -87,7 +87,7 @@ function ViewerList() {
                 <TooltipContent>
                    {viewerList.length > 0 ? (
                     <ul className="text-sm space-y-1">
-                        {viewerList.map(viewer => <li key={viewer.name} className="flex items-center gap-2">{viewer.name} {viewer.handRaised && <Hand className="h-4 w-4 text-blue-500"/>}</li>)}
+                        {viewerList.map((viewer, index) => <li key={index} className="flex items-center gap-2">{viewer.name} {viewer.handRaised && <Hand className="h-4 w-4 text-blue-500"/>}</li>)}
                     </ul>
                    ) : <p>No viewers yet.</p>}
                 </TooltipContent>
@@ -195,7 +195,6 @@ function NoSessionCard({ onGoLive, onScheduleSuccess }: { onGoLive: (event: Cale
 
 export default function AdminLivePage() {
     const { toast } = useToast();
-    const router = useRouter();
     const [isLive, setIsLive] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isFetchingEvents, setIsFetchingEvents] = useState(true);
@@ -231,10 +230,19 @@ export default function AdminLivePage() {
     
     useEffect(() => {
         fetchEvents();
+        // Check for existing live session on page load
+        onValue(offerRef, (snapshot) => {
+            if (snapshot.exists()) {
+                // An offer exists, implying a session might be live.
+                // This component should take over the session.
+                // For simplicity, we'll just reflect the state.
+                // A more robust solution would handle session ownership.
+                setIsLive(true);
+            }
+        }, { onlyOnce: true });
     }, []);
 
     useEffect(() => {
-        // Cleanup on component unmount
         return () => {
             if(isLive) {
                 handleStopLive();
@@ -277,37 +285,46 @@ export default function AdminLivePage() {
             body: event.description || 'A live session has started. Join now!',
             link: '/live',
         };
-
         await createNotification(notificationPayload);
-        toast({ title: 'Notifications Sent!', description: 'Students have been notified about the live session.'});
+        toast({ title: 'Notifications Sent!', description: 'Students have been notified.'});
 
-        const offerPc = new RTCPeerConnection(ICE_SERVERS);
-        stream.getTracks().forEach(track => offerPc.addTrack(track, stream));
-        const offer = await offerPc.createOffer();
-        await offerPc.setLocalDescription(offer);
-        
-        await set(offerRef, { sdp: offer.sdp, type: offer.type, ...event });
-        offerPc.close();
+        // Create a single offer for the session
+        const singlePc = new RTCPeerConnection(ICE_SERVERS);
+        stream.getTracks().forEach(track => singlePc.addTrack(track, stream));
+        const offer = await singlePc.createOffer();
+        await singlePc.setLocalDescription(offer);
+
+        await set(offerRef, { 
+            sdp: offer.sdp, 
+            type: offer.type,
+            ...event
+        });
+        singlePc.close(); // Close this temp PC. We'll create new ones for each student.
 
         setIsLive(true);
         setIsLoading(false);
-        toast({ title: 'You are now live!', description: 'Your video stream has started. Waiting for students to join.' });
+        toast({ title: 'You are now live!', description: 'Waiting for students to join.' });
 
+        // Listen for answers from students
         onChildAdded(answersRef, async (snapshot) => {
             const studentId = snapshot.key;
-            if (!studentId || peerConnectionsRef.current.has(studentId)) return;
-
             const studentAnswer = snapshot.val();
             
+            if (!studentId || !studentAnswer || peerConnectionsRef.current.has(studentId)) return;
+
+            console.log(`Received answer from ${studentId}`);
+
             const peerConnection = new RTCPeerConnection(ICE_SERVERS);
             peerConnectionsRef.current.set(studentId, peerConnection);
 
+            // Add local media tracks to the new connection
             localStreamRef.current?.getTracks().forEach(track => {
                 peerConnection.addTrack(track, localStreamRef.current!);
             });
 
             await peerConnection.setRemoteDescription(new RTCSessionDescription(studentAnswer));
-            
+
+            // Handle ICE candidates for this specific student
             peerConnection.onicecandidate = iceEvent => {
                 if (iceEvent.candidate) {
                     set(ref(db, `webrtc-candidates/live-session/admin/${studentId}/${Date.now()}`), iceEvent.candidate.toJSON());
@@ -425,31 +442,33 @@ export default function AdminLivePage() {
                                 <NoSessionCard onGoLive={handleGoLive} onScheduleSuccess={fetchEvents} />
                             )}
                             
-                            {upcomingEvents.length > 0 && !isLive && (
-                               <Card>
+                           <Card>
                                  <CardHeader>
                                      <CardTitle>Upcoming Sessions</CardTitle>
                                      <CardDescription>Your next scheduled live events.</CardDescription>
                                  </CardHeader>
                                  <CardContent>
-                                    <ScrollArea>
-                                      <div className="flex space-x-4 pb-4">
-                                        {upcomingEvents.map(event => (
-                                          <div key={event.id} className="min-w-[250px]">
-                                            <Card>
-                                              <CardHeader>
-                                                <CardTitle className="text-base truncate">{event.title}</CardTitle>
-                                                <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
-                                              </CardHeader>
-                                            </Card>
-                                          </div>
-                                        ))}
-                                      </div>
-                                      <ScrollBar orientation="horizontal" />
-                                    </ScrollArea>
+                                    {upcomingEvents.length > 0 ? (
+                                        <ScrollArea>
+                                            <div className="flex space-x-4 pb-4">
+                                                {upcomingEvents.map(event => (
+                                                <div key={event.id} className="min-w-[250px]">
+                                                    <Card>
+                                                    <CardHeader>
+                                                        <CardTitle className="text-base truncate">{event.title}</CardTitle>
+                                                        <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
+                                                    </CardHeader>
+                                                    </Card>
+                                                </div>
+                                                ))}
+                                            </div>
+                                            <ScrollBar orientation="horizontal" />
+                                        </ScrollArea>
+                                    ) : (
+                                        <p className="text-muted-foreground text-sm text-center py-4">No upcoming sessions scheduled.</p>
+                                    )}
                                  </CardContent>
                             </Card>
-                            )}
 
                              <Card>
                                  <CardHeader>
