@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Video, VideoOff, PhoneOff, Users } from 'lucide-react';
+import { ArrowLeft, Loader2, Video, VideoOff, PhoneOff, Users, Mic, MicOff, Hand } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { createNotification, getUserById } from '@/lib/firebase-service';
 import { LiveChat } from '@/components/LiveChat';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 
 const liveSessionSchema = z.object({
     title: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -41,58 +42,87 @@ const ICE_SERVERS = {
 };
 
 function ViewerList() {
-    const [viewers, setViewers] = useState<Map<string, string>>(new Map());
+    const [viewers, setViewers] = useState<Map<string, {name: string, handRaised: boolean}>>(new Map());
 
     useEffect(() => {
         const answersRef = ref(db, 'webrtc-answers/live-session');
 
-        const unsubscribe = onChildAdded(answersRef, async (snapshot) => {
+        const handleChildAdded = async (snapshot: any) => {
             const studentId = snapshot.key;
             if (studentId) {
                 const user = await getUserById(studentId);
-                setViewers(prev => new Map(prev).set(studentId, user?.displayName || 'Anonymous'));
+                const handRaised = snapshot.val()?.handRaised || false;
+                setViewers(prev => new Map(prev).set(studentId, { name: user?.displayName || 'Anonymous', handRaised }));
             }
-        });
-        
-        // A simple way to handle disconnects without complex presence system for this specific feature
-        const allAnswersUnsubscribe = onValue(answersRef, (snapshot) => {
-            if (!snapshot.exists()) {
+        };
+
+        const handleChildChanged = (snapshot: any) => {
+             const studentId = snapshot.key;
+             const handRaised = snapshot.val()?.handRaised || false;
+             setViewers(prev => {
+                const newViewers = new Map(prev);
+                const currentViewer = newViewers.get(studentId);
+                if (currentViewer) {
+                    newViewers.set(studentId, { ...currentViewer, handRaised });
+                }
+                return newViewers;
+             });
+        }
+
+        const answersQuery = query(answersRef);
+        const addedUnsubscribe = onChildAdded(answersQuery, handleChildAdded);
+        const changedUnsubscribe = onValue(answersRef, (snapshot) => {
+             if (!snapshot.exists()) {
                 setViewers(new Map());
                 return;
             }
-            const connectedIds = Object.keys(snapshot.val());
+            const connectedData = snapshot.val();
+            const connectedIds = Object.keys(connectedData);
+            
+            // Handle removals
             setViewers(prev => {
-                const newViewers = new Map<string, string>();
+                const newViewers = new Map<string, {name: string, handRaised: boolean}>();
                 connectedIds.forEach(id => {
-                    if (prev.has(id)) {
-                        newViewers.set(id, prev.get(id)!);
-                    }
+                    const currentViewer = prev.get(id) || { name: '...', handRaised: false };
+                    newViewers.set(id, { ...currentViewer, handRaised: connectedData[id]?.handRaised || false });
                 });
                 return newViewers;
             });
+
+             // Fetch names for any new viewers that might have been missed
+            for (const id of connectedIds) {
+                if (!viewers.has(id)) {
+                    getUserById(id).then(user => {
+                        setViewers(prev => new Map(prev).set(id, { name: user?.displayName || 'Anonymous', handRaised: connectedData[id]?.handRaised || false }));
+                    });
+                }
+            }
         });
 
+
         return () => {
-            unsubscribe();
-            allAnswersUnsubscribe();
+            addedUnsubscribe();
+            changedUnsubscribe();
         };
     }, []);
 
     const viewerList = Array.from(viewers.values());
+    const raisedHands = viewerList.filter(v => v.handRaised).length;
 
     return (
          <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm pointer-events-auto">
+                    <div className="bg-background/80 backdrop-blur-sm text-foreground px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm pointer-events-auto shadow-md">
                         <Users className="h-4 w-4" />
                         <span>{viewerList.length}</span>
+                        {raisedHands > 0 && <span className="flex items-center gap-1 text-blue-500"><Hand className="h-4 w-4"/> {raisedHands}</span>}
                     </div>
                 </TooltipTrigger>
                 <TooltipContent>
                    {viewerList.length > 0 ? (
-                    <ul className="text-sm">
-                        {viewerList.map(name => <li key={name}>{name}</li>)}
+                    <ul className="text-sm space-y-1">
+                        {viewerList.map(viewer => <li key={viewer.name} className="flex items-center gap-2">{viewer.name} {viewer.handRaised && <Hand className="h-4 w-4 text-blue-500"/>}</li>)}
                     </ul>
                    ) : <p>No viewers yet.</p>}
                 </TooltipContent>
@@ -107,6 +137,7 @@ export default function AdminLivePage() {
     const [isLive, setIsLive] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+    const [isMuted, setIsMuted] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     const localStreamRef = useRef<MediaStream | null>(null);
     const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
@@ -200,7 +231,6 @@ export default function AdminLivePage() {
             if (!studentId || peerConnectionsRef.current.has(studentId)) return;
 
             const studentAnswer = snapshot.val();
-            toast({ title: 'Student Joined', description: `A new student has connected to the stream.` });
             
             const peerConnection = new RTCPeerConnection(ICE_SERVERS);
             peerConnectionsRef.current.set(studentId, peerConnection);
@@ -253,6 +283,15 @@ export default function AdminLivePage() {
         setIsLoading(false);
     };
 
+    const toggleMute = () => {
+        if(localStreamRef.current) {
+            localStreamRef.current.getAudioTracks().forEach(track => {
+                track.enabled = !track.enabled;
+            });
+            setIsMuted(prev => !prev);
+        }
+    }
+
     return (
         <div className="flex flex-col min-h-screen">
             <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
@@ -265,14 +304,24 @@ export default function AdminLivePage() {
                         <div className="lg:col-span-2">
                              <div className="aspect-video bg-black rounded-lg flex items-center justify-center relative shadow-lg">
                                 <video ref={videoRef} className="w-full h-full rounded-lg object-cover" autoPlay muted playsInline />
+                                
+                                {isLive && (
+                                    <div className="absolute inset-x-0 top-4 flex justify-end px-4 z-20 pointer-events-auto">
+                                        <ViewerList />
+                                    </div>
+                                )}
+                                
                                 {isLive && (
                                     <>
-                                        <ViewerList />
                                         <LiveChat sessionId="live-session" />
-                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
+                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
+                                            <Button size="icon" variant="secondary" onClick={toggleMute} className="rounded-full h-12 w-12 shadow-lg">
+                                                {isMuted ? <MicOff className="h-6 w-6"/> : <Mic className="h-6 w-6" />}
+                                            </Button>
                                             <Button size="icon" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="rounded-full h-14 w-14 shadow-lg">
                                                 {isLoading ? <Loader2 className="h-6 w-6 animate-spin"/> : <PhoneOff className="h-6 w-6" />}
                                             </Button>
+                                            <div className="w-12 h-12"></div>
                                         </div>
                                     </>
                                 )}

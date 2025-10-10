@@ -3,16 +3,21 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, VideoOff, Video } from 'lucide-react';
+import { Loader2, ArrowLeft, VideoOff, Video, PhoneOff, Users, Hand, Mic, MicOff } from 'lucide-react';
 import Link from 'next/link';
 import { db } from '@/lib/firebase';
-import { ref, onValue, set, remove, onChildAdded } from 'firebase/database';
+import { ref, onValue, set, remove, onChildAdded, get, update, query } from 'firebase/database';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { LiveChat } from '@/components/LiveChat';
 import { Button } from '@/components/ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { getUserById } from '@/lib/firebase-service';
+import { AppSidebar } from '@/components/Sidebar';
+import { Header } from '@/components/Header';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { Footer } from '@/components/Footer';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -23,18 +28,86 @@ const ICE_SERVERS = {
 
 type ConnectionState = 'new' | 'connecting' | 'connected' | 'failed' | 'closed';
 
+function ViewerList() {
+    const [viewers, setViewers] = useState<Map<string, {name: string, handRaised: boolean}>>(new Map());
+
+    useEffect(() => {
+        const answersRef = ref(db, 'webrtc-answers/live-session');
+
+        const handleChildAdded = async (snapshot: any) => {
+            const studentId = snapshot.key;
+            if (studentId) {
+                const user = await getUserById(studentId);
+                const handRaised = snapshot.val()?.handRaised || false;
+                setViewers(prev => new Map(prev).set(studentId, { name: user?.displayName || 'Anonymous', handRaised }));
+            }
+        };
+
+        const answersQuery = query(answersRef);
+        const addedUnsubscribe = onChildAdded(answersQuery, handleChildAdded);
+        const valueUnsubscribe = onValue(answersRef, (snapshot) => {
+             if (!snapshot.exists()) {
+                setViewers(new Map());
+                return;
+            }
+            const connectedData = snapshot.val();
+            const connectedIds = Object.keys(connectedData);
+            
+            // Handle removals
+            setViewers(prev => {
+                const newViewers = new Map<string, {name: string, handRaised: boolean}>();
+                connectedIds.forEach(id => {
+                    const currentViewer = prev.get(id) || { name: '...', handRaised: false };
+                    newViewers.set(id, { ...currentViewer, handRaised: connectedData[id]?.handRaised || false });
+                });
+                return newViewers;
+            });
+        });
+
+        return () => {
+            addedUnsubscribe();
+            valueUnsubscribe();
+        };
+    }, []);
+
+    const viewerList = Array.from(viewers.values());
+    const raisedHands = viewerList.filter(v => v.handRaised).length;
+
+    return (
+         <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div className="bg-background/80 backdrop-blur-sm text-foreground px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm pointer-events-auto shadow-md">
+                        <Users className="h-4 w-4" />
+                        <span>{viewerList.length}</span>
+                        {raisedHands > 0 && <span className="flex items-center gap-1 text-blue-500"><Hand className="h-4 w-4"/> {raisedHands}</span>}
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                   {viewerList.length > 0 ? (
+                    <ul className="text-sm space-y-1">
+                        {viewerList.map(viewer => <li key={viewer.name} className="flex items-center gap-2">{viewer.name} {viewer.handRaised && <Hand className="h-4 w-4 text-blue-500"/>}</li>)}
+                    </ul>
+                   ) : <p>No viewers yet.</p>}
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+    )
+}
+
 export default function StudentLivePage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const [liveSessionDetails, setLiveSessionDetails] = useState<any>(null);
     const [isLive, setIsLive] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [handRaised, setHandRaised] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
     const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
     const connectionStateRef = useRef<ConnectionState>('new');
     const [showInfo, setShowInfo] = useState(true);
 
-     useEffect(() => {
+    useEffect(() => {
         let timer: NodeJS.Timeout;
         if (isLive) {
             timer = setTimeout(() => setShowInfo(false), 5000);
@@ -71,7 +144,7 @@ export default function StudentLivePage() {
                 peerConnectionRef.current = pc;
 
                 pc.onicecandidate = (event) => {
-                    if (event.candidate) {
+                    if (event.candidate && user) {
                         set(ref(db, `webrtc-candidates/live-session/student/${user.uid}/${Date.now()}`), event.candidate.toJSON());
                     }
                 };
@@ -138,48 +211,76 @@ export default function StudentLivePage() {
 
     }, [user]);
 
+    const handleLeave = () => {
+        router.push('/dashboard');
+    }
+
+    const toggleHandRaised = async () => {
+        if (!user) return;
+        const newHandRaisedState = !handRaised;
+        setHandRaised(newHandRaisedState);
+        const handRaisedRef = ref(db, `webrtc-answers/live-session/${user.uid}/handRaised`);
+        await set(handRaisedRef, newHandRaisedState);
+    }
+
     return (
-        <main className="h-screen w-screen bg-black">
-             <div className="absolute top-4 left-4 z-20">
-                <Button variant="secondary" size="icon" asChild>
-                    <Link href="/dashboard">
-                        <ArrowLeft className="h-5 w-5" />
-                    </Link>
-                </Button>
-            </div>
-            
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground relative">
-                {isLoading ? (
-                    <div className="flex flex-col items-center gap-2">
-                        <Loader2 className="h-8 w-8 animate-spin" />
-                        <span>Connecting to live session...</span>
+        <SidebarProvider>
+            <AppSidebar />
+            <SidebarInset>
+                <Header />
+                <main className="flex-grow bg-background">
+                    <div className="container mx-auto px-4 md:px-6 py-8">
+                        <div className="aspect-video bg-black rounded-lg flex items-center justify-center relative shadow-lg">
+                            {isLoading ? (
+                                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                    <Loader2 className="h-8 w-8 animate-spin" />
+                                    <span>Connecting to live session...</span>
+                                </div>
+                            ) : isLive ? (
+                                <>
+                                    <video ref={videoRef} className="w-full h-full object-contain" autoPlay playsInline />
+                                    <AnimatePresence>
+                                        {showInfo && (
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/50 text-white p-2 px-4 rounded-lg text-center"
+                                            >
+                                                <p className="font-bold">{liveSessionDetails?.title || 'Live Session'}</p>
+                                                <p className="text-xs">{liveSessionDetails?.description || 'Welcome to the class!'}</p>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                     <div className="absolute top-4 right-4 z-20">
+                                        <ViewerList />
+                                    </div>
+                                    <LiveChat sessionId="live-session" />
+                                </>
+                            ) : (
+                                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                    <VideoOff className="h-12 w-12" />
+                                    <p className="font-semibold">No active live session</p>
+                                    <p className="text-sm">Please check back later.</p>
+                                </div>
+                            )}
+                        </div>
+                        
+                        {isLive && (
+                             <div className="flex items-center justify-center gap-4 mt-4">
+                                <Button size="icon" variant={handRaised ? 'default' : 'secondary'} onClick={toggleHandRaised} className="rounded-full h-12 w-12 shadow-lg">
+                                    <Hand className="h-6 w-6" />
+                                </Button>
+                                <Button size="icon" variant="destructive" onClick={handleLeave} className="rounded-full h-14 w-14 shadow-lg">
+                                    <PhoneOff className="h-6 w-6" />
+                                </Button>
+                                <div className="w-12 h-12"></div>
+                             </div>
+                        )}
                     </div>
-                ) : isLive ? (
-                    <>
-                        <video ref={videoRef} className="w-full h-full object-contain" autoPlay playsInline />
-                        <AnimatePresence>
-                           {showInfo && (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/50 text-white p-2 px-4 rounded-lg text-center"
-                            >
-                                <p className="font-bold">{liveSessionDetails?.title || 'Live Session'}</p>
-                                <p className="text-xs">{liveSessionDetails?.description || 'Welcome to the class!'}</p>
-                            </motion.div>
-                           )}
-                        </AnimatePresence>
-                        <LiveChat sessionId="live-session" />
-                    </>
-                ) : (
-                    <div className="flex flex-col items-center gap-2">
-                        <VideoOff className="h-12 w-12" />
-                        <p className="font-semibold">No active live session</p>
-                        <p className="text-sm">Please check back later.</p>
-                    </div>
-                )}
-            </div>
-        </main>
+                </main>
+                <Footer />
+            </SidebarInset>
+        </SidebarProvider>
     );
 }
