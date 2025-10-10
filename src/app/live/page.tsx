@@ -12,6 +12,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Hand, Loader2, PhoneOff, Users, VideoOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { onValue, ref, onChildAdded, set, remove } from 'firebase/database';
+import Link from 'next/link';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -270,5 +271,3 @@ export default function StudentLivePage() {
         </main>
     );
 }
-
-    
