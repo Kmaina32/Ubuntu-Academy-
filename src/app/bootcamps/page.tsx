@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,7 +7,7 @@ import { Footer } from "@/components/shared/Footer";
 import { AppSidebar } from "@/components/shared/Sidebar";
 import { Header } from "@/components/shared/Header";
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { getAllBootcamps, Bootcamp } from '@/lib/firebase-service';
+import { getAllBootcamps, Bootcamp, getHeroData } from '@/lib/firebase-service';
 import { Loader2, Rocket } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
@@ -54,15 +55,20 @@ function BootcampCard({ bootcamp }: { bootcamp: Bootcamp }) {
 
 export default function BootcampsPage() {
   const [bootcamps, setBootcamps] = useState<Bootcamp[]>([]);
+  const [heroData, setHeroData] = useState<{ bootcampsImageUrl?: string }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchBootcamps = async () => {
+    const fetchPageData = async () => {
       try {
         setLoading(true);
-        const fetched = await getAllBootcamps();
-        setBootcamps(fetched);
+        const [fetchedBootcamps, fetchedHeroData] = await Promise.all([
+            getAllBootcamps(),
+            getHeroData()
+        ]);
+        setBootcamps(fetchedBootcamps);
+        setHeroData(fetchedHeroData);
       } catch (err) {
         console.error(err);
         setError("Failed to load bootcamps. Please try again later.");
@@ -70,7 +76,7 @@ export default function BootcampsPage() {
         setLoading(false);
       }
     };
-    fetchBootcamps();
+    fetchPageData();
   }, []);
 
   return (
@@ -82,7 +88,7 @@ export default function BootcampsPage() {
           <section className="relative bg-secondary/50 py-20 md:py-28">
             <div className="absolute inset-0">
                 <Image
-                    src="https://picsum.photos/seed/boot/1600/400"
+                    src={heroData.bootcampsImageUrl || "https://picsum.photos/seed/boot/1600/400"}
                     alt="A group of people working on laptops in a workshop"
                     fill
                     className="object-cover"

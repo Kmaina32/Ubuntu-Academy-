@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Loader2, Shield, Rss, Palette, Building, UserCheck } from 'lucide-react';
+import { ArrowLeft, Loader2, Shield, Rss, Palette, Building, UserCheck, Image as ImageIconLucide } from 'lucide-react';
 import { getHeroData, saveHeroData, getRemoteConfigValues, saveRemoteConfigValues } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { useToast } from '@/hooks/use-toast';
@@ -28,6 +28,9 @@ const heroFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
   subtitle: z.string().min(20, 'Subtitle must be at least 20 characters.'),
   imageUrl: z.string().url('Please enter a valid URL.'),
+  programsImageUrl: z.string().url('Please enter a valid URL.').optional(),
+  bootcampsImageUrl: z.string().url('Please enter a valid URL.').optional(),
+  hackathonsImageUrl: z.string().url('Please enter a valid URL.').optional(),
   loginImageUrl: z.string().url('Please enter a valid URL for the login page image.'),
   signupImageUrl: z.string().url('Please enter a valid URL for the signup page image.'),
   slideshowSpeed: z.coerce.number().min(1, 'Speed must be at least 1 second.'),
@@ -53,6 +56,9 @@ export default function AdminHeroPage() {
       title: '',
       subtitle: '',
       imageUrl: '',
+      programsImageUrl: '',
+      bootcampsImageUrl: '',
+      hackathonsImageUrl: '',
       loginImageUrl: '',
       signupImageUrl: '',
       slideshowSpeed: 5,
@@ -263,7 +269,7 @@ export default function AdminHeroPage() {
                         />
                         
                         <div>
-                            <h3 className="text-lg font-semibold">Homepage Hero</h3>
+                            <h3 className="text-lg font-semibold flex items-center gap-2"><ImageIconLucide /> Page Banners</h3>
                              <Separator className="mt-2" />
                         </div>
                         <FormField
@@ -271,15 +277,24 @@ export default function AdminHeroPage() {
                           name="imageUrl"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Background Image URL</FormLabel>
+                              <FormLabel>Courses Page Hero Image</FormLabel>
                               <FormControl>
                                 <Input placeholder="https://example.com/image.png" {...field} />
                               </FormControl>
-                               <p className="text-sm text-muted-foreground">Recommended size: 1200x400 pixels.</p>
+                               <p className="text-sm text-muted-foreground">Main hero image on the home/courses page. Recommended size: 1200x400.</p>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+                        <FormField control={form.control} name="programsImageUrl" render={({ field }) => (
+                            <FormItem><FormLabel>Programs Page Hero Image</FormLabel><FormControl><Input placeholder="https://example.com/programs.png" {...field} /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                        <FormField control={form.control} name="bootcampsImageUrl" render={({ field }) => (
+                            <FormItem><FormLabel>Bootcamps Page Hero Image</FormLabel><FormControl><Input placeholder="https://example.com/bootcamps.png" {...field} /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                        <FormField control={form.control} name="hackathonsImageUrl" render={({ field }) => (
+                            <FormItem><FormLabel>Hackathons Page Hero Image</FormLabel><FormControl><Input placeholder="https://example.com/hackathons.png" {...field} /></FormControl><FormMessage /></FormItem>
+                        )}/>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                            <FormField
                               control={form.control}

@@ -1,4 +1,5 @@
 
+
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -13,6 +14,9 @@ export interface HeroData {
     title: string;
     subtitle: string;
     imageUrl: string;
+    programsImageUrl?: string;
+    bootcampsImageUrl?: string;
+    hackathonsImageUrl?: string;
     loginImageUrl: string;
     signupImageUrl: string;
     slideshowSpeed: number;
@@ -206,6 +210,9 @@ export async function getHeroData(): Promise<HeroData> {
     title: 'Unlock Your Potential.', 
     subtitle: 'Quality, affordable courses designed for the Kenyan market.',
     imageUrl: 'https://placehold.co/1200x400.png',
+    programsImageUrl: 'https://picsum.photos/seed/prog/1600/400',
+    bootcampsImageUrl: 'https://picsum.photos/seed/boot/1600/400',
+    hackathonsImageUrl: 'https://picsum.photos/seed/hack/1600/400',
     loginImageUrl: 'https://placehold.co/1200x900.png',
     signupImageUrl: 'https://placehold.co/1200x900.png',
     slideshowSpeed: 5,

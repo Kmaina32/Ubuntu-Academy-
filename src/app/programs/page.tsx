@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,30 +7,35 @@ import { Footer } from "@/components/Footer";
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { getAllPrograms, Program } from '@/lib/firebase-service';
+import { getAllPrograms, Program, getHeroData } from '@/lib/firebase-service';
 import { Loader2, Library } from 'lucide-react';
 import { ProgramCard } from '@/components/ProgramCard';
 import Image from 'next/image';
 
 export default function ProgramsPage() {
   const [programs, setPrograms] = useState<Program[]>([]);
+  const [heroData, setHeroData] = useState<{ programsImageUrl?: string }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPrograms = async () => {
+    const fetchPageData = async () => {
       try {
         setLoading(true);
-        const fetchedPrograms = await getAllPrograms();
+        const [fetchedPrograms, fetchedHeroData] = await Promise.all([
+          getAllPrograms(),
+          getHeroData(),
+        ]);
         setPrograms(fetchedPrograms);
+        setHeroData(fetchedHeroData);
       } catch (err) {
         console.error(err);
-        setError("Failed to load programs. Please try again later.");
+        setError("Failed to load page content. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
-    fetchPrograms();
+    fetchPageData();
   }, []);
 
   return (
@@ -41,7 +47,7 @@ export default function ProgramsPage() {
           <section className="relative bg-secondary/50 py-20 md:py-28">
             <div className="absolute inset-0">
                 <Image
-                    src="https://picsum.photos/seed/prog/1600/400"
+                    src={heroData.programsImageUrl || "https://picsum.photos/seed/prog/1600/400"}
                     alt="Students learning in a modern classroom"
                     fill
                     className="object-cover"

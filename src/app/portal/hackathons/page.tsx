@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAllHackathons, Hackathon } from '@/lib/firebase-service';
+import { getAllHackathons, Hackathon, getHeroData } from '@/lib/firebase-service';
 import { Loader2, Trophy } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
@@ -63,6 +64,7 @@ function HackathonCard({ hackathon }: { hackathon: Hackathon }) {
 
 export default function HackathonsPage() {
   const [hackathons, setHackathons] = useState<Hackathon[]>([]);
+  const [heroData, setHeroData] = useState<{ hackathonsImageUrl?: string }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user, loading: authLoading } = useAuth();
@@ -75,11 +77,15 @@ export default function HackathonsPage() {
         return;
     }
 
-    const fetchHackathons = async () => {
+    const fetchPageData = async () => {
       try {
         setLoading(true);
-        const fetched = await getAllHackathons();
-        setHackathons(fetched.sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()));
+        const [fetchedHackathons, fetchedHeroData] = await Promise.all([
+          getAllHackathons(),
+          getHeroData()
+        ]);
+        setHackathons(fetchedHackathons.sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()));
+        setHeroData(fetchedHeroData);
       } catch (err) {
         console.error(err);
         setError("Failed to load hackathons. Please try again later.");
@@ -87,7 +93,7 @@ export default function HackathonsPage() {
         setLoading(false);
       }
     };
-    fetchHackathons();
+    fetchPageData();
   }, [user, authLoading, router]);
 
   if (authLoading || loading) {
@@ -103,7 +109,7 @@ export default function HackathonsPage() {
           <section className="relative bg-secondary/50 py-20 md:py-28">
              <div className="absolute inset-0">
                 <Image
-                    src="https://picsum.photos/seed/hack/1600/400"
+                    src={heroData.hackathonsImageUrl || "https://picsum.photos/seed/hack/1600/400"}
                     alt="A group of developers collaborating at a hackathon"
                     fill
                     className="object-cover"
