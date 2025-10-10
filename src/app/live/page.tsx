@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -136,52 +135,47 @@ export default function StudentLivePage() {
             <AppSidebar />
             <SidebarInset>
                 <Header />
-                <div className="flex flex-col min-h-screen">
-                <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
-                    <div className="max-w-4xl mx-auto">
-                        <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+                <div className="flex flex-col min-h-[calc(100vh-var(--header-height))]">
+                <main className="flex-grow flex flex-col">
+                     <div className="container mx-auto px-4 md:px-6 py-4 flex-shrink-0">
+                        <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
                             <ArrowLeft className="h-4 w-4" />
                             Back to Dashboard
                         </Link>
-                         <Card>
-                            <CardHeader>
-                                <CardTitle>{isLive ? liveSessionDetails?.title : 'Live Classroom'}</CardTitle>
-                                <CardDescription>{isLive ? liveSessionDetails?.description : 'Join the live session with your instructor.'}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
-                                <div className="aspect-video bg-muted rounded-lg flex items-center justify-center text-muted-foreground relative">
-                                    {isLoading ? (
-                                        <div className="flex flex-col items-center gap-2">
-                                            <Loader2 className="h-8 w-8 animate-spin" />
-                                            <span>Connecting to live session...</span>
-                                        </div>
-                                    ) : isLive ? (
-                                        <>
-                                            <video ref={videoRef} className="w-full h-full rounded-lg" autoPlay playsInline />
-                                            <LiveChat sessionId="live-session" />
-                                        </>
-                                    ) : (
-                                        <div className="flex flex-col items-center gap-2">
-                                            <VideoOff className="h-12 w-12" />
-                                            <p className="font-semibold">No active live session</p>
-                                            <p className="text-sm">Please check back later.</p>
-                                        </div>
-                                    )}
+                     </div>
+                     <div className="flex-grow relative flex flex-col">
+                        <div className="flex-grow bg-black flex items-center justify-center text-muted-foreground relative">
+                            {isLoading ? (
+                                <div className="flex flex-col items-center gap-2">
+                                    <Loader2 className="h-8 w-8 animate-spin" />
+                                    <span>Connecting to live session...</span>
                                 </div>
-                                {isLive && !isLoading && (
-                                    <Alert variant="default">
-                                        <Video className="h-4 w-4" />
-                                        <AlertTitle>Receiving Live Stream</AlertTitle>
-                                        <AlertDescription>
-                                            You are connected to the classroom. If you can't see the video, check your network connection.
-                                        </AlertDescription>
-                                    </Alert>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </div>
+                            ) : isLive ? (
+                                <>
+                                    <video ref={videoRef} className="w-full h-full object-contain" autoPlay playsInline />
+                                    <LiveChat sessionId="live-session" />
+                                </>
+                            ) : (
+                                <div className="flex flex-col items-center gap-2">
+                                    <VideoOff className="h-12 w-12" />
+                                    <p className="font-semibold">No active live session</p>
+                                    <p className="text-sm">Please check back later.</p>
+                                </div>
+                            )}
+                        </div>
+                        {isLive && !isLoading && (
+                             <div className="p-4 bg-background border-t">
+                                <Alert variant="default">
+                                    <Video className="h-4 w-4" />
+                                    <AlertTitle>{liveSessionDetails?.title || 'Receiving Live Stream'}</AlertTitle>
+                                    <AlertDescription>
+                                        {liveSessionDetails?.description || 'You are connected to the classroom.'}
+                                    </AlertDescription>
+                                </Alert>
+                            </div>
+                        )}
+                     </div>
                 </main>
-                <Footer />
                 </div>
             </SidebarInset>
         </SidebarProvider>
