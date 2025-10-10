@@ -12,6 +12,7 @@
 import { ai } from '@/ai/genkit-instance';
 import { z } from 'genkit';
 import axios from 'axios';
+import { googleAI } from '@genkit-ai/googleai';
 
 const MpesaPaymentInputSchema = z.object({
   userId: z.string().describe("The UID of the user making the payment."),
@@ -109,7 +110,7 @@ const mpesaPaymentFlow = ai.defineFlow(
             PartyB: shortCode,
             PhoneNumber: formattedPhoneNumber,
             CallBackURL: `${callbackUrl}?courseId=${courseId}&userId=${userId}`,
-            AccountReference: "Edgewood",
+            AccountReference: "MandaNetwork",
             TransactionDesc: `Payment for ${courseId}`
         }, {
             headers: {
