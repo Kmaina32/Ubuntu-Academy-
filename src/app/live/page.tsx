@@ -241,7 +241,7 @@ export default function StudentLivePage() {
           <SidebarInset>
             <Header />
             <div className="flex flex-col min-h-[calc(100vh-4rem)]">
-              <main className="flex-grow bg-background p-4">
+              <main className="flex-grow bg-background p-4 relative">
                   <div ref={videoContainerRef} className="w-full aspect-video bg-black flex items-center justify-center relative rounded-lg p-1">
                       {isLoading ? (
                           <div className="flex flex-col items-center gap-2 text-muted-foreground">
@@ -293,8 +293,8 @@ export default function StudentLivePage() {
                           </div>
                       )}
                   </div>
+                 <NotebookSheet courseId="live-session" courseTitle="Live Session Notes" />
               </main>
-              <NotebookSheet courseId="live-session" courseTitle="Live Session Notes" />
               <Footer />
             </div>
           </SidebarInset>
