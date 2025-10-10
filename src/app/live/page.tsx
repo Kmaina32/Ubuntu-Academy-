@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -15,7 +16,6 @@ import { onValue, ref, onChildAdded, set, remove } from 'firebase/database';
 import Link from 'next/link';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { NotebookSheet } from '@/components/NotebookSheet';
 
@@ -240,9 +240,9 @@ export default function StudentLivePage() {
           <AppSidebar />
           <SidebarInset>
             <Header />
-            <div className="flex flex-col min-h-[calc(100vh-4rem)]">
-              <main className="flex-grow bg-background p-4 relative">
-                  <div ref={videoContainerRef} className="w-full aspect-video bg-black flex items-center justify-center relative rounded-lg p-1">
+            <div className="flex flex-col h-[calc(100vh-4rem)]">
+              <main className="flex-grow bg-background p-4 relative flex flex-col">
+                  <div ref={videoContainerRef} className="w-full flex-grow bg-black flex items-center justify-center relative rounded-lg p-1">
                       {isLoading ? (
                           <div className="flex flex-col items-center gap-2 text-muted-foreground">
                               <Loader2 className="h-8 w-8 animate-spin" />
@@ -295,7 +295,6 @@ export default function StudentLivePage() {
                   </div>
                  <NotebookSheet courseId="live-session" courseTitle="Live Session Notes" />
               </main>
-              <Footer />
             </div>
           </SidebarInset>
         </SidebarProvider>

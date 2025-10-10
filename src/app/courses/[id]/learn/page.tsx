@@ -744,7 +744,7 @@ export default function CoursePlayerPage() {
            </Header>
          ) : <Header />}
 
-        <div className="flex flex-col min-h-[calc(100vh-4rem)]">
+        <div className="flex h-[calc(100vh-4rem)]">
           <div className="flex-grow flex flex-col md:flex-row overflow-hidden relative">
             {!isMobile && (
               <aside className="w-full md:w-80 lg:w-96 bg-background border-r flex-shrink-0 overflow-y-auto">
@@ -760,7 +760,7 @@ export default function CoursePlayerPage() {
               </aside>
             )}
 
-            <main className="flex-grow p-6 md:p-8 overflow-y-auto bg-secondary">
+            <main className="flex-grow p-6 md:p-8 overflow-y-auto bg-secondary relative">
                <Tabs defaultValue="lesson" className="w-full">
                   <TabsList className="mb-4">
                     <TabsTrigger value="lesson">
@@ -802,15 +802,12 @@ export default function CoursePlayerPage() {
                      <DiscussionForum courseId={course.id} />
                   </TabsContent>
                 </Tabs>
+                <AiTutor course={course} lesson={currentLesson} settings={tutorSettings} />
+                <NotebookSheet courseId={course.id} courseTitle={course.title} />
             </main>
-            
-            <AiTutor course={course} lesson={currentLesson} settings={tutorSettings} />
-            <NotebookSheet courseId={course.id} courseTitle={course.title} />
           </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
   );
 }
-
-    
