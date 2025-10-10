@@ -88,27 +88,27 @@ export function AppSidebar() {
                         <p className="text-xs font-semibold text-muted-foreground px-2 mb-2 group-data-[collapsible=icon]:hidden">Main Navigation</p>
                         <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/')} tooltip="Browse Courses" onClick={() => onLinkClick('/')}>
-                                <Link href="/">Browse Courses</Link>
+                                <Link href="/"><Book className="mr-2"/>Browse Courses</Link>
                            </SidebarMenuButton>
                         </SidebarMenuItem>
                          <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/dashboard')} tooltip="Dashboard" onClick={() => onLinkClick('/dashboard')}>
-                                <Link href="/dashboard">Dashboard</Link>
+                                <Link href="/dashboard"><LayoutDashboard className="mr-2"/>Dashboard</Link>
                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild size="sm" isActive={isActive('/programs')} tooltip="Certificate Programs" onClick={() => onLinkClick('/programs')}>
-                                <Link href="/programs">Programs</Link>
+                                <Link href="/programs"><Library className="mr-2"/>Programs</Link>
                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/bootcamps')} tooltip="Bootcamps" onClick={() => onLinkClick('/bootcamps')}>
-                                <Link href="/bootcamps">Bootcamps</Link>
+                                <Link href="/bootcamps"><Rocket className="mr-2"/>Bootcamps</Link>
                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/portal/hackathons')} tooltip="Hackathons" onClick={() => onLinkClick('/portal/hackathons')}>
-                                <Link href="/portal/hackathons">Hackathons</Link>
+                                <Link href="/portal/hackathons"><Trophy className="mr-2"/>Hackathons</Link>
                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         
@@ -116,22 +116,23 @@ export function AppSidebar() {
                         <p className="text-xs font-semibold text-muted-foreground px-2 mb-2 group-data-[collapsible=icon]:hidden">Learning Tools</p>
                          <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/assignments')} tooltip="My Exams" onClick={() => onLinkClick('/assignments')}>
-                                <Link href="/assignments">My Exams</Link>
+                                <Link href="/assignments"><ListTodo className="mr-2"/>My Exams</Link>
                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/notebook')} tooltip="Notebook" onClick={() => onLinkClick('/notebook')}>
-                                <Link href="/notebook">Notebook</Link>
+                                <Link href="/notebook"><NotebookIcon className="mr-2"/>Notebook</Link>
                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/live')} tooltip="Live Classroom" onClick={() => onLinkClick('/live')}>
-                                <Link href="/live">Live Classroom</Link>
+                                <Link href="/live"><Clapperboard className="mr-2"/>Live Classroom</Link>
                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild size="sm" isActive={isActive('/calendar')} tooltip="Calendar" onClick={() => onLinkClick('/calendar')}>
                                 <Link href="/calendar" className="relative">
+                                    <Calendar className="mr-2"/>
                                     <span>Calendar</span>
                                      {unreadCalendarEvents.length > 0 && (
                                         <span className="absolute top-1 right-1 flex h-2 w-2">
@@ -147,22 +148,22 @@ export function AppSidebar() {
                         <p className="text-xs font-semibold text-muted-foreground px-2 mb-2 group-data-[collapsible=icon]:hidden">Career & Support</p>
                         <SidebarMenuItem>
                              <SidebarMenuButton asChild size="sm" isActive={isActive('/coach')} tooltip="AI Career Coach" onClick={() => onLinkClick('/coach')}>
-                                <Link href="/coach">Career Coach</Link>
+                                <Link href="/coach"><Briefcase className="mr-2"/>Career Coach</Link>
                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/about')} tooltip="About Us" onClick={() => onLinkClick('/about')}>
-                                <Link href="/about">About Us</Link>
+                                <Link href="/about"><Info className="mr-2"/>About Us</Link>
                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/help')} tooltip="Help" onClick={() => onLinkClick('/help')}>
-                                <Link href="/help">Help</Link>
+                                <Link href="/help"><HelpCircle className="mr-2"/>Help</Link>
                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/contact')} tooltip="Contact Us" onClick={() => onLinkClick('/contact')}>
-                                <Link href="/contact">Contact</Link>
+                                <Link href="/contact"><Mail className="mr-2"/>Contact</Link>
                            </SidebarMenuButton>
                         </SidebarMenuItem>
 
@@ -170,13 +171,14 @@ export function AppSidebar() {
                         <p className="text-xs font-semibold text-muted-foreground px-2 mb-2 group-data-[collapsible=icon]:hidden">Account</p>
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild size="sm" isActive={isActive('/profile')} tooltip="Profile" onClick={() => onLinkClick('/profile')}>
-                                <Link href="/profile">My Profile</Link>
+                                <Link href="/profile"><User className="mr-2"/>My Profile</Link>
                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                             {organization && (
                                 <SidebarMenuButton asChild size="sm" isActive={isActive('/organization')} tooltip={isAdmin || isOrganizationAdmin ? "Manage Organization" : organization.name} onClick={() => onLinkClick(isAdmin || isOrganizationAdmin ? '/organization/dashboard' : '/organization/home')}>
                                     <Link href={isAdmin || isOrganizationAdmin ? '/organization/dashboard' : '/organization/home'}>
+                                        <Building className="mr-2"/>
                                         {isAdmin || isOrganizationAdmin ? 'Manage Organization' : organization.name}
                                     </Link>
                                 </SidebarMenuButton>
@@ -185,7 +187,7 @@ export function AppSidebar() {
                         <SidebarMenuItem>
                             {isAdmin && (
                                 <SidebarMenuButton asChild size="sm" isActive={isActive('/admin')} tooltip="Admin Dashboard" onClick={() => onLinkClick('/admin')}>
-                                    <Link href="/admin">Admin Dashboard</Link>
+                                    <Link href="/admin"><Shield className="mr-2"/>Admin Dashboard</Link>
                                 </SidebarMenuButton>
                             )}
                         </SidebarMenuItem>
