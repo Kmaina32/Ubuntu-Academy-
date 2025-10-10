@@ -19,9 +19,10 @@ import type { GenerateProjectInput, GenerateProjectOutput } from '@/ai/flows/gen
 import type { CreateOrgInviteInput as SendOrgInviteInput, CreateOrgInviteOutput as SendOrgInviteOutput } from '@/ai/flows/send-org-invite';
 import type { GenerateFormalDocumentInput, GenerateFormalDocumentOutput } from '@/ai/flows/generate-document';
 import type { GenerateHackathonIdeasInput, GenerateHackathonIdeasOutput } from '@/ai/flows/generate-hackathon-ideas';
-import { getDocument, saveDocument } from '@/lib/firebase-service';
 import type { TextToSpeechOutput, TextToSpeechInput } from '@/ai/flows/text-to-speech';
 
+import fs from 'fs/promises';
+import path from 'path';
 
 // Each function dynamically imports its corresponding flow, ensuring that the AI logic
 // is only loaded on the server when the action is executed.
@@ -123,18 +124,36 @@ export async function sendOrganizationInvite(input: SendOrgInviteInput): Promise
     return createOrganizationInvite(input);
 }
 
+// Document Management Actions
+const getDocPath = (docType: string) => {
+    return path.join(process.cwd(), 'src', 'markdown_files', docType);
+}
+
 export async function getDocumentContent(docType: string): Promise<string> {
-    return getDocument(docType);
+    try {
+        const filePath = getDocPath(docType);
+        const content = await fs.readFile(filePath, 'utf-8');
+        return content;
+    } catch (error) {
+        console.error(`Failed to read document ${docType}:`, error);
+        return `# Error: Could not load ${docType}`;
+    }
 }
 
 export async function saveDocumentContent(docType: string, content: string): Promise<void> {
-    await saveDocument(docType, content);
+    try {
+        const filePath = getDocPath(docType);
+        await fs.writeFile(filePath, content, 'utf-8');
+    } catch (error) {
+        console.error(`Failed to save document ${docType}:`, error);
+        throw new Error(`Could not save ${docType}`);
+    }
 }
 
 export async function generateFormalDocument(input: { docType: string; content: string; }): Promise<GenerateFormalDocumentOutput> {
     const { generateFormalDocument } = await import('@/ai/flows/generate-document');
     const result = await generateFormalDocument({ docType: input.docType as any, content: input.content });
-    await saveDocumentContent(input.docType, result.formal_document);
+    // The result is returned to the client, which will then call saveDocumentContent.
     return result;
 }
 

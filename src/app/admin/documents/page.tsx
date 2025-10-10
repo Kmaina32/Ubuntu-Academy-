@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -18,7 +17,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Textarea } from '@/components/ui/textarea';
 
-const ALL_DOC_TYPES: readonly DocType[] = ['PITCH_DECK.md', 'FRAMEWORK.md', 'API.md', 'B2B_STRATEGY.md', 'SEO_STRATEGY.md', 'VISUAL_FRAMEWORK.md'] as const;
+const ALL_DOC_TYPES = ['PITCH_DECK.md', 'FRAMEWORK.md', 'API.md', 'B2B_STRATEGY.md', 'SEO_STRATEGY.md', 'VISUAL_FRAMEWORK.md'] as const;
 type DocType = (typeof ALL_DOC_TYPES)[number];
 
 function DocumentEditor({ docType }: { docType: DocType }) {
@@ -63,7 +62,9 @@ function DocumentEditor({ docType }: { docType: DocType }) {
     try {
         const result = await generateFormalDocument({ docType: docType, content: content });
         setContent(result.formal_document);
-        toast({ title: 'Success', description: 'Document updated by AI.' });
+        // Automatically save the AI-generated content
+        await saveDocumentContent(docType, result.formal_document);
+        toast({ title: 'Success', description: 'Document updated by AI and saved.' });
     } catch (err) {
         toast({ title: 'Error generating document', variant: 'destructive' });
     } finally {
@@ -72,7 +73,6 @@ function DocumentEditor({ docType }: { docType: DocType }) {
   }
 
  const formatForPdf = (markdownContent: string): string => {
-     // A simple markdown to HTML converter for PDF rendering
     let html = markdownContent
         .replace(/^### (.*$)/gim, '<h3>$1</h3>')
         .replace(/^## (.*$)/gim, '<h2>$1</h2>')
@@ -94,7 +94,6 @@ function DocumentEditor({ docType }: { docType: DocType }) {
 
     const contentToRender = formatForPdf(content);
     
-    // Use a temporary div to render the HTML for html2canvas
     const renderDiv = document.createElement('div');
     document.body.appendChild(renderDiv);
     renderDiv.className = "pdf-render-area";
@@ -111,7 +110,7 @@ function DocumentEditor({ docType }: { docType: DocType }) {
             const imgProps = pdf.getImageProperties(imgData);
             const ratio = imgProps.height / imgProps.width;
             
-            let imgWidth = pdfWidth - 80; // with margins
+            let imgWidth = pdfWidth - 80;
             let imgHeight = imgWidth * ratio;
 
             if (imgHeight > pdfHeight - 80) {
@@ -169,14 +168,11 @@ function DocumentEditor({ docType }: { docType: DocType }) {
 export default function AdminDocumentsPage() {
     const { user, isSuperAdmin, loading: authLoading } = useAuth();
     const router = useRouter();
-
-    const [allDocs, setAllDocs] = useState<DocType[]>([]);
     
     useEffect(() => {
         if (!authLoading && !isSuperAdmin) {
             router.push('/admin');
         }
-        setAllDocs([...ALL_DOC_TYPES]);
     }, [isSuperAdmin, authLoading, router]);
 
     const TABS_CONFIG = useMemo(() => [

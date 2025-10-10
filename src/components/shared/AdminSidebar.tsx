@@ -60,7 +60,7 @@ export function AdminSidebar() {
         <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
                 <Gem className="h-6 w-6 text-primary" />
-                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Akili A.I Academy</span>
+                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Edgewood International A.I College</span>
             </div>
         </SidebarHeader>
         <SidebarContent>
@@ -93,9 +93,14 @@ export function AdminSidebar() {
                       <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/bootcamps')} tooltip="Bootcamps">
                         <Link href="/admin/bootcamps">Bootcamps</Link>
                     </SidebarMenuButton>
-                    <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/documents')} tooltip="Documents">
-                        <Link href="/admin/documents">Documents</Link>
+                    <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/hackathons')} tooltip="Hackathons">
+                        <Link href="/admin/hackathons">Hackathons</Link>
                     </SidebarMenuButton>
+                    {isSuperAdmin && (
+                        <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/documents')} tooltip="Documents">
+                            <Link href="/admin/documents">Documents</Link>
+                        </SidebarMenuButton>
+                    )}
                 </CollapsibleSidebarMenu>
 
                 <CollapsibleSidebarMenu title="Audience" icon={Contact}>
