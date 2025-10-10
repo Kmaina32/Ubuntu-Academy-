@@ -39,13 +39,13 @@ export function LiveChat({ sessionId }: LiveChatProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        const chatRef = query(ref(db, `liveChat/${sessionId}`), limitToLast(20));
+        const chatRef = query(ref(db, `liveChat/${sessionId}`), limitToLast(5));
         const unsubscribe = onChildAdded(chatRef, (snapshot) => {
             const newMessage = { id: snapshot.key!, ...snapshot.val() };
             setMessages(prev => {
                 const updated = [...prev, newMessage];
-                // Keep only the last 20 messages to prevent overflow
-                return updated.slice(-20);
+                // Keep only the last 5 messages
+                return updated.slice(-5);
             });
         });
         return () => unsubscribe();
@@ -74,7 +74,7 @@ export function LiveChat({ sessionId }: LiveChatProps) {
 
     return (
         <div className="absolute inset-0 flex flex-col justify-end p-4 pointer-events-none">
-            <div className="w-full md:w-3/4 lg:w-1/2 space-y-2 mb-4 h-[70%] overflow-hidden">
+            <div className="w-full md:w-3/4 lg:w-1/2 space-y-2 mb-4 h-auto">
                 <AnimatePresence>
                     {messages.map((message) => (
                         <motion.div

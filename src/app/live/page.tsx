@@ -135,7 +135,7 @@ export default function StudentLivePage() {
             <AppSidebar />
             <SidebarInset>
                 <Header />
-                <div className="flex flex-col min-h-[calc(100vh-var(--header-height))]">
+                <div className="flex flex-col h-[calc(100vh-var(--header-height))]">
                 <main className="flex-grow flex flex-col">
                      <div className="container mx-auto px-4 md:px-6 py-4 flex-shrink-0">
                         <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
