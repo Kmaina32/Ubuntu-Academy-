@@ -6,12 +6,12 @@ import Link from 'next/link';
 import { getHackathonById, getHackathonSubmissions } from '@/lib/firebase-service';
 import type { Hackathon, HackathonSubmission } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, GitBranch, Github, ExternalLink } from 'lucide-react';
+import { Loader2, ArrowLeft, GitBranch, Github, ExternalLink, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
 
 const getInitials = (name: string) => {
     const names = name.split(' ');
@@ -39,7 +39,7 @@ export default function HackathonSubmissionsPage() {
                     return;
                 }
                 setHackathon(hackathonData);
-                setSubmissions(submissionsData);
+                setSubmissions(submissionsData.sort((a,b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()));
             } catch (error) {
                 console.error("Failed to fetch submissions:", error);
             } finally {
@@ -51,7 +51,13 @@ export default function HackathonSubmissionsPage() {
     }, [params.id]);
 
     if (authLoading || loading) {
-        return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+        return (
+            <div className="flex flex-col min-h-screen">
+                <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </main>
+            </div>
+        );
     }
 
     if (!hackathon) {
@@ -59,63 +65,62 @@ export default function HackathonSubmissionsPage() {
     }
 
     return (
-        <div className="max-w-6xl mx-auto">
-            <Link href="/admin/hackathons" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Hackathons
-            </Link>
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center gap-3">
-                         <GitBranch className="h-8 w-8" />
-                         <div>
-                            <CardTitle className="text-2xl font-headline">Submissions for "{hackathon.title}"</CardTitle>
-                            <CardDescription>Review all projects submitted for this hackathon.</CardDescription>
-                         </div>
+        <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
+            <div className="max-w-6xl mx-auto">
+                <Link href="/admin/hackathons" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Hackathons
+                </Link>
+                <div className="flex items-center gap-4 mb-8">
+                    <GitBranch className="h-8 w-8 text-primary" />
+                    <div>
+                        <h1 className="text-3xl font-bold font-headline">Submissions for "{hackathon.title}"</h1>
+                        <p className="text-muted-foreground">Review all projects submitted for this hackathon.</p>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Project Name</TableHead>
-                                <TableHead>Participant</TableHead>
-                                <TableHead>Submitted At</TableHead>
-                                <TableHead className="text-right">Links</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {submissions.length > 0 ? (
-                                submissions.map(sub => (
-                                    <TableRow key={sub.id}>
-                                        <TableCell className="font-medium">{sub.projectName}</TableCell>
-                                        <TableCell>{sub.userName}</TableCell>
-                                        <TableCell>{format(new Date(sub.submittedAt), 'PPP')}</TableCell>
-                                        <TableCell className="text-right space-x-2">
-                                            <Button asChild size="icon" variant="outline">
-                                                <a href={sub.githubUrl} target="_blank" rel="noreferrer" title="GitHub Repo">
-                                                    <Github className="h-4 w-4" />
-                                                </a>
-                                            </Button>
-                                             <Button asChild size="icon" variant="outline">
-                                                <a href={sub.liveUrl} target="_blank" rel="noreferrer" title="Live Demo">
-                                                    <ExternalLink className="h-4 w-4" />
-                                                </a>
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="text-center py-10 text-muted-foreground">
-                                        No submissions yet for this hackathon.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
-        </div>
+                </div>
+
+                {submissions.length > 0 ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {submissions.map(sub => (
+                             <Card key={sub.id} className="flex flex-col">
+                                <CardHeader>
+                                    <CardTitle>{sub.projectName}</CardTitle>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground pt-1">
+                                        <User className="h-4 w-4"/>
+                                        <span>{sub.userName}</span>
+                                        <span>&bull;</span>
+                                        <span>{format(new Date(sub.submittedAt), 'PPP')}</span>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="flex-grow">
+                                    <p className="text-sm text-muted-foreground line-clamp-4">{sub.description}</p>
+                                </CardContent>
+                                <CardFooter className="flex justify-end gap-2">
+                                     <Button asChild size="sm" variant="outline">
+                                        <a href={sub.githubUrl} target="_blank" rel="noreferrer" title="GitHub Repo">
+                                            <Github className="mr-2 h-4 w-4" />
+                                            Code
+                                        </a>
+                                    </Button>
+                                     <Button asChild size="sm">
+                                        <a href={sub.liveUrl} target="_blank" rel="noreferrer" title="Live Demo">
+                                            <ExternalLink className="mr-2 h-4 w-4" />
+                                            Live Demo
+                                        </a>
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        ))}
+                    </div>
+                ) : (
+                    <Card className="text-center py-20 border-2 border-dashed">
+                        <CardContent>
+                            <h3 className="text-xl font-semibold">No Submissions Yet</h3>
+                            <p className="text-muted-foreground mt-2">Check back later to review projects for this hackathon.</p>
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
+        </main>
     );
 }
