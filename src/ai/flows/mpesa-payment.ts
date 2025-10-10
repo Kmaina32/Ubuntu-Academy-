@@ -52,7 +52,7 @@ async function getMpesaAccessToken(): Promise<string> {
     const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
     
     try {
-        const response = await axios.get("https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials", {
+        const response = await axios.get("https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials", {
             headers: {
                 'Authorization': `Basic ${auth}`
             }
@@ -99,7 +99,7 @@ const mpesaPaymentFlow = ai.defineFlow(
     try {
         const accessToken = await getMpesaAccessToken();
 
-        const response = await axios.post("https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest", {
+        const response = await axios.post("https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest", {
             BusinessShortCode: shortCode,
             Password: password,
             Timestamp: timestamp,
