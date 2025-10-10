@@ -25,10 +25,11 @@ interface FormDatePickerProps {
 export const FormDatePicker = React.forwardRef<HTMLButtonElement, FormDatePickerProps>(
   ({ value, onSelect, disabled }, ref) => {
     return (
-      <FormControl>
-        <Popover>
-          <PopoverTrigger asChild>
+      <Popover>
+        <PopoverTrigger asChild>
+          <FormControl>
             <Button
+              ref={ref}
               variant="outline"
               className={cn(
                 'w-full pl-3 text-left font-normal',
@@ -38,18 +39,18 @@ export const FormDatePicker = React.forwardRef<HTMLButtonElement, FormDatePicker
               {value ? format(value, 'PPP') : <span>Pick a date</span>}
               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={value}
-              onSelect={onSelect}
-              disabled={disabled}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-      </FormControl>
+          </FormControl>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={value}
+            onSelect={onSelect}
+            disabled={disabled}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
     );
   }
 );

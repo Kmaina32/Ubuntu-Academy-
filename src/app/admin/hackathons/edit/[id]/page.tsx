@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, Trophy, Calendar as CalendarIcon } from 'lucide-react';
 import { getHackathonById, updateHackathon } from '@/lib/firebase-service';
-import type { Hackathon } from '@/lib/mock-data';
+import type { Hackathon } from '@/lib/types';
 import { FormDatePicker } from '@/components/ui/form-datepicker';
 
 const hackathonFormSchema = z.object({
@@ -136,12 +136,10 @@ export default function EditHackathonPage() {
                             render={({ field }) => (
                                 <FormItem className="flex flex-col">
                                     <FormLabel>Start Date</FormLabel>
-                                    <FormControl>
-                                        <FormDatePicker
-                                            value={field.value}
-                                            onSelect={field.onChange}
-                                        />
-                                    </FormControl>
+                                    <FormDatePicker
+                                        value={field.value}
+                                        onSelect={field.onChange}
+                                    />
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -152,12 +150,10 @@ export default function EditHackathonPage() {
                             render={({ field }) => (
                                 <FormItem className="flex flex-col">
                                     <FormLabel>End Date</FormLabel>
-                                    <FormControl>
-                                        <FormDatePicker
-                                            value={field.value}
-                                            onSelect={field.onChange}
-                                        />
-                                    </FormControl>
+                                    <FormDatePicker
+                                        value={field.value}
+                                        onSelect={field.onChange}
+                                    />
                                     <FormMessage />
                                 </FormItem>
                             )}
