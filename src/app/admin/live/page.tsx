@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Video, PhoneOff, Users, Hand, Mic, MicOff, Calendar, Clock, VideoOff as VideoOffIcon } from 'lucide-react';
+import { ArrowLeft, Loader2, Video, PhoneOff, Users, Hand, Mic, MicOff, Calendar, Clock, VideoOff as VideoOffIcon, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
@@ -17,6 +17,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Badge } from '@/components/ui/badge';
 import { format, isPast, isToday, formatDistanceToNow } from 'date-fns';
 import { useRouter } from 'next/navigation';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { EventForm } from '@/components/EventForm';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -133,20 +135,57 @@ function UpcomingSessionCard({ event, onGoLive }: { event: CalendarEvent, onGoLi
     );
 }
 
-function NoSessionCard({ onSchedule }: { onSchedule: () => void }) {
+function NoSessionCard({ onGoLive, onScheduleSuccess }: { onGoLive: (event: CalendarEvent) => void; onScheduleSuccess: () => void; }) {
+    const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
+    
+    const handleInstantSession = () => {
+        const instantEvent: CalendarEvent = {
+            id: `instant-${Date.now()}`,
+            title: 'Instant Live Session',
+            description: 'A spontaneous live session.',
+            date: new Date().toISOString()
+        };
+        onGoLive(instantEvent);
+    }
+    
     return (
         <Card>
             <CardHeader>
                 <CardTitle>No Active Session</CardTitle>
                 <CardDescription>There is no live session currently running.</CardDescription>
             </CardHeader>
-            <CardContent className="text-center py-10 border-2 border-dashed rounded-lg">
-                <VideoOffIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">Schedule a new session to get started.</p>
-                <Button onClick={onSchedule}>
-                    <Calendar className="mr-2 h-4 w-4"/>
-                    Schedule a Session
-                </Button>
+            <CardContent className="text-center py-10 border-2 border-dashed rounded-lg space-y-4">
+                <VideoOffIcon className="h-12 w-12 text-muted-foreground mx-auto" />
+                <p className="text-muted-foreground">Start an instant session or schedule one for later.</p>
+                <div className="flex justify-center gap-4">
+                     <Dialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen}>
+                        <DialogTrigger asChild>
+                           <Button variant="outline">
+                                <Calendar className="mr-2 h-4 w-4"/>
+                                Schedule Session
+                           </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[480px]">
+                            <DialogHeader>
+                                <DialogTitle>Create New Live Event</DialogTitle>
+                                <DialogDescription>
+                                    Fill out the form to schedule a new live session.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <EventForm
+                                selectedDate={new Date()}
+                                onSuccess={() => {
+                                    setIsFormDialogOpen(false);
+                                    onScheduleSuccess();
+                                }}
+                            />
+                        </DialogContent>
+                    </Dialog>
+                    <Button onClick={handleInstantSession}>
+                        <Video className="mr-2 h-4 w-4"/>
+                        Start Session Now
+                    </Button>
+                </div>
             </CardContent>
         </Card>
     );
@@ -172,23 +211,24 @@ export default function AdminLivePage() {
     const offerRef = ref(db, 'webrtc-offers/live-session');
     const answersRef = ref(db, 'webrtc-answers/live-session');
     
-    useEffect(() => {
-        const fetchEvents = async () => {
-            setIsFetchingEvents(true);
-            const allEvents = await getAllCalendarEvents();
-            const now = new Date();
-            const upcoming = allEvents
-                .filter(e => !isPast(new Date(e.date)))
-                .sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-            
-            const past = allEvents
-                .filter(e => isPast(new Date(e.date)))
-                .sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const fetchEvents = async () => {
+        setIsFetchingEvents(true);
+        const allEvents = await getAllCalendarEvents();
+        const now = new Date();
+        const upcoming = allEvents
+            .filter(e => !isPast(new Date(e.date)))
+            .sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        
+        const past = allEvents
+            .filter(e => isPast(new Date(e.date)))
+            .sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-            setUpcomingEvent(upcoming[0] || null);
-            setPastEvents(past.slice(0, 5)); // show last 5
-            setIsFetchingEvents(false);
-        }
+        setUpcomingEvent(upcoming[0] || null);
+        setPastEvents(past.slice(0, 5)); // show last 5
+        setIsFetchingEvents(false);
+    }
+    
+    useEffect(() => {
         fetchEvents();
     }, []);
 
@@ -381,7 +421,7 @@ export default function AdminLivePage() {
                             ) : upcomingEvent ? (
                                 <UpcomingSessionCard event={upcomingEvent} onGoLive={handleGoLive} />
                             ) : (
-                                <NoSessionCard onSchedule={() => router.push('/admin/calendar')} />
+                                <NoSessionCard onGoLive={handleGoLive} onScheduleSuccess={fetchEvents} />
                             )}
                             
                              <Card>
