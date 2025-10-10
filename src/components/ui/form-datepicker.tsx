@@ -14,7 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { useFormField } from './form';
+import { FormControl } from './form';
 
 interface FormDatePickerProps {
   value?: Date;
@@ -24,15 +24,12 @@ interface FormDatePickerProps {
 
 export const FormDatePicker = React.forwardRef<HTMLButtonElement, FormDatePickerProps>(
   ({ value, onSelect, disabled }, ref) => {
-    const { formItemId } = useFormField();
-    
     return (
-      <Popover>
-        <PopoverTrigger asChild>
+      <FormControl>
+        <Popover>
+          <PopoverTrigger asChild>
             <Button
-              id={formItemId}
-              variant={"outline"}
-              ref={ref}
+              variant="outline"
               className={cn(
                 'w-full pl-3 text-left font-normal',
                 !value && 'text-muted-foreground'
@@ -41,17 +38,18 @@ export const FormDatePicker = React.forwardRef<HTMLButtonElement, FormDatePicker
               {value ? format(value, 'PPP') : <span>Pick a date</span>}
               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
             </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={value}
-            onSelect={onSelect}
-            disabled={disabled}
-            initialFocus
-          />
-        </PopoverContent>
-      </Popover>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={value}
+              onSelect={onSelect}
+              disabled={disabled}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
+      </FormControl>
     );
   }
 );
