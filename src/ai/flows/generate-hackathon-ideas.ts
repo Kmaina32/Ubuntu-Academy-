@@ -27,7 +27,7 @@ export const GenerateHackathonIdeasOutputSchema = z.object({
 export type GenerateHackathonIdeasOutput = z.infer<typeof GenerateHackathonIdeasOutputSchema>;
 
 
-export async function generateHackathonIdeasFlow(input: GenerateHackathonIdeasInput): Promise<GenerateHackathonIdeasOutput> {
+export async function generateHackathonIdeas(input: GenerateHackathonIdeasInput): Promise<GenerateHackathonIdeasOutput> {
   
   const prompt = `You are an expert event planner for a Kenyan tech education platform called Manda Network. Your task is to brainstorm ${input.count} creative and engaging hackathon ideas based on the theme: "${input.theme}".
 

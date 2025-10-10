@@ -16,7 +16,7 @@ import type { SiteHelpInput, SiteHelpOutput } from '@/ai/flows/site-help';
 import type { SpeechToTextOutput } from '@/ai/flows/speech-to-text';
 import type { ApiKey } from '@/lib/types';
 import type { GenerateProjectInput, GenerateProjectOutput } from '@/ai/flows/generate-project';
-import type { SendOrgInviteInput, SendOrgInviteOutput } from '@/ai/flows/send-org-invite';
+import type { CreateOrgInviteInput as SendOrgInviteInput, CreateOrgInviteOutput as SendOrgInviteOutput } from '@/ai/flows/send-org-invite';
 import type { GenerateFormalDocumentInput, GenerateFormalDocumentOutput } from '@/ai/flows/generate-document';
 import type { GenerateHackathonIdeasInput, GenerateHackathonIdeasOutput } from '@/ai/flows/generate-hackathon-ideas';
 import { getDocument, saveDocument } from '@/lib/firebase-service';
@@ -119,8 +119,8 @@ export async function textToSpeech(input: TextToSpeechInput): Promise<TextToSpee
 }
 
 export async function sendOrganizationInvite(input: SendOrgInviteInput): Promise<SendOrgInviteOutput> {
-    const { sendOrganizationInvite } = await import('@/ai/flows/send-org-invite');
-    return sendOrganizationInvite(input);
+    const { createOrganizationInvite } = await import('@/ai/flows/send-org-invite');
+    return createOrganizationInvite(input);
 }
 
 export async function getDocumentContent(docType: string): Promise<string> {
@@ -131,15 +131,14 @@ export async function saveDocumentContent(docType: string, content: string): Pro
     await saveDocument(docType, content);
 }
 
-export async function generateFormalDocument(input: { docType: string }): Promise<GenerateFormalDocumentOutput> {
+export async function generateFormalDocument(input: { docType: string; content: string; }): Promise<GenerateFormalDocumentOutput> {
     const { generateFormalDocument } = await import('@/ai/flows/generate-document');
-    const content = await getDocumentContent(input.docType);
-    const result = await generateFormalDocument({ docType: input.docType as any, content });
+    const result = await generateFormalDocument({ docType: input.docType as any, content: input.content });
     await saveDocumentContent(input.docType, result.formal_document);
     return result;
 }
 
 export async function generateHackathonIdeas(input: GenerateHackathonIdeasInput): Promise<GenerateHackathonIdeasOutput> {
-    const { generateHackathonIdeasFlow } = await import('@/ai/flows/generate-hackathon-ideas');
-    return generateHackathonIdeasFlow(input);
+    const { generateHackathonIdeas } = await import('@/ai/flows/generate-hackathon-ideas');
+    return generateHackathonIdeas(input);
 }
