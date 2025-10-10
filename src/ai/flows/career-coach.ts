@@ -20,7 +20,7 @@ const HistoryItemSchema = z.object({
 });
 
 const LearningPathInputSchema = z.object({
-  careerGoal: z.string().describe('The user\'s stated career goal.'),
+  careerGoal: z.string().describe("The user's stated career goal."),
   history: z.array(HistoryItemSchema).optional().describe('The previous conversation history.'),
 });
 export type LearningPathInput = z.infer<typeof LearningPathInputSchema>;
