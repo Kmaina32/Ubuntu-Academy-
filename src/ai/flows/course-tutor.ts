@@ -89,13 +89,7 @@ const courseTutorFlow = ai.defineFlow(
     outputSchema: CourseTutorOutputSchema,
   },
   async input => {
-    
-    const {output} = await ai.generate({
-        prompt: prompt.prompt,
-        model: googleAI.model('gemini-1.5-flash'),
-        input: input,
-        output: { schema: CourseTutorOutputSchema },
-    });
+    const { output } = await prompt(input);
 
     if (!output) {
       throw new Error('Failed to generate a text answer.');
