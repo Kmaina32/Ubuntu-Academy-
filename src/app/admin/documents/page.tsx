@@ -4,6 +4,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -32,6 +34,21 @@ const docTemplates: Record<DocType, string> = {
     VISUAL_FRAMEWORK: VISUAL_FRAMEWORK
 };
 
+function PdfRenderer({ content, docType, forwardRef }: { content: string, docType: DocType, forwardRef: React.Ref<HTMLDivElement> }) {
+  const isPitchDeck = docType === 'PITCH_DECK';
+  const slides = isPitchDeck ? content.split('---').map(s => s.trim()) : [content];
+
+  return (
+    <div ref={forwardRef} className="pdf-render-area">
+      {slides.map((slideContent, index) => (
+        <div key={index} className={isPitchDeck ? 'pdf-slide' : 'pdf-general'}>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{slideContent}</ReactMarkdown>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function DocumentEditor({ docType }: { docType: DocType }) {
   const { toast } = useToast();
   const [content, setContent] = useState('');
@@ -40,6 +57,7 @@ function DocumentEditor({ docType }: { docType: DocType }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
+  const isVisualFramework = docType === 'VISUAL_FRAMEWORK';
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -83,96 +101,81 @@ function DocumentEditor({ docType }: { docType: DocType }) {
     }
   }
 
- const formatForPdf = (markdownContent: string): string => {
-    let html = markdownContent
-        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-        .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-        .replace(/\*(.*)\*/gim, '<em>$1</em>')
-        .replace(/^- (.*$)/gim, '<li>$1</li>')
-        .replace(/\n/g, '<br />');
-
-    html = html.replace(/<br \/><li>/g, '<li>'); // Fix lists
-    html = `<ul>${html.match(/<li>.*<\/li>/g)?.join('') || ''}</ul>` + html.replace(/<li>.*<\/li>/g, '');
-
-    return `<div class="pdf-general">${html}</div>`;
-};
-
   const handleDownload = async () => {
     if (!pdfRef.current) return;
     setIsDownloading(true);
 
-    const contentToRender = formatForPdf(content);
-    
-    const renderDiv = document.createElement('div');
-    document.body.appendChild(renderDiv);
-    renderDiv.className = "pdf-render-area";
-    renderDiv.innerHTML = contentToRender;
-    
     const pdf = new jsPDF('p', 'pt', 'a4');
+    const elements = Array.from(pdfRef.current.children) as HTMLElement[];
     
-    const element = renderDiv.querySelector('.pdf-general') as HTMLElement;
-    if (element) {
-        await html2canvas(element, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
-            const imgData = canvas.toDataURL('image/png');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const imgProps = pdf.getImageProperties(imgData);
-            const ratio = imgProps.height / imgProps.width;
-            
-            let imgWidth = pdfWidth - 80;
-            let imgHeight = imgWidth * ratio;
+    for (let i = 0; i < elements.length; i++) {
+        if (i > 0) pdf.addPage();
+        
+        const canvas = await html2canvas(elements[i], { scale: 2, backgroundColor: '#ffffff' });
+        const imgData = canvas.toDataURL('image/png');
+        
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const ratio = canvasHeight / canvasWidth;
 
-            if (imgHeight > pdfHeight - 80) {
-                imgHeight = pdfHeight - 80;
-                imgWidth = imgHeight / ratio;
-            }
-            
-            const x = (pdfWidth - imgWidth) / 2;
-            const y = (pdfHeight - imgHeight) / 2;
-            
-            pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
-        });
+        let finalWidth = pdfWidth - 80; // with margins
+        let finalHeight = finalWidth * ratio;
+
+        if (finalHeight > pdfHeight - 80) {
+            finalHeight = pdfHeight - 80;
+            finalWidth = finalHeight / ratio;
+        }
+
+        const x = (pdfWidth - finalWidth) / 2;
+        const y = (pdfHeight - finalHeight) / 2;
+
+        pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
     }
 
-    document.body.removeChild(renderDiv);
     pdf.save(`${docType}.pdf`);
     setIsDownloading(false);
   };
   
   return (
-    <div className="space-y-4 h-full flex flex-col">
-        <div className="bg-background rounded-md border min-h-[50vh] flex-grow">
-          {isLoading ? (
-             <div className="flex justify-center items-center flex-grow h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
-          ) : (
-             <Textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base p-4"
-                placeholder="Start writing your document..."
-             />
-          )}
-        </div>
-      
-      <div className="flex justify-between items-center flex-shrink-0">
-        <div className="flex gap-2">
-            <Button onClick={handleGenerate} disabled={isGenerating || isLoading}>
-                {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                Update with AI
-            </Button>
-            <Button onClick={handleDownload} disabled={isDownloading || isLoading} variant="outline">
-                {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                Download PDF
-            </Button>
-        </div>
-        <Button onClick={handleSave} disabled={isSaving || isLoading}>
-          {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          Save Changes
-        </Button>
+    <>
+      <div className="hidden">
+        <PdfRenderer content={content} docType={docType} forwardRef={pdfRef} />
       </div>
-    </div>
+      <div className="space-y-4 h-full flex flex-col">
+          <div className="bg-background rounded-md border min-h-[50vh] flex-grow">
+            {isLoading ? (
+               <div className="flex justify-center items-center flex-grow h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+            ) : (
+               <Textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base p-4"
+                  placeholder="Start writing your document..."
+               />
+            )}
+          </div>
+        
+        <div className="flex justify-between items-center flex-shrink-0">
+          <div className="flex gap-2">
+              <Button onClick={handleGenerate} disabled={isGenerating || isLoading}>
+                  {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                  Update with AI
+              </Button>
+              <Button onClick={handleDownload} disabled={isDownloading || isLoading || isVisualFramework} variant="outline">
+                  {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                  Download PDF
+              </Button>
+              {isVisualFramework && <p className="text-xs text-muted-foreground self-center">PDF download not supported for diagrams.</p>}
+          </div>
+          <Button onClick={handleSave} disabled={isSaving || isLoading}>
+            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Save Changes
+          </Button>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -240,26 +243,41 @@ export default function AdminDocumentsPage() {
                 left: -9999px;
                 top: 0;
                 opacity: 0;
-                color: black;
                 background-color: white;
+                color: black;
                 font-family: 'PT Sans', sans-serif;
-                width: 595px; /* A4 width in pixels at 72 DPI */
             }
-            .pdf-general {
-                padding: 40px;
+            .pdf-general, .pdf-slide {
+                width: 595pt;
+                padding: 40pt;
+                box-sizing: border-box;
                 font-size: 11pt;
                 line-height: 1.5;
             }
-             .pdf-general h1 { font-size: 22pt; font-family: 'PT Sans', sans-serif; font-weight: bold; margin-top: 18pt; margin-bottom: 11pt; }
-             .pdf-general h2 { font-size: 16pt; font-family: 'PT Sans', sans-serif; font-weight: bold; margin-top: 18pt; margin-bottom: 11pt; }
-             .pdf-general h3 { font-size: 13pt; font-family: 'PT Sans', sans-serif; font-weight: bold; margin-top: 18pt; margin-bottom: 11pt; }
-             .pdf-general p { margin-bottom: 9pt; }
-             .pdf-general ul { padding-left: 20pt; margin-bottom: 9pt; list-style-type: disc; }
-             .pdf-general li { margin-bottom: 5pt; }
-             .pdf-general strong { font-weight: bold; }
-             .pdf-general em { font-style: italic; }
-             .pdf-general code { font-family: monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; }
+            .pdf-slide {
+                height: 842pt; /* A4 landscape height */
+                display: flex;
+                flex-direction: column;
+                page-break-after: always;
+            }
+            .pdf-render-area h1, .pdf-render-area h2, .pdf-render-area h3, .pdf-render-area h4, .pdf-render-area h5, .pdf-render-area h6 {
+                font-family: 'PT Sans', sans-serif;
+                font-weight: bold;
+                margin-top: 1em;
+                margin-bottom: 0.5em;
+            }
+            .pdf-render-area h1 { font-size: 22pt; }
+            .pdf-render-area h2 { font-size: 18pt; }
+            .pdf-render-area h3 { font-size: 14pt; }
+            .pdf-render-area p { margin-bottom: 9pt; }
+            .pdf-render-area ul, .pdf-render-area ol { padding-left: 20pt; margin-bottom: 9pt; }
+            .pdf-render-area li { margin-bottom: 5pt; }
+            .pdf-render-area strong { font-weight: bold; }
+            .pdf-render-area em { font-style: italic; }
+            .pdf-render-area code { font-family: monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; }
+            .pdf-render-area pre { background-color: #f0f0f0; padding: 10px; border-radius: 5px; white-space: pre-wrap; }
         `}</style>
     </div>
   );
 }
+
