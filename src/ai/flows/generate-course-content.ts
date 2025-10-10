@@ -68,7 +68,7 @@ const ExamQuestionSchema = z.union([ShortAnswerQuestionSchema, MultipleChoiceQue
 const GenerateCourseContentOutputSchema = z.object({
   longDescription: z.string().min(100).describe('A detailed, comprehensive description of the entire course.'),
   duration: z.string().describe("The estimated total duration of the course, e.g., '4 Weeks' or '6 Weeks'."),
-  modules: z.array(ModuleSchema).length(2).describe('An array of exactly 2 modules for the course.'),
+  modules: z.array(ModuleSchema).length(2).describe('An array of exactly 2 modules for the course. Each module should contain at least 2000 words of content distributed across its lessons.'),
   exam: z.array(ExamQuestionSchema).length(5).describe('The final exam for the course, containing exactly five questions, with a mix of short-answer and multiple-choice questions.'),
   project: z.custom<Project>().optional().describe("An optional final project for the course."),
   discussionPrompt: z.string().optional().describe('A comprehensive discussion prompt to encourage student engagement.'),
@@ -87,7 +87,7 @@ const prompt = ai.definePrompt({
   tools: [listCoursesTool],
   input: {schema: GenerateCourseContentInputSchema},
   output: {schema: GenerateCourseContentOutputSchema},
-  prompt: `You are an expert curriculum developer for an online learning platform in Kenya called Edgewood International A.I College. Your task is to generate a complete course structure based on a given title and context.
+  prompt: `You are an expert curriculum developer for an online learning platform in Kenya called Manda Network. Your task is to generate a complete course structure based on a given title and context.
 
 First, use the 'listCourses' tool to see if there are any existing courses in the catalog. If there are, you MUST NOT create a course that is a duplicate or very similar to an existing one. Your new course idea must be unique. If no courses are returned, proceed with generation.
 
@@ -95,8 +95,8 @@ The new course must be comprehensive and well-structured.
 It MUST include:
 - A detailed long description (minimum 100 characters).
 - An estimated total duration (e.g., "4 Weeks").
-- Exactly two (2) modules.
-- A total of at least five (5) lessons distributed across the two modules.
+- Exactly two (2) modules. Each module should contain at least 2000 words of content distributed across its lessons.
+- A total of at least seven (7) lessons distributed across the two modules.
 - A final exam with exactly five (5) questions: three (3) 'multiple-choice' questions and two (2) 'short-answer' questions.
 
 Course Title: {{{courseTitle}}}
@@ -110,8 +110,8 @@ Course Context:
 Please generate the following content for the NEW, UNIQUE course:
 1.  **Long Description**: A detailed description of what the course is about, who it's for, and what students will learn. Minimum 100 characters.
 2.  **Duration**: The estimated total duration of the course.
-3.  **Modules**: A list of exactly 2 modules. Each module must have a unique ID, a title, and its list of lessons.
-4.  **Lessons**: Distribute at least 5 lessons between the modules. Each lesson must have a unique ID, title, duration (e.g., "5 min"), and full, extensive lesson content.
+3.  **Modules**: A list of exactly 2 modules. Each module must have a unique ID, a title, and its list of lessons. The total content for all lessons within a single module MUST exceed 2000 words.
+4.  **Lessons**: Distribute at least 7 lessons between the modules. Each lesson must have a unique ID, title, duration (e.g., "5 min"), and full, extensive lesson content.
     - For **content**, you MUST write full, extensive, and detailed content for the lesson text. It should be comprehensive and provide in-depth information, not just a brief summary.
     - For **youtubeLinks**, you MUST ONLY include a link if a valid, full 'https://' URL is found in the context. If no valid URL is present, you MUST provide an EMPTY array. Do not invent URLs.
     - For **googleDriveLinks**, ALWAYS provide an EMPTY array.
