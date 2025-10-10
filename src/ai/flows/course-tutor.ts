@@ -38,9 +38,10 @@ export async function courseTutor(
 
 const prompt = ai.definePrompt({
   name: 'courseTutorPrompt',
+  model: googleAI.model('gemini-1.5-flash'),
   input: {schema: CourseTutorInputSchema},
   output: {schema: CourseTutorOutputSchema},
-  prompt: `You are Gina, an expert AI Tutor for the Edgewood International A.I College online learning platform. Your tone is encouraging, friendly, and very helpful.
+  prompt: `You are Gina, an expert AI Tutor for the Manda Network online learning platform. Your tone is encouraging, friendly, and very helpful.
 
 You will be given the content of a specific lesson and a student's question or a command. Your task is to respond based on the provided course context. Do not use any external knowledge.
 
@@ -88,12 +89,10 @@ const courseTutorFlow = ai.defineFlow(
     outputSchema: CourseTutorOutputSchema,
   },
   async input => {
-
-    const model = googleAI.model('gemini-1.5-flash');
     
     const {output} = await ai.generate({
         prompt: prompt.prompt,
-        model: model,
+        model: googleAI.model('gemini-1.5-flash'),
         input: input,
         output: { schema: CourseTutorOutputSchema },
     });

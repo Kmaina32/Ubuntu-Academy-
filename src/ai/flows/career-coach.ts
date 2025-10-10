@@ -50,7 +50,7 @@ const prompt = ai.definePrompt({
   tools: [listCoursesTool],
   input: { schema: LearningPathInputSchema },
   output: { schema: LearningPathOutputSchema },
-  prompt: `You are an expert AI Career Coach for Edgewood International A.I College. Your task is to create a personalized learning path for a student based on their stated career goal and their conversation history.
+  prompt: `You are an expert AI Career Coach for Manda Network. Your task is to create a personalized learning path for a student based on their stated career goal and their conversation history.
 
 **CRITICAL INSTRUCTIONS:**
 

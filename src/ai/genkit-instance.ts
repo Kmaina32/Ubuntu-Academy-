@@ -9,19 +9,17 @@ import { googleAI } from '@genkit-ai/googleai';
 const plugins = [];
 
 if (process.env.GEMINI_API_KEY) {
-    plugins.push(googleAI());
+  plugins.push(googleAI());
 } else {
-    if (process.env.NODE_ENV === 'production') {
-        console.warn("GEMINI_API_KEY is not set. Google AI features will be disabled.");
-    }
+  if (process.env.NODE_ENV === 'production') {
+    console.warn("GEMINI_API_KEY is not set. Google AI features will be disabled.");
+  } else {
+    console.warn("GEMINI_API_KEY is not set. All AI features will be disabled.");
+  }
 }
 
-if(plugins.length === 0) {
-    if (process.env.NODE_ENV === 'production') {
-        throw new Error("No AI provider API keys are set. AI features will be disabled. Please set at least one API key in your environment variables.");
-    } else {
-        console.warn("No AI provider API keys are set. All AI features will be disabled.");
-    }
+if(plugins.length === 0 && process.env.NODE_ENV === 'production') {
+    throw new Error("No AI provider API keys are set in production. AI features will be disabled.");
 }
 
 export const ai = genkit({
