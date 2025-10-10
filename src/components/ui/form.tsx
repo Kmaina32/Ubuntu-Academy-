@@ -124,17 +124,16 @@ FormLabel.displayName = "FormLabel"
 
 /**
  * ✅ FIXED VERSION
- * FormControl now explicitly renders children inside <Slot>
- * (prevents React.Children.only error)
+ * FormControl now uses a `div` to bypass the single-child restriction of `Slot`.
  */
 const FormControl = React.forwardRef<
-  React.ElementRef<typeof Slot>,
-  React.ComponentPropsWithoutRef<typeof Slot>
->(({ children, ...props }, ref) => {
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ ...props }, ref) => {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
 
   return (
-    <Slot
+    <div
       ref={ref}
       id={formItemId}
       aria-describedby={
@@ -144,9 +143,7 @@ const FormControl = React.forwardRef<
       }
       aria-invalid={!!error}
       {...props}
-    >
-      {children}
-    </Slot>
+    />
   )
 })
 FormControl.displayName = "FormControl"
