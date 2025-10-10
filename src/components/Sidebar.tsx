@@ -110,11 +110,11 @@ export function AppSidebar() {
                  {user ? (
                     <>
                         <CollapsibleSidebarMenu title="Main Navigation" icon={Home} initialOpen={true}>
+                           <SidebarMenuButton asChild size="sm" isActive={isActive('/') && pathname === '/'} tooltip="Browse Courses" onClick={() => onLinkClick('/')}>
+                                <Link href="/">Browse Courses</Link>
+                           </SidebarMenuButton>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/dashboard')} tooltip="Dashboard" onClick={() => onLinkClick('/dashboard')}>
                                 <Link href="/dashboard">Dashboard</Link>
-                           </SidebarMenuButton>
-                            <SidebarMenuButton asChild size="sm" isActive={isActive('/') && pathname === '/'} tooltip="Browse Courses" onClick={() => onLinkClick('/')}>
-                                <Link href="/">Browse Courses</Link>
                            </SidebarMenuButton>
                             <SidebarMenuButton asChild size="sm" isActive={isActive('/programs')} tooltip="Certificate Programs" onClick={() => onLinkClick('/programs')}>
                                 <Link href="/programs">Programs</Link>
