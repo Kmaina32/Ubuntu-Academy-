@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -8,9 +7,9 @@ import { LiveChat } from '@/components/LiveChat';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
-import { getUserById } from '@/lib/firebase-service';
+import { getUserById, getAllCalendarEvents } from '@/lib/firebase-service';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Hand, Loader2, PhoneOff, Users, VideoOff, Maximize } from 'lucide-react';
+import { Hand, Loader2, PhoneOff, Users, VideoOff, Maximize, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { onValue, ref, onChildAdded, set, remove } from 'firebase/database';
 import Link from 'next/link';
@@ -18,6 +17,9 @@ import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { NotebookSheet } from '@/components/NotebookSheet';
+import { isPast, format } from 'date-fns';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -98,6 +100,7 @@ export default function StudentLivePage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const [liveSessionDetails, setLiveSessionDetails] = useState<any>(null);
+    const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
     const [isLive, setIsLive] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [handRaised, setHandRaised] = useState(false);
@@ -125,6 +128,16 @@ export default function StudentLivePage() {
         if (!user) return;
 
         const offerRef = ref(db, 'webrtc-offers/live-session');
+
+        const fetchUpcomingEvents = async () => {
+            const allEvents = await getAllCalendarEvents();
+            const upcoming = allEvents
+                .filter(e => !isPast(new Date(e.date)))
+                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            setUpcomingEvents(upcoming);
+        }
+        fetchUpcomingEvents();
+
 
         const unsubscribe = onValue(offerRef, async (snapshot) => {
             if (snapshot.exists()) {
@@ -240,9 +253,9 @@ export default function StudentLivePage() {
           <AppSidebar />
           <SidebarInset>
             <Header />
-            <div className="flex flex-col h-[calc(100vh-4rem)]">
+            <div className="flex flex-col min-h-[calc(100vh-4rem)]">
               <main className="flex-grow bg-background p-4 relative flex flex-col">
-                  <div ref={videoContainerRef} className="w-full flex-grow bg-black flex items-center justify-center relative rounded-lg p-1">
+                  <div ref={videoContainerRef} className="w-full aspect-video bg-black flex items-center justify-center relative rounded-lg p-1">
                       {isLoading ? (
                           <div className="flex flex-col items-center gap-2 text-muted-foreground">
                               <Loader2 className="h-8 w-8 animate-spin" />
@@ -293,6 +306,27 @@ export default function StudentLivePage() {
                           </div>
                       )}
                   </div>
+                   {upcomingEvents.length > 0 && (
+                      <div className="mt-8">
+                          <h2 className="text-2xl font-bold mb-4 font-headline flex items-center gap-2">
+                            <Calendar className="h-6 w-6"/>
+                            Upcoming Live Sessions
+                          </h2>
+                          <ScrollArea className="w-full whitespace-nowrap">
+                            <div className="flex gap-4 pb-4">
+                                {upcomingEvents.map(event => (
+                                    <Card key={event.id} className="min-w-[300px]">
+                                        <CardHeader>
+                                            <CardTitle className="truncate">{event.title}</CardTitle>
+                                            <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
+                                        </CardHeader>
+                                    </Card>
+                                ))}
+                            </div>
+                            <ScrollBar orientation="horizontal" />
+                          </ScrollArea>
+                      </div>
+                  )}
                  <NotebookSheet courseId="live-session" courseTitle="Live Session Notes" />
               </main>
             </div>
