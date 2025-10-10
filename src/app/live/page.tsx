@@ -2,22 +2,16 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft, VideoOff, Video, PhoneOff, Users, Hand, Mic, MicOff } from 'lucide-react';
-import Link from 'next/link';
-import { db } from '@/lib/firebase';
-import { ref, onValue, set, remove, onChildAdded, get, update, query } from 'firebase/database';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
-import { LiveChat } from '@/components/LiveChat';
 import { Button } from '@/components/ui/button';
-import { AnimatePresence, motion } from 'framer-motion';
+import { LiveChat } from '@/components/LiveChat';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useAuth } from '@/hooks/use-auth';
+import { db } from '@/lib/firebase';
 import { getUserById } from '@/lib/firebase-service';
-import { AppSidebar } from '@/components/Sidebar';
-import { Header } from '@/components/Header';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { Footer } from '@/components/Footer';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Hand, Loader2, PhoneOff, Users, VideoOff } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { onValue, ref, onChildAdded, set, remove } from 'firebase/database';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -43,8 +37,6 @@ function ViewerList() {
             }
         };
 
-        const answersQuery = query(answersRef);
-        const addedUnsubscribe = onChildAdded(answersQuery, handleChildAdded);
         const valueUnsubscribe = onValue(answersRef, (snapshot) => {
              if (!snapshot.exists()) {
                 setViewers(new Map());
@@ -63,9 +55,10 @@ function ViewerList() {
                 return newViewers;
             });
         });
+        
+        onChildAdded(answersRef, handleChildAdded);
 
         return () => {
-            addedUnsubscribe();
             valueUnsubscribe();
         };
     }, []);
@@ -224,63 +217,58 @@ export default function StudentLivePage() {
     }
 
     return (
-        <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-                <Header />
-                 <main className="flex-grow bg-black flex flex-col items-center justify-center p-4">
-                    <div className="w-full max-w-6xl h-[calc(100vh-12rem)] bg-black rounded-lg flex items-center justify-center relative shadow-lg">
-                        {isLoading ? (
-                            <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                                <Loader2 className="h-8 w-8 animate-spin" />
-                                <span>Connecting to live session...</span>
-                            </div>
-                        ) : isLive ? (
-                            <>
-                                <video ref={videoRef} className="w-full h-full object-contain" autoPlay playsInline />
-                                <AnimatePresence>
-                                    {showInfo && (
-                                        <motion.div
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            exit={{ opacity: 0 }}
-                                            className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/50 text-white p-2 px-4 rounded-lg text-center"
-                                        >
-                                            <p className="font-bold">{liveSessionDetails?.title || 'Live Session'}</p>
-                                            <p className="text-xs">{liveSessionDetails?.description || 'Welcome to the class!'}</p>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                                    <div className="absolute top-4 right-4 z-20">
-                                    <ViewerList />
-                                </div>
-                                <LiveChat sessionId="live-session" />
-                            </>
-                        ) : (
-                            <div className="flex flex-col items-center gap-4 text-muted-foreground text-center p-4">
-                                <VideoOff className="h-16 w-16" />
-                                <p className="font-semibold text-xl">No Active Live Session</p>
-                                <p className="text-sm max-w-xs">The live session has ended or has not started yet. Please check the calendar for scheduled events.</p>
-                                 <Button asChild variant="outline" className="mt-4">
-                                    <Link href="/dashboard">Go to Dashboard</Link>
-                                 </Button>
-                            </div>
-                        )}
-                         {isLive && (
-                             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center justify-center gap-4 z-20">
-                                <Button size="icon" variant={handRaised ? 'default' : 'secondary'} onClick={toggleHandRaised} className="rounded-full h-12 w-12 shadow-lg">
-                                    <Hand className="h-6 w-6" />
-                                </Button>
-                                <Button size="icon" variant="destructive" onClick={handleLeave} className="rounded-full h-14 w-14 shadow-lg">
-                                    <PhoneOff className="h-6 w-6" />
-                                </Button>
-                                <div className="w-12 h-12"></div>
-                             </div>
-                        )}
+        <main className="flex-grow bg-black flex flex-col items-center justify-center p-0">
+            <div className="w-full h-screen bg-black flex items-center justify-center relative">
+                {isLoading ? (
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                        <span>Connecting to live session...</span>
                     </div>
-                </main>
-                <Footer />
-            </SidebarInset>
-        </SidebarProvider>
+                ) : isLive ? (
+                    <>
+                        <video ref={videoRef} className="w-full h-full object-contain" autoPlay playsInline />
+                        <AnimatePresence>
+                            {showInfo && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/50 text-white p-2 px-4 rounded-lg text-center"
+                                >
+                                    <p className="font-bold">{liveSessionDetails?.title || 'Live Session'}</p>
+                                    <p className="text-xs">{liveSessionDetails?.description || 'Welcome to the class!'}</p>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                            <div className="absolute top-4 right-4 z-20">
+                            <ViewerList />
+                        </div>
+                        <LiveChat sessionId="live-session" />
+                    </>
+                ) : (
+                    <div className="flex flex-col items-center gap-4 text-muted-foreground text-center p-4">
+                        <VideoOff className="h-16 w-16" />
+                        <p className="font-semibold text-xl">No Active Live Session</p>
+                        <p className="text-sm max-w-xs">The live session has ended or has not started yet. Please check the calendar for scheduled events.</p>
+                            <Button asChild variant="outline" className="mt-4">
+                            <Link href="/dashboard">Go to Dashboard</Link>
+                            </Button>
+                    </div>
+                )}
+                    {isLive && (
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center justify-center gap-4 z-20">
+                        <Button size="icon" variant={handRaised ? 'default' : 'secondary'} onClick={toggleHandRaised} className="rounded-full h-12 w-12 shadow-lg">
+                            <Hand className="h-6 w-6" />
+                        </Button>
+                        <Button size="icon" variant="destructive" onClick={handleLeave} className="rounded-full h-14 w-14 shadow-lg">
+                            <PhoneOff className="h-6 w-6" />
+                        </Button>
+                        <div className="w-12 h-12"></div>
+                        </div>
+                )}
+            </div>
+        </main>
     );
 }
+
+    

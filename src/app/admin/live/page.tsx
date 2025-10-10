@@ -2,37 +2,20 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Video, PhoneOff, Users, Mic, MicOff, Hand } from 'lucide-react';
+import { ArrowLeft, Loader2, Video, PhoneOff, Users, Hand, Mic, MicOff, Calendar, Clock, VideoOff as VideoOffIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
 import { ref, onValue, set, remove, onChildAdded, query } from 'firebase/database';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { createNotification, getUserById } from '@/lib/firebase-service';
+import { createNotification, getUserById, getAllCalendarEvents } from '@/lib/firebase-service';
+import type { CalendarEvent } from '@/lib/mock-data';
 import { LiveChat } from '@/components/LiveChat';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
-
-const liveSessionSchema = z.object({
-    title: z.string().min(5, 'Title must be at least 5 characters.'),
-    description: z.string().optional(),
-    speakers: z.string().optional(),
-    target: z.enum(['all', 'cohort', 'students']),
-    cohort: z.string().optional(),
-}).refine(data => {
-    if (data.target === 'cohort' && !data.cohort) return false;
-    return true;
-}, { message: 'Cohort name is required.', path: ['cohort']});
+import { format, isPast, isToday, formatDistanceToNow } from 'date-fns';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -109,31 +92,103 @@ function ViewerList() {
     )
 }
 
+function UpcomingSessionCard({ event, onGoLive }: { event: CalendarEvent, onGoLive: (event: CalendarEvent) => void }) {
+    const [timeLeft, setTimeLeft] = useState('');
+
+    useEffect(() => {
+        const updateTimer = () => {
+            const now = new Date();
+            const eventDate = new Date(event.date);
+            // Assuming event time is start of day, adjust if time is stored
+            eventDate.setHours(0,0,0,0);
+            if (isToday(eventDate)) {
+                 setTimeLeft("Today");
+            } else {
+                 setTimeLeft(formatDistanceToNow(eventDate, { addSuffix: true }));
+            }
+        };
+
+        updateTimer();
+        const timer = setInterval(updateTimer, 60000); // update every minute
+        return () => clearInterval(timer);
+    }, [event]);
+
+    return (
+        <Card className="bg-primary/5 border-primary/20">
+            <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                    <span>Upcoming Session</span>
+                    <Badge variant="secondary">{timeLeft}</Badge>
+                </CardTitle>
+                <CardDescription>{event.title}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-end">
+                <Button onClick={() => onGoLive(event)}>
+                    <Video className="mr-2 h-4 w-4"/>
+                    Start Session Now
+                </Button>
+            </CardContent>
+        </Card>
+    );
+}
+
+function NoSessionCard({ onSchedule }: { onSchedule: () => void }) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>No Active Session</CardTitle>
+                <CardDescription>There is no live session currently running.</CardDescription>
+            </CardHeader>
+            <CardContent className="text-center py-10 border-2 border-dashed rounded-lg">
+                <VideoOffIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-4">Schedule a new session to get started.</p>
+                <Button onClick={onSchedule}>
+                    <Calendar className="mr-2 h-4 w-4"/>
+                    Schedule a Session
+                </Button>
+            </CardContent>
+        </Card>
+    );
+}
+
 
 export default function AdminLivePage() {
     const { toast } = useToast();
     const [isLive, setIsLive] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isFetchingEvents, setIsFetchingEvents] = useState(true);
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
     const [isMuted, setIsMuted] = useState(false);
+
+    const [upcomingEvent, setUpcomingEvent] = useState<CalendarEvent | null>(null);
+    const [pastEvents, setPastEvents] = useState<CalendarEvent[]>([]);
+
     const videoRef = useRef<HTMLVideoElement>(null);
     const localStreamRef = useRef<MediaStream | null>(null);
     const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
 
     const offerRef = ref(db, 'webrtc-offers/live-session');
     const answersRef = ref(db, 'webrtc-answers/live-session');
-    const adminIceCandidatesRef = ref(db, 'webrtc-candidates/live-session/admin');
-    const studentIceCandidatesRef = ref(db, 'webrtc-candidates/live-session/student');
     
-     const form = useForm<z.infer<typeof liveSessionSchema>>({
-        resolver: zodResolver(liveSessionSchema),
-        defaultValues: {
-            title: '',
-            description: '',
-            speakers: '',
-            target: 'all',
-        },
-    });
+    useEffect(() => {
+        const fetchEvents = async () => {
+            setIsFetchingEvents(true);
+            const allEvents = await getAllCalendarEvents();
+            const now = new Date();
+            const upcoming = allEvents
+                .filter(e => !isPast(new Date(e.date)))
+                .sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            
+            const past = allEvents
+                .filter(e => isPast(new Date(e.date)))
+                .sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+            setUpcomingEvent(upcoming[0] || null);
+            setPastEvents(past.slice(0, 5)); // show last 5
+            setIsFetchingEvents(false);
+        }
+        fetchEvents();
+    }, []);
 
     useEffect(() => {
         // Cleanup on component unmount
@@ -166,7 +221,7 @@ export default function AdminLivePage() {
     };
 
 
-    const handleGoLive = async (values: z.infer<typeof liveSessionSchema>) => {
+    const handleGoLive = async (event: CalendarEvent) => {
         setIsLoading(true);
         const stream = await getCameraPermission();
         if (!stream) {
@@ -174,30 +229,21 @@ export default function AdminLivePage() {
             return;
         }
 
-        const notificationPayload: {
-            title: string;
-            body: string;
-            link: string;
-            cohort?: string;
-        } = {
-            title: `🔴 Live Now: ${values.title}`,
-            body: values.description || 'A live session has started. Join now!',
+        const notificationPayload = {
+            title: `🔴 Live Now: ${event.title}`,
+            body: event.description || 'A live session has started. Join now!',
             link: '/live',
         };
 
-        if (values.target === 'cohort' && values.cohort) {
-            notificationPayload.cohort = values.cohort;
-        }
-
         await createNotification(notificationPayload);
-        toast({ title: 'Notifications Sent!', description: 'Targeted students have been notified about the live session.'});
+        toast({ title: 'Notifications Sent!', description: 'Students have been notified about the live session.'});
 
         const offerPc = new RTCPeerConnection(ICE_SERVERS);
         stream.getTracks().forEach(track => offerPc.addTrack(track, stream));
         const offer = await offerPc.createOffer();
         await offerPc.setLocalDescription(offer);
         
-        await set(offerRef, { sdp: offer.sdp, type: offer.type, ...values });
+        await set(offerRef, { sdp: offer.sdp, type: offer.type, ...event });
         offerPc.close();
 
         setIsLive(true);
@@ -219,9 +265,9 @@ export default function AdminLivePage() {
 
             await peerConnection.setRemoteDescription(new RTCSessionDescription(studentAnswer));
             
-            peerConnection.onicecandidate = event => {
-                if (event.candidate) {
-                    set(ref(db, `webrtc-candidates/live-session/admin/${studentId}/${Date.now()}`), event.candidate.toJSON());
+            peerConnection.onicecandidate = iceEvent => {
+                if (iceEvent.candidate) {
+                    set(ref(db, `webrtc-candidates/live-session/admin/${studentId}/${Date.now()}`), iceEvent.candidate.toJSON());
                 }
             };
             
@@ -251,8 +297,7 @@ export default function AdminLivePage() {
         await Promise.all([
             remove(offerRef),
             remove(answersRef),
-            remove(adminIceCandidatesRef),
-            remove(studentIceCandidatesRef),
+            remove(ref(db, 'webrtc-candidates')),
             remove(ref(db, 'liveChat/live-session'))
         ]);
 
@@ -304,7 +349,7 @@ export default function AdminLivePage() {
                                         </div>
                                     </>
                                 )}
-                                 {!isLive && hasCameraPermission !== true && (
+                                 {!isLive && (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-muted-foreground p-4">
                                         <Video className="h-16 w-16 mx-auto mb-4" />
                                         <p>Your video feed will appear here once you go live.</p>
@@ -312,60 +357,10 @@ export default function AdminLivePage() {
                                  )}
                             </div>
                         </div>
-                        <div className="lg:col-span-1">
-                             {!isLive ? (
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Start a New Session</CardTitle>
-                                        <CardDescription>Configure and start your live broadcast.</CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        {hasCameraPermission === false && (
-                                            <Alert variant="destructive" className="mb-4">
-                                                <AlertTitle>Camera Access Required</AlertTitle>
-                                                <AlertDescription>
-                                                    Please allow camera access in your browser to use this feature.
-                                                </AlertDescription>
-                                            </Alert>
-                                        )}
-                                        <Form {...form}>
-                                            <form onSubmit={form.handleSubmit(handleGoLive)} className="space-y-4">
-                                                <FormField control={form.control} name="title" render={({ field }) => (
-                                                    <FormItem><FormLabel>Session Title</FormLabel><FormControl><Input placeholder="e.g., Marketing Q&A" {...field} /></FormControl><FormMessage /></FormItem>
-                                                )}/>
-                                                <FormField control={form.control} name="description" render={({ field }) => (
-                                                    <FormItem><FormLabel>Description (for notification)</FormLabel><FormControl><Textarea placeholder="Join us for a live Q&A session..." {...field} /></FormControl><FormMessage /></FormItem>
-                                                )}/>
-                                                <FormField control={form.control} name="speakers" render={({ field }) => (
-                                                    <FormItem><FormLabel>Keynote Speakers (Optional)</FormLabel><FormControl><Input placeholder="e.g., Jane Doe, John Smith" {...field} /></FormControl><FormMessage /></FormItem>
-                                                )}/>
-                                                 <FormField control={form.control} name="target" render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Target Audience</FormLabel>
-                                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                            <FormControl><SelectTrigger><SelectValue placeholder="Select who to notify..." /></SelectTrigger></FormControl>
-                                                            <SelectContent>
-                                                                <SelectItem value="all">All Students</SelectItem>
-                                                                <SelectItem value="cohort">Specific Cohort</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}/>
-                                                {form.watch('target') === 'cohort' && (
-                                                    <FormField control={form.control} name="cohort" render={({ field }) => (
-                                                        <FormItem><FormLabel>Cohort Name</FormLabel><FormControl><Input placeholder="e.g., Sept-2024-FT" {...field} /></FormControl><FormMessage /></FormItem>
-                                                    )}/>
-                                                )}
-                                                <Button size="lg" type="submit" disabled={isLoading} className="w-full">
-                                                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Video className="mr-2 h-4 w-4" />}
-                                                    Go Live
-                                                </Button>
-                                            </form>
-                                        </Form>
-                                    </CardContent>
-                                </Card>
-                            ) : (
+                        <div className="lg:col-span-1 space-y-6">
+                             {isFetchingEvents ? (
+                                 <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+                             ) : isLive ? (
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Session is Live</CardTitle>
@@ -381,12 +376,40 @@ export default function AdminLivePage() {
                                         </Alert>
                                     </CardContent>
                                 </Card>
+                            ) : upcomingEvent ? (
+                                <UpcomingSessionCard event={upcomingEvent} onGoLive={handleGoLive} />
+                            ) : (
+                                <NoSessionCard onSchedule={() => router.push('/admin/calendar')} />
                             )}
+                            
+                             <Card>
+                                 <CardHeader>
+                                     <CardTitle>Past Sessions</CardTitle>
+                                     <CardDescription>A log of your recent live events.</CardDescription>
+                                 </CardHeader>
+                                 <CardContent>
+                                     {isFetchingEvents ? (
+                                         <p className="text-muted-foreground text-sm">Loading...</p>
+                                     ) : pastEvents.length > 0 ? (
+                                         <ul className="space-y-3">
+                                            {pastEvents.map(event => (
+                                                <li key={event.id} className="flex items-center justify-between text-sm">
+                                                    <span className="font-medium">{event.title}</span>
+                                                    <span className="text-muted-foreground">{format(new Date(event.date), 'PPP')}</span>
+                                                </li>
+                                            ))}
+                                         </ul>
+                                     ) : (
+                                         <p className="text-muted-foreground text-sm text-center py-4">No past sessions found.</p>
+                                     )}
+                                 </CardContent>
+                            </Card>
                         </div>
                     </div>
                 </div>
             </main>
-            <Footer />
         </div>
     );
 }
+
+    
