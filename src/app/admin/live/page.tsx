@@ -328,8 +328,8 @@ export default function AdminLivePage() {
                     </Link>
                     <div className="grid lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-2">
-                             <div className="aspect-video bg-black rounded-lg flex items-center justify-center relative shadow-lg border">
-                                <video ref={videoRef} className="w-full h-full rounded-lg object-cover" autoPlay muted playsInline />
+                             <div className="aspect-video bg-black rounded-lg flex items-center justify-center relative shadow-lg border p-1">
+                                <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />
                                 
                                 {isLive && (
                                     <div className="absolute top-4 right-4 z-20 pointer-events-auto">
@@ -413,5 +413,7 @@ export default function AdminLivePage() {
         </div>
     );
 }
+
+    
 
     

@@ -17,6 +17,7 @@ import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { NotebookSheet } from '@/components/NotebookSheet';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -239,8 +240,8 @@ export default function StudentLivePage() {
           <AppSidebar />
           <SidebarInset>
             <Header />
-            <main className="flex-grow bg-background">
-                <div ref={videoContainerRef} className="w-full aspect-video bg-black flex items-center justify-center relative">
+            <main className="flex-grow bg-background p-4">
+                <div ref={videoContainerRef} className="w-full aspect-video bg-black flex items-center justify-center relative rounded-lg p-1">
                     {isLoading ? (
                         <div className="flex flex-col items-center gap-2 text-muted-foreground">
                             <Loader2 className="h-8 w-8 animate-spin" />
@@ -248,7 +249,7 @@ export default function StudentLivePage() {
                         </div>
                     ) : isLive ? (
                         <>
-                            <video ref={videoRef} className="w-full h-full object-contain" autoPlay playsInline />
+                            <video ref={videoRef} className="w-full h-full object-contain rounded-md" autoPlay playsInline />
                             <AnimatePresence>
                                 {showInfo && (
                                     <motion.div
@@ -292,9 +293,11 @@ export default function StudentLivePage() {
                     )}
                 </div>
             </main>
+            <NotebookSheet courseId="live-session" courseTitle="Live Session Notes" />
             <Footer />
           </SidebarInset>
         </SidebarProvider>
     );
 }
 
+    
