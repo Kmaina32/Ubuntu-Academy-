@@ -12,6 +12,7 @@ import { Award, Loader2, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Label } from '@/components/ui/label';
 
 interface IssuedCertificate {
     studentName: string;
