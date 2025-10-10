@@ -37,11 +37,13 @@ export function NotebookSheet({ courseId, courseTitle }: NotesSheetProps) {
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isDownloading, setIsDownloading] = useState(false);
+    const [isClient, setIsClient] = useState(false);
     
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const pdfRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        setIsClient(true);
         const fetchData = async () => {
             if (!user || !courseId) return;
             setIsLoading(true);
@@ -111,6 +113,10 @@ export function NotebookSheet({ courseId, courseTitle }: NotesSheetProps) {
         saveAs(blob, `${courseTitle}_notes.txt`);
         window.open('https://drive.google.com/drive/my-drive', '_blank');
      };
+     
+    if (!isClient) {
+        return null;
+    }
 
     return (
         <>
@@ -214,5 +220,3 @@ export function NotebookSheet({ courseId, courseTitle }: NotesSheetProps) {
         </>
     );
 }
-
-    
