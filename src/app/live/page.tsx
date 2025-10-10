@@ -12,7 +12,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Hand, Loader2, PhoneOff, Users, VideoOff, Maximize, Calendar, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { onValue, ref, onChildAdded, set, remove } from 'firebase/database';
-import Link from 'next/link';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
@@ -20,6 +19,8 @@ import { NotebookSheet } from '@/components/NotebookSheet';
 import { isPast, format } from 'date-fns';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -99,11 +100,15 @@ function ViewerList() {
 export default function StudentLivePage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
+    const { toast } = useToast();
+
     const [liveSessionDetails, setLiveSessionDetails] = useState<any>(null);
     const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
     const [isLive, setIsLive] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [handRaised, setHandRaised] = useState(false);
+    const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+
     const videoRef = useRef<HTMLVideoElement>(null);
     const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
     const connectionStateRef = useRef<ConnectionState>('new');
@@ -123,10 +128,33 @@ export default function StudentLivePage() {
             router.push('/login');
         }
     }, [user, authLoading, router]);
+
+    const requestMediaPermissions = useCallback(async () => {
+        try {
+            // Request a dummy stream just to get permissions
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+            // Stop the tracks immediately, we don't need them yet
+            stream.getTracks().forEach(track => track.stop());
+            setHasCameraPermission(true);
+        } catch (error) {
+            console.error("Error getting media permissions", error);
+            setHasCameraPermission(false);
+            toast({
+                title: 'Permissions Required',
+                description: 'Please allow camera and microphone access to join the live session.',
+                variant: 'destructive',
+            });
+        }
+    }, [toast]);
     
     useEffect(() => {
         if (!user) return;
+        requestMediaPermissions();
+    }, [user, requestMediaPermissions]);
 
+    useEffect(() => {
+        if (!user || hasCameraPermission === false) return;
+        
         const offerRef = ref(db, 'webrtc-offers/live-session');
 
         const fetchUpcomingEvents = async () => {
@@ -136,14 +164,17 @@ export default function StudentLivePage() {
                 .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
             setUpcomingEvents(upcoming);
         }
-        fetchUpcomingEvents();
-
 
         const unsubscribe = onValue(offerRef, async (snapshot) => {
             if (snapshot.exists()) {
-                 if (connectionStateRef.current !== 'new' && connectionStateRef.current !== 'closed') {
-                    return; // Already connecting or connected
+                if (connectionStateRef.current !== 'new' && connectionStateRef.current !== 'closed') return;
+                
+                // Wait for permissions before connecting
+                if (hasCameraPermission === null) {
+                    setIsLoading(true);
+                    return;
                 }
+                
                 connectionStateRef.current = 'connecting';
                 
                 const sessionData = snapshot.val();
@@ -210,6 +241,8 @@ export default function StudentLivePage() {
             }
         });
 
+        fetchUpcomingEvents();
+
         return () => {
             unsubscribe();
              if (peerConnectionRef.current) {
@@ -222,7 +255,7 @@ export default function StudentLivePage() {
             connectionStateRef.current = 'closed';
         };
 
-    }, [user]);
+    }, [user, hasCameraPermission]);
 
     const handleLeave = () => {
         router.push('/dashboard');
@@ -254,14 +287,9 @@ export default function StudentLivePage() {
           <SidebarInset>
             <Header />
             <div className="flex flex-col min-h-[calc(100vh-4rem)]">
-              <main className="flex-grow bg-background p-4 relative flex flex-col">
-                  <div ref={videoContainerRef} className="w-full aspect-video bg-black flex items-center justify-center relative rounded-lg p-1">
-                      {isLoading ? (
-                          <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                              <Loader2 className="h-8 w-8 animate-spin" />
-                              <span>Connecting to live session...</span>
-                          </div>
-                      ) : isLive ? (
+              <main className="flex-grow bg-background flex flex-col">
+                   <div ref={videoContainerRef} className="w-full aspect-video bg-black flex items-center justify-center relative p-1">
+                      {isLive ? (
                           <>
                               <video ref={videoRef} className="w-full h-full object-contain rounded-md" autoPlay playsInline />
                               <AnimatePresence>
@@ -280,53 +308,78 @@ export default function StudentLivePage() {
                                   <div className="absolute top-4 right-4 z-20">
                                   <ViewerList />
                               </div>
-                              <LiveChat sessionId="live-session" />
                           </>
                       ) : (
                           <div className="flex flex-col items-center gap-4 text-muted-foreground text-center p-4">
-                              <VideoOff className="h-16 w-16" />
-                              <p className="font-semibold text-xl">No Active Live Session</p>
-                              <p className="text-sm max-w-xs">The live session has ended or has not started yet. Please check the calendar for scheduled events.</p>
-                                  <Button asChild variant="outline" className="mt-4">
-                                  <Link href="/dashboard">Go to Dashboard</Link>
-                                  </Button>
-                          </div>
-                      )}
-                       {isLive && (
-                          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center justify-center gap-4 z-20">
-                              <Button size="icon" variant={handRaised ? 'default' : 'secondary'} onClick={toggleHandRaised} className="rounded-full h-12 w-12 shadow-lg">
-                                  <Hand className="h-6 w-6" />
-                              </Button>
-                              <Button size="icon" variant="destructive" onClick={handleLeave} className="rounded-full h-14 w-14 shadow-lg">
-                                  <PhoneOff className="h-6 w-6" />
-                              </Button>
-                               <Button size="icon" variant="secondary" onClick={handleFullScreen} className="rounded-full h-12 w-12 shadow-lg">
-                                  <Maximize className="h-6 w-6" />
-                              </Button>
+                              {isLoading ? (
+                                    <>
+                                        <Loader2 className="h-8 w-8 animate-spin" />
+                                        <span>Connecting to live session...</span>
+                                    </>
+                               ) : hasCameraPermission === false ? (
+                                    <Alert variant="destructive" className="max-w-md">
+                                        <AlertTitle>Camera and Microphone Required</AlertTitle>
+                                        <AlertDescription>
+                                            Please grant camera and microphone permissions in your browser to join the live session.
+                                            After allowing, please refresh the page.
+                                        </AlertDescription>
+                                    </Alert>
+                               ) : (
+                                   <>
+                                        <VideoOff className="h-16 w-16" />
+                                        <p className="font-semibold text-xl">No Active Live Session</p>
+                                        <p className="text-sm max-w-xs">The live session has ended or has not started yet.</p>
+                                   </>
+                               )}
                           </div>
                       )}
                   </div>
-                  {upcomingEvents.length > 0 && !isLive && (
-                      <div className="mt-8">
-                          <h2 className="text-2xl font-bold mb-4 font-headline flex items-center gap-2">
-                            <Calendar className="h-6 w-6"/>
-                            Upcoming Live Sessions
-                          </h2>
-                          <ScrollArea className="w-full whitespace-nowrap">
-                            <div className="flex gap-4 pb-4">
-                                {upcomingEvents.map(event => (
-                                    <Card key={event.id} className="min-w-[300px]">
-                                        <CardHeader>
-                                            <CardTitle className="truncate">{event.title}</CardTitle>
-                                            <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
-                                        </CardHeader>
-                                    </Card>
-                                ))}
+
+                 <div className="flex-1 flex flex-col min-h-0">
+                     {isLive ? (
+                        <>
+                            <div className="flex-shrink-0 p-4 border-b">
+                                <div className="flex items-center justify-center gap-4 z-20">
+                                    <Button size="icon" variant={handRaised ? 'default' : 'secondary'} onClick={toggleHandRaised} className="rounded-full h-12 w-12 shadow-lg">
+                                        <Hand className="h-6 w-6" />
+                                    </Button>
+                                    <Button size="icon" variant="destructive" onClick={handleLeave} className="rounded-full h-14 w-14 shadow-lg">
+                                        <PhoneOff className="h-6 w-6" />
+                                    </Button>
+                                    <Button size="icon" variant="secondary" onClick={handleFullScreen} className="rounded-full h-12 w-12 shadow-lg">
+                                        <Maximize className="h-6 w-6" />
+                                    </Button>
+                                </div>
                             </div>
-                            <ScrollBar orientation="horizontal" />
-                          </ScrollArea>
-                      </div>
-                  )}
+                            <LiveChat sessionId="live-session" />
+                        </>
+                    ) : (
+                         <div className="p-4 md:p-6 flex-1 flex flex-col justify-center">
+                            {upcomingEvents.length > 0 && (
+                                <div>
+                                    <h2 className="text-2xl font-bold mb-4 font-headline flex items-center gap-2">
+                                        <Calendar className="h-6 w-6"/>
+                                        Upcoming Live Sessions
+                                    </h2>
+                                    <ScrollArea className="w-full whitespace-nowrap">
+                                        <div className="flex gap-4 pb-4">
+                                            {upcomingEvents.map(event => (
+                                                <Card key={event.id} className="min-w-[300px]">
+                                                    <CardHeader>
+                                                        <CardTitle className="truncate">{event.title}</CardTitle>
+                                                        <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
+                                                    </CardHeader>
+                                                </Card>
+                                            ))}
+                                        </div>
+                                        <ScrollBar orientation="horizontal" />
+                                    </ScrollArea>
+                                </div>
+                            )}
+                         </div>
+                    )}
+                 </div>
+                 
                  <NotebookSheet courseId="live-session" courseTitle="Live Session Notes" />
               </main>
             </div>

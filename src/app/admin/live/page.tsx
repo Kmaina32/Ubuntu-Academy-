@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Video, PhoneOff, Users, Hand, Mic, MicOff, Calendar, Clock, VideoOff as VideoOffIcon, PlusCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, Video, PhoneOff, Users, Hand, Mic, MicOff, Calendar, Clock, VideoOff as VideoOffIcon, PlusCircle, Maximize } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
@@ -233,22 +233,16 @@ export default function AdminLivePage() {
         // Check for existing live session on page load
         onValue(offerRef, (snapshot) => {
             if (snapshot.exists()) {
-                // An offer exists, implying a session might be live.
-                // This component should take over the session.
-                // For simplicity, we'll just reflect the state.
-                // A more robust solution would handle session ownership.
                 setIsLive(true);
             }
         }, { onlyOnce: true });
-    }, []);
 
-    useEffect(() => {
         return () => {
             if(isLive) {
                 handleStopLive();
             }
         };
-    }, [isLive]);
+    }, []);
     
     const getCameraPermission = async () => {
         try {
@@ -265,7 +259,7 @@ export default function AdminLivePage() {
             toast({
                 variant: 'destructive',
                 title: 'Camera Access Denied',
-                description: 'Please enable camera permissions in your browser settings to start a live session.',
+                description: 'Please enable camera permissions to start a live session.',
             });
             return null;
         }
@@ -379,13 +373,13 @@ export default function AdminLivePage() {
     return (
         <div className="flex flex-col min-h-screen">
             <main className="flex-grow container mx-auto px-4 md:px-6 py-12 md:py-16">
-                <div className="max-w-6xl mx-auto">
+                <div className="max-w-7xl mx-auto">
                     <Link href="/admin" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
                         <ArrowLeft className="h-4 w-4" />
                         Back to Admin Dashboard
                     </Link>
                     <div className="grid lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2">
+                        <div className="lg:col-span-2 space-y-4">
                              <div className="aspect-video bg-black rounded-lg flex items-center justify-center relative shadow-lg border p-1">
                                 <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />
                                 
@@ -394,21 +388,6 @@ export default function AdminLivePage() {
                                         <ViewerList />
                                     </div>
                                 )}
-                                
-                                {isLive && (
-                                    <>
-                                        <LiveChat sessionId="live-session" />
-                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
-                                            <Button size="icon" variant={isMuted ? 'destructive' : 'secondary'} onClick={toggleMute} className="rounded-full h-12 w-12 shadow-lg">
-                                                {isMuted ? <MicOff className="h-6 w-6"/> : <Mic className="h-6 w-6" />}
-                                            </Button>
-                                            <Button size="icon" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="rounded-full h-14 w-14 shadow-lg">
-                                                {isLoading ? <Loader2 className="h-6 w-6 animate-spin"/> : <PhoneOff className="h-6 w-6" />}
-                                            </Button>
-                                            <div className="w-12 h-12"></div>
-                                        </div>
-                                    </>
-                                )}
                                  {!isLive && (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-muted-foreground p-4">
                                         <Video className="h-16 w-16 mx-auto mb-4" />
@@ -416,6 +395,21 @@ export default function AdminLivePage() {
                                     </div>
                                  )}
                             </div>
+
+                             {isLive && (
+                                <div className="bg-background/80 backdrop-blur-sm text-foreground p-3 rounded-lg flex items-center justify-center gap-4 text-sm shadow-md">
+                                     <Button size="icon" variant={isMuted ? 'destructive' : 'secondary'} onClick={toggleMute} className="rounded-full h-12 w-12 shadow-lg">
+                                        {isMuted ? <MicOff className="h-6 w-6"/> : <Mic className="h-6 w-6" />}
+                                    </Button>
+                                    <Button size="icon" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="rounded-full h-14 w-14 shadow-lg">
+                                        {isLoading ? <Loader2 className="h-6 w-6 animate-spin"/> : <PhoneOff className="h-6 w-6" />}
+                                    </Button>
+                                    <div className="w-12 h-12"></div>
+                                </div>
+                            )}
+
+                             {isLive && <LiveChat sessionId="live-session" />}
+
                         </div>
                         <div className="lg:col-span-1 space-y-6">
                              {isFetchingEvents ? (

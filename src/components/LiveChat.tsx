@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 import { ref, push, onChildAdded, serverTimestamp, query, limitToLast } from 'firebase/database';
@@ -12,6 +12,7 @@ import { Loader2, Send, Smile } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { ScrollArea } from './ui/scroll-area';
 
 interface ChatMessage {
     id: string;
@@ -37,19 +38,23 @@ export function LiveChat({ sessionId }: LiveChatProps) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const scrollAreaRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const chatRef = query(ref(db, `liveChat/${sessionId}`), limitToLast(20));
+        const chatRef = query(ref(db, `liveChat/${sessionId}`), limitToLast(50));
         const unsubscribe = onChildAdded(chatRef, (snapshot) => {
             const newMessage = { id: snapshot.key!, ...snapshot.val() };
-            setMessages(prev => {
-                const updated = [...prev, newMessage];
-                // Keep only the last 20 messages
-                return updated.slice(-20);
-            });
+            setMessages(prev => [...prev, newMessage].slice(-50));
         });
         return () => unsubscribe();
     }, [sessionId]);
+
+    useEffect(() => {
+        // Auto-scroll to bottom
+        if (scrollAreaRef.current) {
+            scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+        }
+    }, [messages]);
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -73,57 +78,49 @@ export function LiveChat({ sessionId }: LiveChatProps) {
     };
 
     return (
-        <div className="absolute bottom-16 left-4 right-4 md:left-auto md:right-4 md:bottom-4 md:w-80 h-1/2 flex flex-col justify-end pointer-events-none">
-            <div className="space-y-2 mb-2 overflow-y-auto">
-                <AnimatePresence>
+        <div className="flex-1 flex flex-col min-h-0">
+             <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+                 <div className="space-y-4">
                     {messages.map((message) => (
-                        <motion.div
-                            key={message.id}
-                            layout
-                            initial={{ opacity: 0, y: 50, scale: 0.3 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
-                            className="flex items-start gap-3"
-                        >
-                            <div className="flex items-center gap-2 p-2 bg-black/60 text-white rounded-lg shadow-lg backdrop-blur-sm w-fit max-w-full">
-                                <Avatar className="h-6 w-6">
-                                    <AvatarImage src={message.authorAvatar} />
-                                    <AvatarFallback className="text-xs">{getInitials(message.authorName)}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="text-xs font-bold">{message.authorName}</p>
-                                    <p className="text-sm break-words">{message.text}</p>
+                        <div key={message.id} className="flex items-start gap-3">
+                            <Avatar className="h-8 w-8 border">
+                                <AvatarImage src={message.authorAvatar} />
+                                <AvatarFallback className="text-xs">{getInitials(message.authorName)}</AvatarFallback>
+                            </Avatar>
+                             <div className="flex flex-col">
+                                <p className="text-xs font-bold">{message.authorName}</p>
+                                <div className="text-sm p-2 bg-secondary rounded-lg max-w-full break-words">
+                                    {message.text}
                                 </div>
-                            </div>
-                        </motion.div>
+                             </div>
+                        </div>
                     ))}
-                </AnimatePresence>
-            </div>
+                 </div>
+            </ScrollArea>
             
-            <form onSubmit={handleSendMessage} className="flex items-center gap-2 pointer-events-auto">
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button type="button" variant="secondary" size="icon" className="flex-shrink-0 bg-background/80 backdrop-blur-sm">
-                            <Smile className="h-5 w-5" />
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 border-0">
-                        <EmojiPicker onEmojiClick={onEmojiClick} />
-                    </PopoverContent>
-                </Popover>
-                <Input
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type a message..."
-                    autoComplete="off"
-                    className="bg-background/80 backdrop-blur-sm focus:bg-background"
-                />
-                <Button type="submit" size="icon" disabled={isSubmitting || !newMessage.trim()} className="flex-shrink-0">
-                    {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
-            </form>
+            <div className="p-4 border-t bg-background">
+                <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button type="button" variant="ghost" size="icon" className="flex-shrink-0">
+                                <Smile className="h-5 w-5" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 border-0">
+                            <EmojiPicker onEmojiClick={onEmojiClick} />
+                        </PopoverContent>
+                    </Popover>
+                    <Input
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Type a message..."
+                        autoComplete="off"
+                    />
+                    <Button type="submit" size="icon" disabled={isSubmitting || !newMessage.trim()} className="flex-shrink-0">
+                        {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    </Button>
+                </form>
+            </div>
         </div>
     );
 }
-
-    
