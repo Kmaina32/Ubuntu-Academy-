@@ -7,7 +7,7 @@ import { LiveChat } from '@/components/LiveChat';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 import { getAllCalendarEvents } from '@/lib/firebase-service';
-import { Hand, Loader2, PhoneOff, Users, VideoOff, Maximize, Calendar } from 'lucide-react';
+import { Hand, Loader2, PhoneOff, Users, Maximize, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { onValue, ref, onChildAdded, set, remove } from 'firebase/database';
 import { AppSidebar } from '@/components/Sidebar';
@@ -23,7 +23,7 @@ import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizableHandle,
-} from "react-resizable-panels"
+} from "@/components/ui/resizable";
 import { ViewerList } from '@/components/ViewerList';
 import { SessionInfo } from '@/components/SessionInfo';
 import { NoLiveSession } from '@/components/NoLiveSession';
@@ -170,7 +170,7 @@ export default function StudentLivePage() {
             connectionStateRef.current = 'closed';
         };
 
-    }, [user, hasCameraPermission, sessionId]);
+    }, [user, hasCameraPermission]);
 
     const handleLeave = () => {
         router.push('/dashboard');
