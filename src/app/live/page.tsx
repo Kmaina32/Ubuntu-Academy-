@@ -4,11 +4,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { LiveChat } from '@/components/LiveChat';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
-import { getUserById, getAllCalendarEvents } from '@/lib/firebase-service';
-import { AnimatePresence, motion } from 'framer-motion';
+import { getAllCalendarEvents } from '@/lib/firebase-service';
 import { Hand, Loader2, PhoneOff, Users, VideoOff, Maximize, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { onValue, ref, onChildAdded, set, remove } from 'firebase/database';
@@ -21,6 +19,13 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/ca
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
+import { ViewerList } from '@/components/ViewerList';
+import { SessionInfo } from '@/components/SessionInfo';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -30,72 +35,6 @@ const ICE_SERVERS = {
 };
 
 type ConnectionState = 'new' | 'connecting' | 'connected' | 'failed' | 'closed';
-
-function ViewerList({ sessionId }: { sessionId: string }) {
-    const [viewers, setViewers] = useState<Map<string, {name: string, handRaised: boolean}>>(new Map());
-
-    useEffect(() => {
-        if (!sessionId) return;
-        const answersRef = ref(db, `webrtc-answers/${sessionId}`);
-
-        const handleChildAdded = async (snapshot: any) => {
-            const studentId = snapshot.key;
-            if (studentId) {
-                const user = await getUserById(studentId);
-                const handRaised = snapshot.val()?.handRaised || false;
-                setViewers(prev => new Map(prev).set(studentId, { name: user?.displayName || 'Anonymous', handRaised }));
-            }
-        };
-
-        const valueUnsubscribe = onValue(answersRef, (snapshot) => {
-             if (!snapshot.exists()) {
-                setViewers(new Map());
-                return;
-            }
-            const connectedData = snapshot.val();
-            const connectedIds = Object.keys(connectedData);
-            
-            setViewers(prev => {
-                const newViewers = new Map<string, {name: string, handRaised: boolean}>();
-                connectedIds.forEach(id => {
-                    const currentViewer = prev.get(id) || { name: '...', handRaised: false };
-                    newViewers.set(id, { ...currentViewer, handRaised: connectedData[id]?.handRaised || false });
-                });
-                return newViewers;
-            });
-        });
-        
-        onChildAdded(answersRef, handleChildAdded);
-
-        return () => {
-            valueUnsubscribe();
-        };
-    }, [sessionId]);
-
-    const viewerList = Array.from(viewers.values());
-    const raisedHands = viewerList.filter(v => v.handRaised).length;
-
-    return (
-         <TooltipProvider>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <div className="bg-background/80 backdrop-blur-sm text-foreground px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm pointer-events-auto shadow-md">
-                        <Users className="h-4 w-4" />
-                        <span>{viewerList.length}</span>
-                        {raisedHands > 0 && <span className="flex items-center gap-1 text-blue-500"><Hand className="h-4 w-4"/> {raisedHands}</span>}
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                   {viewerList.length > 0 ? (
-                    <ul className="text-sm space-y-1">
-                        {viewerList.map((viewer, index) => <li key={index} className="flex items-center gap-2">{viewer.name} {viewer.handRaised && <Hand className="h-4 w-4 text-blue-500"/>}</li>)}
-                    </ul>
-                   ) : <p>No viewers yet.</p>}
-                </TooltipContent>
-            </Tooltip>
-        </TooltipProvider>
-    )
-}
 
 export default function StudentLivePage() {
     const { user, loading: authLoading } = useAuth();
@@ -111,19 +50,9 @@ export default function StudentLivePage() {
     const videoRef = useRef<HTMLVideoElement>(null);
     const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
     const connectionStateRef = useRef<ConnectionState>('new');
-    const [showInfo, setShowInfo] = useState(true);
     const videoContainerRef = useRef<HTMLDivElement>(null);
     
-    // This page ONLY listens for public, site-wide live sessions.
     const sessionId = 'live-session'; 
-
-    useEffect(() => {
-        let timer: NodeJS.Timeout;
-        if (liveSessionDetails) {
-            timer = setTimeout(() => setShowInfo(false), 5000);
-        }
-        return () => clearTimeout(timer);
-    }, [liveSessionDetails]);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -164,7 +93,6 @@ export default function StudentLivePage() {
                 const sessionData = snapshot.val();
                 setLiveSessionDetails(sessionData);
                 setIsLoading(false);
-                setShowInfo(true);
                 
                 const offerDescription = sessionData;
                 const pc = new RTCPeerConnection(ICE_SERVERS);
@@ -272,75 +200,51 @@ export default function StudentLivePage() {
           <AppSidebar />
           <SidebarInset>
             <Header />
-            <div className="flex flex-col min-h-[calc(100vh-4rem)]">
-                <main className="flex-grow bg-secondary/30">
-                  <div className="container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl">
-                    <div className="grid lg:grid-cols-3 gap-8">
-                       <div className="lg:col-span-2 flex flex-col gap-4">
-                            <div ref={videoContainerRef} className="w-full aspect-video bg-black flex items-center justify-center relative rounded-lg border shadow-lg">
-                               <video ref={videoRef} className="w-full h-full object-contain rounded-md" autoPlay playsInline />
-                              
-                                {liveSessionDetails ? (
-                                  <>
-                                      <AnimatePresence>
-                                          {showInfo && (
-                                              <motion.div
-                                                  initial={{ opacity: 0 }}
-                                                  animate={{ opacity: 1 }}
-                                                  exit={{ opacity: 0 }}
-                                                  className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/50 text-white p-2 px-4 rounded-lg text-center"
-                                              >
-                                                  <p className="font-bold">{liveSessionDetails?.title || 'Live Session'}</p>
-                                                  <p className="text-xs">{liveSessionDetails?.description || 'Welcome to the class!'}</p>
-                                              </motion.div>
-                                          )}
-                                      </AnimatePresence>
-                                      <div className="absolute top-4 right-4 z-20">
-                                          <ViewerList sessionId={sessionId} />
-                                      </div>
-                                  </>
-                              ) : (
-                                  <div className="flex flex-col items-center gap-4 text-muted-foreground text-center p-4">
-                                      {isLoading || hasCameraPermission === null ? (
-                                            <>
-                                                <Loader2 className="h-8 w-8 animate-spin" />
-                                                <span>Connecting...</span>
-                                            </>
-                                       ) : hasCameraPermission === false ? (
-                                            <Alert variant="destructive" className="max-w-md">
-                                                <AlertTitle>Permissions Required</AlertTitle>
-                                                <AlertDescription>
-                                                    Please grant camera and microphone permissions in your browser to join the live session.
-                                                    You may need to refresh the page after allowing access.
-                                                </AlertDescription>
-                                            </Alert>
-                                       ) : (
-                                           <>
-                                                <VideoOff className="h-16 w-16" />
-                                                <p className="font-semibold text-xl">No Active Live Session</p>
-                                                <p className="text-sm max-w-xs">The live session has ended or has not started yet.</p>
-                                           </>
-                                       )}
-                                  </div>
-                              )}
-                          </div>
+            <div className="flex flex-col h-[calc(100vh-4rem)] bg-secondary/50">
+                <main className="flex-grow flex flex-col md:flex-row overflow-hidden">
+                  <ResizablePanelGroup direction="horizontal" className="flex-1">
+                    <ResizablePanel defaultSize={75}>
+                      <div className="flex flex-col h-full items-center justify-center p-2 md:p-4">
+                        <div ref={videoContainerRef} className="w-full h-full bg-black flex items-center justify-center relative rounded-lg border shadow-lg">
+                           <video ref={videoRef} className="w-full h-full object-contain rounded-md" autoPlay playsInline />
                           
-                          {liveSessionDetails && (
-                            <div className="bg-background/80 backdrop-blur-sm text-foreground p-3 rounded-lg flex items-center justify-center gap-4 text-sm shadow-md">
-                                <Button size="icon" variant={handRaised ? 'default' : 'secondary'} onClick={toggleHandRaised} className="rounded-full h-12 w-12 shadow-lg">
-                                    <Hand className="h-6 w-6" />
-                                </Button>
-                                <Button size="icon" variant="destructive" onClick={handleLeave} className="rounded-full h-14 w-14 shadow-lg">
-                                    <PhoneOff className="h-6 w-6" />
-                                </Button>
-                                <Button size="icon" variant="secondary" onClick={handleFullScreen} className="rounded-full h-12 w-12 shadow-lg">
-                                    <Maximize className="h-6 w-6" />
-                                </Button>
-                            </div>
+                            {liveSessionDetails ? (
+                              <>
+                                  <SessionInfo title={liveSessionDetails?.title || 'Live Session'} description={liveSessionDetails?.description || 'Welcome to the class!'} />
+                                  <div className="absolute top-4 right-4 z-20">
+                                      <ViewerList sessionId={sessionId} />
+                                  </div>
+                              </>
+                          ) : (
+                              <div className="flex flex-col items-center gap-4 text-muted-foreground text-center p-4">
+                                  {isLoading || hasCameraPermission === null ? (
+                                        <>
+                                            <Loader2 className="h-8 w-8 animate-spin" />
+                                            <span>Connecting...</span>
+                                        </>
+                                   ) : hasCameraPermission === false ? (
+                                        <Alert variant="destructive" className="max-w-md">
+                                            <AlertTitle>Permissions Required</AlertTitle>
+                                            <AlertDescription>
+                                                Please grant camera and microphone permissions to join the live session.
+                                                You may need to refresh the page after allowing access.
+                                            </AlertDescription>
+                                        </Alert>
+                                   ) : (
+                                       <>
+                                            <VideoOff className="h-16 w-16" />
+                                            <p className="font-semibold text-xl">No Active Live Session</p>
+                                            <p className="text-sm max-w-xs">The live session has ended or has not started yet.</p>
+                                       </>
+                                   )}
+                              </div>
                           )}
                         </div>
-
-                        <div className="lg:col-span-1 flex flex-col min-h-[50vh] bg-background rounded-lg border shadow-lg">
+                      </div>
+                    </ResizablePanel>
+                    <ResizableHandle withHandle />
+                    <ResizablePanel defaultSize={25}>
+                        <div className="h-full flex flex-col">
                              {liveSessionDetails ? (
                                 <LiveChat sessionId={sessionId} />
                              ) : (
@@ -372,10 +276,23 @@ export default function StudentLivePage() {
                                 </div>
                              )}
                         </div>
-                    </div>
-                     {liveSessionDetails && <NotebookSheet courseId={sessionId} courseTitle={liveSessionDetails?.title || 'Live Session Notes'} />}
-                  </div>
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
                 </main>
+                {liveSessionDetails && (
+                    <footer className="p-2 border-t bg-background flex items-center justify-center gap-4 text-sm shadow-md">
+                        <Button size="icon" variant={handRaised ? 'default' : 'secondary'} onClick={toggleHandRaised} className="rounded-full h-12 w-12 shadow-lg">
+                            <Hand className="h-6 w-6" />
+                        </Button>
+                        <Button size="icon" variant="destructive" onClick={handleLeave} className="rounded-full h-14 w-14 shadow-lg">
+                            <PhoneOff className="h-6 w-6" />
+                        </Button>
+                        <Button size="icon" variant="secondary" onClick={handleFullScreen} className="rounded-full h-12 w-12 shadow-lg">
+                            <Maximize className="h-6 w-6" />
+                        </Button>
+                    </footer>
+                )}
+                 {liveSessionDetails && <NotebookSheet courseId={sessionId} courseTitle={liveSessionDetails?.title || 'Live Session Notes'} />}
             </div>
           </SidebarInset>
         </SidebarProvider>
