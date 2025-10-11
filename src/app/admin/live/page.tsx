@@ -335,7 +335,9 @@ export default function AdminLivePage() {
                                         </div>
                                     )}
                                     {!isLive && (
-                                        <NoLiveSession isLoading={!hasCameraPermission} hasPermission={hasCameraPermission} />
+                                        <div className="absolute inset-0 flex items-center justify-center p-4">
+                                            <NoLiveSession isLoading={!hasCameraPermission} hasPermission={hasCameraPermission} />
+                                        </div>
                                     )}
                                 </div>
 
@@ -428,4 +430,3 @@ export default function AdminLivePage() {
         </div>
     );
 }
-

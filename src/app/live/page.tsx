@@ -23,7 +23,7 @@ import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizableHandle,
-} from "@/components/ui/resizable";
+} from "react-resizable-panels"
 import { ViewerList } from '@/components/ViewerList';
 import { SessionInfo } from '@/components/SessionInfo';
 import { NoLiveSession } from '@/components/NoLiveSession';
@@ -202,63 +202,65 @@ export default function StudentLivePage() {
           <SidebarInset>
             <Header />
             <div className="flex flex-col h-[calc(100vh-4rem)] bg-secondary/50">
-                <main className="flex-grow flex flex-col md:flex-row overflow-hidden">
-                  <ResizablePanelGroup direction="horizontal" className="flex-1">
-                    <ResizablePanel defaultSize={75}>
-                      <div className="flex flex-col h-full items-center justify-center p-2 md:p-4">
-                        <div ref={videoContainerRef} className="w-full h-full bg-black flex items-center justify-center relative rounded-lg border shadow-lg">
-                           <video ref={videoRef} className="w-full h-full object-contain rounded-md" autoPlay playsInline />
-                          
-                            {liveSessionDetails ? (
-                              <>
-                                  <SessionInfo title={liveSessionDetails?.title || 'Live Session'} description={liveSessionDetails?.description || 'Welcome to the class!'} />
-                                  <div className="absolute top-4 right-4 z-20">
-                                      <ViewerList sessionId={sessionId} />
-                                  </div>
-                              </>
-                          ) : (
-                              <NoLiveSession isLoading={isLoading || hasCameraPermission === null} hasPermission={hasCameraPermission} />
-                          )}
+                <div className="max-w-7xl w-full mx-auto p-4 md:p-6 flex-grow">
+                    <ResizablePanelGroup direction="horizontal" className="h-full">
+                        <ResizablePanel defaultSize={75}>
+                        <div className="flex flex-col h-full items-center justify-center pr-4">
+                            <div ref={videoContainerRef} className="w-full h-full bg-black flex items-center justify-center relative rounded-lg border shadow-lg p-2 md:p-4">
+                            <video ref={videoRef} className="w-full h-full object-contain rounded-md" autoPlay playsInline />
+                            
+                                {liveSessionDetails ? (
+                                <>
+                                    <SessionInfo title={liveSessionDetails?.title || 'Live Session'} description={liveSessionDetails?.description || 'Welcome to the class!'} />
+                                    <div className="absolute top-4 right-4 z-20">
+                                        <ViewerList sessionId={sessionId} />
+                                    </div>
+                                </>
+                                ) : (
+                                    <div className="absolute inset-0 flex items-center justify-center p-4">
+                                        <NoLiveSession isLoading={isLoading || hasCameraPermission === null} hasPermission={hasCameraPermission} />
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                      </div>
-                    </ResizablePanel>
-                    <ResizableHandle withHandle />
-                    <ResizablePanel defaultSize={25}>
-                        <div className="h-full flex flex-col">
-                             {liveSessionDetails ? (
-                                <LiveChat sessionId={sessionId} />
-                             ) : (
-                                <div className="p-4 md:p-6 h-full flex flex-col">
-                                    <h2 className="text-2xl font-bold mb-4 font-headline flex items-center gap-2">
-                                        <Calendar className="h-6 w-6"/>
-                                        Upcoming Live Sessions
-                                    </h2>
-                                    {upcomingEvents.length > 0 ? (
-                                        <ScrollArea className="w-full whitespace-nowrap">
-                                            <div className="flex gap-4 pb-4">
-                                                {upcomingEvents.map(event => (
-                                                    <Card key={event.id} className="min-w-[300px]">
-                                                        <CardHeader>
-                                                            <CardTitle className="truncate">{event.title}</CardTitle>
-                                                            <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
-                                                        </CardHeader>
-                                                    </Card>
-                                                ))}
+                        </ResizablePanel>
+                        <ResizableHandle withHandle />
+                        <ResizablePanel defaultSize={25}>
+                            <div className="h-full flex flex-col pl-4">
+                                {liveSessionDetails ? (
+                                    <LiveChat sessionId={sessionId} />
+                                ) : (
+                                    <div className="p-4 md:p-6 h-full flex flex-col">
+                                        <h2 className="text-2xl font-bold mb-4 font-headline flex items-center gap-2">
+                                            <Calendar className="h-6 w-6"/>
+                                            Upcoming Live Sessions
+                                        </h2>
+                                        {upcomingEvents.length > 0 ? (
+                                            <ScrollArea className="w-full whitespace-nowrap">
+                                                <div className="flex gap-4 pb-4">
+                                                    {upcomingEvents.map(event => (
+                                                        <Card key={event.id} className="min-w-[300px]">
+                                                            <CardHeader>
+                                                                <CardTitle className="truncate">{event.title}</CardTitle>
+                                                                <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
+                                                            </CardHeader>
+                                                        </Card>
+                                                    ))}
+                                                </div>
+                                                <ScrollBar orientation="horizontal" />
+                                            </ScrollArea>
+                                        ) : !isLoading && (
+                                            <div className="text-center py-10 text-muted-foreground flex-grow flex flex-col justify-center">
+                                                <Calendar className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4"/>
+                                                <p className="font-semibold">No upcoming sessions scheduled.</p>
                                             </div>
-                                            <ScrollBar orientation="horizontal" />
-                                        </ScrollArea>
-                                    ) : !isLoading && (
-                                        <div className="text-center py-10 text-muted-foreground flex-grow flex flex-col justify-center">
-                                            <Calendar className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4"/>
-                                            <p className="font-semibold">No upcoming sessions scheduled.</p>
-                                        </div>
-                                    )}
-                                </div>
-                             )}
-                        </div>
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
-                </main>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </ResizablePanel>
+                    </ResizablePanelGroup>
+                </div>
                 {liveSessionDetails && (
                     <footer className="p-2 border-t bg-background flex items-center justify-center gap-4 text-sm shadow-md">
                         <Button size="icon" variant={handRaised ? 'default' : 'secondary'} onClick={toggleHandRaised} className="rounded-full h-12 w-12 shadow-lg">

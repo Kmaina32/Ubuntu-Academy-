@@ -174,8 +174,10 @@ function AdminHostView({ sessionId }: { sessionId: string }) {
                         </Button>
                     </div>
                 )}
-                {hasCameraPermission === false && (
-                    <NoLiveSession isLoading={false} hasPermission={false} />
+                 {!isLive && (
+                    <div className="absolute inset-0 flex items-center justify-center p-4">
+                        <NoLiveSession isLoading={hasCameraPermission === null} hasPermission={hasCameraPermission} />
+                    </div>
                 )}
             </div>
 
@@ -338,7 +340,9 @@ function MemberViewer({ sessionId }: { sessionId: string }) {
                         )}
                     </>
                 ) : (
-                     <NoLiveSession isLoading={isLoading} hasPermission={hasCameraPermission} />
+                    <div className="absolute inset-0 flex items-center justify-center p-4">
+                        <NoLiveSession isLoading={isLoading} hasPermission={hasCameraPermission} />
+                    </div>
                 )}
             </div>
             
