@@ -14,7 +14,7 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library, Layers, BarChart3, Tag, ShieldCheck, Building, FileText, Rocket, ChevronRight, BookCopy, Contact, Users2, Speaker, LineChart, Book, Trophy, Briefcase } from 'lucide-react';
+import { Gem, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library, Layers, BarChart3, Tag, ShieldCheck, Building, FileText, Rocket, ChevronRight, BookCopy, Contact, Users2, Speaker, LineChart, Book, Trophy, Briefcase, Award } from 'lucide-react';
 import pkg from '../../../package.json';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
@@ -60,7 +60,7 @@ export function AdminSidebar() {
         <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
                 <Gem className="h-6 w-6 text-primary" />
-                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Edgewood International A.I College</span>
+                <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Manda Network</span>
             </div>
         </SidebarHeader>
         <SidebarContent>
@@ -83,6 +83,9 @@ export function AdminSidebar() {
                     </SidebarMenuButton>
                      <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/assignments')} tooltip="Exams & Projects">
                         <Link href="/admin/assignments">Exams & Projects</Link>
+                    </SidebarMenuButton>
+                     <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/certificates')} tooltip="Certificates">
+                        <Link href="/admin/certificates">Certificates</Link>
                     </SidebarMenuButton>
                      <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/programs')} tooltip="Programs">
                         <Link href="/admin/programs">Programs</Link>

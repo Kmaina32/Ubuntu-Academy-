@@ -30,7 +30,7 @@ import { useToast } from './use-toast';
 import { add } from 'date-fns';
 
 const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
-const SUPER_ADMIN_ORG_NAME = "Akili A.I Academy";
+const SUPER_ADMIN_ORG_NAME = "Manda Network";
 
 interface AuthContextType {
   user: User | null;
@@ -58,7 +58,7 @@ const createBypassUser = (): { user: User, dbUser: RegisteredUser, organization:
     const bypassUID = ADMIN_UID; // Use super admin UID
     const bypassUser = {
         uid: bypassUID,
-        email: 'dev-admin@akili.ai',
+        email: 'dev-admin@manda.network',
         displayName: 'Dev Super Admin',
         emailVerified: true,
         photoURL: '',
@@ -67,7 +67,7 @@ const createBypassUser = (): { user: User, dbUser: RegisteredUser, organization:
 
     const bypassDbUser = {
         uid: bypassUID,
-        email: 'dev-admin@akili.ai',
+        email: 'dev-admin@manda.network',
         displayName: 'Dev Super Admin',
         isAdmin: true,
         isSuperAdmin: true,

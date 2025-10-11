@@ -1,6 +1,7 @@
+
 # How to Set Up Your Telegram Bot and Channel
 
-This guide will walk you through the process of creating a Telegram bot, getting your API token, creating a channel, and finding the necessary IDs to integrate with the Akili A.I. Academy platform.
+This guide will walk you through the process of creating a Telegram bot, getting your API token, creating a channel, and finding the necessary IDs to integrate with the Manda Network platform.
 
 ## Part 1: Create a Telegram Bot & Get API Token
 
@@ -12,8 +13,8 @@ The primary way to interact with the Telegram API is through a bot. You'll creat
 
 2.  **Create a new bot:**
     *   Send the command `/newbot` to BotFather.
-    *   It will ask you for a **name** for your bot. This is a friendly name that will be displayed in chats (e.g., `Akili Academy Bot`).
-    *   Next, it will ask for a **username**. This must be unique and end in `bot` (e.g., `AkiliAcademyBot` or `akili_academy_bot`).
+    *   It will ask you for a **name** for your bot. This is a friendly name that will be displayed in chats (e.g., `Manda Network Bot`).
+    *   Next, it will ask for a **username**. This must be unique and end in `bot` (e.g., `MandaNetworkBot` or `manda_network_bot`).
 
 3.  **Copy your API Token:**
     *   Once you've chosen a unique username, BotFather will congratulate you and provide you with an **API token**.
@@ -33,19 +34,19 @@ This channel is where your bot will post notifications for your users.
 
 1.  **Create a New Channel:**
     *   In Telegram, go to "New Message" and select "New Channel".
-    *   Give your channel a name (e.g., "Akili Academy Announcements") and an optional description.
+    *   Give your channel a name (e.g., "Manda Network Announcements") and an optional description.
     *   **Crucially, set the channel type to "Public"**. This makes it easy to get the channel ID.
-    *   Create a simple, memorable public link (e.g., `t.me/AkiliAnnouncements`). The part after `t.me/` is your channel's username.
+    *   Create a simple, memorable public link (e.g., `t.me/MandaAnnouncements`). The part after `t.me/` is your channel's username.
 
 2.  **Add Your Bot as an Administrator:**
     *   Open your newly created channel's info page.
     *   Go to "Administrators" > "Add Admin".
-    *   Search for your bot's username (e.g., `AkiliAcademyBot`).
+    *   Search for your bot's username (e.g., `MandaNetworkBot`).
     *   Select your bot and grant it permissions. At a minimum, it needs the "Post Messages" permission.
 
 3.  **Get the Channel ID:**
     *   For **public channels**, the ID is simply the username, prefixed with an `@` symbol.
-    *   For example, if your public link is `t.me/AkiliAnnouncements`, your Channel ID is `@AkiliAnnouncements`.
+    *   For example, if your public link is `t.me/MandaAnnouncements`, your Channel ID is `@MandaAnnouncements`.
 
 4.  **Save your Channel ID:**
     *   Open your `.env` file again.
@@ -63,7 +64,7 @@ Your `.env` file should now contain these new lines (along with your other varia
 
 # Telegram Integration
 TELEGRAM_BOT_TOKEN="1234567890:ABC-DEF1234ghIkl-zyx57W2v1u123456789"
-TELEGRAM_CHANNEL_ID="@AkiliAnnouncements"
+TELEGRAM_CHANNEL_ID="@MandaAnnouncements"
 ```
 
 Once you have completed these steps and saved your `.env` file, the application will be ready to use these credentials for the Telegram integration features we build.

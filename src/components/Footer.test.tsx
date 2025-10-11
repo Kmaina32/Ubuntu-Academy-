@@ -7,12 +7,12 @@ describe('Footer', () => {
     render(<Footer />)
 
     // Check for the company name
-    const companyName = screen.getByText(/Akili A.I Academy/i)
+    const companyName = screen.getByText(/Manda Network/i)
     expect(companyName).toBeInTheDocument()
 
     // Check for the copyright notice
     const currentYear = new Date().getFullYear()
-    const copyrightNotice = screen.getByText(`© ${currentYear} Akili A.I Academy. All rights reserved.`)
+    const copyrightNotice = screen.getByText(`© ${currentYear} Manda Network. All rights reserved.`)
     expect(copyrightNotice).toBeInTheDocument()
 
     // Check for the navigation links
