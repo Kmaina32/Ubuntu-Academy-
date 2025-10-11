@@ -2,24 +2,25 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Video, PhoneOff, Users, Hand, Mic, MicOff, Calendar, VideoOff, Maximize } from 'lucide-react';
-import Link from 'next/link';
-import { useToast } from '@/hooks/use-toast';
-import { db } from '@/lib/firebase';
-import { ref, onValue, set, remove, onChildAdded, query } from 'firebase/database';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { createNotification, getUserById } from '@/lib/firebase-service';
 import { LiveChat } from '@/components/LiveChat';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
-import { AnimatePresence, motion } from 'framer-motion';
+import { db } from '@/lib/firebase';
+import { createNotification, getUserById } from '@/lib/firebase-service';
+import { Hand, Loader2, PhoneOff, Users, Maximize, VideoOff } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { onValue, ref, onChildAdded, set, remove, query } from 'firebase/database';
 import { NotebookSheet } from '@/components/NotebookSheet';
-import { NoLiveSession } from '@/components/NoLiveSession';
+import { useToast } from '@/hooks/use-toast';
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 import { ViewerList } from '@/components/ViewerList';
 import { SessionInfo } from '@/components/SessionInfo';
+import { NoLiveSession } from '@/components/NoLiveSession';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -166,22 +167,14 @@ function AdminHostView({ sessionId }: { sessionId: string }) {
                         <ViewerList sessionId={sessionId} />
                     </div>
                 )}
-                {!isLive && hasCameraPermission && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-muted-foreground p-4">
-                        <Button onClick={handleGoLive} disabled={isLoading} size="lg">
-                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Video className="mr-2 h-4 w-4"/>}
-                            Go Live for {organization?.name}
-                        </Button>
-                    </div>
-                )}
-                 {!isLive && (
+                {!isLive && (
                     <div className="absolute inset-0 flex items-center justify-center p-4">
                         <NoLiveSession isLoading={hasCameraPermission === null} hasPermission={hasCameraPermission} />
                     </div>
                 )}
             </div>
 
-            {isLive && (
+            {isLive ? (
                  <div className="bg-background/80 backdrop-blur-sm text-foreground p-3 rounded-lg flex items-center justify-center gap-4 text-sm shadow-md">
                     <Button size="icon" variant={isMuted ? 'destructive' : 'secondary'} onClick={toggleMute} className="rounded-full h-12 w-12 shadow-lg">
                         {isMuted ? <MicOff className="h-6 w-6"/> : <Mic className="h-6 w-6" />}
@@ -190,6 +183,13 @@ function AdminHostView({ sessionId }: { sessionId: string }) {
                         {isLoading ? <Loader2 className="h-6 w-6 animate-spin"/> : <PhoneOff className="h-6 w-6" />}
                     </Button>
                     <div className="w-12 h-12"></div>
+                </div>
+            ): hasCameraPermission && (
+                <div className="flex items-center justify-center p-4">
+                    <Button onClick={handleGoLive} disabled={isLoading} size="lg">
+                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <VideoOff className="mr-2 h-4 w-4"/>}
+                        Go Live for {organization?.name}
+                    </Button>
                 </div>
             )}
         </>
@@ -363,11 +363,26 @@ function MemberViewer({ sessionId }: { sessionId: string }) {
     );
 }
 
+function ClientOnly({ children }: { children: React.ReactNode }) {
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) {
+    return <div className="flex h-full w-full items-center justify-center"><LoadingAnimation /></div>;
+  }
+
+  return <>{children}</>;
+}
+
+
 export default function OrganizationLivePage() {
     const { loading: authLoading, organization, isOrganizationAdmin } = useAuth();
 
     if (authLoading) {
-        return <div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+        return <div className="flex items-center justify-center h-full"><LoadingAnimation /></div>
     }
 
     if (!organization) {
@@ -377,22 +392,27 @@ export default function OrganizationLivePage() {
     const sessionId = `org-live-session-${organization.id}`;
 
     return (
-        <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-4">
-                {isOrganizationAdmin ? (
-                    <AdminHostView sessionId={sessionId} />
-                ) : (
-                    <MemberViewer sessionId={sessionId} />
-                )}
-            </div>
-            <div className="lg:col-span-1 min-h-[400px] lg:min-h-0 bg-background rounded-lg border shadow-lg flex flex-col">
-                <LiveChat sessionId={sessionId} />
-            </div>
-             <div className="fixed bottom-6 right-20 z-50">
+        <ClientOnly>
+            <ResizablePanelGroup direction="horizontal">
+                <ResizablePanel defaultSize={70}>
+                    <div className="lg:col-span-2 space-y-4 pr-4">
+                        {isOrganizationAdmin ? (
+                            <AdminHostView sessionId={sessionId} />
+                        ) : (
+                            <MemberViewer sessionId={sessionId} />
+                        )}
+                    </div>
+                </ResizablePanel>
+                 <ResizableHandle withHandle />
+                <ResizablePanel defaultSize={30}>
+                    <div className="lg:col-span-1 min-h-[400px] lg:min-h-0 bg-background rounded-lg border shadow-lg flex flex-col pl-4">
+                        <LiveChat sessionId={sessionId} />
+                    </div>
+                </ResizablePanel>
+            </ResizablePanelGroup>
+            <div className="fixed bottom-6 right-20 z-50">
                 <NotebookSheet courseId={sessionId} courseTitle={`${organization.name} Live Session`} />
             </div>
-        </div>
+        </ClientOnly>
     );
-
-    
 }
