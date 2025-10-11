@@ -3,7 +3,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Bootcamp, PricingPlan, ProjectSubmission, Hackathon, HackathonSubmission, LeaderboardEntry } from './types';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Bootcamp, PricingPlan, ProjectSubmission, Hackathon, HackathonSubmission } from './types';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -945,38 +945,4 @@ export async function getHackathonSubmissionsByUser(userId: string): Promise<Hac
         return submissions.sort((a,b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
     }
     return [];
-}
-
-export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
-    const submissionsRef = ref(db, 'hackathonSubmissions');
-    const snapshot = await get(submissionsRef);
-    if (!snapshot.exists()) {
-        return [];
-    }
-    
-    const submissions: HackathonSubmission[] = Object.values(snapshot.val());
-    const userStats: Record<string, { score: number; hackathonCount: Set<string>; userName: string; userAvatar: string }> = {};
-
-    for (const sub of submissions) {
-        if (!userStats[sub.userId]) {
-            userStats[sub.userId] = { score: 0, hackathonCount: new Set(), userName: sub.userName, userAvatar: '' };
-            const userProfile = await getUserById(sub.userId);
-            if(userProfile) {
-                userStats[sub.userId].userName = userProfile.displayName || sub.userName;
-                userStats[sub.userId].userAvatar = userProfile.photoURL || '';
-            }
-        }
-        userStats[sub.userId].score += 10; // Simple scoring: 10 points per submission
-        userStats[sub.userId].hackathonCount.add(sub.hackathonId);
-    }
-    
-    const leaderboard = Object.entries(userStats).map(([userId, stats]) => ({
-        userId,
-        userName: stats.userName,
-        userAvatar: stats.userAvatar,
-        score: stats.score,
-        hackathonCount: stats.hackathonCount.size
-    }));
-
-    return leaderboard.sort((a,b) => b.score - a.score);
 }
