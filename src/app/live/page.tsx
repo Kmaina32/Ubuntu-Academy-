@@ -135,7 +135,7 @@ export default function StudentLivePage() {
     const requestMediaPermissions = useCallback(async () => {
         try {
             // Request a dummy stream just to get permissions
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
             stream.getTracks().forEach(track => track.stop());
             setHasCameraPermission(true);
         } catch (error) {
@@ -275,104 +275,111 @@ export default function StudentLivePage() {
           <SidebarInset>
             <Header />
             <div className="flex flex-col min-h-[calc(100vh-4rem)]">
-              <main className="flex-grow bg-background flex flex-col">
-                   <div ref={videoContainerRef} className="w-full aspect-video bg-black flex items-center justify-center relative p-1">
-                       <video ref={videoRef} className="w-full h-full object-contain rounded-md" autoPlay playsInline />
-                      
-                        {liveSessionDetails ? (
-                          <>
-                              <AnimatePresence>
-                                  {showInfo && (
-                                      <motion.div
-                                          initial={{ opacity: 0 }}
-                                          animate={{ opacity: 1 }}
-                                          exit={{ opacity: 0 }}
-                                          className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/50 text-white p-2 px-4 rounded-lg text-center"
-                                      >
-                                          <p className="font-bold">{liveSessionDetails?.title || 'Live Session'}</p>
-                                          <p className="text-xs">{liveSessionDetails?.description || 'Welcome to the class!'}</p>
-                                      </motion.div>
-                                  )}
-                              </AnimatePresence>
-                              <div className="absolute top-4 right-4 z-20">
-                                  <ViewerList sessionId={sessionId} />
-                              </div>
-                          </>
-                      ) : (
-                          <div className="flex flex-col items-center gap-4 text-muted-foreground text-center p-4">
-                              {isLoading || hasCameraPermission === null ? (
-                                    <>
-                                        <Loader2 className="h-8 w-8 animate-spin" />
-                                        <span>Connecting...</span>
-                                    </>
-                               ) : hasCameraPermission === false ? (
-                                    <Alert variant="destructive" className="max-w-md">
-                                        <AlertTitle>Permissions Required</AlertTitle>
-                                        <AlertDescription>
-                                            Please grant camera and microphone permissions in your browser to join the live session.
-                                            You may need to refresh the page after allowing access.
-                                        </AlertDescription>
-                                    </Alert>
-                               ) : (
-                                   <>
-                                        <VideoOff className="h-16 w-16" />
-                                        <p className="font-semibold text-xl">No Active Live Session</p>
-                                        <p className="text-sm max-w-xs">The live session has ended or has not started yet.</p>
-                                   </>
-                               )}
+                <main className="flex-grow bg-secondary/30">
+                  <div className="container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl">
+                    <div className="grid lg:grid-cols-3 gap-8">
+                       <div className="lg:col-span-2 flex flex-col gap-4">
+                            <div ref={videoContainerRef} className="w-full aspect-video bg-black flex items-center justify-center relative rounded-lg border shadow-lg">
+                               <video ref={videoRef} className="w-full h-full object-contain rounded-md" autoPlay playsInline />
+                              
+                                {liveSessionDetails ? (
+                                  <>
+                                      <AnimatePresence>
+                                          {showInfo && (
+                                              <motion.div
+                                                  initial={{ opacity: 0 }}
+                                                  animate={{ opacity: 1 }}
+                                                  exit={{ opacity: 0 }}
+                                                  className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/50 text-white p-2 px-4 rounded-lg text-center"
+                                              >
+                                                  <p className="font-bold">{liveSessionDetails?.title || 'Live Session'}</p>
+                                                  <p className="text-xs">{liveSessionDetails?.description || 'Welcome to the class!'}</p>
+                                              </motion.div>
+                                          )}
+                                      </AnimatePresence>
+                                      <div className="absolute top-4 right-4 z-20">
+                                          <ViewerList sessionId={sessionId} />
+                                      </div>
+                                  </>
+                              ) : (
+                                  <div className="flex flex-col items-center gap-4 text-muted-foreground text-center p-4">
+                                      {isLoading || hasCameraPermission === null ? (
+                                            <>
+                                                <Loader2 className="h-8 w-8 animate-spin" />
+                                                <span>Connecting...</span>
+                                            </>
+                                       ) : hasCameraPermission === false ? (
+                                            <Alert variant="destructive" className="max-w-md">
+                                                <AlertTitle>Permissions Required</AlertTitle>
+                                                <AlertDescription>
+                                                    Please grant camera and microphone permissions in your browser to join the live session.
+                                                    You may need to refresh the page after allowing access.
+                                                </AlertDescription>
+                                            </Alert>
+                                       ) : (
+                                           <>
+                                                <VideoOff className="h-16 w-16" />
+                                                <p className="font-semibold text-xl">No Active Live Session</p>
+                                                <p className="text-sm max-w-xs">The live session has ended or has not started yet.</p>
+                                           </>
+                                       )}
+                                  </div>
+                              )}
                           </div>
-                      )}
-                  </div>
-
-                 <div className="flex-1 flex flex-col min-h-0">
-                     {liveSessionDetails ? (
-                        <div className="flex-1 flex flex-col min-h-0">
-                           <div className="flex-shrink-0 p-4 border-b">
-                                <div className="flex items-center justify-center gap-4 z-20">
-                                    <Button size="icon" variant={handRaised ? 'default' : 'secondary'} onClick={toggleHandRaised} className="rounded-full h-12 w-12 shadow-lg">
-                                        <Hand className="h-6 w-6" />
-                                    </Button>
-                                    <Button size="icon" variant="destructive" onClick={handleLeave} className="rounded-full h-14 w-14 shadow-lg">
-                                        <PhoneOff className="h-6 w-6" />
-                                    </Button>
-                                    <Button size="icon" variant="secondary" onClick={handleFullScreen} className="rounded-full h-12 w-12 shadow-lg">
-                                        <Maximize className="h-6 w-6" />
-                                    </Button>
-                                </div>
+                          
+                          {liveSessionDetails && (
+                            <div className="bg-background/80 backdrop-blur-sm text-foreground p-3 rounded-lg flex items-center justify-center gap-4 text-sm shadow-md">
+                                <Button size="icon" variant={handRaised ? 'default' : 'secondary'} onClick={toggleHandRaised} className="rounded-full h-12 w-12 shadow-lg">
+                                    <Hand className="h-6 w-6" />
+                                </Button>
+                                <Button size="icon" variant="destructive" onClick={handleLeave} className="rounded-full h-14 w-14 shadow-lg">
+                                    <PhoneOff className="h-6 w-6" />
+                                </Button>
+                                <Button size="icon" variant="secondary" onClick={handleFullScreen} className="rounded-full h-12 w-12 shadow-lg">
+                                    <Maximize className="h-6 w-6" />
+                                </Button>
                             </div>
-                            <LiveChat sessionId={sessionId} />
+                          )}
                         </div>
-                    ) : (
-                         <div className="p-4 md:p-6">
-                            {upcomingEvents.length > 0 ? (
-                                <div>
-                                    <h2 className="text-2xl font-bold mb-4 font-headline flex items-center gap-2">
-                                        <Calendar className="h-6 w-6"/>
-                                        Upcoming Live Sessions
-                                    </h2>
-                                    <ScrollArea className="w-full whitespace-nowrap">
-                                        <div className="flex gap-4 pb-4">
-                                            {upcomingEvents.map(event => (
-                                                <Card key={event.id} className="min-w-[300px]">
-                                                    <CardHeader>
-                                                        <CardTitle className="truncate">{event.title}</CardTitle>
-                                                        <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
-                                                    </CardHeader>
-                                                </Card>
-                                            ))}
+
+                        <div className="lg:col-span-1 flex flex-col min-h-[50vh] bg-background rounded-lg border shadow-lg">
+                             {liveSessionDetails ? (
+                                <LiveChat sessionId={sessionId} />
+                             ) : (
+                                <div className="p-4 md:p-6">
+                                    {upcomingEvents.length > 0 ? (
+                                        <div>
+                                            <h2 className="text-2xl font-bold mb-4 font-headline flex items-center gap-2">
+                                                <Calendar className="h-6 w-6"/>
+                                                Upcoming Live Sessions
+                                            </h2>
+                                            <ScrollArea className="w-full whitespace-nowrap">
+                                                <div className="flex gap-4 pb-4">
+                                                    {upcomingEvents.map(event => (
+                                                        <Card key={event.id} className="min-w-[300px]">
+                                                            <CardHeader>
+                                                                <CardTitle className="truncate">{event.title}</CardTitle>
+                                                                <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
+                                                            </CardHeader>
+                                                        </Card>
+                                                    ))}
+                                                </div>
+                                                <ScrollBar orientation="horizontal" />
+                                            </ScrollArea>
                                         </div>
-                                        <ScrollBar orientation="horizontal" />
-                                    </ScrollArea>
+                                    ) : !isLoading && (
+                                        <div className="text-center py-10 text-muted-foreground h-full flex flex-col justify-center">
+                                            <Calendar className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4"/>
+                                            <p className="font-semibold">No upcoming sessions scheduled.</p>
+                                        </div>
+                                    )}
                                 </div>
-                            ) : !isLoading && (
-                                <div className="text-center py-10 text-muted-foreground">No upcoming sessions scheduled.</div>
-                            )}
+                             )}
                         </div>
-                    )}
-                 </div>
-                 
-                 {liveSessionDetails && <NotebookSheet courseId={sessionId} courseTitle={liveSessionDetails?.title || 'Live Session Notes'} />}
-              </main>
+                    </div>
+                     {liveSessionDetails && <NotebookSheet courseId={sessionId} courseTitle={liveSessionDetails?.title || 'Live Session Notes'} />}
+                  </div>
+                </main>
             </div>
           </SidebarInset>
         </SidebarProvider>
