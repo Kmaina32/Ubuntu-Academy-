@@ -21,6 +21,7 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/ca
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { useCallback } from 'react';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -104,7 +105,6 @@ export default function StudentLivePage() {
 
     const [liveSessionDetails, setLiveSessionDetails] = useState<any>(null);
     const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
-    const [isLive, setIsLive] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [handRaised, setHandRaised] = useState(false);
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -115,15 +115,16 @@ export default function StudentLivePage() {
     const [showInfo, setShowInfo] = useState(true);
     const videoContainerRef = useRef<HTMLDivElement>(null);
     
-    const sessionId = 'live-session'; // Only listen for public sessions
+    // This page ONLY listens for public, site-wide live sessions.
+    const sessionId = 'live-session'; 
 
     useEffect(() => {
         let timer: NodeJS.Timeout;
-        if (isLive) {
+        if (liveSessionDetails) {
             timer = setTimeout(() => setShowInfo(false), 5000);
         }
         return () => clearTimeout(timer);
-    }, [isLive]);
+    }, [liveSessionDetails]);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -131,26 +132,22 @@ export default function StudentLivePage() {
         }
     }, [user, authLoading, router]);
 
-    const requestMediaPermissions = async () => {
+    const requestMediaPermissions = useCallback(async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); // Only need audio for hand raising feedback
+            // Request a dummy stream just to get permissions
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
             stream.getTracks().forEach(track => track.stop());
             setHasCameraPermission(true);
         } catch (error) {
             console.error("Error getting media permissions", error);
             setHasCameraPermission(false);
-            toast({
-                title: 'Permissions Required',
-                description: 'Please allow microphone access to use all interactive features.',
-                variant: 'destructive',
-            });
         }
-    };
+    }, []);
     
     useEffect(() => {
         if (!user) return;
         requestMediaPermissions();
-    }, [user]);
+    }, [user, requestMediaPermissions]);
 
     useEffect(() => {
         if (!user || hasCameraPermission === null) {
@@ -168,7 +165,6 @@ export default function StudentLivePage() {
                 
                 const sessionData = snapshot.val();
                 setLiveSessionDetails(sessionData);
-                setIsLive(true);
                 setIsLoading(false);
                 setShowInfo(true);
                 
@@ -215,9 +211,8 @@ export default function StudentLivePage() {
                 });
 
             } else {
-                setIsLive(false);
-                setIsLoading(false);
                 setLiveSessionDetails(null);
+                setIsLoading(false);
                 if (peerConnectionRef.current) {
                     peerConnectionRef.current.close();
                     peerConnectionRef.current = null;
@@ -282,9 +277,10 @@ export default function StudentLivePage() {
             <div className="flex flex-col min-h-[calc(100vh-4rem)]">
               <main className="flex-grow bg-background flex flex-col">
                    <div ref={videoContainerRef} className="w-full aspect-video bg-black flex items-center justify-center relative p-1">
-                      {isLive ? (
+                       <video ref={videoRef} className="w-full h-full object-contain rounded-md" autoPlay playsInline />
+                      
+                        {liveSessionDetails ? (
                           <>
-                              <video ref={videoRef} className="w-full h-full object-contain rounded-md" autoPlay playsInline />
                               <AnimatePresence>
                                   {showInfo && (
                                       <motion.div
@@ -298,25 +294,23 @@ export default function StudentLivePage() {
                                       </motion.div>
                                   )}
                               </AnimatePresence>
-                              {sessionId && (
-                                  <div className="absolute top-4 right-4 z-20">
-                                      <ViewerList sessionId={sessionId} />
-                                  </div>
-                              )}
+                              <div className="absolute top-4 right-4 z-20">
+                                  <ViewerList sessionId={sessionId} />
+                              </div>
                           </>
                       ) : (
                           <div className="flex flex-col items-center gap-4 text-muted-foreground text-center p-4">
-                              {isLoading ? (
+                              {isLoading || hasCameraPermission === null ? (
                                     <>
                                         <Loader2 className="h-8 w-8 animate-spin" />
-                                        <span>Connecting to live session...</span>
+                                        <span>Connecting...</span>
                                     </>
                                ) : hasCameraPermission === false ? (
                                     <Alert variant="destructive" className="max-w-md">
-                                        <AlertTitle>Microphone Required</AlertTitle>
+                                        <AlertTitle>Permissions Required</AlertTitle>
                                         <AlertDescription>
-                                            Please grant microphone permissions in your browser to use interactive features.
-                                            After allowing, please refresh the page.
+                                            Please grant camera and microphone permissions in your browser to join the live session.
+                                            You may need to refresh the page after allowing access.
                                         </AlertDescription>
                                     </Alert>
                                ) : (
@@ -331,7 +325,7 @@ export default function StudentLivePage() {
                   </div>
 
                  <div className="flex-1 flex flex-col min-h-0">
-                     {isLive && sessionId ? (
+                     {liveSessionDetails ? (
                         <div className="flex-1 flex flex-col min-h-0">
                            <div className="flex-shrink-0 p-4 border-b">
                                 <div className="flex items-center justify-center gap-4 z-20">
@@ -377,7 +371,7 @@ export default function StudentLivePage() {
                     )}
                  </div>
                  
-                 {sessionId && <NotebookSheet courseId={sessionId} courseTitle={liveSessionDetails?.title || 'Live Session Notes'} />}
+                 {liveSessionDetails && <NotebookSheet courseId={sessionId} courseTitle={liveSessionDetails?.title || 'Live Session Notes'} />}
               </main>
             </div>
           </SidebarInset>

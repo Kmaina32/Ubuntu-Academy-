@@ -28,11 +28,12 @@ const ICE_SERVERS = {
     ],
 };
 
-function ViewerList() {
+function ViewerList({ sessionId }: { sessionId: string }) {
     const [viewers, setViewers] = useState<Map<string, {name: string, handRaised: boolean}>>(new Map());
 
     useEffect(() => {
-        const answersRef = ref(db, 'webrtc-answers/live-session');
+        if (!sessionId) return;
+        const answersRef = ref(db, `webrtc-answers/${sessionId}`);
 
         const handleChildAdded = async (snapshot: any) => {
             const studentId = snapshot.key;
@@ -51,7 +52,6 @@ function ViewerList() {
             const connectedData = snapshot.val();
             const connectedIds = Object.keys(connectedData);
             
-            // Handle removals and updates
             setViewers(prev => {
                 const newViewers = new Map<string, {name: string, handRaised: boolean}>();
                 connectedIds.forEach(id => {
@@ -61,15 +61,13 @@ function ViewerList() {
                 return newViewers;
             });
         });
-
-
-        const addedUnsubscribe = onChildAdded(answersRef, handleChildAdded);
+        
+        onChildAdded(answersRef, handleChildAdded);
 
         return () => {
-            addedUnsubscribe();
             valueUnsubscribe();
         };
-    }, []);
+    }, [sessionId]);
 
     const viewerList = Array.from(viewers.values());
     const raisedHands = viewerList.filter(v => v.handRaised).length;
@@ -208,8 +206,9 @@ export default function AdminLivePage() {
     const localStreamRef = useRef<MediaStream | null>(null);
     const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
 
-    const offerRef = ref(db, 'webrtc-offers/live-session');
-    const answersRef = ref(db, 'webrtc-answers/live-session');
+    const sessionId = 'live-session';
+    const offerRef = ref(db, `webrtc-offers/${sessionId}`);
+    const answersRef = ref(db, `webrtc-answers/${sessionId}`);
     
     const fetchEvents = async () => {
         setIsFetchingEvents(true);
@@ -321,11 +320,11 @@ export default function AdminLivePage() {
             // Handle ICE candidates for this specific student
             peerConnection.onicecandidate = iceEvent => {
                 if (iceEvent.candidate) {
-                    set(ref(db, `webrtc-candidates/live-session/admin/${studentId}/${Date.now()}`), iceEvent.candidate.toJSON());
+                    set(ref(db, `webrtc-candidates/${sessionId}/admin/${studentId}/${Date.now()}`), iceEvent.candidate.toJSON());
                 }
             };
             
-            onChildAdded(ref(db, `webrtc-candidates/live-session/student/${studentId}`), (candidateSnapshot) => {
+            onChildAdded(ref(db, `webrtc-candidates/${sessionId}/student/${studentId}`), (candidateSnapshot) => {
                 const candidate = candidateSnapshot.val();
                 if (candidate) {
                    peerConnection.addIceCandidate(new RTCIceCandidate(candidate)).catch(e => console.error("Error adding ICE candidate:", e));
@@ -351,8 +350,8 @@ export default function AdminLivePage() {
         await Promise.all([
             remove(offerRef),
             remove(answersRef),
-            remove(ref(db, 'webrtc-candidates')),
-            remove(ref(db, 'liveChat/live-session'))
+            remove(ref(db, `webrtc-candidates/${sessionId}`)),
+            remove(ref(db, `liveChat/${sessionId}`))
         ]);
 
         setIsLive(false);
@@ -379,13 +378,13 @@ export default function AdminLivePage() {
                         Back to Admin Dashboard
                     </Link>
                     <div className="grid lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2 space-y-4">
+                         <div className="lg:col-span-3 flex flex-col gap-4">
                              <div className="aspect-video bg-black rounded-lg flex items-center justify-center relative shadow-lg border p-1">
                                 <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />
                                 
                                 {isLive && (
                                     <div className="absolute top-4 right-4 z-20 pointer-events-auto">
-                                        <ViewerList />
+                                        <ViewerList sessionId={sessionId} />
                                     </div>
                                 )}
                                  {!isLive && (
@@ -408,10 +407,10 @@ export default function AdminLivePage() {
                                 </div>
                             )}
 
-                             {isLive && <LiveChat sessionId="live-session" />}
+                             {isLive && <LiveChat sessionId={sessionId} />}
 
                         </div>
-                        <div className="lg:col-span-1 space-y-6">
+                        <div className="lg:col-span-3 space-y-6">
                              {isFetchingEvents ? (
                                  <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
                              ) : isLive ? (
