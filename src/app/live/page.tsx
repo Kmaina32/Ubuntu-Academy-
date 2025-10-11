@@ -153,7 +153,10 @@ export default function StudentLivePage() {
     }, [user, requestMediaPermissions]);
 
     useEffect(() => {
-        if (!user || hasCameraPermission === false) return;
+        if (!user || hasCameraPermission === false) {
+             setIsLoading(false);
+             return;
+        };
         
         const offerRef = ref(db, 'webrtc-offers/live-session');
 
@@ -353,31 +356,33 @@ export default function StudentLivePage() {
                             </div>
                             <LiveChat sessionId="live-session" />
                         </>
-                    ) : (
-                         <div className="p-4 md:p-6 flex-1 flex flex-col justify-center">
-                            {upcomingEvents.length > 0 && (
-                                <div>
-                                    <h2 className="text-2xl font-bold mb-4 font-headline flex items-center gap-2">
-                                        <Calendar className="h-6 w-6"/>
-                                        Upcoming Live Sessions
-                                    </h2>
-                                    <ScrollArea className="w-full whitespace-nowrap">
-                                        <div className="flex gap-4 pb-4">
-                                            {upcomingEvents.map(event => (
-                                                <Card key={event.id} className="min-w-[300px]">
-                                                    <CardHeader>
-                                                        <CardTitle className="truncate">{event.title}</CardTitle>
-                                                        <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
-                                                    </CardHeader>
-                                                </Card>
-                                            ))}
-                                        </div>
-                                        <ScrollBar orientation="horizontal" />
-                                    </ScrollArea>
-                                </div>
-                            )}
-                         </div>
-                    )}
+                    ) : null}
+                    
+                    <div className="p-4 md:p-6">
+                        {upcomingEvents.length > 0 ? (
+                            <div>
+                                <h2 className="text-2xl font-bold mb-4 font-headline flex items-center gap-2">
+                                    <Calendar className="h-6 w-6"/>
+                                    Upcoming Live Sessions
+                                </h2>
+                                <ScrollArea className="w-full whitespace-nowrap">
+                                    <div className="flex gap-4 pb-4">
+                                        {upcomingEvents.map(event => (
+                                            <Card key={event.id} className="min-w-[300px]">
+                                                <CardHeader>
+                                                    <CardTitle className="truncate">{event.title}</CardTitle>
+                                                    <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
+                                                </CardHeader>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                    <ScrollBar orientation="horizontal" />
+                                </ScrollArea>
+                            </div>
+                        ) : !isLoading && (
+                             <div className="text-center py-10 text-muted-foreground">No upcoming sessions scheduled.</div>
+                        )}
+                    </div>
                  </div>
                  
                  <NotebookSheet courseId="live-session" courseTitle="Live Session Notes" />
