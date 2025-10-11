@@ -13,13 +13,14 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { GitBranch, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library, Briefcase, Tag, Building, Users as PortfoliosIcon, Rocket, Trophy, ChevronRight, GraduationCap, Tool, LifeBuoy } from 'lucide-react';
+import { Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library, Briefcase, Tag, Building, Users as PortfoliosIcon, Rocket, Trophy } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from './ui/separator';
 import pkg from '../../package.json';
 import { useEffect, useMemo, useState } from 'react';
 import type { CalendarEvent } from '@/lib/mock-data';
 import { getAllCalendarEvents } from '@/lib/firebase-service';
+import Image from 'next/image';
 
 export function AppSidebar() {
     const pathname = usePathname();
@@ -77,7 +78,7 @@ export function AppSidebar() {
     <Sidebar>
         <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
-                <GitBranch className="h-6 w-6 text-primary" />
+                <Image src="/logo.png" alt="Manda Network Logo" width={24} height={24} className="h-6 w-6" />
                 <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Manda Network</span>
             </div>
         </SidebarHeader>
@@ -87,7 +88,7 @@ export function AppSidebar() {
                     <>
                         <p className="text-xs font-semibold text-muted-foreground px-2 mb-2 group-data-[collapsible=icon]:hidden">Main Navigation</p>
                         <SidebarMenuItem>
-                           <SidebarMenuButton asChild size="sm" isActive={isActive('/')} tooltip="Browse Courses" onClick={() => onLinkClick('/')}>
+                           <SidebarMenuButton asChild size="sm" isActive={isActive('/') && pathname==='/'} tooltip="Browse Courses" onClick={() => onLinkClick('/')}>
                                 <Link href="/"><Book className="mr-2"/>Browse Courses</Link>
                            </SidebarMenuButton>
                         </SidebarMenuItem>
