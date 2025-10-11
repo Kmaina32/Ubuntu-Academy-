@@ -12,7 +12,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { GitBranch, LayoutDashboard, Users, BookOpen, CreditCard, Settings, ExternalLink, Tag, LogOut, Home } from 'lucide-react';
+import { GitBranch, LayoutDashboard, Users, BookOpen, CreditCard, Settings, ExternalLink, Tag, LogOut, Home, Clapperboard } from 'lucide-react';
 import pkg from '../../package.json';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
@@ -75,6 +75,14 @@ export function OrganizationSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                          <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/organization/live')} tooltip="Live Classroom">
+                                <Link href="/organization/live">
+                                    <Clapperboard />
+                                    <span>Live Classroom</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
                             <SidebarMenuButton asChild isActive={isActive('/organization/billing')} tooltip="Billing">
                                 <Link href="/organization/billing">
                                     <CreditCard />
@@ -100,6 +108,14 @@ export function OrganizationSidebar() {
                                     <span>Home</span>
                                 </Link>
                             </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                           <SidebarMenuButton asChild isActive={isActive('/live')} tooltip="Live Classroom">
+                                <Link href="/live">
+                                    <Clapperboard />
+                                    <span>Live Classroom</span>
+                                </Link>
+                           </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild isActive={isActive('/organization/team')} tooltip="Team">

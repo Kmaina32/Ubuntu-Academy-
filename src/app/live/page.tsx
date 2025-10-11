@@ -31,11 +31,12 @@ const ICE_SERVERS = {
 
 type ConnectionState = 'new' | 'connecting' | 'connected' | 'failed' | 'closed';
 
-function ViewerList() {
+function ViewerList({ sessionId }: { sessionId: string }) {
     const [viewers, setViewers] = useState<Map<string, {name: string, handRaised: boolean}>>(new Map());
 
     useEffect(() => {
-        const answersRef = ref(db, 'webrtc-answers/live-session');
+        if (!sessionId) return;
+        const answersRef = ref(db, `webrtc-answers/${sessionId}`);
 
         const handleChildAdded = async (snapshot: any) => {
             const studentId = snapshot.key;
@@ -54,7 +55,6 @@ function ViewerList() {
             const connectedData = snapshot.val();
             const connectedIds = Object.keys(connectedData);
             
-            // Handle removals
             setViewers(prev => {
                 const newViewers = new Map<string, {name: string, handRaised: boolean}>();
                 connectedIds.forEach(id => {
@@ -70,7 +70,7 @@ function ViewerList() {
         return () => {
             valueUnsubscribe();
         };
-    }, []);
+    }, [sessionId]);
 
     const viewerList = Array.from(viewers.values());
     const raisedHands = viewerList.filter(v => v.handRaised).length;
@@ -98,7 +98,7 @@ function ViewerList() {
 }
 
 export default function StudentLivePage() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading, organization } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
 
@@ -114,6 +114,11 @@ export default function StudentLivePage() {
     const connectionStateRef = useRef<ConnectionState>('new');
     const [showInfo, setShowInfo] = useState(true);
     const videoContainerRef = useRef<HTMLDivElement>(null);
+    
+    // Determine which session to join
+    const orgSessionId = organization ? `org-live-session-${organization.id}` : null;
+    const publicSessionId = 'live-session';
+    const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
     useEffect(() => {
         let timer: NodeJS.Timeout;
@@ -131,11 +136,10 @@ export default function StudentLivePage() {
 
     const requestMediaPermissions = useCallback(async () => {
         try {
-            // Request a dummy stream just to get permissions
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-            // Stop the tracks immediately, we don't need them yet
             stream.getTracks().forEach(track => track.stop());
             setHasCameraPermission(true);
+            return true;
         } catch (error) {
             console.error("Error getting media permissions", error);
             setHasCameraPermission(false);
@@ -144,6 +148,7 @@ export default function StudentLivePage() {
                 description: 'Please allow camera and microphone access to join the live session.',
                 variant: 'destructive',
             });
+            return false;
         }
     }, [toast]);
     
@@ -153,12 +158,93 @@ export default function StudentLivePage() {
     }, [user, requestMediaPermissions]);
 
     useEffect(() => {
-        if (!user || hasCameraPermission === false) {
-             setIsLoading(false);
-             return;
+        if (!user || hasCameraPermission === null) {
+            setIsLoading(false);
+            return;
+        };
+
+        const setupLiveListener = (sessionId: string) => {
+            const offerRef = ref(db, `webrtc-offers/${sessionId}`);
+
+            const unsubscribe = onValue(offerRef, async (snapshot) => {
+                if (snapshot.exists() && (!activeSessionId || activeSessionId === sessionId)) {
+                    if (connectionStateRef.current !== 'new' && connectionStateRef.current !== 'closed') return;
+                    
+                    connectionStateRef.current = 'connecting';
+                    setActiveSessionId(sessionId);
+                    
+                    const sessionData = snapshot.val();
+                    setLiveSessionDetails(sessionData);
+                    setIsLive(true);
+                    setIsLoading(false);
+                    setShowInfo(true);
+                    
+                    const offerDescription = sessionData;
+                    const pc = new RTCPeerConnection(ICE_SERVERS);
+                    peerConnectionRef.current = pc;
+
+                    pc.onicecandidate = (event) => {
+                        if (event.candidate && user) {
+                            set(ref(db, `webrtc-candidates/${sessionId}/student/${user.uid}/${Date.now()}`), event.candidate.toJSON());
+                        }
+                    };
+
+                    pc.ontrack = (event) => {
+                        if (videoRef.current && event.streams[0]) {
+                            videoRef.current.srcObject = event.streams[0];
+                        }
+                    };
+                    
+                    pc.onconnectionstatechange = () => {
+                        if(pc.connectionState === 'connected') {
+                            connectionStateRef.current = 'connected';
+                        }
+                    }
+                    
+                    await pc.setRemoteDescription(new RTCSessionDescription(offerDescription));
+                    const answerDescription = await pc.createAnswer();
+                    await pc.setLocalDescription(answerDescription);
+
+                    await set(ref(db, `webrtc-answers/${sessionId}/${user.uid}`), {
+                        type: answerDescription.type,
+                        sdp: answerDescription.sdp,
+                    });
+
+                    onChildAdded(ref(db, `webrtc-candidates/${sessionId}/admin/${user.uid}`), (candidateSnapshot) => {
+                        const candidate = candidateSnapshot.val();
+                        if(candidate) {
+                           try {
+                               pc.addIceCandidate(new RTCIceCandidate(candidate));
+                           } catch (e) {
+                               console.error("Error adding ICE candidate:", e);
+                           }
+                        }
+                    });
+
+                } else if (sessionId === activeSessionId) {
+                    setIsLive(false);
+                    setIsLoading(false);
+                    setLiveSessionDetails(null);
+                    setActiveSessionId(null);
+                    if (peerConnectionRef.current) {
+                        peerConnectionRef.current.close();
+                        peerConnectionRef.current = null;
+                    }
+                    if (videoRef.current) {
+                        videoRef.current.srcObject = null;
+                    }
+                    connectionStateRef.current = 'closed';
+                }
+            });
+
+            return unsubscribe;
         };
         
-        const offerRef = ref(db, 'webrtc-offers/live-session');
+        let orgUnsubscribe: Function | null = null;
+        if (orgSessionId) {
+            orgUnsubscribe = setupLiveListener(orgSessionId);
+        }
+        const publicUnsubscribe = setupLiveListener(publicSessionId);
 
         const fetchUpcomingEvents = async () => {
             const allEvents = await getAllCalendarEvents();
@@ -167,108 +253,30 @@ export default function StudentLivePage() {
                 .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
             setUpcomingEvents(upcoming);
         }
-
-        const unsubscribe = onValue(offerRef, async (snapshot) => {
-            if (snapshot.exists()) {
-                if (connectionStateRef.current !== 'new' && connectionStateRef.current !== 'closed') return;
-                
-                // Wait for permissions before connecting
-                if (hasCameraPermission === null) {
-                    setIsLoading(true);
-                    return;
-                }
-                
-                connectionStateRef.current = 'connecting';
-                
-                const sessionData = snapshot.val();
-                setLiveSessionDetails(sessionData);
-                setIsLive(true);
-                setIsLoading(false);
-                setShowInfo(true);
-                
-                const offerDescription = sessionData;
-                const pc = new RTCPeerConnection(ICE_SERVERS);
-                peerConnectionRef.current = pc;
-
-                pc.onicecandidate = (event) => {
-                    if (event.candidate && user) {
-                        set(ref(db, `webrtc-candidates/live-session/student/${user.uid}/${Date.now()}`), event.candidate.toJSON());
-                    }
-                };
-
-                pc.ontrack = (event) => {
-                    if (videoRef.current && event.streams[0]) {
-                        videoRef.current.srcObject = event.streams[0];
-                    }
-                };
-                
-                pc.onconnectionstatechange = () => {
-                    if(pc.connectionState === 'connected') {
-                        connectionStateRef.current = 'connected';
-                    }
-                }
-                
-                await pc.setRemoteDescription(new RTCSessionDescription(offerDescription));
-                const answerDescription = await pc.createAnswer();
-                await pc.setLocalDescription(answerDescription);
-
-                await set(ref(db, `webrtc-answers/live-session/${user.uid}`), {
-                    type: answerDescription.type,
-                    sdp: answerDescription.sdp,
-                });
-
-                onChildAdded(ref(db, `webrtc-candidates/live-session/admin/${user.uid}`), (candidateSnapshot) => {
-                    const candidate = candidateSnapshot.val();
-                    if(candidate) {
-                       try {
-                           pc.addIceCandidate(new RTCIceCandidate(candidate));
-                       } catch (e) {
-                           console.error("Error adding ICE candidate:", e);
-                       }
-                    }
-                });
-
-
-            } else {
-                setIsLive(false);
-                setIsLoading(false);
-                setLiveSessionDetails(null);
-                if (peerConnectionRef.current) {
-                    peerConnectionRef.current.close();
-                    peerConnectionRef.current = null;
-                }
-                if (videoRef.current) {
-                    videoRef.current.srcObject = null;
-                }
-                connectionStateRef.current = 'closed';
-            }
-        });
-
         fetchUpcomingEvents();
 
         return () => {
-            unsubscribe();
-             if (peerConnectionRef.current) {
-                peerConnectionRef.current.close();
-            }
-            if (user) {
-                remove(ref(db, `webrtc-answers/live-session/${user.uid}`));
-                remove(ref(db, `webrtc-candidates/live-session/student/${user.uid}`));
+            if (orgUnsubscribe) orgUnsubscribe();
+            publicUnsubscribe();
+            if (peerConnectionRef.current) peerConnectionRef.current.close();
+            if (user && activeSessionId) {
+                remove(ref(db, `webrtc-answers/${activeSessionId}/${user.uid}`));
+                remove(ref(db, `webrtc-candidates/${activeSessionId}/student/${user.uid}`));
             }
             connectionStateRef.current = 'closed';
         };
 
-    }, [user, hasCameraPermission]);
+    }, [user, hasCameraPermission, orgSessionId, activeSessionId]);
 
     const handleLeave = () => {
         router.push('/dashboard');
     }
 
     const toggleHandRaised = async () => {
-        if (!user) return;
+        if (!user || !activeSessionId) return;
         const newHandRaisedState = !handRaised;
         setHandRaised(newHandRaisedState);
-        const handRaisedRef = ref(db, `webrtc-answers/live-session/${user.uid}/handRaised`);
+        const handRaisedRef = ref(db, `webrtc-answers/${activeSessionId}/${user.uid}/handRaised`);
         await set(handRaisedRef, newHandRaisedState);
     }
     
@@ -308,9 +316,11 @@ export default function StudentLivePage() {
                                       </motion.div>
                                   )}
                               </AnimatePresence>
+                              {activeSessionId && (
                                   <div className="absolute top-4 right-4 z-20">
-                                  <ViewerList />
-                              </div>
+                                      <ViewerList sessionId={activeSessionId} />
+                                  </div>
+                              )}
                           </>
                       ) : (
                           <div className="flex flex-col items-center gap-4 text-muted-foreground text-center p-4">
@@ -339,7 +349,7 @@ export default function StudentLivePage() {
                   </div>
 
                  <div className="flex-1 flex flex-col min-h-0">
-                     {isLive ? (
+                     {isLive && activeSessionId ? (
                         <>
                             <div className="flex-shrink-0 p-4 border-b">
                                 <div className="flex items-center justify-center gap-4 z-20">
@@ -354,7 +364,7 @@ export default function StudentLivePage() {
                                     </Button>
                                 </div>
                             </div>
-                            <LiveChat sessionId="live-session" />
+                            <LiveChat sessionId={activeSessionId} />
                         </>
                     ) : null}
                     
@@ -385,10 +395,11 @@ export default function StudentLivePage() {
                     </div>
                  </div>
                  
-                 <NotebookSheet courseId="live-session" courseTitle="Live Session Notes" />
+                 {activeSessionId && <NotebookSheet courseId={activeSessionId} courseTitle={liveSessionDetails?.title || 'Live Session Notes'} />}
               </main>
             </div>
           </SidebarInset>
         </SidebarProvider>
     );
 }
+
