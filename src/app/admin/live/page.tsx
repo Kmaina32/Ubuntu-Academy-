@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Video, PhoneOff, Users, Hand, Mic, MicOff, Calendar, Clock, VideoOff as VideoOffIcon, PlusCircle, Maximize } from 'lucide-react';
+import { ArrowLeft, Loader2, Video, PhoneOff, Users, Hand, Mic, MicOff, Calendar, Maximize } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
@@ -14,13 +14,21 @@ import { createNotification, getUserById, getAllCalendarEvents } from '@/lib/fir
 import type { CalendarEvent } from '@/lib/mock-data';
 import { LiveChat } from '@/components/LiveChat';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Badge } from '@/components/ui/badge';
 import { format, isPast, isToday, formatDistanceToNow } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { EventForm } from '@/components/EventForm';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { NotebookSheet } from '@/components/NotebookSheet';
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
+import { ViewerList } from '@/components/ViewerList';
+import { SessionInfo } from '@/components/SessionInfo';
+import { NoLiveSession } from '@/components/NoLiveSession';
+
 
 const ICE_SERVERS = {
     iceServers: [
@@ -28,72 +36,6 @@ const ICE_SERVERS = {
         { urls: 'stun:stun1.l.google.com:19302' },
     ],
 };
-
-function ViewerList({ sessionId }: { sessionId: string }) {
-    const [viewers, setViewers] = useState<Map<string, {name: string, handRaised: boolean}>>(new Map());
-
-    useEffect(() => {
-        if (!sessionId) return;
-        const answersRef = ref(db, `webrtc-answers/${sessionId}`);
-
-        const handleChildAdded = async (snapshot: any) => {
-            const studentId = snapshot.key;
-            if (studentId) {
-                const user = await getUserById(studentId);
-                const handRaised = snapshot.val()?.handRaised || false;
-                setViewers(prev => new Map(prev).set(studentId, { name: user?.displayName || 'Anonymous', handRaised }));
-            }
-        };
-
-        const valueUnsubscribe = onValue(answersRef, (snapshot) => {
-             if (!snapshot.exists()) {
-                setViewers(new Map());
-                return;
-            }
-            const connectedData = snapshot.val();
-            const connectedIds = Object.keys(connectedData);
-            
-            setViewers(prev => {
-                const newViewers = new Map<string, {name: string, handRaised: boolean}>();
-                connectedIds.forEach(id => {
-                    const currentViewer = prev.get(id) || { name: '...', handRaised: false };
-                    newViewers.set(id, { ...currentViewer, handRaised: connectedData[id]?.handRaised || false });
-                });
-                return newViewers;
-            });
-        });
-        
-        onChildAdded(answersRef, handleChildAdded);
-
-        return () => {
-            valueUnsubscribe();
-        };
-    }, [sessionId]);
-
-    const viewerList = Array.from(viewers.values());
-    const raisedHands = viewerList.filter(v => v.handRaised).length;
-
-    return (
-         <TooltipProvider>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <div className="bg-background/80 backdrop-blur-sm text-foreground px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm pointer-events-auto shadow-md">
-                        <Users className="h-4 w-4" />
-                        <span>{viewerList.length}</span>
-                        {raisedHands > 0 && <span className="flex items-center gap-1 text-blue-500"><Hand className="h-4 w-4"/> {raisedHands}</span>}
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                   {viewerList.length > 0 ? (
-                    <ul className="text-sm space-y-1">
-                        {viewerList.map((viewer, index) => <li key={index} className="flex items-center gap-2">{viewer.name} {viewer.handRaised && <Hand className="h-4 w-4 text-blue-500"/>}</li>)}
-                    </ul>
-                   ) : <p>No viewers yet.</p>}
-                </TooltipContent>
-            </Tooltip>
-        </TooltipProvider>
-    )
-}
 
 function UpcomingSessionCard({ event, onGoLive }: { event: CalendarEvent, onGoLive: (event: CalendarEvent) => void }) {
     const [timeLeft, setTimeLeft] = useState('');
@@ -121,11 +63,11 @@ function UpcomingSessionCard({ event, onGoLive }: { event: CalendarEvent, onGoLi
             <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                     <span>Upcoming Session</span>
-                    <Badge variant="secondary">{timeLeft}</Badge>
                 </CardTitle>
                 <CardDescription>{event.title}</CardDescription>
             </CardHeader>
-            <CardContent className="flex justify-end">
+            <CardContent className="flex justify-between items-center">
+                <span className="text-sm font-semibold text-primary">{timeLeft}</span>
                 <Button onClick={() => onGoLive(event)}>
                     <Video className="mr-2 h-4 w-4"/>
                     Start Session Now
@@ -155,8 +97,7 @@ function NoSessionCard({ onGoLive, onScheduleSuccess }: { onGoLive: (event: Cale
                 <CardDescription>There is no live session currently running.</CardDescription>
             </CardHeader>
             <CardContent className="text-center py-10 border-2 border-dashed rounded-lg space-y-4">
-                <VideoOffIcon className="h-12 w-12 text-muted-foreground mx-auto" />
-                <p className="text-muted-foreground">Start an instant session or schedule one for later.</p>
+                <NoLiveSession isLoading={false} hasPermission={true} />
                 <div className="flex justify-center gap-4">
                      <Dialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen}>
                         <DialogTrigger asChild>
@@ -382,119 +323,109 @@ export default function AdminLivePage() {
                         <ArrowLeft className="h-4 w-4" />
                         Back to Admin Dashboard
                     </Link>
-                    <div className="grid lg:grid-cols-3 gap-8">
-                         <div className="lg:col-span-2 flex flex-col gap-4">
-                             <div className="aspect-video bg-black rounded-lg flex items-center justify-center relative shadow-lg border p-1">
-                                <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />
-                                
+                    <ResizablePanelGroup direction="horizontal">
+                        <ResizablePanel defaultSize={70}>
+                            <div className="flex flex-col h-full gap-4 pr-4">
+                                <div className="aspect-video bg-black rounded-lg flex items-center justify-center relative shadow-lg border p-1">
+                                    <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />
+                                    
+                                    {isLive && (
+                                        <div className="absolute top-4 right-4 z-20 pointer-events-auto">
+                                            <ViewerList sessionId={sessionId} />
+                                        </div>
+                                    )}
+                                    {!isLive && (
+                                        <NoLiveSession isLoading={!hasCameraPermission} hasPermission={hasCameraPermission} />
+                                    )}
+                                </div>
+
                                 {isLive && (
-                                    <div className="absolute top-4 right-4 z-20 pointer-events-auto">
-                                        <ViewerList sessionId={sessionId} />
+                                    <div className="bg-background/80 backdrop-blur-sm text-foreground p-3 rounded-lg flex items-center justify-center gap-4 text-sm shadow-md">
+                                        <Button size="icon" variant={isMuted ? 'destructive' : 'secondary'} onClick={toggleMute} className="rounded-full h-12 w-12 shadow-lg">
+                                            {isMuted ? <MicOff className="h-6 w-6"/> : <Mic className="h-6 w-6" />}
+                                        </Button>
+                                        <Button size="icon" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="rounded-full h-14 w-14 shadow-lg">
+                                            {isLoading ? <Loader2 className="h-6 w-6 animate-spin"/> : <PhoneOff className="h-6 w-6" />}
+                                        </Button>
+                                        <div className="w-12 h-12"></div>
                                     </div>
                                 )}
-                                 {!isLive && (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-muted-foreground p-4">
-                                        <Video className="h-16 w-16 mx-auto mb-4" />
-                                        <p>Your video feed will appear here once you go live.</p>
-                                    </div>
-                                 )}
                             </div>
+                        </ResizablePanel>
+                        <ResizableHandle withHandle />
+                        <ResizablePanel defaultSize={30}>
+                            <div className="h-full flex flex-col pl-4 gap-6">
+                                {isLive ? (
+                                    <LiveChat sessionId={sessionId} />
+                                ) : (
+                                    <div className="space-y-6">
+                                        {isFetchingEvents ? (
+                                            <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+                                        ) : upcomingEvents.length > 0 && isToday(new Date(upcomingEvents[0].date)) ? (
+                                            <UpcomingSessionCard event={upcomingEvents[0]} onGoLive={handleGoLive} />
+                                        ) : (
+                                            <NoSessionCard onGoLive={handleGoLive} onScheduleSuccess={fetchEvents} />
+                                        )}
+                                        
+                                    <Card>
+                                            <CardHeader>
+                                                <CardTitle>Upcoming Sessions</CardTitle>
+                                                <CardDescription>Your next scheduled live events.</CardDescription>
+                                            </CardHeader>
+                                            <CardContent>
+                                                {upcomingEvents.length > 0 ? (
+                                                    <ScrollArea>
+                                                        <div className="flex space-x-4 pb-4">
+                                                            {upcomingEvents.map(event => (
+                                                            <div key={event.id} className="min-w-[250px]">
+                                                                <Card>
+                                                                <CardHeader>
+                                                                    <CardTitle className="text-base truncate">{event.title}</CardTitle>
+                                                                    <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
+                                                                </CardHeader>
+                                                                </Card>
+                                                            </div>
+                                                            ))}
+                                                        </div>
+                                                        <ScrollBar orientation="horizontal" />
+                                                    </ScrollArea>
+                                                ) : (
+                                                    <p className="text-muted-foreground text-sm text-center py-4">No upcoming sessions scheduled.</p>
+                                                )}
+                                            </CardContent>
+                                        </Card>
 
-                             {isLive && (
-                                <div className="bg-background/80 backdrop-blur-sm text-foreground p-3 rounded-lg flex items-center justify-center gap-4 text-sm shadow-md">
-                                     <Button size="icon" variant={isMuted ? 'destructive' : 'secondary'} onClick={toggleMute} className="rounded-full h-12 w-12 shadow-lg">
-                                        {isMuted ? <MicOff className="h-6 w-6"/> : <Mic className="h-6 w-6" />}
-                                    </Button>
-                                    <Button size="icon" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="rounded-full h-14 w-14 shadow-lg">
-                                        {isLoading ? <Loader2 className="h-6 w-6 animate-spin"/> : <PhoneOff className="h-6 w-6" />}
-                                    </Button>
-                                    <div className="w-12 h-12"></div>
-                                </div>
-                            )}
-
-                             {isLive && <LiveChat sessionId={sessionId} />}
-
-                        </div>
-                        <div className="lg:col-span-1 space-y-6">
-                             {isFetchingEvents ? (
-                                 <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
-                             ) : isLive ? (
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Session is Live</CardTitle>
-                                        <CardDescription>Your broadcast is currently active.</CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <Alert>
-                                            <Video className="h-4 w-4" />
-                                            <AlertTitle>Streaming</AlertTitle>
-                                            <AlertDescription>
-                                                Students can now view your live stream. You can end the session using the button on the video player.
-                                            </AlertDescription>
-                                        </Alert>
-                                    </CardContent>
-                                </Card>
-                            ) : upcomingEvents.length > 0 && isToday(new Date(upcomingEvents[0].date)) ? (
-                                <UpcomingSessionCard event={upcomingEvents[0]} onGoLive={handleGoLive} />
-                            ) : (
-                                <NoSessionCard onGoLive={handleGoLive} onScheduleSuccess={fetchEvents} />
-                            )}
-                            
-                           <Card>
-                                 <CardHeader>
-                                     <CardTitle>Upcoming Sessions</CardTitle>
-                                     <CardDescription>Your next scheduled live events.</CardDescription>
-                                 </CardHeader>
-                                 <CardContent>
-                                    {upcomingEvents.length > 0 ? (
-                                        <ScrollArea>
-                                            <div className="flex space-x-4 pb-4">
-                                                {upcomingEvents.map(event => (
-                                                <div key={event.id} className="min-w-[250px]">
-                                                    <Card>
-                                                    <CardHeader>
-                                                        <CardTitle className="text-base truncate">{event.title}</CardTitle>
-                                                        <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
-                                                    </CardHeader>
-                                                    </Card>
-                                                </div>
-                                                ))}
-                                            </div>
-                                            <ScrollBar orientation="horizontal" />
-                                        </ScrollArea>
-                                    ) : (
-                                        <p className="text-muted-foreground text-sm text-center py-4">No upcoming sessions scheduled.</p>
-                                    )}
-                                 </CardContent>
-                            </Card>
-
-                             <Card>
-                                 <CardHeader>
-                                     <CardTitle>Past Sessions</CardTitle>
-                                     <CardDescription>A log of your recent live events.</CardDescription>
-                                 </CardHeader>
-                                 <CardContent>
-                                     {isFetchingEvents ? (
-                                         <p className="text-muted-foreground text-sm">Loading...</p>
-                                     ) : pastEvents.length > 0 ? (
-                                         <ul className="space-y-3">
-                                            {pastEvents.map(event => (
-                                                <li key={event.id} className="flex items-center justify-between text-sm">
-                                                    <span className="font-medium">{event.title}</span>
-                                                    <span className="text-muted-foreground">{format(new Date(event.date), 'PPP')}</span>
-                                                </li>
-                                            ))}
-                                         </ul>
-                                     ) : (
-                                         <p className="text-muted-foreground text-sm text-center py-4">No past sessions found.</p>
-                                     )}
-                                 </CardContent>
-                            </Card>
-                        </div>
-                    </div>
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>Past Sessions</CardTitle>
+                                                <CardDescription>A log of your recent live events.</CardDescription>
+                                            </CardHeader>
+                                            <CardContent>
+                                                {isFetchingEvents ? (
+                                                    <p className="text-muted-foreground text-sm">Loading...</p>
+                                                ) : pastEvents.length > 0 ? (
+                                                    <ul className="space-y-3">
+                                                        {pastEvents.map(event => (
+                                                            <li key={event.id} className="flex items-center justify-between text-sm">
+                                                                <span className="font-medium">{event.title}</span>
+                                                                <span className="text-muted-foreground">{format(new Date(event.date), 'PPP')}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                ) : (
+                                                    <p className="text-muted-foreground text-sm text-center py-4">No past sessions found.</p>
+                                                )}
+                                            </CardContent>
+                                        </Card>
+                                    </div>
+                                )}
+                            </div>
+                        </ResizablePanel>
+                    </ResizablePanelGroup>
                      {isLive && activeEvent && <NotebookSheet courseId={sessionId} courseTitle={activeEvent.title} />}
                 </div>
             </main>
         </div>
     );
 }
+

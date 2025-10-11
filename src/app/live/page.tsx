@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/resizable";
 import { ViewerList } from '@/components/ViewerList';
 import { SessionInfo } from '@/components/SessionInfo';
+import { NoLiveSession } from '@/components/NoLiveSession';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -216,28 +217,7 @@ export default function StudentLivePage() {
                                   </div>
                               </>
                           ) : (
-                              <div className="flex flex-col items-center gap-4 text-muted-foreground text-center p-4">
-                                  {isLoading || hasCameraPermission === null ? (
-                                        <>
-                                            <Loader2 className="h-8 w-8 animate-spin" />
-                                            <span>Connecting...</span>
-                                        </>
-                                   ) : hasCameraPermission === false ? (
-                                        <Alert variant="destructive" className="max-w-md">
-                                            <AlertTitle>Permissions Required</AlertTitle>
-                                            <AlertDescription>
-                                                Please grant camera and microphone permissions to join the live session.
-                                                You may need to refresh the page after allowing access.
-                                            </AlertDescription>
-                                        </Alert>
-                                   ) : (
-                                       <>
-                                            <VideoOff className="h-16 w-16" />
-                                            <p className="font-semibold text-xl">No Active Live Session</p>
-                                            <p className="text-sm max-w-xs">The live session has ended or has not started yet.</p>
-                                       </>
-                                   )}
-                              </div>
+                              <NoLiveSession isLoading={isLoading || hasCameraPermission === null} hasPermission={hasCameraPermission} />
                           )}
                         </div>
                       </div>

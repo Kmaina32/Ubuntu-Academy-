@@ -17,6 +17,9 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { AnimatePresence, motion } from 'framer-motion';
 import { NotebookSheet } from '@/components/NotebookSheet';
+import { NoLiveSession } from '@/components/NoLiveSession';
+import { ViewerList } from '@/components/ViewerList';
+import { SessionInfo } from '@/components/SessionInfo';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -26,75 +29,6 @@ const ICE_SERVERS = {
 };
 
 type ConnectionState = 'new' | 'connecting' | 'connected' | 'failed' | 'closed';
-
-
-function ViewerList({ sessionId }: { sessionId: string }) {
-    const [viewers, setViewers] = useState<Map<string, {name: string, handRaised: boolean}>>(new Map());
-
-    useEffect(() => {
-        if (!sessionId) return;
-        const answersRef = ref(db, `webrtc-answers/${sessionId}`);
-
-        const handleChildAdded = async (snapshot: any) => {
-            const studentId = snapshot.key;
-            if (studentId) {
-                const user = await getUserById(studentId);
-                const handRaised = snapshot.val()?.handRaised || false;
-                setViewers(prev => new Map(prev).set(studentId, { name: user?.displayName || 'Anonymous', handRaised }));
-            }
-        };
-
-        const valueUnsubscribe = onValue(answersRef, (snapshot) => {
-             if (!snapshot.exists()) {
-                setViewers(new Map());
-                return;
-            }
-            const connectedData = snapshot.val();
-            const connectedIds = Object.keys(connectedData);
-            
-            setViewers(prev => {
-                const newViewers = new Map<string, {name: string, handRaised: boolean}>();
-                connectedIds.forEach(id => {
-                    const currentViewer = prev.get(id) || { name: '...', handRaised: false };
-                    newViewers.set(id, { ...currentViewer, handRaised: connectedData[id]?.handRaised || false });
-                });
-                return newViewers;
-            });
-        });
-
-
-        const addedUnsubscribe = onChildAdded(answersRef, handleChildAdded);
-
-        return () => {
-            addedUnsubscribe();
-            valueUnsubscribe();
-        };
-    }, [sessionId]);
-
-    const viewerList = Array.from(viewers.values());
-    const raisedHands = viewerList.filter(v => v.handRaised).length;
-
-    return (
-         <TooltipProvider>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <div className="bg-background/80 backdrop-blur-sm text-foreground px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm pointer-events-auto shadow-md">
-                        <Users className="h-4 w-4" />
-                        <span>{viewerList.length}</span>
-                        {raisedHands > 0 && <span className="flex items-center gap-1 text-blue-500"><Hand className="h-4 w-4"/> {raisedHands}</span>}
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                   {viewerList.length > 0 ? (
-                    <ul className="text-sm space-y-1">
-                        {viewerList.map((viewer, index) => <li key={index} className="flex items-center gap-2">{viewer.name} {viewer.handRaised && <Hand className="h-4 w-4 text-blue-500"/>}</li>)}
-                    </ul>
-                   ) : <p>No viewers yet.</p>}
-                </TooltipContent>
-            </Tooltip>
-        </TooltipProvider>
-    )
-}
 
 function AdminHostView({ sessionId }: { sessionId: string }) {
     const { organization } = useAuth();
@@ -241,14 +175,7 @@ function AdminHostView({ sessionId }: { sessionId: string }) {
                     </div>
                 )}
                 {hasCameraPermission === false && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white p-4">
-                        <Alert variant="destructive" className="max-w-md bg-destructive/20 border-destructive/50 text-destructive-foreground">
-                            <AlertTitle>Camera Access Required</AlertTitle>
-                            <AlertDescription>
-                                Please allow camera access to use the live stream feature.
-                            </AlertDescription>
-                        </Alert>
-                    </div>
+                    <NoLiveSession isLoading={false} hasPermission={false} />
                 )}
             </div>
 
@@ -273,22 +200,14 @@ function MemberViewer({ sessionId }: { sessionId: string }) {
     const { toast } = useToast();
     
     const [liveSessionDetails, setLiveSessionDetails] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [handRaised, setHandRaised] = useState(false);
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
     const connectionStateRef = useRef<ConnectionState>('new');
-    const [showInfo, setShowInfo] = useState(true);
     const videoContainerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        let timer: NodeJS.Timeout;
-        if (liveSessionDetails) {
-            timer = setTimeout(() => setShowInfo(false), 5000);
-        }
-        return () => clearTimeout(timer);
-    }, [liveSessionDetails]);
     
      useEffect(() => {
         const requestMediaPermissions = async () => {
@@ -310,7 +229,10 @@ function MemberViewer({ sessionId }: { sessionId: string }) {
     }, [toast]);
 
     useEffect(() => {
-        if (!user || hasCameraPermission === null) return;
+        if (!user || hasCameraPermission === null) {
+            setIsLoading(false);
+            return;
+        };
 
         const offerRef = ref(db, `webrtc-offers/${sessionId}`);
 
@@ -322,7 +244,7 @@ function MemberViewer({ sessionId }: { sessionId: string }) {
                 
                 const sessionData = snapshot.val();
                 setLiveSessionDetails(sessionData);
-                setShowInfo(true);
+                setIsLoading(false);
                 
                 const offerDescription = sessionData;
                 const pc = new RTCPeerConnection(ICE_SERVERS);
@@ -360,6 +282,7 @@ function MemberViewer({ sessionId }: { sessionId: string }) {
 
             } else {
                 setLiveSessionDetails(null);
+                setIsLoading(false);
                 if (peerConnectionRef.current) {
                     peerConnectionRef.current.close();
                     peerConnectionRef.current = null;
@@ -407,18 +330,7 @@ function MemberViewer({ sessionId }: { sessionId: string }) {
                 {liveSessionDetails ? (
                     <>
                         <video ref={videoRef} className="w-full h-full object-contain rounded-md" autoPlay playsInline />
-                        <AnimatePresence>
-                            {showInfo && (
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/50 text-white p-2 px-4 rounded-lg text-center"
-                                >
-                                    <p className="font-bold">{liveSessionDetails?.title || 'Live Session'}</p>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                        <SessionInfo title={liveSessionDetails?.title || 'Live Session'} description={liveSessionDetails?.description || 'Welcome to the class!'} />
                         {sessionId && (
                             <div className="absolute top-4 right-4 z-20">
                                 <ViewerList sessionId={sessionId} />
@@ -426,22 +338,7 @@ function MemberViewer({ sessionId }: { sessionId: string }) {
                         )}
                     </>
                 ) : (
-                     <div className="flex flex-col items-center gap-4 text-muted-foreground text-center p-4">
-                        {hasCameraPermission === false ? (
-                            <Alert variant="destructive" className="max-w-md">
-                                <AlertTitle>Camera and Microphone Required</AlertTitle>
-                                <AlertDescription>
-                                    Please grant camera and microphone permissions to join the live session.
-                                </AlertDescription>
-                            </Alert>
-                       ) : (
-                           <>
-                                <VideoOff className="h-16 w-16" />
-                                <p className="font-semibold text-xl">No Active Live Session</p>
-                                <p className="text-sm max-w-xs">Your organization does not have an active live session.</p>
-                           </>
-                       )}
-                    </div>
+                     <NoLiveSession isLoading={isLoading} hasPermission={hasCameraPermission} />
                 )}
             </div>
             
@@ -494,3 +391,4 @@ export default function OrganizationLivePage() {
     );
 
     
+}
