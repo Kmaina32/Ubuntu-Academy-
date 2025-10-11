@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 const COURSES_PER_PAGE = 6;
 
@@ -174,8 +175,7 @@ export default function Home() {
                 <p className="text-destructive text-center">{error}</p>
               ) : loading ? (
                 <div className="flex justify-center items-center py-10">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                  <p className="ml-2">Loading courses...</p>
+                  <LoadingAnimation />
                 </div>
               ) : (
                 <>

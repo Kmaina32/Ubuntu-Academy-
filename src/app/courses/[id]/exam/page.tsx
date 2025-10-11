@@ -24,6 +24,7 @@ import { Loader2, ArrowLeft, Send, CheckCircle, ListTodo } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
 import { FeedbackForm, FeedbackSubmitted } from '@/components/FeedbackForm';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 const createAnswerSchema = (questionType: 'multiple-choice' | 'short-answer') => {
   if (questionType === 'multiple-choice') {
@@ -162,7 +163,7 @@ export default function ExamPage() {
   }
 
   if (authLoading || loading) {
-    return <div className="flex justify-center items-center h-screen"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    return <div className="flex justify-center items-center h-screen"><LoadingAnimation /></div>;
   }
   
   if (!user) {

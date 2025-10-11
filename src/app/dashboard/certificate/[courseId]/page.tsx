@@ -13,6 +13,7 @@ import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { slugify } from '@/lib/utils';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 export default function CertificatePage() {
   const params = useParams<{ courseId: string }>(); // This 'courseId' is the slug
@@ -66,8 +67,7 @@ export default function CertificatePage() {
 
   if (loadingAuth || loading) {
     return <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <p className="ml-2">Loading certificate...</p>
+        <LoadingAnimation />
     </div>
   }
   

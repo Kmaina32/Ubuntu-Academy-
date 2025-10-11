@@ -20,6 +20,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { createInvitation } from '@/lib/firebase-service';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 const inviteFormSchema = z.object({
     email: z.string().email({ message: "Please enter a valid email address." }),
@@ -167,7 +168,7 @@ export default function OrganizationMembersPage() {
                 </CardHeader>
                 <CardContent>
                     {loading ? (
-                         <div className="flex justify-center py-10"><Loader2 className="h-8 w-8 animate-spin" /></div>
+                         <div className="flex justify-center py-10"><LoadingAnimation /></div>
                     ) : (
                        <Table>
                             <TableHeader>

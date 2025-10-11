@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { PricingPlan } from '@/lib/types';
 import { getAllPlans } from '@/lib/firebase-service';
 import PaymentIcons from '@/components/PaymentIcons';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 export default function OrganizationBillingPage() {
     const { organization, loading: authLoading } = useAuth();
@@ -43,7 +44,7 @@ export default function OrganizationBillingPage() {
     };
 
     if (authLoading || loadingPlans) {
-        return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+        return <div className="flex justify-center items-center h-full"><LoadingAnimation /></div>
     }
 
     return (

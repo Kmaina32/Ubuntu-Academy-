@@ -8,6 +8,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useState } from 'react';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 // This is a placeholder type. Replace with your actual transaction data structure.
 type Transaction = {
@@ -40,8 +41,7 @@ export default function AdminPaymentsPage() {
                 <CardContent>
                    {loading ? (
                        <div className="flex justify-center items-center py-10">
-                          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                          <p className="ml-2">Loading transactions...</p>
+                          <LoadingAnimation />
                        </div>
                     ) : (
                       <Table>

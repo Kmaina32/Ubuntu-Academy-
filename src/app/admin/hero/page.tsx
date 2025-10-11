@@ -23,6 +23,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { fetchAndActivate, getString } from 'firebase/remote-config';
 import { remoteConfig } from '@/lib/firebase';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 const heroFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -175,8 +176,7 @@ export default function AdminHeroPage() {
                 <CardContent>
                   {isFetching ? (
                     <div className="flex justify-center items-center py-10">
-                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                      <p className="ml-2">Loading settings...</p>
+                      <LoadingAnimation />
                     </div>
                   ) : (
                     <Form {...form}>
@@ -479,4 +479,3 @@ export default function AdminHeroPage() {
     </div>
   );
 }
-

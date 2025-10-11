@@ -10,6 +10,7 @@ import { getAllPrograms, Program, getHeroData } from '@/lib/firebase-service';
 import { Loader2, Library } from 'lucide-react';
 import { ProgramCard } from '@/components/ProgramCard';
 import Image from 'next/image';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 export default function ProgramsPage() {
   const [programs, setPrograms] = useState<Program[]>([]);
@@ -75,8 +76,7 @@ export default function ProgramsPage() {
                 <p className="text-destructive text-center">{error}</p>
               ) : loading ? (
                 <div className="flex justify-center items-center py-10">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                  <p className="ml-2">Loading programs...</p>
+                  <LoadingAnimation />
                 </div>
               ) : programs.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

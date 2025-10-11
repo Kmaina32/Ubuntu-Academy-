@@ -25,6 +25,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
 import { ArrowLeft } from 'lucide-react';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 export default function AdminCoursesPage() {
   const { user, isSuperAdmin } = useAuth();
@@ -129,8 +130,7 @@ export default function AdminCoursesPage() {
             <CardContent>
             {loadingCourses ? (
                 <div className="flex justify-center items-center py-10">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                <p className="ml-2">Loading courses...</p>
+                  <LoadingAnimation />
                 </div>
             ) : error ? (
                 <p className="text-destructive text-center py-10">{error}</p>

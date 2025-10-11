@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { Course } from '@/lib/mock-data';
 import { getAllCourses } from '@/lib/firebase-service';
 import { Loader2 } from 'lucide-react';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 export default function OrganizationCoursesPage() {
     const [courses, setCourses] = useState<Course[]>([]);
@@ -50,7 +51,7 @@ export default function OrganizationCoursesPage() {
                 </CardHeader>
                 <CardContent>
                     {loading ? (
-                        <div className="flex justify-center py-10"><Loader2 className="h-8 w-8 animate-spin" /></div>
+                        <div className="flex justify-center py-10"><LoadingAnimation /></div>
                     ) : (
                         <Table>
                             <TableHeader>

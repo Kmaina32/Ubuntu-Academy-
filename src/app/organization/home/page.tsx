@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { slugify } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 type EnrolledCourse = UserCourse & Partial<Course>;
 
@@ -56,7 +57,7 @@ export default function OrganizationHomePage() {
     }, [user, organization, loading]);
 
     if (loading || loadingCourses) {
-        return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+        return <div className="flex justify-center items-center h-full"><LoadingAnimation /></div>
     }
 
     return (

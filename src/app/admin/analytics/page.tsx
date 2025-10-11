@@ -14,6 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { getAllCourses, getAllUsers } from '@/lib/firebase-service';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 type AnalyticsData = {
   totalUsers: number;
@@ -141,8 +142,7 @@ export default function AdminAnalyticsPage() {
             <CardContent className="space-y-8">
               {loadingAnalytics ? (
                 <div className="flex justify-center items-center py-10">
-                  <Loader2 className="h-8 w-8 animate-spin" />
-                  <p className="ml-2">Loading Analytics...</p>
+                  <LoadingAnimation />
                 </div>
               ) : analyticsData ? (
                 <>

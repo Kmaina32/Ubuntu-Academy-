@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 
 type SubmissionWithCourse = Submission & { course?: Course };
@@ -50,8 +51,7 @@ function SubmissionsList() {
   return (
     loading ? (
        <div className="flex justify-center items-center py-10">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <p className="ml-2">Loading submissions...</p>
+          <LoadingAnimation />
        </div>
     ) : (
       <Table>
@@ -129,8 +129,7 @@ function CourseAssignmentsList() {
     return (
     loading ? (
        <div className="flex justify-center items-center py-10">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <p className="ml-2">Loading assignments...</p>
+          <LoadingAnimation />
        </div>
     ) : (
       <Table>

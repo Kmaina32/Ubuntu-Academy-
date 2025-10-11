@@ -26,6 +26,7 @@ import { CohortManager } from '@/components/shared/CohortManager';
 import { AdminAccessManager } from '@/components/shared/AdminAccessManager';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 
 export default function AdminUsersPage() {
@@ -105,8 +106,7 @@ export default function AdminUsersPage() {
                     <CardContent>
                         {loadingUsers ? (
                                 <div className="flex justify-center items-center py-10">
-                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                                <p className="ml-2">Loading users...</p>
+                                <LoadingAnimation />
                             </div>
                         ) : (
                                 <Table>

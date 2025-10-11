@@ -17,6 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 const settingsSchema = z.object({
     name: z.string().min(2, 'Organization name is required.'),
@@ -65,7 +66,7 @@ export default function OrganizationSettingsPage() {
     const expiryDate = organization?.subscriptionExpiresAt ? new Date(organization.subscriptionExpiresAt) : null;
     
     if (authLoading) {
-         return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+         return <div className="flex justify-center items-center h-full"><LoadingAnimation /></div>
     }
 
     return (

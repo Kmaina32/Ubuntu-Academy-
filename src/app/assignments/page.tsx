@@ -19,6 +19,7 @@ import { getUserCourses, getSubmissionsByUserId, getAllCourses } from '@/lib/fir
 import { Button } from '@/components/ui/button';
 import { slugify } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 
 type UserCourseWithDetails = UserCourse & Partial<Course>;
@@ -70,7 +71,7 @@ function ExamsList() {
     }
 
     if(loading) {
-        return <div className="flex justify-center items-center py-10"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+        return <div className="flex justify-center items-center py-10"><LoadingAnimation /></div>;
     }
 
     return (
@@ -122,7 +123,11 @@ export default function MyAssignmentsPage() {
   }, [user, authLoading, router]);
 
   if (authLoading) {
-    return <div className="flex justify-center items-center h-screen"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    return (
+        <div className="flex h-screen items-center justify-center">
+            <LoadingAnimation />
+        </div>
+    );
   }
 
   return (
