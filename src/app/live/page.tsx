@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { LiveChat } from '@/components/LiveChat';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 import { getUserById, getAllCalendarEvents } from '@/lib/firebase-service';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Hand, Loader2, PhoneOff, Users, VideoOff, Maximize, Calendar, ArrowLeft } from 'lucide-react';
+import { Hand, Loader2, PhoneOff, Users, VideoOff, Maximize, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { onValue, ref, onChildAdded, set, remove } from 'firebase/database';
 import { AppSidebar } from '@/components/Sidebar';
@@ -98,7 +98,7 @@ function ViewerList({ sessionId }: { sessionId: string }) {
 }
 
 export default function StudentLivePage() {
-    const { user, loading: authLoading, organization } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
 
@@ -115,10 +115,7 @@ export default function StudentLivePage() {
     const [showInfo, setShowInfo] = useState(true);
     const videoContainerRef = useRef<HTMLDivElement>(null);
     
-    // Determine which session to join
-    const orgSessionId = organization ? `org-live-session-${organization.id}` : null;
-    const publicSessionId = 'live-session';
-    const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+    const sessionId = 'live-session'; // Only listen for public sessions
 
     useEffect(() => {
         let timer: NodeJS.Timeout;
@@ -134,28 +131,26 @@ export default function StudentLivePage() {
         }
     }, [user, authLoading, router]);
 
-    const requestMediaPermissions = useCallback(async () => {
+    const requestMediaPermissions = async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); // Only need audio for hand raising feedback
             stream.getTracks().forEach(track => track.stop());
             setHasCameraPermission(true);
-            return true;
         } catch (error) {
             console.error("Error getting media permissions", error);
             setHasCameraPermission(false);
             toast({
                 title: 'Permissions Required',
-                description: 'Please allow camera and microphone access to join the live session.',
+                description: 'Please allow microphone access to use all interactive features.',
                 variant: 'destructive',
             });
-            return false;
         }
-    }, [toast]);
+    };
     
     useEffect(() => {
         if (!user) return;
         requestMediaPermissions();
-    }, [user, requestMediaPermissions]);
+    }, [user]);
 
     useEffect(() => {
         if (!user || hasCameraPermission === null) {
@@ -163,88 +158,76 @@ export default function StudentLivePage() {
             return;
         };
 
-        const setupLiveListener = (sessionId: string) => {
-            const offerRef = ref(db, `webrtc-offers/${sessionId}`);
+        const offerRef = ref(db, `webrtc-offers/${sessionId}`);
 
-            const unsubscribe = onValue(offerRef, async (snapshot) => {
-                if (snapshot.exists() && (!activeSessionId || activeSessionId === sessionId)) {
-                    if (connectionStateRef.current !== 'new' && connectionStateRef.current !== 'closed') return;
-                    
-                    connectionStateRef.current = 'connecting';
-                    setActiveSessionId(sessionId);
-                    
-                    const sessionData = snapshot.val();
-                    setLiveSessionDetails(sessionData);
-                    setIsLive(true);
-                    setIsLoading(false);
-                    setShowInfo(true);
-                    
-                    const offerDescription = sessionData;
-                    const pc = new RTCPeerConnection(ICE_SERVERS);
-                    peerConnectionRef.current = pc;
+        const unsubscribe = onValue(offerRef, async (snapshot) => {
+            if (snapshot.exists()) {
+                if (connectionStateRef.current !== 'new' && connectionStateRef.current !== 'closed') return;
+                
+                connectionStateRef.current = 'connecting';
+                
+                const sessionData = snapshot.val();
+                setLiveSessionDetails(sessionData);
+                setIsLive(true);
+                setIsLoading(false);
+                setShowInfo(true);
+                
+                const offerDescription = sessionData;
+                const pc = new RTCPeerConnection(ICE_SERVERS);
+                peerConnectionRef.current = pc;
 
-                    pc.onicecandidate = (event) => {
-                        if (event.candidate && user) {
-                            set(ref(db, `webrtc-candidates/${sessionId}/student/${user.uid}/${Date.now()}`), event.candidate.toJSON());
-                        }
-                    };
-
-                    pc.ontrack = (event) => {
-                        if (videoRef.current && event.streams[0]) {
-                            videoRef.current.srcObject = event.streams[0];
-                        }
-                    };
-                    
-                    pc.onconnectionstatechange = () => {
-                        if(pc.connectionState === 'connected') {
-                            connectionStateRef.current = 'connected';
-                        }
+                pc.onicecandidate = (event) => {
+                    if (event.candidate && user) {
+                        set(ref(db, `webrtc-candidates/${sessionId}/student/${user.uid}/${Date.now()}`), event.candidate.toJSON());
                     }
-                    
-                    await pc.setRemoteDescription(new RTCSessionDescription(offerDescription));
-                    const answerDescription = await pc.createAnswer();
-                    await pc.setLocalDescription(answerDescription);
+                };
 
-                    await set(ref(db, `webrtc-answers/${sessionId}/${user.uid}`), {
-                        type: answerDescription.type,
-                        sdp: answerDescription.sdp,
-                    });
-
-                    onChildAdded(ref(db, `webrtc-candidates/${sessionId}/admin/${user.uid}`), (candidateSnapshot) => {
-                        const candidate = candidateSnapshot.val();
-                        if(candidate) {
-                           try {
-                               pc.addIceCandidate(new RTCIceCandidate(candidate));
-                           } catch (e) {
-                               console.error("Error adding ICE candidate:", e);
-                           }
-                        }
-                    });
-
-                } else if (sessionId === activeSessionId) {
-                    setIsLive(false);
-                    setIsLoading(false);
-                    setLiveSessionDetails(null);
-                    setActiveSessionId(null);
-                    if (peerConnectionRef.current) {
-                        peerConnectionRef.current.close();
-                        peerConnectionRef.current = null;
+                pc.ontrack = (event) => {
+                    if (videoRef.current && event.streams[0]) {
+                        videoRef.current.srcObject = event.streams[0];
                     }
-                    if (videoRef.current) {
-                        videoRef.current.srcObject = null;
+                };
+                
+                pc.onconnectionstatechange = () => {
+                    if(pc.connectionState === 'connected') {
+                        connectionStateRef.current = 'connected';
                     }
-                    connectionStateRef.current = 'closed';
                 }
-            });
+                
+                await pc.setRemoteDescription(new RTCSessionDescription(offerDescription));
+                const answerDescription = await pc.createAnswer();
+                await pc.setLocalDescription(answerDescription);
 
-            return unsubscribe;
-        };
-        
-        let orgUnsubscribe: Function | null = null;
-        if (orgSessionId) {
-            orgUnsubscribe = setupLiveListener(orgSessionId);
-        }
-        const publicUnsubscribe = setupLiveListener(publicSessionId);
+                await set(ref(db, `webrtc-answers/${sessionId}/${user.uid}`), {
+                    type: answerDescription.type,
+                    sdp: answerDescription.sdp,
+                });
+
+                onChildAdded(ref(db, `webrtc-candidates/${sessionId}/admin/${user.uid}`), (candidateSnapshot) => {
+                    const candidate = candidateSnapshot.val();
+                    if(candidate) {
+                       try {
+                           pc.addIceCandidate(new RTCIceCandidate(candidate));
+                       } catch (e) {
+                           console.error("Error adding ICE candidate:", e);
+                       }
+                    }
+                });
+
+            } else {
+                setIsLive(false);
+                setIsLoading(false);
+                setLiveSessionDetails(null);
+                if (peerConnectionRef.current) {
+                    peerConnectionRef.current.close();
+                    peerConnectionRef.current = null;
+                }
+                if (videoRef.current) {
+                    videoRef.current.srcObject = null;
+                }
+                connectionStateRef.current = 'closed';
+            }
+        });
 
         const fetchUpcomingEvents = async () => {
             const allEvents = await getAllCalendarEvents();
@@ -256,27 +239,26 @@ export default function StudentLivePage() {
         fetchUpcomingEvents();
 
         return () => {
-            if (orgUnsubscribe) orgUnsubscribe();
-            publicUnsubscribe();
+            unsubscribe();
             if (peerConnectionRef.current) peerConnectionRef.current.close();
-            if (user && activeSessionId) {
-                remove(ref(db, `webrtc-answers/${activeSessionId}/${user.uid}`));
-                remove(ref(db, `webrtc-candidates/${activeSessionId}/student/${user.uid}`));
+            if (user) {
+                remove(ref(db, `webrtc-answers/${sessionId}/${user.uid}`));
+                remove(ref(db, `webrtc-candidates/${sessionId}/student/${user.uid}`));
             }
             connectionStateRef.current = 'closed';
         };
 
-    }, [user, hasCameraPermission, orgSessionId, activeSessionId]);
+    }, [user, hasCameraPermission, sessionId]);
 
     const handleLeave = () => {
         router.push('/dashboard');
     }
 
     const toggleHandRaised = async () => {
-        if (!user || !activeSessionId) return;
+        if (!user || !sessionId) return;
         const newHandRaisedState = !handRaised;
         setHandRaised(newHandRaisedState);
-        const handRaisedRef = ref(db, `webrtc-answers/${activeSessionId}/${user.uid}/handRaised`);
+        const handRaisedRef = ref(db, `webrtc-answers/${sessionId}/${user.uid}/handRaised`);
         await set(handRaisedRef, newHandRaisedState);
     }
     
@@ -316,9 +298,9 @@ export default function StudentLivePage() {
                                       </motion.div>
                                   )}
                               </AnimatePresence>
-                              {activeSessionId && (
+                              {sessionId && (
                                   <div className="absolute top-4 right-4 z-20">
-                                      <ViewerList sessionId={activeSessionId} />
+                                      <ViewerList sessionId={sessionId} />
                                   </div>
                               )}
                           </>
@@ -331,9 +313,9 @@ export default function StudentLivePage() {
                                     </>
                                ) : hasCameraPermission === false ? (
                                     <Alert variant="destructive" className="max-w-md">
-                                        <AlertTitle>Camera and Microphone Required</AlertTitle>
+                                        <AlertTitle>Microphone Required</AlertTitle>
                                         <AlertDescription>
-                                            Please grant camera and microphone permissions in your browser to join the live session.
+                                            Please grant microphone permissions in your browser to use interactive features.
                                             After allowing, please refresh the page.
                                         </AlertDescription>
                                     </Alert>
@@ -349,9 +331,9 @@ export default function StudentLivePage() {
                   </div>
 
                  <div className="flex-1 flex flex-col min-h-0">
-                     {isLive && activeSessionId ? (
-                        <>
-                            <div className="flex-shrink-0 p-4 border-b">
+                     {isLive && sessionId ? (
+                        <div className="flex-1 flex flex-col min-h-0">
+                           <div className="flex-shrink-0 p-4 border-b">
                                 <div className="flex items-center justify-center gap-4 z-20">
                                     <Button size="icon" variant={handRaised ? 'default' : 'secondary'} onClick={toggleHandRaised} className="rounded-full h-12 w-12 shadow-lg">
                                         <Hand className="h-6 w-6" />
@@ -364,42 +346,41 @@ export default function StudentLivePage() {
                                     </Button>
                                 </div>
                             </div>
-                            <LiveChat sessionId={activeSessionId} />
-                        </>
-                    ) : null}
-                    
-                    <div className="p-4 md:p-6">
-                        {upcomingEvents.length > 0 ? (
-                            <div>
-                                <h2 className="text-2xl font-bold mb-4 font-headline flex items-center gap-2">
-                                    <Calendar className="h-6 w-6"/>
-                                    Upcoming Live Sessions
-                                </h2>
-                                <ScrollArea className="w-full whitespace-nowrap">
-                                    <div className="flex gap-4 pb-4">
-                                        {upcomingEvents.map(event => (
-                                            <Card key={event.id} className="min-w-[300px]">
-                                                <CardHeader>
-                                                    <CardTitle className="truncate">{event.title}</CardTitle>
-                                                    <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
-                                                </CardHeader>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                    <ScrollBar orientation="horizontal" />
-                                </ScrollArea>
-                            </div>
-                        ) : !isLoading && (
-                             <div className="text-center py-10 text-muted-foreground">No upcoming sessions scheduled.</div>
-                        )}
-                    </div>
+                            <LiveChat sessionId={sessionId} />
+                        </div>
+                    ) : (
+                         <div className="p-4 md:p-6">
+                            {upcomingEvents.length > 0 ? (
+                                <div>
+                                    <h2 className="text-2xl font-bold mb-4 font-headline flex items-center gap-2">
+                                        <Calendar className="h-6 w-6"/>
+                                        Upcoming Live Sessions
+                                    </h2>
+                                    <ScrollArea className="w-full whitespace-nowrap">
+                                        <div className="flex gap-4 pb-4">
+                                            {upcomingEvents.map(event => (
+                                                <Card key={event.id} className="min-w-[300px]">
+                                                    <CardHeader>
+                                                        <CardTitle className="truncate">{event.title}</CardTitle>
+                                                        <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
+                                                    </CardHeader>
+                                                </Card>
+                                            ))}
+                                        </div>
+                                        <ScrollBar orientation="horizontal" />
+                                    </ScrollArea>
+                                </div>
+                            ) : !isLoading && (
+                                <div className="text-center py-10 text-muted-foreground">No upcoming sessions scheduled.</div>
+                            )}
+                        </div>
+                    )}
                  </div>
                  
-                 {activeSessionId && <NotebookSheet courseId={activeSessionId} courseTitle={liveSessionDetails?.title || 'Live Session Notes'} />}
+                 {sessionId && <NotebookSheet courseId={sessionId} courseTitle={liveSessionDetails?.title || 'Live Session Notes'} />}
               </main>
             </div>
           </SidebarInset>
         </SidebarProvider>
     );
 }
-

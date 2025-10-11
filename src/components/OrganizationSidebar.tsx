@@ -110,8 +110,8 @@ export function OrganizationSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                           <SidebarMenuButton asChild isActive={isActive('/live')} tooltip="Live Classroom">
-                                <Link href="/live">
+                           <SidebarMenuButton asChild isActive={isActive('/organization/live')} tooltip="Live Classroom">
+                                <Link href="/organization/live">
                                     <Clapperboard />
                                     <span>Live Classroom</span>
                                 </Link>
