@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { EventForm } from '@/components/EventForm';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { NotebookSheet } from '@/components/NotebookSheet';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -201,6 +202,8 @@ export default function AdminLivePage() {
 
     const [upcomingEvents, setUpcomingEvents] = useState<CalendarEvent[]>([]);
     const [pastEvents, setPastEvents] = useState<CalendarEvent[]>([]);
+    const [activeEvent, setActiveEvent] = useState<CalendarEvent | null>(null);
+
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const localStreamRef = useRef<MediaStream | null>(null);
@@ -294,6 +297,7 @@ export default function AdminLivePage() {
         });
         singlePc.close(); // Close this temp PC. We'll create new ones for each student.
 
+        setActiveEvent(event);
         setIsLive(true);
         setIsLoading(false);
         toast({ title: 'You are now live!', description: 'Waiting for students to join.' });
@@ -355,6 +359,7 @@ export default function AdminLivePage() {
         ]);
 
         setIsLive(false);
+        setActiveEvent(null);
         toast({ title: 'Stream Ended', description: 'You have stopped the live session.' });
         setIsLoading(false);
     };
@@ -378,7 +383,7 @@ export default function AdminLivePage() {
                         Back to Admin Dashboard
                     </Link>
                     <div className="grid lg:grid-cols-3 gap-8">
-                         <div className="lg:col-span-3 flex flex-col gap-4">
+                         <div className="lg:col-span-2 flex flex-col gap-4">
                              <div className="aspect-video bg-black rounded-lg flex items-center justify-center relative shadow-lg border p-1">
                                 <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />
                                 
@@ -410,7 +415,7 @@ export default function AdminLivePage() {
                              {isLive && <LiveChat sessionId={sessionId} />}
 
                         </div>
-                        <div className="lg:col-span-3 space-y-6">
+                        <div className="lg:col-span-1 space-y-6">
                              {isFetchingEvents ? (
                                  <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
                              ) : isLive ? (
@@ -487,6 +492,7 @@ export default function AdminLivePage() {
                             </Card>
                         </div>
                     </div>
+                     {isLive && activeEvent && <NotebookSheet courseId={sessionId} courseTitle={activeEvent.title} />}
                 </div>
             </main>
         </div>

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { LiveChat } from '@/components/LiveChat';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -21,7 +21,6 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/ca
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { useCallback } from 'react';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -134,8 +133,7 @@ export default function StudentLivePage() {
 
     const requestMediaPermissions = useCallback(async () => {
         try {
-            // Request a dummy stream just to get permissions
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
             stream.getTracks().forEach(track => track.stop());
             setHasCameraPermission(true);
         } catch (error) {
@@ -346,29 +344,27 @@ export default function StudentLivePage() {
                              {liveSessionDetails ? (
                                 <LiveChat sessionId={sessionId} />
                              ) : (
-                                <div className="p-4 md:p-6">
+                                <div className="p-4 md:p-6 h-full flex flex-col">
+                                    <h2 className="text-2xl font-bold mb-4 font-headline flex items-center gap-2">
+                                        <Calendar className="h-6 w-6"/>
+                                        Upcoming Live Sessions
+                                    </h2>
                                     {upcomingEvents.length > 0 ? (
-                                        <div>
-                                            <h2 className="text-2xl font-bold mb-4 font-headline flex items-center gap-2">
-                                                <Calendar className="h-6 w-6"/>
-                                                Upcoming Live Sessions
-                                            </h2>
-                                            <ScrollArea className="w-full whitespace-nowrap">
-                                                <div className="flex gap-4 pb-4">
-                                                    {upcomingEvents.map(event => (
-                                                        <Card key={event.id} className="min-w-[300px]">
-                                                            <CardHeader>
-                                                                <CardTitle className="truncate">{event.title}</CardTitle>
-                                                                <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
-                                                            </CardHeader>
-                                                        </Card>
-                                                    ))}
-                                                </div>
-                                                <ScrollBar orientation="horizontal" />
-                                            </ScrollArea>
-                                        </div>
+                                        <ScrollArea className="w-full whitespace-nowrap">
+                                            <div className="flex gap-4 pb-4">
+                                                {upcomingEvents.map(event => (
+                                                    <Card key={event.id} className="min-w-[300px]">
+                                                        <CardHeader>
+                                                            <CardTitle className="truncate">{event.title}</CardTitle>
+                                                            <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
+                                                        </CardHeader>
+                                                    </Card>
+                                                ))}
+                                            </div>
+                                            <ScrollBar orientation="horizontal" />
+                                        </ScrollArea>
                                     ) : !isLoading && (
-                                        <div className="text-center py-10 text-muted-foreground h-full flex flex-col justify-center">
+                                        <div className="text-center py-10 text-muted-foreground flex-grow flex flex-col justify-center">
                                             <Calendar className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4"/>
                                             <p className="font-semibold">No upcoming sessions scheduled.</p>
                                         </div>

@@ -102,6 +102,8 @@ function AdminHostView({ sessionId }: { sessionId: string }) {
     const [isLoading, setIsLoading] = useState(false);
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
     const [isMuted, setIsMuted] = useState(false);
+    const [isLive, setIsLive] = useState(false);
+
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const localStreamRef = useRef<MediaStream | null>(null);
@@ -157,7 +159,8 @@ function AdminHostView({ sessionId }: { sessionId: string }) {
 
         await set(offerRef, { sdp: offer.sdp, type: offer.type, title: `${organization?.name} Live Session` });
         singlePc.close();
-
+        
+        setIsLive(true);
         setIsLoading(false);
         toast({ title: 'You are now live!', description: 'Waiting for members to join.' });
 
@@ -203,7 +206,8 @@ function AdminHostView({ sessionId }: { sessionId: string }) {
             remove(candidatesRef),
             remove(ref(db, `liveChat/${sessionId}`))
         ]);
-
+        
+        setIsLive(false);
         toast({ title: 'Stream Ended', description: 'You have stopped the live session.' });
         setIsLoading(false);
     };
@@ -223,12 +227,12 @@ function AdminHostView({ sessionId }: { sessionId: string }) {
             <div className="aspect-video bg-black rounded-lg flex items-center justify-center relative shadow-lg border p-1">
                 <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />
                 
-                {sessionId && (
+                {isLive && (
                     <div className="absolute top-4 right-4 z-20 pointer-events-auto">
                         <ViewerList sessionId={sessionId} />
                     </div>
                 )}
-                {!videoRef.current?.srcObject && hasCameraPermission && (
+                {!isLive && hasCameraPermission && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-muted-foreground p-4">
                         <Button onClick={handleGoLive} disabled={isLoading} size="lg">
                             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Video className="mr-2 h-4 w-4"/>}
@@ -248,15 +252,17 @@ function AdminHostView({ sessionId }: { sessionId: string }) {
                 )}
             </div>
 
-            <div className="bg-background/80 backdrop-blur-sm text-foreground p-3 rounded-lg flex items-center justify-center gap-4 text-sm shadow-md">
-                <Button size="icon" variant={isMuted ? 'destructive' : 'secondary'} onClick={toggleMute} className="rounded-full h-12 w-12 shadow-lg">
-                    {isMuted ? <MicOff className="h-6 w-6"/> : <Mic className="h-6 w-6" />}
-                </Button>
-                <Button size="icon" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="rounded-full h-14 w-14 shadow-lg">
-                    {isLoading ? <Loader2 className="h-6 w-6 animate-spin"/> : <PhoneOff className="h-6 w-6" />}
-                </Button>
-                <div className="w-12 h-12"></div>
-            </div>
+            {isLive && (
+                 <div className="bg-background/80 backdrop-blur-sm text-foreground p-3 rounded-lg flex items-center justify-center gap-4 text-sm shadow-md">
+                    <Button size="icon" variant={isMuted ? 'destructive' : 'secondary'} onClick={toggleMute} className="rounded-full h-12 w-12 shadow-lg">
+                        {isMuted ? <MicOff className="h-6 w-6"/> : <Mic className="h-6 w-6" />}
+                    </Button>
+                    <Button size="icon" variant="destructive" onClick={handleStopLive} disabled={isLoading} className="rounded-full h-14 w-14 shadow-lg">
+                        {isLoading ? <Loader2 className="h-6 w-6 animate-spin"/> : <PhoneOff className="h-6 w-6" />}
+                    </Button>
+                    <div className="w-12 h-12"></div>
+                </div>
+            )}
         </>
     );
 }
@@ -478,7 +484,7 @@ export default function OrganizationLivePage() {
                     <MemberViewer sessionId={sessionId} />
                 )}
             </div>
-            <div className="lg:col-span-1 min-h-[400px] lg:min-h-0">
+            <div className="lg:col-span-1 min-h-[400px] lg:min-h-0 bg-background rounded-lg border shadow-lg flex flex-col">
                 <LiveChat sessionId={sessionId} />
             </div>
              <div className="fixed bottom-6 right-20 z-50">
