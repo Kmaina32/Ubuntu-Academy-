@@ -346,3 +346,30 @@ export interface HackathonSubmission {
     description: string;
     submittedAt: string;
 }
+
+export const CardPaymentInputSchema = z.object({
+  itemId: z.string(),
+  itemName: z.string(),
+  amount: z.number(),
+  cardDetails: z.object({
+    number: z.string(),
+    expiry: z.string(),
+    cvc: z.string(),
+  }),
+});
+export type CardPaymentInput = z.infer<typeof CardPaymentInputSchema>;
+
+export const PayPalPaymentInputSchema = z.object({
+  itemId: z.string(),
+  itemName: z.string(),
+  amount: z.number(),
+});
+export type PayPalPaymentInput = z.infer<typeof PayPalPaymentInputSchema>;
+
+export interface LeaderboardEntry {
+    userId: string;
+    userName: string;
+    userAvatar: string;
+    score: number;
+    hackathonCount: number;
+}
