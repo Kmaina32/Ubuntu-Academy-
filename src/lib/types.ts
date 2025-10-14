@@ -116,31 +116,6 @@ export interface Bootcamp {
   startDate: string; // ISO String
 }
 
-export interface Hackathon {
-    id: string;
-    title: string;
-    description: string;
-    entryFee: number;
-    prizeMoney: number;
-    startDate: string; // ISO string
-    endDate: string; // ISO string
-    imageUrl: string;
-    externalUrl?: string;
-}
-
-export interface HackathonSubmission {
-    id: string;
-    hackathonId: string;
-    hackathonTitle: string;
-    userId: string;
-    userName: string;
-    projectName: string;
-    githubUrl: string;
-    liveUrl: string;
-    description: string;
-    submittedAt: string; // ISO String
-}
-
 
 export const user = {
     name: 'Jomo Kenyatta',
@@ -344,25 +319,4 @@ export interface PricingPlan {
     priceDetail: string; // e.g., 'per user / month'
     features: string[];
     isPrimary: boolean; // For highlighting a recommended plan
-}
-
-export interface LeaderboardEntry {
-    userId: string;
-    userName: string;
-    userAvatar: string;
-    score: number;
-    hackathonCount: number;
-}
-
-// Payment Input Types
-export interface CardPaymentInput {
-    itemId: string;
-    itemName: string;
-    amount: number;
-}
-
-export interface PayPalPaymentInput {
-    itemId: string;
-    itemName: string;
-    amount: number;
 }

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Link from 'next/link';
@@ -96,12 +95,6 @@ export function AdminSidebar() {
                     </SidebarMenuButton>
                       <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/bootcamps')} tooltip="Bootcamps">
                         <Link href="/admin/bootcamps">Bootcamps</Link>
-                    </SidebarMenuButton>
-                    <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/hackathons')} tooltip="Hackathons">
-                        <Link href="/admin/hackathons">Hackathons</Link>
-                    </SidebarMenuButton>
-                    <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/documents')} tooltip="Documents">
-                        <Link href="/admin/documents">Documents</Link>
                     </SidebarMenuButton>
                 </CollapsibleSidebarMenu>
 
