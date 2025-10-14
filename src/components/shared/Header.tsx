@@ -3,7 +3,7 @@
 'use client';
 
 import Link from 'next/link';
-import { User, LogOut, Bell, Calendar, Sparkles, PartyPopper, GitBranch, Moon, Sun, BellRing, Code, Trash2, Clapperboard } from 'lucide-react';
+import { User, LogOut, Bell, Calendar, Sparkles, PartyPopper, Moon, Sun, BellRing, Code, Trash2, Clapperboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger, useSidebar } from '../ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
@@ -28,6 +28,7 @@ import { db } from '@/lib/firebase';
 import { onValue, ref } from 'firebase/database';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import Image from 'next/image';
 
 type Notification = {
     id: string;
@@ -383,8 +384,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
             <SidebarTrigger />
              <div className='block md:hidden'>
                  <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
-                    <GitBranch className="h-6 w-6 text-primary" />
-                    <span>Manda Network</span>
+                    <Image src="/logo.svg" alt="Manda Network Logo" width={150} height={40} className="h-6 w-auto" />
                 </Link>
             </div>
         </div>

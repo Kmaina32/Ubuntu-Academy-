@@ -1,19 +1,20 @@
 
+
 'use client';
 
 import Link from 'next/link';
-import { GitBranch, Twitter, Facebook, Linkedin } from 'lucide-react';
+import { Twitter, Facebook, Linkedin } from 'lucide-react';
 import { Button } from '../ui/button';
+import Image from 'next/image';
 
 export function Footer() {
   return (
     <footer className="border-t">
       <div className="container mx-auto py-6 px-4 md:px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <GitBranch className="h-6 w-6 text-primary" />
-            <span className="font-bold font-headline">Manda Network</span>
-          </div>
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo.svg" alt="Manda Network Logo" width={150} height={40} className="h-7 w-auto" />
+          </Link>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
              <Link href="/terms" className="text-sm hover:text-primary">Terms of Service</Link>
              <Link href="/privacy" className="text-sm hover:text-primary">Privacy Policy</Link>

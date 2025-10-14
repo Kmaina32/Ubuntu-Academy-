@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -236,8 +237,7 @@ export default function NotebookPage() {
         <div ref={pdfRef} className="p-10 bg-white w-[595px] text-black">
             <div className="border-b-2 border-black pb-4 mb-4 flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                    <Image src="/logo.svg" alt="Manda Network Logo" width={32} height={32} className="h-8 w-8" />
-                    <span className="font-bold text-xl font-headline">Manda Network</span>
+                    <Image src="/logo.svg" alt="Manda Network Logo" width={100} height={26} />
                 </div>
                 <div className="text-right text-xs">
                     <p className="font-semibold">{user?.displayName}</p>

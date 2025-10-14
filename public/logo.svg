@@ -1,24 +1,13 @@
-<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:hsl(var(--primary));stop-opacity:1" />
-      <stop offset="100%" style="stop-color:hsl(var(--accent));stop-opacity:1" />
-    </linearGradient>
-  </defs>
-  
-  <!-- Lines -->
-  <path d="M 20 80 L 35 50" stroke="hsl(var(--border))" stroke-width="4" stroke-linecap="round"/>
-  <path d="M 35 50 L 50 20" stroke="hsl(var(--border))" stroke-width="4" stroke-linecap="round"/>
-  <path d="M 50 20 L 65 50" stroke="hsl(var(--border))" stroke-width="4" stroke-linecap="round"/>
-  <path d="M 65 50 L 80 80" stroke="hsl(var(--border))" stroke-width="4" stroke-linecap="round"/>
-  <path d="M 35 50 L 65 50" stroke="hsl(var(--border))" stroke-width="4" stroke-linecap="round"/>
-
-  <!-- Nodes -->
-  <circle cx="20" cy="80" r="8" fill="url(#grad1)" />
-  <circle cx="80" cy="80" r="8" fill="url(#grad1)" />
-  
-  <circle cx="35" cy="50" r="8" fill="white" stroke="url(#grad1)" stroke-width="4" />
-  <circle cx="65" cy="50" r="8" fill="white" stroke="url(#grad1)" stroke-width="4" />
-  
-  <circle cx="50" cy="20" r="10" fill="url(#grad1)" />
+<svg width="150" height="40" viewBox="0 0 150 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clip-path="url(#clip0_30_2)">
+        <path d="M22.014 30.052V19.882C22.014 14.18 17.202 9.524 11.334 9.524C5.466 9.524 0.653999 14.18 0.653999 19.882V21.16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M11.333 30.052C14.072 30.052 16.291 27.892 16.291 25.226C16.291 22.56 14.072 20.4 11.333 20.4C8.595 20.4 6.375 22.56 6.375 25.226C6.375 27.892 8.595 30.052 11.333 30.052Z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M21.921 10.024C24.66 10.024 26.88 7.864 26.88 5.202C26.88 2.536 24.66 0.375999 21.921 0.375999C19.182 0.375999 16.962 2.536 16.962 5.202C16.962 7.864 19.182 10.024 21.921 10.024Z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="35" y="25" font-family="'PT Sans', sans-serif" font-size="20" font-weight="bold" fill="currentColor">Manda Network</text>
+    </g>
+    <defs>
+        <clipPath id="clip0_30_2">
+            <rect width="150" height="40" fill="white"/>
+        </clipPath>
+    </defs>
 </svg>
