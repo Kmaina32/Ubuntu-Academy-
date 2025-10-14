@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -35,8 +36,9 @@ export function PortalSidebar() {
   return (
     <Sidebar>
         <SidebarHeader className="mb-4">
-            <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
-                Manda Network
+             <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
+                <GitBranch className="h-6 w-6 text-yellow-500" />
+                <span>Manda Network</span>
             </Link>
         </SidebarHeader>
         <SidebarContent>

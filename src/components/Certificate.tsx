@@ -138,7 +138,7 @@ export function Certificate({ course, userName, certificateId, academicDirector 
           <div className="flex justify-center items-center mb-4">
             <div className="text-center">
                 <div className="flex items-center justify-center gap-2 font-bold text-2xl text-[#002147] font-headline">
-                    <GitBranch className="h-8 w-8" />
+                    <GitBranch className="h-8 w-8 text-yellow-500" />
                     <span>Manda Network</span>
                 </div>
                 <p className="text-sm text-gray-600">Online Professional Development</p>

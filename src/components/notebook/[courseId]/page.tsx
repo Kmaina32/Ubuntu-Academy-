@@ -236,7 +236,7 @@ export default function NotebookPage() {
         <div ref={pdfRef} className="p-10 bg-white w-[595px] text-black">
             <div className="border-b-2 border-black pb-4 mb-4 flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                    <GitBranch className="h-8 w-8 text-primary" />
+                    <GitBranch className="h-8 w-8 text-yellow-500" />
                     <span className="font-bold text-xl font-headline">Manda Network</span>
                 </div>
                 <div className="text-right text-xs">

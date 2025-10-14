@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Twitter, Facebook, Linkedin } from 'lucide-react';
+import { Twitter, Facebook, Linkedin, GitBranch } from 'lucide-react';
 import { Button } from '../ui/button';
 
 export function Footer() {
@@ -10,9 +10,10 @@ export function Footer() {
     <footer className="border-t">
       <div className="container mx-auto py-6 px-4 md:px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-sm text-muted-foreground">
-             <Link href="/" className="font-semibold text-foreground">Manda Network</Link>
-          </div>
+          <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
+            <GitBranch className="h-6 w-6 text-yellow-500" />
+            <span>Manda Network</span>
+          </Link>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
              <Link href="/terms" className="text-sm hover:text-primary">Terms of Service</Link>
              <Link href="/privacy" className="text-sm hover:text-primary">Privacy Policy</Link>
