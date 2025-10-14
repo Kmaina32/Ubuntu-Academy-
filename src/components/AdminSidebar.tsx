@@ -59,8 +59,8 @@ export function AdminSidebar() {
   return (
     <Sidebar>
         <SidebarHeader className="mb-4">
-             <Link href="/" className="flex items-center gap-2">
-                <Image src="/logo.svg" alt="Manda Network Logo" width={150} height={40} className="w-32 h-auto" />
+             <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
+                Manda Network
             </Link>
         </SidebarHeader>
         <SidebarContent>

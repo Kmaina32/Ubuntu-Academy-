@@ -383,8 +383,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
             <SidebarTrigger />
              <div className='block md:hidden'>
                  <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
-                    <Image src="/logo.svg" alt="Manda Network Logo" width={24} height={24} className="h-6 w-6" />
-                    <span>Manda Network</span>
+                    Manda Network
                 </Link>
             </div>
         </div>
