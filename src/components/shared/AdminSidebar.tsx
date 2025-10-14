@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library, Layers, BarChart3, Tag, ShieldCheck, Building, FileText, Rocket, ChevronRight, BookCopy, Contact, Users2, Speaker, LineChart, Book, Trophy, Briefcase, Award, GitBranch } from 'lucide-react';
@@ -59,11 +60,12 @@ export function AdminSidebar() {
 
   return (
     <Sidebar>
-        <SidebarHeader className="mb-4">
-             <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
+        <SidebarHeader className="flex items-center justify-between">
+             <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">
                 <GitBranch className="h-6 w-6 text-yellow-500" />
                 <span>Manda Network</span>
             </Link>
+            <SidebarTrigger className="hidden md:flex" />
         </SidebarHeader>
         <SidebarContent>
              <div className='px-2 py-1'>

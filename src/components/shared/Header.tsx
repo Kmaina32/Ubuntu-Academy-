@@ -350,10 +350,11 @@ function ThemeToggle() {
 
 export function Header({ children }: { children?: React.ReactNode }) {
   const { user, logout, loading } = useAuth();
-  const { isMobile, openMobile } = useSidebar();
+  const { isMobile, state: sidebarState } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
 
+  const showLogo = isMobile || sidebarState === 'collapsed';
 
   useEffect(() => {
       if (!loading && user && !user.emailVerified && pathname !== '/unverified') {
@@ -382,10 +383,12 @@ export function Header({ children }: { children?: React.ReactNode }) {
     <header className="flex h-16 items-center justify-between border-b bg-background px-4 md:px-6 sticky top-0 z-30">
         <div className="flex items-center gap-2">
             <SidebarTrigger className="md:hidden" />
-            <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
-                <GitBranch className="h-6 w-6 text-yellow-500" />
-                <span className="hidden sm:inline-block">Manda Network</span>
-            </Link>
+            {showLogo && (
+                <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
+                    <GitBranch className="h-6 w-6 text-yellow-500" />
+                    <span className="hidden sm:inline-block">Manda Network</span>
+                </Link>
+            )}
         </div>
       
         <div className="flex items-center justify-end gap-2">
