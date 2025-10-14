@@ -67,8 +67,11 @@ export interface CalendarEvent {
 
 export interface Project {
     id: string;
+    courseId: string;
+    userId: string;
     title: string;
     description: string;
+    submittedAt: string;
 }
 
 export interface Course {

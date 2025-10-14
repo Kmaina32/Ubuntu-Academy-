@@ -156,7 +156,7 @@ export default function EditAssignmentPage() {
       setIsGenerating(true);
       toast({ title: 'Generating Project...', description: 'The AI is creating a new final project.'});
       try {
-          const result = await generateProject({ courseTitle: course.title, courseDescription: course.longDescription });
+          const result = await generateProject({ courseId: course.id, courseTitle: course.title, courseDescription: course.longDescription });
           form.setValue('project', result.project);
           form.setValue('exam', []);
           setActiveTab('project');

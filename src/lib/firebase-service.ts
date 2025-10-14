@@ -916,7 +916,7 @@ export async function getAllHackathons(): Promise<Hackathon[]> {
 
 export async function getHackathonById(id: string): Promise<Hackathon | null> {
     const hackathonRef = ref(db, `hackathons/${id}`);
-    const snapshot = await get(snapshotRef);
+    const snapshot = await get(hackathonRef);
     if (snapshot.exists()) {
         return { id, ...snapshot.val() };
     }
@@ -941,7 +941,7 @@ export async function registerForHackathon(hackathonId: string, userId: string):
 }
 
 export async function createHackathonSubmission(submissionData: Omit<HackathonSubmission, 'id'>): Promise<string> {
-    const submissionsRef = ref(db, `hackathonSubmissions`);
+    const submissionsRef = ref(db, 'hackathonSubmissions');
     const newSubmissionRef = push(submissionsRef);
     await set(newSubmissionRef, submissionData);
     return newSubmissionRef.key!;

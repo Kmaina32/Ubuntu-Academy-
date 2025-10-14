@@ -16,6 +16,7 @@ import { Project } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
 
 export const GenerateProjectInputSchema = z.object({
+  courseId: z.string().describe('The ID of the course for which to generate a project.'),
   courseTitle: z.string().describe('The title of the course.'),
   courseDescription: z.string().describe('A description of the course content to base the project on.'),
 });
@@ -23,8 +24,11 @@ export type GenerateProjectInput = z.infer<typeof GenerateProjectInputSchema>;
 
 const ProjectSchema = z.object({
     id: z.string().describe("A unique identifier for the project, e.g., 'proj-1'."),
+    courseId: z.string(),
+    userId: z.string(),
     title: z.string().describe('A clear and concise title for the final project.'),
     description: z.string().describe('A detailed description of the project, including requirements, goals, and steps to complete.'),
+    submittedAt: z.string(),
 });
 
 export const GenerateProjectOutputSchema = z.object({
@@ -71,10 +75,13 @@ const generateProjectFlow = ai.defineFlow(
       throw new Error('Could not generate a project.');
     }
     
-    // Add the ID to the AI's output to match the final required schema
+    // Add the required fields to the AI's output to match the final required schema
     const projectWithId: Project = {
         ...output,
         id: `proj-${uuidv4()}`,
+        courseId: input.courseId,
+        userId: '', // This will be set upon submission
+        submittedAt: '', // This will be set upon submission
     };
 
     return { project: projectWithId };
