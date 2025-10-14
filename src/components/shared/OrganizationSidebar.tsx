@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, Users, BookOpen, CreditCard, Settings, ExternalLink, Tag, LogOut, Home, Clapperboard } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, CreditCard, Settings, ExternalLink, Tag, LogOut, Home, Clapperboard, GitBranch } from 'lucide-react';
 import pkg from '../../../package.json';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
@@ -40,8 +40,9 @@ export function OrganizationSidebar() {
   return (
     <Sidebar>
         <SidebarHeader className="mb-4">
-            <Link href="/" className="flex items-center gap-2">
-                <Image src="/logo.svg" alt="Manda Network Logo" width={150} height={40} className="w-32 h-auto" />
+            <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
+                <GitBranch className="h-6 w-6" />
+                <span>Manda Network</span>
             </Link>
         </SidebarHeader>
         <SidebarContent>

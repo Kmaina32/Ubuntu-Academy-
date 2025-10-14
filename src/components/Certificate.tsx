@@ -1,10 +1,11 @@
 
+
 'use client';
 
 import { useRef, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Course } from "@/lib/mock-data";
-import { Download, Printer, Loader2 } from "lucide-react";
+import { Download, Printer, Loader2, GitBranch } from "lucide-react";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import QRCode from "react-qr-code";
@@ -136,7 +137,10 @@ export function Certificate({ course, userName, certificateId, academicDirector 
           
           <div className="flex justify-center items-center mb-4">
             <div className="text-center">
-                <h1 className="font-bold text-2xl text-[#002147] font-headline">Manda Network</h1>
+                <div className="flex items-center justify-center gap-2 font-bold text-2xl text-[#002147] font-headline">
+                    <GitBranch className="h-8 w-8" />
+                    <span>Manda Network</span>
+                </div>
                 <p className="text-sm text-gray-600">Online Professional Development</p>
             </div>
           </div>

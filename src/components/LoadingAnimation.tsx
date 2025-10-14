@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { GitBranch } from 'lucide-react';
@@ -15,7 +16,7 @@ export function LoadingAnimation({ showText = true, className }: LoadingAnimatio
   return (
     <div className={cn("flex flex-col items-center justify-center gap-4 text-primary", className)}>
       <div className="flex items-center justify-center gap-3">
-        <GitBranch className="h-8 w-8 md:h-10 md:w-10" />
+        <GitBranch className="h-8 w-8 md:h-10 md:w-10 animate-pulse" />
         <h1 className="text-3xl md:text-4xl font-headline font-bold tracking-wider">
           {brandName.split('').map((char, index) => (
             <span

@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import Link from 'next/link';
-import { User, LogOut, Bell, Calendar, Sparkles, PartyPopper, Moon, Sun, BellRing, Code, Trash2, Clapperboard } from 'lucide-react';
+import { User, LogOut, Bell, Calendar, Sparkles, PartyPopper, Moon, Sun, BellRing, Code, Trash2, Clapperboard, GitBranch } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger, useSidebar } from './ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
@@ -383,7 +384,8 @@ export function Header({ children }: { children?: React.ReactNode }) {
             <SidebarTrigger />
              <div className='block md:hidden'>
                  <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
-                    Manda Network
+                    <GitBranch className="h-6 w-6" />
+                    <span>Manda Network</span>
                 </Link>
             </div>
         </div>
