@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -113,8 +112,34 @@ export default function AdminBundlesPage() {
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                   <p className="ml-2">Loading bundles...</p>
                 </div>
+              ) : bundles.length === 0 ? (
+                <div className="text-center py-10 text-muted-foreground">No bundles found.</div>
               ) : (
-                <Table>
+                <>
+                <div className="space-y-4 md:hidden">
+                    {bundles.map((bundle) => (
+                        <Card key={bundle.id} className="p-4">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <div className="font-medium">{bundle.title}</div>
+                                    <div className="text-sm text-muted-foreground">{bundle.courseIds?.length || 0} Courses</div>
+                                    <div className="text-sm font-semibold text-primary mt-1">Ksh {bundle.price.toLocaleString()}</div>
+                                </div>
+                                <div className="flex items-center">
+                                    <Button asChild variant="ghost" size="icon"><Link href={`/admin/bundles/edit/${bundle.id}`}><Pencil className="h-4 w-4" /></Link></Button>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader><AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle><AlertDialogDescription>{isSuperAdmin ? `This will permanently delete "${bundle.title}".` : `Request deletion for "${bundle.title}"?`}</AlertDialogDescription></AlertDialogHeader>
+                                            <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(bundle)}>{isSuperAdmin ? 'Delete' : 'Send Request'}</AlertDialogAction></AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                            </div>
+                        </Card>
+                    ))}
+                </div>
+                <Table className="hidden md:table">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Title</TableHead>
@@ -124,8 +149,7 @@ export default function AdminBundlesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {bundles.length > 0 ? (
-                      bundles.map((bundle) => (
+                    {bundles.map((bundle) => (
                         <TableRow key={bundle.id}>
                           <TableCell className="font-medium">{bundle.title}</TableCell>
                           <TableCell>{bundle.courseIds?.length || 0}</TableCell>
@@ -162,16 +186,10 @@ export default function AdminBundlesPage() {
                             </AlertDialog>
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center py-10 text-muted-foreground">
-                          No bundles found.
-                        </TableCell>
-                      </TableRow>
-                    )}
+                      ))}
                   </TableBody>
                 </Table>
+                </>
               )}
             </CardContent>
           </Card>

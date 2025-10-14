@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -8,9 +7,9 @@ import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { Bootcamp } from "@/lib/mock-data";
+import type { Bootcamp, RegisteredUser } from "@/lib/mock-data";
 import { getAllBootcamps, deleteBootcamp, createPermissionRequest } from '@/lib/firebase-service';
-import { FilePlus2, Pencil, Trash2, Loader2, Library, Rocket } from "lucide-react";
+import { FilePlus2, Pencil, Trash2, Loader2, Library, Rocket, Users } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -25,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { format } from 'date-fns';
 
 export default function AdminBootcampsPage() {
   const { user, isSuperAdmin } = useAuth();
@@ -101,8 +101,34 @@ export default function AdminBootcampsPage() {
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                   <p className="ml-2">Loading bootcamps...</p>
                 </div>
+              ) : bootcamps.length === 0 ? (
+                <div className="text-center py-10 text-muted-foreground">No bootcamps found.</div>
               ) : (
-                <Table>
+                <>
+                <div className="space-y-4 md:hidden">
+                    {bootcamps.map((bootcamp) => (
+                        <Card key={bootcamp.id} className="p-4">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <div className="font-medium">{bootcamp.title}</div>
+                                    <div className="text-sm text-muted-foreground">{bootcamp.courseIds?.length || 0} Courses &bull; {bootcamp.duration}</div>
+                                    <div className="text-sm font-semibold text-primary mt-1">Ksh {bootcamp.price.toLocaleString()}</div>
+                                </div>
+                                 <div className="flex items-center">
+                                    <Button asChild variant="ghost" size="icon"><Link href={`/admin/bootcamps/edit/${bootcamp.id}`}><Pencil className="h-4 w-4" /></Link></Button>
+                                     <AlertDialog>
+                                        <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={!isSuperAdmin}><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader><AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete the bootcamp "{bootcamp.title}".</AlertDialogDescription></AlertDialogHeader>
+                                            <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(bootcamp)}>Yes, delete it</AlertDialogAction></AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                            </div>
+                        </Card>
+                    ))}
+                </div>
+                <Table className="hidden md:table">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Title</TableHead>
@@ -113,8 +139,7 @@ export default function AdminBootcampsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {bootcamps.length > 0 ? (
-                      bootcamps.map((bootcamp) => (
+                    {bootcamps.map((bootcamp) => (
                         <TableRow key={bootcamp.id}>
                           <TableCell className="font-medium">{bootcamp.title}</TableCell>
                           <TableCell>{bootcamp.courseIds?.length || 0}</TableCell>
@@ -128,7 +153,7 @@ export default function AdminBootcampsPage() {
                             </Button>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={!isSuperAdmin}>
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </AlertDialogTrigger>
@@ -136,34 +161,23 @@ export default function AdminBootcampsPage() {
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    {isSuperAdmin
-                                      ? `This action cannot be undone. This will permanently delete the bootcamp "${bootcamp.title}".`
-                                      : `You do not have permission to delete this bootcamp. Please contact a super admin.`
-                                    }
+                                    This action cannot be undone. This will permanently delete the bootcamp "{bootcamp.title}".
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  {isSuperAdmin && (
-                                     <AlertDialogAction onClick={() => handleDelete(bootcamp)}>
+                                  <AlertDialogAction onClick={() => handleDelete(bootcamp)}>
                                       Yes, delete it
                                     </AlertDialogAction>
-                                  )}
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
-                          No bootcamps found.
-                        </TableCell>
-                      </TableRow>
-                    )}
+                      ))}
                   </TableBody>
                 </Table>
+                </>
               )}
             </CardContent>
           </Card>

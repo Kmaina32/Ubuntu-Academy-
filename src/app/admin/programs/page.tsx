@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -113,8 +112,33 @@ export default function AdminProgramsPage() {
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                   <p className="ml-2">Loading programs...</p>
                 </div>
+              ) : programs.length === 0 ? (
+                <div className="text-center py-10 text-muted-foreground">No programs found.</div>
               ) : (
-                <Table>
+                <>
+                <div className="space-y-4 md:hidden">
+                    {programs.map((program) => (
+                        <Card key={program.id} className="p-4">
+                             <div className="flex justify-between items-start">
+                                <div>
+                                    <div className="font-medium">{program.title}</div>
+                                    <div className="text-sm text-muted-foreground">{program.courseIds?.length || 0} Courses</div>
+                                </div>
+                                 <div className="flex items-center">
+                                    <Button asChild variant="ghost" size="icon"><Link href={`/admin/programs/edit/${program.id}`}><Pencil className="h-4 w-4" /></Link></Button>
+                                     <AlertDialog>
+                                        <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader><AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle><AlertDialogDescription>{isSuperAdmin ? `This will permanently delete "${program.title}".` : `Request to delete "${program.title}"?`}</AlertDialogDescription></AlertDialogHeader>
+                                            <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(program)}>{isSuperAdmin ? 'Delete' : 'Send Request'}</AlertDialogAction></AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                            </div>
+                        </Card>
+                    ))}
+                </div>
+                <Table className="hidden md:table">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Title</TableHead>
@@ -123,8 +147,7 @@ export default function AdminProgramsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {programs.length > 0 ? (
-                      programs.map((program) => (
+                    {programs.map((program) => (
                         <TableRow key={program.id}>
                           <TableCell className="font-medium">{program.title}</TableCell>
                           <TableCell>{program.courseIds?.length || 0}</TableCell>
@@ -160,16 +183,10 @@ export default function AdminProgramsPage() {
                             </AlertDialog>
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={3} className="text-center py-10 text-muted-foreground">
-                          No programs found.
-                        </TableCell>
-                      </TableRow>
-                    )}
+                      ))}
                   </TableBody>
                 </Table>
+                </>
               )}
             </CardContent>
           </Card>

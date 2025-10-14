@@ -47,58 +47,85 @@ function SubmissionsList() {
     };
     fetchSubmissions();
   }, [toast]);
+  
+  const renderMobileCards = () => (
+    <div className="space-y-4 md:hidden">
+      {submissions.map((submission) => (
+        <Card key={submission.id} className="p-4">
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="font-medium">{submission.userName}</div>
+              <div className="text-sm text-muted-foreground">{submission.courseTitle}</div>
+            </div>
+            <Button asChild size="sm">
+              <Link href={`/admin/assignments/grade/${submission.id}`}>
+                <Star className="mr-2 h-4 w-4" />
+                {submission.graded ? 'View Grade' : 'Grade Now'}
+              </Link>
+            </Button>
+          </div>
+          <div className="flex justify-between items-center mt-2 pt-2 border-t">
+            <div className="text-xs text-muted-foreground">{format(new Date(submission.submittedAt), "PPP p")}</div>
+            {submission.graded ? (
+              <Badge><CheckCircle className="mr-1 h-3 w-3" />Graded ({submission.pointsAwarded || 0} / {submission.course?.exam?.reduce((acc, q) => acc + q.maxPoints, 0) || 10})</Badge>
+            ) : (
+              <Badge variant="secondary">Pending Review</Badge>
+            )}
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
 
   return (
     loading ? (
        <div className="flex justify-center items-center py-10">
           <LoadingAnimation />
        </div>
+    ) : submissions.length === 0 ? (
+         <div className="text-center py-10 text-muted-foreground">No submissions found.</div>
     ) : (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Student</TableHead>
-            <TableHead>Course</TableHead>
-            <TableHead>Submitted At</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {submissions.map((submission) => (
-            <TableRow key={submission.id}>
-              <TableCell className="font-medium">{submission.userName}</TableCell>
-              <TableCell>{submission.courseTitle}</TableCell>
-              <TableCell>{format(new Date(submission.submittedAt), "PPP p")}</TableCell>
-              <TableCell>
-                {submission.graded ? (
-                    <Badge>
-                        <CheckCircle className="mr-1 h-3 w-3" />
-                        Graded ({submission.pointsAwarded || 0} / 10)
-                    </Badge>
-                ) : (
-                    <Badge variant="secondary">Pending Review</Badge>
-                )}
-              </TableCell>
-              <TableCell className="text-right">
-                <Button asChild size="sm">
-                  <Link href={`/admin/assignments/grade/${submission.id}`}>
-                      <Star className="mr-2 h-4 w-4" />
-                      {submission.graded ? 'View Grade' : 'Grade Now'}
-                  </Link>
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-           {submissions.length === 0 && (
-            <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
-                    No submissions found.
-                </TableCell>
-            </TableRow>
-           )}
-        </TableBody>
-      </Table>
+      <>
+        {renderMobileCards()}
+        <Table className="hidden md:table">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Student</TableHead>
+                <TableHead>Course</TableHead>
+                <TableHead>Submitted At</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {submissions.map((submission) => (
+                <TableRow key={submission.id}>
+                  <TableCell className="font-medium">{submission.userName}</TableCell>
+                  <TableCell>{submission.courseTitle}</TableCell>
+                  <TableCell>{format(new Date(submission.submittedAt), "PPP p")}</TableCell>
+                  <TableCell>
+                    {submission.graded ? (
+                        <Badge>
+                            <CheckCircle className="mr-1 h-3 w-3" />
+                            Graded ({submission.pointsAwarded || 0} / {submission.course?.exam?.reduce((acc, q) => acc + q.maxPoints, 0) || 10})
+                        </Badge>
+                    ) : (
+                        <Badge variant="secondary">Pending Review</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button asChild size="sm">
+                      <Link href={`/admin/assignments/grade/${submission.id}`}>
+                          <Star className="mr-2 h-4 w-4" />
+                          {submission.graded ? 'View Grade' : 'Grade Now'}
+                      </Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+      </>
     )
   );
 }
@@ -125,53 +152,73 @@ function CourseAssignmentsList() {
         fetchCourses();
     }, []);
     
+    const renderMobileCards = () => (
+        <div className="space-y-4 md:hidden">
+            {courses.map(course => (
+                <Card key={course.id} className="p-4">
+                     <div className="flex justify-between items-start">
+                         <div className="font-medium">{course.title}</div>
+                         <Button asChild size="sm" variant="outline">
+                            <Link href={`/admin/assignments/edit/${course.id}`}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                            </Link>
+                        </Button>
+                     </div>
+                      <div className="mt-2 pt-2 border-t">
+                         <Badge variant={course.project ? "default" : (course.exam && course.exam.length > 0) ? "secondary" : "outline"}>
+                            {course.project ? 'Project' : (course.exam && course.exam.length > 0) ? 'Exam' : 'None'}
+                         </Badge>
+                     </div>
+                </Card>
+            ))}
+        </div>
+    );
     
     return (
     loading ? (
        <div className="flex justify-center items-center py-10">
           <LoadingAnimation />
        </div>
+    ) : courses.length === 0 ? (
+        <div className="text-center py-10 text-muted-foreground">No courses found. Create a course first.</div>
     ) : (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Course Title</TableHead>
-            <TableHead>Assignment Type</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {courses.map((course) => (
-            <TableRow key={course.id}>
-              <TableCell className="font-medium">{course.title}</TableCell>
-              <TableCell>
-                {course.project ? (
-                    <Badge variant="default">Project</Badge>
-                ) : course.exam && course.exam.length > 0 ? (
-                    <Badge variant="secondary">Exam</Badge>
-                ) : (
-                    <Badge variant="outline">None</Badge>
-                )}
-              </TableCell>
-              <TableCell className="text-right space-x-2">
-                <Button asChild size="sm" variant="outline">
-                    <Link href={`/admin/assignments/edit/${course.id}`}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit / Create
-                    </Link>
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-           {courses.length === 0 && (
-            <TableRow>
-                <TableCell colSpan={3} className="text-center text-muted-foreground py-10">
-                    No courses found. Create a course first.
-                </TableCell>
-            </TableRow>
-           )}
-        </TableBody>
-      </Table>
+      <>
+        {renderMobileCards()}
+        <Table className="hidden md:table">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Course Title</TableHead>
+                <TableHead>Assignment Type</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {courses.map((course) => (
+                <TableRow key={course.id}>
+                  <TableCell className="font-medium">{course.title}</TableCell>
+                  <TableCell>
+                    {course.project ? (
+                        <Badge variant="default">Project</Badge>
+                    ) : course.exam && course.exam.length > 0 ? (
+                        <Badge variant="secondary">Exam</Badge>
+                    ) : (
+                        <Badge variant="outline">None</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right space-x-2">
+                    <Button asChild size="sm" variant="outline">
+                        <Link href={`/admin/assignments/edit/${course.id}`}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit / Create
+                        </Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+        </Table>
+      </>
     )
   );
 }

@@ -136,8 +136,48 @@ export default function AdminCoursesPage() {
                 </div>
             ) : error ? (
                 <p className="text-destructive text-center py-10">{error}</p>
+            ) : filteredCourses.length > 0 ? (
+                <div className="space-y-4 md:hidden">
+                    {filteredCourses.map((course) => (
+                        <Card key={course.id} className="p-4">
+                            <div className="flex justify-between items-start">
+                                <div className="font-medium">{course.title}</div>
+                                 <div className="flex items-center gap-1">
+                                    <Button asChild variant="ghost" size="icon" title="View Course">
+                                        <Link href={`/courses/${slugify(course.title)}`} target="_blank"><Eye className="h-4 w-4" /></Link>
+                                    </Button>
+                                    <Button asChild variant="ghost" size="icon" title="Edit Course">
+                                        <Link href={`/admin/courses/edit/${course.id}`}><Pencil className="h-4 w-4" /></Link>
+                                    </Button>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" title="Delete Course"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    {isSuperAdmin ? `This will permanently delete "${course.title}".` : `Request deletion for "${course.title}"?`}
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleDelete(course)}>{isSuperAdmin ? 'Delete' : 'Send Request'}</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                            </div>
+                            <div className="text-sm text-muted-foreground">{course.category}</div>
+                            <div className="flex justify-between items-center mt-2">
+                                <div>{course.price > 0 ? `Ksh ${course.price.toLocaleString()}` : 'Free'}</div>
+                                <Badge variant={course.status === 'published' ? 'default' : 'secondary'}>{course.status === 'published' ? 'Published' : 'Draft'}</Badge>
+                            </div>
+                        </Card>
+                    ))}
+                </div>
             ) : (
-                <Table>
+                 <div className="text-center text-muted-foreground py-10">No courses found{searchQuery && ' for your search'}.</div>
+            )}
+            <Table className="hidden md:table">
                 <TableHeader>
                     <TableRow>
                     <TableHead>Title</TableHead>
@@ -148,7 +188,7 @@ export default function AdminCoursesPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {filteredCourses.map((course) => (
+                    {filteredCourses.length > 0 ? filteredCourses.map((course) => (
                     <TableRow key={course.id}>
                         <TableCell className="font-medium">{course.title}</TableCell>
                         <TableCell>{course.category}</TableCell>
@@ -195,8 +235,7 @@ export default function AdminCoursesPage() {
                           </AlertDialog>
                         </TableCell>
                     </TableRow>
-                    ))}
-                     {filteredCourses.length === 0 && (
+                    )) : (
                         <TableRow>
                             <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
                                 No courses found{searchQuery && ' for your search'}.
@@ -205,7 +244,6 @@ export default function AdminCoursesPage() {
                      )}
                 </TableBody>
                 </Table>
-            )}
             </CardContent>
         </Card>
 
