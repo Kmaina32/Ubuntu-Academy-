@@ -154,7 +154,7 @@
     "projects": {
       ".read": true,
       "$courseId": {
-        ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+        ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
       }
     },
     "permissionRequests": {
