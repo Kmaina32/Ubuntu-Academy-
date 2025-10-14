@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,9 +8,10 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, GitBranch, MailCheck, MailWarning } from 'lucide-react';
+import { Loader2, MailCheck, MailWarning } from 'lucide-react';
 import { Footer } from '@/components/Footer';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
+import Image from 'next/image';
 
 export default function UnverifiedPage() {
   const router = useRouter();
@@ -67,7 +67,7 @@ export default function UnverifiedPage() {
         <div className="w-full max-w-md">
            <div className="grid gap-2 text-center mb-6">
               <Link href="/" className="flex items-center justify-center gap-2 font-bold text-2xl font-headline">
-                  <GitBranch className="h-7 w-7 text-primary" />
+                  <Image src="/logo.svg" alt="Manda Network Logo" width={28} height={28} className="h-7 w-7" />
                   <span>Manda Network</span>
               </Link>
             </div>

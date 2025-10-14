@@ -13,9 +13,9 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { User, LogOut, Trophy, ExternalLink, Tag, GitBranch, Award } from 'lucide-react';
-import pkg from '../../package.json';
-import { Button } from './ui/button';
-import { Separator } from './ui/separator';
+import pkg from '../../../package.json';
+import { Button } from '../ui/button';
+import { Separator } from '../ui/separator';
 import { useAuth } from '@/hooks/use-auth';
 import Image from 'next/image';
 

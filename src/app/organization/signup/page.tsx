@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -15,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle, AlertTriangle } from '@/components/ui/alert';
-import { Loader2, GitBranch, Building, ArrowLeft } from 'lucide-react';
+import { Loader2, Building, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { getHeroData } from '@/lib/firebase-service';
 
@@ -94,7 +93,7 @@ export default function OrganizationSignupPage() {
             </Button>
            <div className="grid gap-2 text-center">
               <Link href="/" className="flex items-center justify-center gap-2 font-bold text-2xl font-headline">
-                  <GitBranch className="h-7 w-7 text-primary" />
+                  <Image src="/logo.svg" alt="Manda Network Logo" width={28} height={28} className="h-7 w-7" />
                   <span>Manda Network</span>
               </Link>
           </div>

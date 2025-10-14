@@ -78,7 +78,7 @@ export function AppSidebar() {
     <Sidebar>
         <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
-                <Image src="/logo.png" alt="Manda Network Logo" width={24} height={24} className="h-6 w-6" />
+                <Image src="/logo.svg" alt="Manda Network Logo" width={24} height={24} className="h-6 w-6" />
                 <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Manda Network</span>
             </div>
         </SidebarHeader>

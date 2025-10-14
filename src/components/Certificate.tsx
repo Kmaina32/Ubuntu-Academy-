@@ -9,6 +9,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import QRCode from "react-qr-code";
 import { Separator } from './ui/separator';
+import Image from 'next/image';
 
 interface CertificateProps {
   course: Course;
@@ -138,7 +139,7 @@ export function Certificate({ course, userName, certificateId, academicDirector 
                 <h1 className="font-bold text-2xl text-[#002147] font-headline">Manda Network</h1>
                 <p className="text-sm text-gray-600">Online Professional Development</p>
             </div>
-             <img src="/logo.png" alt="Manda Network Logo" className="h-16" />
+             <Image src="/logo.svg" alt="Manda Network Logo" width={64} height={64} className="h-16 w-16" />
           </div>
 
           <div className="flex-grow flex flex-col justify-center items-center">

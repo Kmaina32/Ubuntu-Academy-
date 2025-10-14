@@ -12,19 +12,22 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Gem, LayoutDashboard, Users, BookOpen, CreditCard, Settings, ExternalLink, Tag, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, CreditCard, Settings, ExternalLink, Tag, LogOut, Home, Clapperboard } from 'lucide-react';
 import pkg from '../../../package.json';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { useAuth } from '@/hooks/use-auth';
+import Image from 'next/image';
 
 export function OrganizationSidebar() {
     const pathname = usePathname();
     const router = useRouter();
-    const { logout } = useAuth();
+    const { logout, isOrganizationAdmin, isAdmin } = useAuth();
+    
+    const isFullAdmin = isOrganizationAdmin || isAdmin;
 
     const isActive = (path: string) => {
-        if (path === '/organization/dashboard') return pathname === path;
+        if (path === '/organization/home' || path === '/organization/dashboard') return pathname === path;
         return pathname.startsWith(path);
     }
     
@@ -37,7 +40,7 @@ export function OrganizationSidebar() {
     <Sidebar>
         <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
-                <Gem className="h-6 w-6 text-primary" />
+                <Image src="/logo.svg" alt="Manda Network Logo" width={24} height={24} className="h-6 w-6" />
                 <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Manda Network</span>
             </div>
         </SidebarHeader>
@@ -46,46 +49,93 @@ export function OrganizationSidebar() {
                 <p className='text-xs font-semibold text-muted-foreground group-data-[collapsible=icon]:hidden'>ORGANIZATION PORTAL</p>
             </div>
             <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/organization/dashboard')} tooltip="Dashboard">
-                        <Link href="/organization/dashboard">
-                            <LayoutDashboard />
-                            <span>Dashboard</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/organization/members')} tooltip="Members">
-                        <Link href="/organization/members">
-                            <Users />
-                            <span>Members</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/organization/courses')} tooltip="Course Management">
-                        <Link href="/organization/courses">
-                            <BookOpen />
-                            <span>Courses</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/organization/billing')} tooltip="Billing">
-                        <Link href="/organization/billing">
-                            <CreditCard />
-                            <span>Billing</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/organization/settings')} tooltip="Settings">
-                        <Link href="/organization/settings">
-                            <Settings />
-                            <span>Settings</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
+                {isFullAdmin ? (
+                    <>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/organization/dashboard')} tooltip="Dashboard">
+                                <Link href="/organization/dashboard">
+                                    <LayoutDashboard />
+                                    <span>Dashboard</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/organization/members')} tooltip="Members">
+                                <Link href="/organization/members">
+                                    <Users />
+                                    <span>Members</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/organization/courses')} tooltip="Course Management">
+                                <Link href="/organization/courses">
+                                    <BookOpen />
+                                    <span>Courses</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/organization/live')} tooltip="Live Classroom">
+                                <Link href="/organization/live">
+                                    <Clapperboard />
+                                    <span>Live Classroom</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/organization/billing')} tooltip="Billing">
+                                <Link href="/organization/billing">
+                                    <CreditCard />
+                                    <span>Billing</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/organization/settings')} tooltip="Settings">
+                                <Link href="/organization/settings">
+                                    <Settings />
+                                    <span>Settings</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </>
+                ) : (
+                     <>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/organization/home')} tooltip="Home">
+                                <Link href="/organization/home">
+                                    <Home />
+                                    <span>Home</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                           <SidebarMenuButton asChild isActive={isActive('/organization/live')} tooltip="Live Classroom">
+                                <Link href="/organization/live">
+                                    <Clapperboard />
+                                    <span>Live Classroom</span>
+                                </Link>
+                           </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/organization/team')} tooltip="Team">
+                                <Link href="/organization/team">
+                                    <Users />
+                                    <span>Team</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/organization/settings')} tooltip="Settings">
+                                <Link href="/organization/settings">
+                                    <Settings />
+                                    <span>Settings</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </>
+                )}
             </SidebarMenu>
              <div className="px-2 mt-auto">
                  <Separator className="my-2" />

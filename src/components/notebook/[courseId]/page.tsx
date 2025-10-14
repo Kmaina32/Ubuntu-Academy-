@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Download, Gem, NotebookIcon, UploadCloud } from 'lucide-react';
+import { ArrowLeft, Loader2, Download, NotebookIcon, UploadCloud } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -24,6 +24,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { saveAs } from 'file-saver';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import Image from 'next/image';
 
 const GoogleDriveIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" {...props}>
@@ -235,7 +236,7 @@ export default function NotebookPage() {
         <div ref={pdfRef} className="p-10 bg-white w-[595px] text-black">
             <div className="border-b-2 border-black pb-4 mb-4 flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                    <Gem className="h-8 w-8 text-primary" />
+                    <Image src="/logo.svg" alt="Manda Network Logo" width={32} height={32} className="h-8 w-8" />
                     <span className="font-bold text-xl font-headline">Manda Network</span>
                 </div>
                 <div className="text-right text-xs">
