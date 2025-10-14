@@ -20,7 +20,6 @@ import pkg from '../../package.json';
 import { useEffect, useMemo, useState } from 'react';
 import type { CalendarEvent } from '@/lib/mock-data';
 import { getAllCalendarEvents } from '@/lib/firebase-service';
-import Image from 'next/image';
 
 export function AppSidebar() {
     const pathname = usePathname();
@@ -77,7 +76,7 @@ export function AppSidebar() {
   return (
     <Sidebar>
         <SidebarHeader className="mb-4">
-            <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
+             <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
                 Manda Network
             </Link>
         </SidebarHeader>
