@@ -4,15 +4,14 @@
 import Link from 'next/link';
 import { Twitter, Facebook, Linkedin } from 'lucide-react';
 import { Button } from './ui/button';
-import Image from 'next/image';
 
 export function Footer() {
   return (
     <footer className="border-t">
       <div className="container mx-auto py-6 px-4 md:px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Image src="/logo.svg" alt="Manda Network Logo" width={100} height={26} className="w-24 h-auto" />
+          <div className="text-sm text-muted-foreground">
+             <Link href="/" className="font-semibold text-foreground">Manda Network</Link>
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
              <Link href="/terms" className="text-sm hover:text-primary">Terms of Service</Link>
