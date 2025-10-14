@@ -3,11 +3,11 @@
 
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import { Header } from '@/components/shared/Header';
+import { Footer } from '@/components/shared/Footer';
 import { Loader2 } from 'lucide-react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { PortalSidebar } from '@/components/PortalSidebar';
+import { PortalSidebar } from '@/components/shared/PortalSidebar';
 import { useEffect } from 'react';
 
 export default function PortalLayout({
