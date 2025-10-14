@@ -356,6 +356,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
 
   const showLogo = isMobile || sidebarState === 'collapsed';
 
+
   useEffect(() => {
       if (!loading && user && !user.emailVerified && pathname !== '/unverified') {
           router.push('/unverified');
@@ -384,7 +385,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
         <div className="flex items-center gap-2">
             <SidebarTrigger className="md:hidden" />
             {showLogo && (
-                <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
+                 <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
                     <GitBranch className="h-6 w-6 text-yellow-500" />
                     <span className="hidden sm:inline-block">Manda Network</span>
                 </Link>
