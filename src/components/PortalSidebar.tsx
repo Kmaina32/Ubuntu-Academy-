@@ -17,7 +17,6 @@ import pkg from '../../package.json';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import { useAuth } from '@/hooks/use-auth';
-import Image from 'next/image';
 
 export function PortalSidebar() {
     const pathname = usePathname();
