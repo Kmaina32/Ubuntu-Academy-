@@ -3,6 +3,7 @@
 
 import { LoadingAnimation } from './LoadingAnimation';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { VideoOff } from 'lucide-react';
 
 interface NoLiveSessionProps {
   isLoading: boolean;
@@ -31,10 +32,10 @@ export function NoLiveSession({ isLoading, hasPermission }: NoLiveSessionProps) 
   }
 
   return (
-    <div className="text-center">
-      <LoadingAnimation showText={false} className="mb-4" />
-      <h2 className="text-2xl font-bold font-headline text-white">No Active Live Session</h2>
-      <p className="text-muted-foreground mt-2">The live session has ended or has not started yet.</p>
+    <div className="text-center p-4">
+        <VideoOff className="h-12 w-12 text-muted-foreground mx-auto mb-4"/>
+        <h2 className="text-xl md:text-2xl font-bold font-headline text-white">No Active Live Session</h2>
+        <p className="text-muted-foreground mt-2 text-sm md:text-base">The live session has ended or has not started yet.</p>
     </div>
   );
 }
