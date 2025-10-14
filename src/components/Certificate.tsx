@@ -134,12 +134,11 @@ export function Certificate({ course, userName, certificateId, academicDirector 
         {/* Certificate Content */}
         <div className="relative z-10 flex flex-col h-full text-center p-8">
           
-          <div className="flex justify-between items-center mb-4">
-            <div className="text-left">
+          <div className="flex justify-center items-center mb-4">
+            <div className="text-center">
                 <h1 className="font-bold text-2xl text-[#002147] font-headline">Manda Network</h1>
                 <p className="text-sm text-gray-600">Online Professional Development</p>
             </div>
-             <Image src="/logo.svg" alt="Manda Network Logo" width={64} height={64} className="h-16 w-16" />
           </div>
 
           <div className="flex-grow flex flex-col justify-center items-center">
