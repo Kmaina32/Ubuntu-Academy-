@@ -14,7 +14,8 @@ export function NoLiveSession({ isLoading, hasPermission }: NoLiveSessionProps) 
   if (isLoading) {
     return (
       <div className="text-center">
-        <LoadingAnimation />
+        <LoadingAnimation showText={false}/>
+         <p className="mt-2 text-sm text-muted-foreground">Connecting to session...</p>
       </div>
     );
   }
@@ -35,7 +36,7 @@ export function NoLiveSession({ isLoading, hasPermission }: NoLiveSessionProps) 
     <div className="text-center p-4">
         <VideoOff className="h-12 w-12 text-muted-foreground mx-auto mb-4"/>
         <h2 className="text-xl md:text-2xl font-bold font-headline text-white">No Active Live Session</h2>
-        <p className="text-muted-foreground mt-2 text-sm md:text-base">The live session has ended or has not started yet.</p>
+        <p className="text-muted-foreground mt-2 text-sm md:text-base max-w-xs mx-auto">The live session has ended or has not started yet.</p>
     </div>
   );
 }

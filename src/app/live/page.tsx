@@ -7,15 +7,15 @@ import { LiveChat } from '@/components/LiveChat';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 import { getAllCalendarEvents } from '@/lib/firebase-service';
-import { Hand, Loader2, PhoneOff, Users, Maximize, Calendar } from 'lucide-react';
+import { Hand, Loader2, PhoneOff, Users, Maximize, Calendar, Video, MessageSquare, Info, MicOff, Mic } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { onValue, ref, onChildAdded, set, remove } from 'firebase/database';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { NotebookSheet } from '@/components/NotebookSheet';
-import { isPast, format } from 'date-fns';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { isPast, format, formatDistanceToNow, isToday } from 'date-fns';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -27,6 +27,18 @@ import { ViewerList } from '@/components/ViewerList';
 import { SessionInfo } from '@/components/SessionInfo';
 import { NoLiveSession } from '@/components/NoLiveSession';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { EventForm } from '@/components/EventForm';
+import type { CalendarEvent } from '@/lib/mock-data';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -56,6 +68,7 @@ export default function StudentLivePage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
+    const isMobile = useIsMobile();
 
     const [liveSessionDetails, setLiveSessionDetails] = useState<any>(null);
     const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
@@ -210,6 +223,69 @@ export default function StudentLivePage() {
             }
         }
     };
+    
+    const MainContent = () => (
+         <div className="flex flex-col h-full gap-4">
+            <div ref={videoContainerRef} className="w-full h-full bg-black flex items-center justify-center relative rounded-lg border shadow-lg p-2 md:p-4">
+                <video ref={videoRef} className="w-full h-full object-contain rounded-md" autoPlay playsInline />
+                
+                {liveSessionDetails ? (
+                    <>
+                        <SessionInfo title={liveSessionDetails?.title || 'Live Session'} description={liveSessionDetails?.description || 'Welcome to the class!'} />
+                        <div className="absolute top-4 right-4 z-20">
+                            <ViewerList sessionId={sessionId} />
+                        </div>
+                    </>
+                ) : (
+                    <div className="absolute inset-0 flex items-center justify-center p-4">
+                        <NoLiveSession isLoading={isLoading || hasCameraPermission === null} hasPermission={hasCameraPermission} />
+                    </div>
+                )}
+            </div>
+            {liveSessionDetails && (
+                <div className="bg-background/80 backdrop-blur-sm text-foreground p-3 rounded-lg flex items-center justify-center gap-4 text-sm shadow-md">
+                    <Button size="icon" variant={handRaised ? 'default' : 'secondary'} onClick={toggleHandRaised} className="rounded-full h-12 w-12 shadow-lg">
+                        <Hand className="h-6 w-6" />
+                    </Button>
+                    <Button size="icon" variant="destructive" onClick={handleLeave} className="rounded-full h-14 w-14 shadow-lg">
+                        <PhoneOff className="h-6 w-6" />
+                    </Button>
+                    <Button size="icon" variant="secondary" onClick={handleFullScreen} className="rounded-full h-12 w-12 shadow-lg">
+                        <Maximize className="h-6 w-6" />
+                    </Button>
+                </div>
+            )}
+         </div>
+    );
+    
+    const RightPanelContent = () => (
+        <div className="p-4 md:p-6 h-full flex flex-col">
+            <h2 className="text-2xl font-bold mb-4 font-headline flex items-center gap-2">
+                <Calendar className="h-6 w-6"/>
+                Upcoming Live Sessions
+            </h2>
+            {upcomingEvents.length > 0 ? (
+                <ScrollArea className="w-full whitespace-nowrap">
+                    <div className="flex gap-4 pb-4">
+                        {upcomingEvents.map(event => (
+                            <Card key={event.id} className="min-w-[300px]">
+                                <CardHeader>
+                                    <CardTitle className="truncate">{event.title}</CardTitle>
+                                    <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
+                                </CardHeader>
+                            </Card>
+                        ))}
+                    </div>
+                    <ScrollBar orientation="horizontal" />
+                </ScrollArea>
+            ) : !isLoading && (
+                <div className="text-center py-10 text-muted-foreground flex-grow flex flex-col justify-center">
+                    <Calendar className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4"/>
+                    <p className="font-semibold">No upcoming sessions scheduled.</p>
+                </div>
+            )}
+        </div>
+    );
 
     return (
         <SidebarProvider>
@@ -219,26 +295,28 @@ export default function StudentLivePage() {
             <div className="flex flex-col h-[calc(100vh-4rem)] bg-secondary/50">
                 <div className="max-w-7xl w-full mx-auto p-4 md:p-6 flex-grow">
                     <ClientOnly>
+                       {isMobile ? (
+                            <div className="flex flex-col gap-6 h-full">
+                                <div className="h-[40vh]">
+                                    <MainContent />
+                                </div>
+                                <Tabs defaultValue="chat" className="w-full flex-grow flex flex-col">
+                                    <TabsList className="grid w-full grid-cols-2">
+                                        <TabsTrigger value="chat"><MessageSquare className="mr-2 h-4 w-4"/>Chat</TabsTrigger>
+                                        <TabsTrigger value="info"><Info className="mr-2 h-4 w-4"/>Info</TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value="chat" className="flex-grow min-h-0">
+                                        {liveSessionDetails ? <LiveChat sessionId={sessionId} /> : <div className="p-4 text-center text-muted-foreground">Chat is available during live sessions.</div>}
+                                    </TabsContent>
+                                    <TabsContent value="info">
+                                        <RightPanelContent />
+                                    </TabsContent>
+                                </Tabs>
+                            </div>
+                       ) : (
                         <ResizablePanelGroup direction="horizontal" className="h-full">
                             <ResizablePanel defaultSize={75}>
-                            <div className="flex flex-col h-full items-center justify-center pr-4">
-                                <div ref={videoContainerRef} className="w-full h-full bg-black flex items-center justify-center relative rounded-lg border shadow-lg p-2 md:p-4">
-                                <video ref={videoRef} className="w-full h-full object-contain rounded-md" autoPlay playsInline />
-                                
-                                    {liveSessionDetails ? (
-                                    <>
-                                        <SessionInfo title={liveSessionDetails?.title || 'Live Session'} description={liveSessionDetails?.description || 'Welcome to the class!'} />
-                                        <div className="absolute top-4 right-4 z-20">
-                                            <ViewerList sessionId={sessionId} />
-                                        </div>
-                                    </>
-                                    ) : (
-                                        <div className="absolute inset-0 flex items-center justify-center p-4">
-                                            <NoLiveSession isLoading={isLoading || hasCameraPermission === null} hasPermission={hasCameraPermission} />
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+                                <MainContent />
                             </ResizablePanel>
                             <ResizableHandle withHandle />
                             <ResizablePanel defaultSize={25}>
@@ -246,51 +324,14 @@ export default function StudentLivePage() {
                                     {liveSessionDetails ? (
                                         <LiveChat sessionId={sessionId} />
                                     ) : (
-                                        <div className="p-4 md:p-6 h-full flex flex-col">
-                                            <h2 className="text-2xl font-bold mb-4 font-headline flex items-center gap-2">
-                                                <Calendar className="h-6 w-6"/>
-                                                Upcoming Live Sessions
-                                            </h2>
-                                            {upcomingEvents.length > 0 ? (
-                                                <ScrollArea className="w-full whitespace-nowrap">
-                                                    <div className="flex gap-4 pb-4">
-                                                        {upcomingEvents.map(event => (
-                                                            <Card key={event.id} className="min-w-[300px]">
-                                                                <CardHeader>
-                                                                    <CardTitle className="truncate">{event.title}</CardTitle>
-                                                                    <CardDescription>{format(new Date(event.date), 'PPP')}</CardDescription>
-                                                                </CardHeader>
-                                                            </Card>
-                                                        ))}
-                                                    </div>
-                                                    <ScrollBar orientation="horizontal" />
-                                                </ScrollArea>
-                                            ) : !isLoading && (
-                                                <div className="text-center py-10 text-muted-foreground flex-grow flex flex-col justify-center">
-                                                    <Calendar className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4"/>
-                                                    <p className="font-semibold">No upcoming sessions scheduled.</p>
-                                                </div>
-                                            )}
-                                        </div>
+                                       <RightPanelContent />
                                     )}
                                 </div>
                             </ResizablePanel>
                         </ResizablePanelGroup>
+                       )}
                     </ClientOnly>
                 </div>
-                {liveSessionDetails && (
-                    <footer className="p-2 border-t bg-background flex items-center justify-center gap-4 text-sm shadow-md">
-                        <Button size="icon" variant={handRaised ? 'default' : 'secondary'} onClick={toggleHandRaised} className="rounded-full h-12 w-12 shadow-lg">
-                            <Hand className="h-6 w-6" />
-                        </Button>
-                        <Button size="icon" variant="destructive" onClick={handleLeave} className="rounded-full h-14 w-14 shadow-lg">
-                            <PhoneOff className="h-6 w-6" />
-                        </Button>
-                        <Button size="icon" variant="secondary" onClick={handleFullScreen} className="rounded-full h-12 w-12 shadow-lg">
-                            <Maximize className="h-6 w-6" />
-                        </Button>
-                    </footer>
-                )}
                  {liveSessionDetails && <NotebookSheet courseId={sessionId} courseTitle={liveSessionDetails?.title || 'Live Session Notes'} />}
             </div>
           </SidebarInset>

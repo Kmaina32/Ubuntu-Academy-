@@ -37,7 +37,7 @@ export function LiveChat({ sessionId }: LiveChatProps) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const scrollAreaRef = useRef<HTMLDivElement>(null);
+    const scrollAreaViewportRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const chatRef = query(ref(db, `liveChat/${sessionId}`), limitToLast(50));
@@ -50,8 +50,8 @@ export function LiveChat({ sessionId }: LiveChatProps) {
 
     useEffect(() => {
         // Auto-scroll to bottom
-        if (scrollAreaRef.current) {
-            scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+        if (scrollAreaViewportRef.current) {
+            scrollAreaViewportRef.current.scrollTop = scrollAreaViewportRef.current.scrollHeight;
         }
     }, [messages]);
 
@@ -77,8 +77,8 @@ export function LiveChat({ sessionId }: LiveChatProps) {
     };
 
     return (
-        <div className="flex-1 flex flex-col min-h-0 bg-background">
-             <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+        <div className="flex-1 flex flex-col min-h-0 bg-background h-full">
+             <ScrollArea className="flex-1 p-4" viewportRef={scrollAreaViewportRef}>
                  <div className="space-y-4">
                     {messages.map((message) => (
                         <div key={message.id} className="flex items-start gap-3">
