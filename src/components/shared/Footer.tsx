@@ -13,7 +13,7 @@ export function Footer() {
       <div className="container mx-auto py-6 px-4 md:px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.svg" alt="Manda Network Logo" width={150} height={40} className="h-7 w-auto" />
+            <Image src="/logo.svg" alt="Manda Network Logo" width={150} height={40} className="w-32 h-auto" />
           </Link>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
              <Link href="/terms" className="text-sm hover:text-primary">Terms of Service</Link>

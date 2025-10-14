@@ -155,7 +155,7 @@ export default function SignupPage() {
             </Button>
            <div className="grid gap-2 text-center">
               <Link href="/" className="flex items-center justify-center gap-2 font-bold text-2xl font-headline">
-                  <Image src="/logo.svg" alt="Manda Network Logo" width={150} height={40} className="h-7 w-auto" />
+                  <Image src="/logo.svg" alt="Manda Network Logo" width={150} height={40} className="w-32 h-auto" />
               </Link>
           </div>
           <Card>

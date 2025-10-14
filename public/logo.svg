@@ -1,16 +1,17 @@
-<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:hsl(var(--primary));stop-opacity:1" />
-            <stop offset="100%" style="stop-color:hsl(var(--accent));stop-opacity:1" />
-        </linearGradient>
-    </defs>
-    <path d="M50 150 L80 100 L100 120 L120 100 L150 150" stroke="url(#grad1)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M80 100 L100 80 L120 100" stroke="url(#grad1)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="50" cy="150" r="8" fill="hsl(var(--primary))" />
-    <circle cx="150" cy="150" r="8" fill="hsl(var(--primary))" />
-    <circle cx="80" cy="100" r="8" fill="hsl(var(--primary))" />
-    <circle cx="120" cy="100" r="8" fill="hsl(var(--primary))" />
-    <circle cx="100" cy="120" r="6" fill="hsl(var(--accent))" />
-    <circle cx="100" cy="80" r="8" fill="hsl(var(--accent))" />
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:hsl(var(--primary));stop-opacity:1" />
+        <stop offset="100%" style="stop-color:hsl(var(--accent));stop-opacity:1" />
+    </linearGradient>
+</defs>
+<path d="M128 149.333C139.778 149.333 149.333 139.778 149.333 128C149.333 116.222 139.778 106.667 128 106.667C116.222 106.667 106.667 116.222 106.667 128C106.667 139.778 116.222 149.333 128 149.333Z" stroke="url(#grad1)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M181.333 69.3333C193.111 69.3333 202.667 59.7778 202.667 48C202.667 36.2222 193.111 26.6667 181.333 26.6667C169.556 26.6667 160 36.2222 160 48C160 59.7778 169.556 69.3333 181.333 69.3333Z" stroke="url(#grad1)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M181.333 229.333C193.111 229.333 202.667 219.778 202.667 208C202.667 196.222 193.111 186.667 181.333 186.667C169.556 186.667 160 196.222 160 208C160 219.778 169.556 229.333 181.333 229.333Z" stroke="url(#grad1)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M74.6667 229.333C86.4444 229.333 96 219.778 96 208C96 196.222 86.4444 186.667 74.6667 186.667C62.8889 186.667 53.3333 196.222 53.3333 208C53.3333 219.778 62.8889 229.333 74.6667 229.333Z" stroke="url(#grad1)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M74.6667 69.3333C86.4444 69.3333 96 59.7778 96 48C96 36.2222 86.4444 26.6667 74.6667 26.6667C62.8889 26.6667 53.3333 36.2222 53.3333 48C53.3333 59.7778 62.8889 69.3333 74.6667 69.3333Z" stroke="url(#grad1)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M165.173 59.3067L139.427 115.893" stroke="url(#grad1)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M91.0933 59.3067L116.827 115.893" stroke="url(#grad1)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M91.0933 196.693L116.827 140.107" stroke="url(#grad1)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M165.44 196.693L139.707 140.107" stroke="url(#grad1)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
