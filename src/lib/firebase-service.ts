@@ -29,6 +29,17 @@ export interface HeroData {
     orgHeroImageUrl?: string;
     orgLoginImageUrl?: string;
     orgSignupImageUrl?: string;
+    // New fields
+    contactEmail?: string;
+    phoneNumber?: string;
+    address?: string;
+    twitterUrl?: string;
+    facebookUrl?: string;
+    linkedinUrl?: string;
+    purchasesEnabled?: boolean;
+    orgSignupsEnabled?: boolean;
+    vercelAnalyticsId?: string;
+    featuredProgramId?: string;
 }
 
 export interface TutorSettings {
@@ -206,7 +217,7 @@ export async function deleteUser(userId: string): Promise<void> {
 export async function getHeroData(): Promise<HeroData> {
   const heroRef = ref(db, 'hero');
   const snapshot = await get(heroRef);
-  const defaults = {
+  const defaults: HeroData = {
     title: 'Unlock Your Potential.', 
     subtitle: 'Quality, affordable courses designed for the Kenyan market.',
     imageUrl: 'https://placehold.co/1200x400.png',
@@ -225,6 +236,16 @@ export async function getHeroData(): Promise<HeroData> {
     orgHeroImageUrl: 'https://picsum.photos/1200/800',
     orgLoginImageUrl: 'https://picsum.photos/1200/900',
     orgSignupImageUrl: 'https://picsum.photos/1200/900',
+    contactEmail: 'info@manda.network',
+    phoneNumber: '0747079034',
+    address: 'Runda Mall, Kiambu Road, Nairobi',
+    twitterUrl: 'https://twitter.com',
+    facebookUrl: 'https://facebook.com',
+    linkedinUrl: 'https://linkedin.com',
+    purchasesEnabled: true,
+    orgSignupsEnabled: true,
+    vercelAnalyticsId: '',
+    featuredProgramId: '',
   };
 
   const dbData = snapshot.exists() ? snapshot.val() : {};
@@ -895,7 +916,7 @@ export async function getAllHackathons(): Promise<Hackathon[]> {
 
 export async function getHackathonById(id: string): Promise<Hackathon | null> {
     const hackathonRef = ref(db, `hackathons/${id}`);
-    const snapshot = await get(hackathonRef);
+    const snapshot = await get(snapshotRef);
     if (snapshot.exists()) {
         return { id, ...snapshot.val() };
     }
@@ -945,4 +966,43 @@ export async function getHackathonSubmissionsByUser(userId: string): Promise<Hac
         return submissions.sort((a,b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
     }
     return [];
+}
+
+
+// Certificate Settings
+export async function saveCertificateSettings(settings: { academicDirector: string }): Promise<void> {
+    const settingsRef = ref(db, 'certificateSettings');
+    await set(settingsRef, settings);
+}
+
+export async function getCertificateSettings(): Promise<{ academicDirector: string }> {
+    const settingsRef = ref(db, 'certificateSettings');
+    const snapshot = await get(settingsRef);
+    if (snapshot.exists()) {
+        return snapshot.val();
+    }
+    return { academicDirector: 'Default Director' }; // Default value
+}
+
+export async function getVerifiedCertificateData(certificateId: string): Promise<{isValid: boolean; student?: RegisteredUser, course?: Course}> {
+    const usersRef = ref(db, 'users');
+    const snapshot = await get(usersRef);
+    if (snapshot.exists()) {
+        const usersData = snapshot.val();
+        for (const userId in usersData) {
+            const user = usersData[userId];
+            if (user.purchasedCourses) {
+                for (const courseId in user.purchasedCourses) {
+                    if (user.purchasedCourses[courseId].certificateId === certificateId) {
+                        const student = await getUserById(userId);
+                        const course = await getCourseById(courseId);
+                        if(student && course) {
+                            return { isValid: true, student, course };
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return { isValid: false };
 }
