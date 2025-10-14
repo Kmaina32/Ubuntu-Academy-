@@ -79,6 +79,7 @@ export interface Course {
   exam: ExamQuestion[];
   createdAt: string; // ISO string
   project?: Project;
+  status?: 'published' | 'draft';
 }
 
 export interface Program {
@@ -288,4 +289,38 @@ export interface Invitation {
     organizationId: string;
     organizationName: string;
     createdAt: string; // ISO String
+}
+
+export interface PricingPlan {
+    id: string;
+    name: string;
+    price: number;
+    priceDetail: string; // e.g., 'per user / month'
+    features: string[];
+    isPrimary: boolean; // For highlighting a recommended plan
+}
+
+export interface Hackathon {
+    id: string;
+    title: string;
+    description: string;
+    imageUrl: string;
+    prizeMoney: number;
+    entryFee: number;
+    startDate: string;
+    endDate: string;
+    externalUrl?: string;
+}
+
+export interface HackathonSubmission {
+    id: string;
+    hackathonId: string;
+    hackathonTitle: string;
+    userId: string;
+    userName: string;
+    projectName: string;
+    githubUrl: string;
+    liveUrl: string;
+    description: string;
+    submittedAt: string;
 }

@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Course } from "@/lib/mock-data";
 import { getAllCourses, deleteCourse, createPermissionRequest } from '@/lib/firebase-service';
-import { FilePlus2, Pencil, Trash2, Loader2, Search, BookOpen } from "lucide-react";
+import { FilePlus2, Pencil, Trash2, Loader2, Search, BookOpen, Eye } from "lucide-react";
 import Link from "next/link";
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -26,6 +26,8 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
 import { ArrowLeft } from 'lucide-react';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
+import { Badge } from '@/components/ui/badge';
+import { slugify } from '@/lib/utils';
 
 export default function AdminCoursesPage() {
   const { user, isSuperAdmin } = useAuth();
@@ -140,8 +142,8 @@ export default function AdminCoursesPage() {
                     <TableRow>
                     <TableHead>Title</TableHead>
                     <TableHead>Category</TableHead>
-                    <TableHead>Instructor</TableHead>
                     <TableHead>Price</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -150,17 +152,26 @@ export default function AdminCoursesPage() {
                     <TableRow key={course.id}>
                         <TableCell className="font-medium">{course.title}</TableCell>
                         <TableCell>{course.category}</TableCell>
-                        <TableCell>{course.instructor}</TableCell>
                         <TableCell>{course.price > 0 ? `Ksh ${course.price.toLocaleString()}` : 'Free'}</TableCell>
+                        <TableCell>
+                          <Badge variant={course.status === 'published' ? 'default' : 'secondary'}>
+                            {course.status === 'published' ? 'Published' : 'Draft'}
+                          </Badge>
+                        </TableCell>
                         <TableCell className="text-right">
-                          <Button asChild variant="ghost" size="icon" className="mr-2">
+                           <Button asChild variant="ghost" size="icon" title="View Course">
+                              <Link href={`/courses/${slugify(course.title)}`} target="_blank">
+                                <Eye className="h-4 w-4" />
+                              </Link>
+                          </Button>
+                          <Button asChild variant="ghost" size="icon" className="mr-2" title="Edit Course">
                               <Link href={`/admin/courses/edit/${course.id}`}>
                                 <Pencil className="h-4 w-4" />
                               </Link>
                           </Button>
                           <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" title="Delete Course">
                                       <Trash2 className="h-4 w-4" />
                                   </Button>
                               </AlertDialogTrigger>
