@@ -317,38 +317,26 @@ function NotificationsPopover() {
 }
 
 function ThemeToggle() {
-    const [theme, setTheme] = useState('light');
+    const [theme, setTheme] = useState('dark');
 
     useEffect(() => {
-        const storedTheme = localStorage.getItem('theme') || 'light';
-        setTheme(storedTheme);
+        // Since dark mode is forced, this component just shows the toggle
+        // but doesn't need to read from localStorage.
+        setTheme('dark');
     }, []);
-
-    const toggleTheme = () => {
-        const newTheme = theme === 'light' ? 'dark' : 'light';
-        setTheme(newTheme);
-        localStorage.setItem('theme', newTheme);
-        if (newTheme === 'dark') {
-            document.documentElement.classList.add('dark');
-            document.documentElement.style.colorScheme = 'dark';
-        } else {
-            document.documentElement.classList.remove('dark');
-            document.documentElement.style.colorScheme = 'light';
-        }
-    };
     
     return (
-        <Button variant="ghost" size="icon" onClick={toggleTheme}>
-            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
+        <Button variant="ghost" size="icon" disabled>
+            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-100 transition-all dark:rotate-0 dark:scale-0" />
+            <span className="sr-only">Toggle theme (disabled)</span>
         </Button>
     )
 }
 
 export function Header({ children }: { children?: React.ReactNode }) {
   const { user, logout, loading } = useAuth();
-  const { isMobile, openMobile } = useSidebar();
+  const { isMobile } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -380,12 +368,12 @@ export function Header({ children }: { children?: React.ReactNode }) {
     <header className="flex h-16 items-center border-b bg-background px-4 md:px-6 sticky top-0 z-30">
         <div className="flex items-center gap-2">
             <SidebarTrigger />
-             <div className='block md:hidden'>
+             {isMobile && (
                  <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
-                    <GitBranch className="h-6 w-6 text-primary" />
+                    <GitBranch className="h-6 w-6 text-yellow-500" />
                     <span>Manda Network</span>
                 </Link>
-            </div>
+            )}
         </div>
       
         <div className="flex w-full items-center justify-end gap-2">

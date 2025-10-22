@@ -26,7 +26,7 @@ export default async function RootLayout({
   const isAiConfigured = !!process.env.GEMINI_API_KEY;
 
   return (
-    <html lang="en" suppressHydrationWarning={true}>
+    <html lang="en" className="dark" style={{ colorScheme: 'dark' }}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -35,27 +35,6 @@ export default async function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=MuseoModerno:wght@700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-         <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  const theme = localStorage.getItem('theme') || 'light';
-                  document.documentElement.className = theme;
-                  document.documentElement.style.colorScheme = theme;
-                  if (theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                  }
-                  
-                  const activeTheme = localStorage.getItem('mkenya-skilled-theme');
-                  if (activeTheme && activeTheme !== 'default') {
-                      document.documentElement.classList.add('theme-' + activeTheme);
-                  }
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
         <Providers isAiConfigured={isAiConfigured}>
             <ThemeEffects />
             {children}

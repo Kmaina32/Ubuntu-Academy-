@@ -5,169 +5,57 @@
 
 @layer base {
   :root {
-    --background: 267 100% 97%; /* #F5EEFF */
-    --foreground: 274 15% 15%; /* A dark purple */
-    --card: 0 0% 100%;
-    --card-foreground: 274 15% 15%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 274 15% 15%;
-    --primary: 275 69% 54%; /* #8C3DD9 */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 273 50% 92%;
-    --secondary-foreground: 275 69% 40%;
-    --muted: 273 30% 94%;
-    --muted-foreground: 273 10% 45%;
-    --accent: 350 67% 52%; /* #D8304C */
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 273 30% 88%;
-    --input: 273 30% 88%;
-    --ring: 275 69% 54%;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 45 100% 51%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 45 100% 51%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 45 100% 51%;
     --radius: 0.5rem;
 
-    --sidebar-background: var(--secondary);
-    --sidebar-foreground: var(--foreground);
-    --sidebar-primary: var(--primary);
-    --sidebar-primary-foreground: var(--primary-foreground);
-    --sidebar-accent: var(--accent);
-    --sidebar-accent-foreground: var(--accent-foreground);
-    --sidebar-border: var(--border);
-    --sidebar-ring: var(--ring);
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 45 100% 51%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 45 100% 51%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 45 100% 51%;
   }
+
   .dark {
-    --background: 275 10% 8%;
-    --foreground: 0 0% 98%;
-    --card: 275 10% 8%;
-    --card-foreground: 0 0% 98%;
-    --popover: 275 10% 8%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 275 69% 54%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 275 15% 15%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 275 15% 15%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 350 67% 52%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 275 15% 20%;
-    --input: 275 15% 20%;
-    --ring: 275 69% 54%;
-
-    --sidebar-background: 275 10% 8%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 275 69% 54%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 275 69% 54%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 275 15% 20%;
-    --sidebar-ring: 275 69% 54%;
-  }
-
-  .theme-jamhuri {
-    --background: 0 0% 96%; /* Light Gray */
-    --foreground: 0 0% 10%; /* Black */
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
-    --primary: 0 84.2% 60.2%; /* Red */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 90%;
-    --secondary-foreground: 0 0% 15%;
-    --accent: 120 54% 32%; /* Green */
-    --accent-foreground: 0 0% 100%;
-    --border: 0 0% 85%;
-    --input: 0 0% 85%;
-    --ring: 0 84.2% 60.2%;
-  }
-  
-  .dark.theme-jamhuri {
-    --background: 0 0% 8%; /* Black */
-    --foreground: 0 0% 98%; /* White */
-    --card: 0 0% 12%;
-    --card-foreground: 0 0% 98%;
-    --primary: 0 72% 51%; /* Red */
-    --secondary: 0 0% 15%;
-    --accent: 120 44% 42%; /* Green */
-  }
-
-  .theme-christmas {
-    --background: 120 60% 95%;
-    --foreground: 120 60% 10%;
-    --primary: 0 63% 44%; /* Red */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 120 60% 90%;
-    --secondary-foreground: 120 60% 20%;
-    --accent: 120 40% 40%; /* Green */
-    --accent-foreground: 0 0% 100%;
-  }
-
-  .dark.theme-christmas {
-    --background: 120 20% 5%;
-    --foreground: 120 10% 95%;
-    --primary: 0 70% 55%; /* Red */
-    --secondary: 120 20% 10%;
-    --accent: 120 40% 50%; /* Green */
-  }
-
-  .theme-valentines {
-    --background: 350 100% 97%;
-    --foreground: 350 50% 20%;
-    --primary: 340 82% 61%; /* Pink */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 350 100% 95%;
-    --secondary-foreground: 340 82% 40%;
-    --accent: 0 72% 51%; /* Red */
-    --accent-foreground: 0 0% 100%;
-  }
-  
-  .dark.theme-valentines {
-    --background: 340 15% 8%;
-    --foreground: 340 10% 95%;
-    --primary: 340 82% 61%; /* Pink */
-    --secondary: 340 15% 15%;
-    --accent: 0 72% 51%; /* Red */
-  }
-
-  .theme-new-year {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 10%;
-    --primary: 45 100% 51%; /* Gold */
-    --primary-foreground: 0 0% 10%;
-    --secondary: 0 0% 95%;
-    --secondary-foreground: 0 0% 20%;
-    --accent: 0 0% 13%; /* Black */
-    --accent-foreground: 0 0% 98%;
-  }
-
-  .dark.theme-new-year {
-    --background: 0 0% 8%;
-    --foreground: 0 0% 98%;
-    --primary: 45 100% 51%; /* Gold */
-    --primary-foreground: 0 0% 10%;
-    --secondary: 0 0% 15%;
-    --accent: 0 0% 85%; /* Light gray instead of black on dark*/
-    --accent-foreground: 0 0% 10%;
-  }
-
-  .theme-eid {
-    --background: 140 50% 98%;
-    --foreground: 140 50% 10%;
-    --primary: 150 54% 42%; /* Dark Green */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 140 50% 95%;
-    --secondary-foreground: 150 54% 22%;
-    --accent: 45 86% 61%; /* Gold */
-    --accent-foreground: 140 50% 10%;
-  }
-
-  .dark.theme-eid {
-    --background: 140 20% 8%;
-    --foreground: 140 10% 95%;
-    --primary: 150 54% 52%; /* Dark Green */
-    --secondary: 140 20% 15%;
-    --accent: 45 86% 61%; /* Gold */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 45 100% 51%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 45 100% 51%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 45 100% 51%;
   }
 }
 
@@ -177,112 +65,5 @@
   }
   body {
     @apply bg-background text-foreground;
-  }
-}
-
-/* Theme Effects */
-.theme-effects-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1000;
-    overflow: hidden;
-}
-
-/* Hide all effects by default */
-.snow, .hearts, .fireworks {
-    display: none;
-}
-
-/* Christmas Snow */
-.theme-christmas .snow { display: block; }
-.snowflake {
-    color: white;
-    font-size: 1.5rem;
-    position: absolute;
-    top: -10%;
-    animation: fall linear infinite;
-}
-@keyframes fall {
-    to { transform: translateY(105vh); }
-}
-
-/* Valentine's Hearts */
-.theme-valentines .hearts { display: block; }
-.heart {
-    color: #ff4d4d;
-    font-size: 1.5rem;
-    position: absolute;
-    bottom: -10%;
-    animation: rise linear infinite;
-    opacity: 0.7;
-}
-@keyframes rise {
-    to { 
-        transform: translateY(-105vh) rotate(360deg);
-        opacity: 0;
-    }
-}
-
-/* New Year Fireworks */
-.theme-new-year .fireworks { display: block; }
-
-.firework {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: gold;
-  border-radius: 50%;
-  opacity: 1;
-  animation: launch 1.5s ease-in-out infinite;
-}
-
-@keyframes launch {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: translateY(-100px) scale(1.5);
-    opacity: 0.5;
-  }
-  100% {
-    transform: translateY(-200px) scale(0);
-    opacity: 0;
-  }
-}
-
-.firework::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 100%;
-  width: 2px;
-  height: 50px;
-  background: linear-gradient(to top, rgba(255,215,0,0.5), transparent);
-  transform: translateX(-50%);
-}
-
-.firework > div {
-  position: absolute;
-  width: 2px;
-  height: 70px;
-  background: gold;
-  transform-origin: 50% 100%;
-  opacity: 0;
-  animation: explode 0.8s 1.5s ease-out infinite;
-}
-
-@keyframes explode {
-  0% {
-    transform: rotate(0deg) translateY(0) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: rotate(0deg) translateY(50px) scale(0);
-    opacity: 0;
   }
 }
