@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Bootcamp } from "@/lib/types";
 import { getAllBootcamps, deleteBootcamp, createPermissionRequest } from '@/lib/firebase-service';
-import { FilePlus2, Pencil, Trash2, Loader2, Library, Rocket } from "lucide-react";
+import { FilePlus2, Pencil, Trash2, Loader2, Library, Rocket, Users, GitBranch } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -24,10 +24,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { format } from 'date-fns';
 
 export default function AdminBootcampsPage() {
   const { user, isSuperAdmin } = useAuth();
   const [bootcamps, setBootcamps] = useState<Bootcamp[]>([]);
+  const [participantsMap, setParticipantsMap] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -61,7 +63,19 @@ export default function AdminBootcampsPage() {
         toast({ title: "Error", description: "Failed to delete bootcamp.", variant: "destructive" });
         }
     } else {
-        toast({ title: "Action Not Permitted", description: "Only a super admin can delete a bootcamp." });
+       try {
+            await createPermissionRequest({
+                requesterId: user.uid,
+                requesterName: user.displayName || 'Unknown Admin',
+                action: 'delete_bootcamp',
+                itemId: bootcamp.id,
+                itemName: bootcamp.title,
+            });
+            toast({ title: "Request Sent", description: "Your request to delete this bootcamp has been sent for approval."});
+        } catch (error) {
+             console.error("Failed to create permission request:", error);
+            toast({ title: "Error", description: "Could not send deletion request.", variant: "destructive" });
+        }
     }
   };
 
@@ -120,10 +134,10 @@ export default function AdminBootcampsPage() {
                           <TableCell>Ksh {bootcamp.price.toLocaleString()}</TableCell>
                           <TableCell>{bootcamp.duration}</TableCell>
                           <TableCell className="text-right">
-                            <Button asChild variant="ghost" size="icon" className="mr-2">
-                              <Link href={`/admin/bootcamps/edit/${bootcamp.id}`}>
-                                <Pencil className="h-4 w-4" />
-                              </Link>
+                             <Button asChild variant="ghost" size="icon" className="mr-2">
+                                <Link href={isSuperAdmin ? `/admin/bootcamps/edit/${bootcamp.id}` : `/bootcamps/${bootcamp.id}`}>
+                                    <Pencil className="h-4 w-4" />
+                                </Link>
                             </Button>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
@@ -137,17 +151,15 @@ export default function AdminBootcampsPage() {
                                   <AlertDialogDescription>
                                     {isSuperAdmin
                                       ? `This action cannot be undone. This will permanently delete the bootcamp "${bootcamp.title}".`
-                                      : `You do not have permission to delete this bootcamp. Please contact a super admin.`
+                                      : `You are requesting to delete the bootcamp "${bootcamp.title}". This will send a request to a super admin for approval.`
                                     }
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  {isSuperAdmin && (
-                                     <AlertDialogAction onClick={() => handleDelete(bootcamp)}>
-                                      Yes, delete it
+                                  <AlertDialogAction onClick={() => handleDelete(bootcamp)}>
+                                      {isSuperAdmin ? 'Yes, delete it' : 'Yes, send request'}
                                     </AlertDialogAction>
-                                  )}
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>

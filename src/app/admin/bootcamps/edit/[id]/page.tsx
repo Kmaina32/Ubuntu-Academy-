@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -24,6 +23,7 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
+import { useAuth } from '@/hooks/use-auth';
 
 const bootcampFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -39,6 +39,7 @@ export default function EditBootcampPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const { toast } = useToast();
+  const { isSuperAdmin, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [bootcamp, setBootcamp] = useState<Bootcamp | null>(null);
@@ -47,10 +48,18 @@ export default function EditBootcampPage() {
   const form = useForm<z.infer<typeof bootcampFormSchema>>({
     resolver: zodResolver(bootcampFormSchema),
   });
+  
+  useEffect(() => {
+    if (!authLoading && !isSuperAdmin) {
+        toast({ title: "Access Denied", description: "You do not have permission to view this page.", variant: "destructive" });
+        router.push('/admin/bootcamps');
+    }
+  }, [isSuperAdmin, authLoading, router, toast]);
 
   useEffect(() => {
+    if (!params.id || !isSuperAdmin) return;
+    
     const fetchData = async () => {
-      if (!params.id) return;
       setIsFetching(true);
       try {
         const [data, coursesData] = await Promise.all([
@@ -81,7 +90,7 @@ export default function EditBootcampPage() {
       }
     };
     fetchData();
-  }, [params.id, form, toast]);
+  }, [params.id, form, toast, isSuperAdmin]);
 
   const onSubmit = async (values: z.infer<typeof bootcampFormSchema>) => {
     if (!params.id) return;
@@ -107,6 +116,14 @@ export default function EditBootcampPage() {
       setIsLoading(false);
     }
   };
+
+  if (authLoading || !isSuperAdmin) {
+      return (
+           <div className="flex justify-center items-center h-screen">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+      )
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
