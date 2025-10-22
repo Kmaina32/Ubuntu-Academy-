@@ -286,9 +286,11 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
 
         try {
             const result = await courseTutor({ 
-                question: action ? undefined : currentQuestion, 
+                question: action ? undefined : currentQuestion,
                 action,
+                courseTitle: course.title,
                 courseContext: lesson.content,
+                history: messages.map(({ audioUrl, suggestions, ...rest }) => rest), // pass clean history
                 voice: settings?.voice,
                 speed: settings?.speed
             });

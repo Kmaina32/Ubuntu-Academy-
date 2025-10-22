@@ -19,6 +19,7 @@ import type { CreateOrgInviteInput as SendOrgInviteInput, CreateOrgInviteOutput 
 import type { GenerateFormalDocumentInput, GenerateFormalDocumentOutput } from '@/ai/flows/generate-document';
 import type { GenerateHackathonIdeasInput, GenerateHackathonIdeasOutput } from '@/ai/flows/generate-hackathon-ideas';
 import type { TextToSpeechOutput, TextToSpeechInput } from '@/ai/flows/text-to-speech';
+import type { StudentHelpInput, StudentHelpOutput } from '@/ai/flows/student-help';
 
 // Each function dynamically imports its corresponding flow, ensuring that the AI logic
 // is only loaded on the server when the action is executed.
