@@ -29,7 +29,7 @@ import { Separator } from '@/components/ui/separator';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DiscussionForum } from '@/components/shared/DiscussionForum';
+import { DiscussionForum } from '@/components/DiscussionForum';
 import { slugify } from '@/lib/utils';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
 import { NotebookSheet } from '@/components/NotebookSheet';
@@ -451,7 +451,7 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
     )
 }
 
-function LessonContent({ lesson, onComplete }: { lesson: Lesson | null; onComplete: () => void }) {
+function LessonContent({ lesson, onComplete, courseTitle }: { lesson: Lesson | null; onComplete: () => void; courseTitle: string; }) {
   const [currentPage, setCurrentPage] = useState(0);
 
   const pages = useMemo(() => {
@@ -482,6 +482,10 @@ function LessonContent({ lesson, onComplete }: { lesson: Lesson | null; onComple
     // Reset to the first page when the lesson changes
     setCurrentPage(0);
   }, [lesson]);
+  
+  const handleTTS = async () => {
+    // Add logic to call TTS flow with lesson content
+  }
 
   if (!lesson) return null;
 
@@ -490,7 +494,13 @@ function LessonContent({ lesson, onComplete }: { lesson: Lesson | null; onComple
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-4 font-headline">{lesson.title}</h1>
+        <div className="flex justify-between items-start mb-4">
+            <h1 className="text-3xl font-bold font-headline">{lesson.title}</h1>
+            <Button variant="outline" size="sm" onClick={handleTTS}>
+                <Volume2 className="mr-2 h-4 w-4" />
+                Listen
+            </Button>
+        </div>
       <div className="aspect-video bg-black rounded-lg mb-6">
         {getYouTubeEmbedUrl(lesson.youtubeLinks?.[0]?.url) ? (
           <iframe
@@ -776,7 +786,7 @@ export default function CoursePlayerPage() {
                   </TabsList>
                   <TabsContent value="lesson">
                      {currentLesson ? (
-                        <LessonContent lesson={currentLesson} onComplete={handleCompleteLesson} />
+                        <LessonContent lesson={currentLesson} onComplete={handleCompleteLesson} courseTitle={course.title} />
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full text-center">
                             {progress >= 100 ? (

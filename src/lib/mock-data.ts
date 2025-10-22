@@ -79,6 +79,7 @@ export interface Course {
   exam: ExamQuestion[];
   createdAt: string; // ISO string
   project?: Project;
+  discussionPrompt?: string;
 }
 
 export interface Program {
@@ -107,6 +108,7 @@ export interface Bootcamp {
   imageUrl: string;
   duration: string;
   startDate: string; // ISO String
+  participants?: Record<string, boolean>;
 }
 
 
@@ -143,6 +145,15 @@ export interface Notification {
     link?: string;
     createdAt: string;
     cohort?: string;
+    userId?: string; // For targeted notifications
+    actions?: Array<{
+        title: string;
+        action: 'accept_org_invite';
+        payload: {
+            inviteId: string;
+            organizationId: string;
+        };
+    }>
 }
 
 export interface DiscussionReply {
@@ -207,6 +218,7 @@ export interface Portfolio {
         twitter?: string;
     };
     public?: boolean;
+    projects?: Project[];
 }
 
 export interface LearningGoal {
@@ -228,13 +240,12 @@ export interface CourseFeedback {
 
 export interface Project {
     id: string;
-    courseId: string;
-    userId: string;
     title: string;
     description: string;
-    url?: string;
-    content?: string;
-    submittedAt: string;
+    imageUrl: string;
+    liveUrl?: string;
+    sourceUrl?: string;
+    technologies: string[];
 }
 
 export interface Organization {
@@ -245,7 +256,8 @@ export interface Organization {
     subscriptionTier: 'trial' | 'basic' | 'pro';
     subscriptionExpiresAt: string | null;
     memberLimit: number;
-    members?: string[];
+    logoUrl?: string;
+    welcomeMessage?: string;
 }
 
 
@@ -287,5 +299,7 @@ export interface Invitation {
     email: string;
     organizationId: string;
     organizationName: string;
+    status: 'pending' | 'accepted';
     createdAt: string; // ISO String
+    userId?: string; // Added to link to the user being invited
 }
