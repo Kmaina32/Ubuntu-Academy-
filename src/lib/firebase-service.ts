@@ -95,8 +95,7 @@ export async function deleteCourse(courseId: string): Promise<void> {
 
 
 // User Functions
-export async function saveUser(userData: Partial<Omit<RegisteredUser, 'uid'>> & { uid: string }): Promise<void> {
-    const { uid, ...dataToSave } = userData;
+export async function saveUser(uid: string, dataToSave: Partial<Omit<RegisteredUser, 'uid'>>): Promise<void> {
     const userRef = ref(db, `users/${uid}`);
     await update(userRef, dataToSave);
 
@@ -797,4 +796,39 @@ export async function getDocument(docType: string): Promise<string> {
     const docRef = ref(db, `documents/${docType}/content`);
     const snapshot = await get(docRef);
     return snapshot.exists() ? snapshot.val() : '';
+}
+
+
+// Certificate Verification
+export async function getVerifiedCertificateData(certificateId: string): Promise<{isValid: boolean, student?: RegisteredUser, course?: Course}> {
+    const usersRef = ref(db, 'users');
+    const snapshot = await get(usersRef);
+    if (!snapshot.exists()) return { isValid: false };
+    
+    const usersData = snapshot.val();
+    let foundUser: RegisteredUser | undefined;
+    let foundCourseId: string | undefined;
+
+    for (const uid of Object.keys(usersData)) {
+        const user = usersData[uid];
+        if (user.purchasedCourses) {
+            for (const courseId of Object.keys(user.purchasedCourses)) {
+                if (user.purchasedCourses[courseId].certificateId === certificateId) {
+                    foundUser = { uid, ...user };
+                    foundCourseId = courseId;
+                    break;
+                }
+            }
+        }
+        if (foundUser) break;
+    }
+    
+    if (foundUser && foundCourseId) {
+        const course = await getCourseById(foundCourseId);
+        if (course) {
+            return { isValid: true, student: foundUser, course: course };
+        }
+    }
+    
+    return { isValid: false };
 }

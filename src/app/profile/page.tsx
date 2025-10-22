@@ -28,15 +28,16 @@ import { auth } from '@/lib/firebase';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import type { RegisteredUser } from '@/lib/mock-data';
+import { Icon } from '@iconify/react';
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, 'First name is required.'),
   middleName: z.string().optional(),
   lastName: z.string().min(1, 'Last name is required.'),
   summary: z.string().optional(),
-  github: z.string().url().optional().or(z.literal('')),
-  linkedin: z.string().url().optional().or(z.literal('')),
-  twitter: z.string().url().optional().or(z.literal('')),
+  github: z.string().url({ message: 'Must be a valid URL.' }).optional().or(z.literal('')),
+  gitlab: z.string().url({ message: 'Must be a valid URL.' }).optional().or(z.literal('')),
+  bitbucket: z.string().url({ message: 'Must be a valid URL.' }).optional().or(z.literal('')),
   public: z.boolean().default(false),
 });
 
@@ -72,8 +73,8 @@ export default function ProfilePage() {
         lastName: '',
         summary: '',
         github: '',
-        linkedin: '',
-        twitter: '',
+        gitlab: '',
+        bitbucket: '',
         public: false,
     }
   });
@@ -93,8 +94,8 @@ export default function ProfilePage() {
             lastName,
             summary: profile.portfolio?.summary || '',
             github: profile.portfolio?.socialLinks?.github || '',
-            linkedin: profile.portfolio?.socialLinks?.linkedin || '',
-            twitter: profile.portfolio?.socialLinks?.twitter || '',
+            gitlab: profile.portfolio?.socialLinks?.gitlab || '',
+            bitbucket: profile.portfolio?.socialLinks?.bitbucket || '',
             public: profile.portfolio?.public || false,
           });
         }
@@ -155,7 +156,7 @@ export default function ProfilePage() {
     try {
         const downloadURL = await uploadImage(user.uid, file);
         await updateProfile(user, { photoURL: downloadURL });
-        await saveUser(user.uid, { photoURL: downloadURL });
+        await saveUser({ uid: user.uid, photoURL: downloadURL });
         // Force a reload of the user to get the new photoURL
         await auth.currentUser?.reload();
         setUser(auth.currentUser);
@@ -203,15 +204,16 @@ export default function ProfilePage() {
         }
 
         // Update the user record in the Realtime Database
-        await saveUser(user.uid, {
+        await saveUser({
+            uid: user.uid,
             displayName: newDisplayName,
             photoURL: user.photoURL,
             portfolio: {
                 summary: values.summary,
                 socialLinks: {
                     github: values.github,
-                    linkedin: values.linkedin,
-                    twitter: values.twitter,
+                    gitlab: values.gitlab,
+                    bitbucket: values.bitbucket,
                 },
                 public: values.public,
             }
@@ -372,9 +374,9 @@ export default function ProfilePage() {
                                 />
 
                             <div className="grid grid-cols-1 gap-4">
-                                <FormField control={form.control} name="github" render={({ field }) => (<FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input placeholder="https://github.com/username" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name="linkedin" render={({ field }) => (<FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input placeholder="https://linkedin.com/in/username" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name="twitter" render={({ field }) => (<FormItem><FormLabel>X (Twitter) URL</FormLabel><FormControl><Input placeholder="https://x.com/username" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                               <FormField control={form.control} name="github" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:github" className="h-5 w-5" /> GitHub URL</div></FormLabel> <FormControl> <Input placeholder="https://github.com/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                               <FormField control={form.control} name="gitlab" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:gitlab" className="h-5 w-5" /> GitLab URL</div></FormLabel> <FormControl> <Input placeholder="https://gitlab.com/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                               <FormField control={form.control} name="bitbucket" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:bitbucket" className="h-5 w-5" /> Bitbucket URL</div></FormLabel> <FormControl> <Input placeholder="https://bitbucket.org/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
                             </div>
                             
                             <FormField

@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Github, Linkedin, Loader2, Twitter, Users } from 'lucide-react';
 import Link from 'next/link';
+import { Icon } from '@iconify/react';
 
 const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
@@ -75,13 +76,13 @@ export default function PortfoliosPage() {
                                             </CardHeader>
                                             <CardContent className="flex-grow text-center">
                                                 <p className="text-muted-foreground line-clamp-3">
-                                                    {profile.portfolio?.summary || 'A passionate learner from Akili A.I Academy.'}
+                                                    {profile.portfolio?.summary || 'A passionate learner from Manda Network.'}
                                                 </p>
                                             </CardContent>
                                             <CardContent className="flex justify-center gap-2">
-                                                {profile.portfolio?.socialLinks?.github && <Button asChild variant="ghost" size="icon"><a href={profile.portfolio.socialLinks.github} target="_blank" rel="noreferrer"><Github/></a></Button>}
-                                                {profile.portfolio?.socialLinks?.linkedin && <Button asChild variant="ghost" size="icon"><a href={profile.portfolio.socialLinks.linkedin} target="_blank" rel="noreferrer"><Linkedin/></a></Button>}
-                                                {profile.portfolio?.socialLinks?.twitter && <Button asChild variant="ghost" size="icon"><a href={profile.portfolio.socialLinks.twitter} target="_blank" rel="noreferrer"><Twitter/></a></Button>}
+                                                {profile.portfolio?.socialLinks?.github && <Button asChild variant="ghost" size="icon"><a href={profile.portfolio.socialLinks.github} target="_blank" rel="noreferrer"><Icon icon="mdi:github" className="h-5 w-5" /></a></Button>}
+                                                {profile.portfolio?.socialLinks?.gitlab && <Button asChild variant="ghost" size="icon"><a href={profile.portfolio.socialLinks.gitlab} target="_blank" rel="noreferrer"><Icon icon="mdi:gitlab" className="h-5 w-5" /></a></Button>}
+                                                {profile.portfolio?.socialLinks?.bitbucket && <Button asChild variant="ghost" size="icon"><a href={profile.portfolio.socialLinks.bitbucket} target="_blank" rel="noreferrer"><Icon icon="mdi:bitbucket" className="h-5 w-5" /></a></Button>}
                                             </CardContent>
                                             <CardContent>
                                                 <Button asChild className="w-full">

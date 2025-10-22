@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Award, Github, Linkedin, Loader2, Twitter } from 'lucide-react';
 import Link from 'next/link';
 import { slugify } from '@/lib/utils';
+import { Icon } from '@iconify/react';
 
 type CourseWithDetails = UserCourse & Partial<Course>;
 
@@ -95,9 +96,9 @@ export default function PortfolioPage() {
                                     <h1 className="text-3xl md:text-4xl font-bold font-headline">{user.displayName}</h1>
                                     <p className="text-muted-foreground mt-2">{user.portfolio?.summary || 'Lifelong learner and digital skills enthusiast.'}</p>
                                     <div className="flex justify-center md:justify-start gap-2 mt-4">
-                                        {user.portfolio?.socialLinks?.github && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.github} target="_blank" rel="noreferrer"><Github/></a></Button>}
-                                        {user.portfolio?.socialLinks?.linkedin && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.linkedin} target="_blank" rel="noreferrer"><Linkedin/></a></Button>}
-                                        {user.portfolio?.socialLinks?.twitter && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.twitter} target="_blank" rel="noreferrer"><Twitter/></a></Button>}
+                                        {user.portfolio?.socialLinks?.github && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.github} target="_blank" rel="noreferrer"><Icon icon="mdi:github" className="h-5 w-5" /></a></Button>}
+                                        {user.portfolio?.socialLinks?.gitlab && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.gitlab} target="_blank" rel="noreferrer"><Icon icon="mdi:gitlab" className="h-5 w-5" /></a></Button>}
+                                        {user.portfolio?.socialLinks?.bitbucket && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.bitbucket} target="_blank" rel="noreferrer"><Icon icon="mdi:bitbucket" className="h-5 w-5" /></a></Button>}
                                     </div>
                                 </div>
                             </Card>

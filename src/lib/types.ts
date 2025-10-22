@@ -207,8 +207,8 @@ export interface Portfolio {
     summary?: string;
     socialLinks?: {
         github?: string;
-        linkedin?: string;
-        twitter?: string;
+        gitlab?: string;
+        bitbucket?: string;
     };
     public?: boolean;
 }

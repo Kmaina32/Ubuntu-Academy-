@@ -12,11 +12,12 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Gem, LayoutDashboard, Users, BookOpen, CreditCard, Settings, ExternalLink, Tag, LogOut, Home, Clapperboard } from 'lucide-react';
+import { GitBranch, LayoutDashboard, Users, BookOpen, CreditCard, Settings, ExternalLink, Tag, LogOut, Home, Clapperboard } from 'lucide-react';
 import pkg from '../../../package.json';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { useAuth } from '@/hooks/use-auth';
+import Image from 'next/image';
 
 export function OrganizationSidebar() {
     const pathname = usePathname();
@@ -39,7 +40,7 @@ export function OrganizationSidebar() {
     <Sidebar>
         <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
-                <Gem className="h-6 w-6 text-primary" />
+                <Image src="/logo.png" alt="Manda Network Logo" width={24} height={24} className="h-6 w-6" />
                 <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Manda Network</span>
             </div>
         </SidebarHeader>
