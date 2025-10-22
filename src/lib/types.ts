@@ -64,10 +64,14 @@ export interface CalendarEvent {
   description: string;
 }
 
-export interface Project {
+export interface PortfolioProject {
     id: string;
     title: string;
     description: string;
+    imageUrl: string;
+    liveUrl?: string;
+    sourceUrl?: string;
+    technologies: string[];
 }
 
 export interface Course {
@@ -84,7 +88,7 @@ export interface Course {
   modules: Module[];
   exam: ExamQuestion[];
   createdAt: string; // ISO string
-  project?: Project;
+  project?: PortfolioProject;
   prerequisiteCourseId?: string;
 }
 
@@ -224,6 +228,7 @@ export interface Portfolio {
         bitbucket?: string;
     };
     public?: boolean;
+    projects?: PortfolioProject[];
 }
 
 export interface LearningGoal {

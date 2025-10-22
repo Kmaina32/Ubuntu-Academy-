@@ -4,18 +4,19 @@
 import { useState, useEffect } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import { getUserById, getUserCourses, getAllCourses } from '@/lib/firebase-service';
-import type { RegisteredUser, Course, UserCourse } from '@/lib/mock-data';
+import type { RegisteredUser, Course, UserCourse, PortfolioProject } from '@/lib/types';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/Sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Award, Github, Linkedin, Loader2, Twitter } from 'lucide-react';
+import { Award, Github, Linkedin, Loader2, Twitter, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { slugify } from '@/lib/utils';
 import { Icon } from '@iconify/react';
+import Image from 'next/image';
 
 type CourseWithDetails = UserCourse & Partial<Course>;
 
@@ -102,6 +103,32 @@ export default function PortfolioPage() {
                                     </div>
                                 </div>
                             </Card>
+
+                             {user.portfolio?.projects && user.portfolio.projects.length > 0 && (
+                                <Card className="mb-8">
+                                    <CardHeader>
+                                        <CardTitle>Featured Projects</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {user.portfolio.projects.map(project => (
+                                            <Card key={project.id} className="overflow-hidden flex flex-col">
+                                                <Image src={project.imageUrl} alt={project.title} width={400} height={250} className="w-full h-40 object-cover" />
+                                                <div className="p-4 flex-grow flex flex-col">
+                                                    <h3 className="font-semibold">{project.title}</h3>
+                                                    <p className="text-sm text-muted-foreground mt-1 flex-grow">{project.description}</p>
+                                                    <div className="flex flex-wrap gap-2 mt-4">
+                                                        {project.technologies.map(tech => <Badge key={tech} variant="secondary">{tech}</Badge>)}
+                                                    </div>
+                                                </div>
+                                                <CardFooter className="flex gap-2">
+                                                    {project.sourceUrl && <Button asChild size="sm" variant="outline"><a href={project.sourceUrl} target="_blank" rel="noreferrer"><Icon icon="mdi:github" className="mr-2 h-4 w-4" />Source</a></Button>}
+                                                    {project.liveUrl && <Button asChild size="sm"><a href={project.liveUrl} target="_blank" rel="noreferrer"><ExternalLink className="mr-2 h-4 w-4" />Live Demo</a></Button>}
+                                                </CardFooter>
+                                            </Card>
+                                        ))}
+                                    </CardContent>
+                                </Card>
+                            )}
 
                             <Card>
                                 <CardHeader>
