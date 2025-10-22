@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -13,7 +14,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library, Briefcase, Tag, Building, Users as PortfoliosIcon, Rocket, Trophy } from 'lucide-react';
+import { GitBranch, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library, Briefcase, Tag, Building, Users as PortfoliosIcon, Rocket, Trophy } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from './ui/separator';
 import pkg from '../../package.json';
@@ -78,7 +79,7 @@ export function AppSidebar() {
     <Sidebar>
         <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
-                <Image src="/logo.png" alt="Manda Network Logo" width={24} height={24} className="h-6 w-6" />
+                <GitBranch className="h-6 w-6 text-yellow-500" />
                 <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Manda Network</span>
             </div>
         </SidebarHeader>

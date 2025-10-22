@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -12,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Gem, User, LogOut, Trophy, ExternalLink, Tag, GitBranch, Award } from 'lucide-react';
+import { GitBranch, User, LogOut, Trophy, ExternalLink, Tag, Award } from 'lucide-react';
 import pkg from '../../package.json';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
@@ -36,7 +37,7 @@ export function PortalSidebar() {
     <Sidebar>
         <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
-                <Gem className="h-6 w-6 text-primary" />
+                <GitBranch className="h-6 w-6 text-yellow-500" />
                 <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Manda Network</span>
             </div>
         </SidebarHeader>

@@ -14,8 +14,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Gem, ArrowLeft, AlertTriangle, Shield } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle, AlertTriangle } from '@/components/ui/alert';
+import { Loader2, GitBranch, ArrowLeft, Shield } from 'lucide-react';
 import { getHeroData, getInvitation, deleteInvitation } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { Separator } from '@/components/ui/separator';
@@ -154,7 +154,7 @@ export default function SignupPage() {
             </Button>
            <div className="grid gap-2 text-center">
               <Link href="/" className="flex items-center justify-center gap-2 font-bold text-2xl font-headline">
-                  <Gem className="h-7 w-7 text-primary" />
+                  <GitBranch className="h-7 w-7 text-yellow-500" />
                   <span>Manda Network</span>
               </Link>
           </div>

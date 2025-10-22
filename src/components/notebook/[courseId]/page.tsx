@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -10,7 +11,7 @@ import { z } from 'zod';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Download, Gem, NotebookIcon, UploadCloud } from 'lucide-react';
+import { ArrowLeft, Loader2, Download, GitBranch, NotebookIcon, UploadCloud } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -235,7 +236,7 @@ export default function NotebookPage() {
         <div ref={pdfRef} className="p-10 bg-white w-[595px] text-black">
             <div className="border-b-2 border-black pb-4 mb-4 flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                    <Gem className="h-8 w-8 text-primary" />
+                    <GitBranch className="h-8 w-8 text-yellow-500" />
                     <span className="font-bold text-xl font-headline">Manda Network</span>
                 </div>
                 <div className="text-right text-xs">

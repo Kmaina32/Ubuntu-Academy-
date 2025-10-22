@@ -110,7 +110,7 @@ export default function LoginPage() {
             </Button>
            <div className="grid gap-2 text-center">
               <Link href="/" className="flex items-center justify-center gap-2 font-bold text-2xl font-headline">
-                  <GitBranch className="h-7 w-7 text-primary" />
+                  <GitBranch className="h-7 w-7 text-yellow-500" />
                   <span>Manda Network</span>
               </Link>
           </div>
