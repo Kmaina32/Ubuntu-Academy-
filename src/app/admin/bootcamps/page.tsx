@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -8,7 +7,7 @@ import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { Bootcamp } from "@/lib/mock-data";
+import type { Bootcamp } from "@/lib/types";
 import { getAllBootcamps, deleteBootcamp, createPermissionRequest } from '@/lib/firebase-service';
 import { FilePlus2, Pencil, Trash2, Loader2, Library, Rocket } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';

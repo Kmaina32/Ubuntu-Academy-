@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import type { Program } from '@/lib/mock-data';
+import type { Program } from '@/lib/types';
 import { Layers } from 'lucide-react';
 
 interface ProgramCardProps {

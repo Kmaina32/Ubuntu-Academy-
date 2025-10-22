@@ -5,7 +5,7 @@
 // between server and client code. All functions exported from a 'use server' file must be async.
 
 import type { LearningPathInput, LearningPathOutput } from '@/ai/flows/career-coach';
-import type { ContentStrategyOutput, CardPaymentInput, PayPalPaymentInput } from '@/lib/types';
+import type { ContentStrategyOutput, CardPaymentInput, PayPalPaymentInput, ApiKey } from '@/lib/types';
 import type { CourseTutorInput, CourseTutorOutput } from '@/ai/flows/course-tutor';
 import type { GenerateApiKeyInput } from '@/ai/flows/generate-api-key';
 import type { GenerateCourseContentInput, GenerateCourseContentOutput } from '@/ai/flows/generate-course-content';
@@ -14,7 +14,6 @@ import type { GradeShortAnswerExamInput, GradeShortAnswerExamOutput } from '@/ai
 import type { MpesaPaymentInput, MpesaPaymentOutput } from '@/ai/flows/mpesa-payment';
 import type { SiteHelpInput, SiteHelpOutput } from '@/ai/flows/site-help';
 import type { SpeechToTextOutput } from '@/ai/flows/speech-to-text';
-import type { ApiKey } from '@/lib/types';
 import type { GenerateProjectInput, GenerateProjectOutput } from '@/ai/flows/generate-project';
 import type { CreateOrgInviteInput as SendOrgInviteInput, CreateOrgInviteOutput as SendOrgInviteOutput } from '@/ai/flows/send-org-invite';
 import type { GenerateFormalDocumentInput, GenerateFormalDocumentOutput } from '@/ai/flows/generate-document';

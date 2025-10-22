@@ -15,7 +15,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createAssignment, updateAssignment } from '@/lib/firebase-service';
-import type { Course, Assignment } from '@/lib/mock-data';
+import type { Course, Assignment } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 

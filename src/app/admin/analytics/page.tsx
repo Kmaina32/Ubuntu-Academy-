@@ -3,13 +3,13 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Footer } from "@/components/Footer";
+import { Footer } from "@/components/shared/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, Sparkles, Users, BookOpen, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { runContentStrategy } from '@/app/actions';
-import type { ContentStrategyOutput, Course, RegisteredUser } from '@/lib/mock-data';
+import type { ContentStrategyOutput, Course, RegisteredUser } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { getAllCourses, getAllUsers } from '@/lib/firebase-service';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";

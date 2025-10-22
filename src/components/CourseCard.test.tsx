@@ -1,7 +1,8 @@
 
 import { render, screen } from '@testing-library/react'
-import { CourseCard } from './CourseCard'
-import type { Course } from '@/lib/mock-data'
+import { CourseCard } from './shared/CourseCard'
+import type { Course } from '@/lib/types'
+import { slugify } from '@/lib/utils'
 
 const mockCourse: Course = {
   id: 'test-course',
@@ -33,14 +34,14 @@ describe('CourseCard', () => {
     render(<CourseCard course={mockCourse} isEnrolled={false} aiHint="test" />)
     const button = screen.getByRole('link', { name: /View Course/i })
     expect(button).toBeInTheDocument()
-    expect(button).toHaveAttribute('href', `/courses/${mockCourse.id}`)
+    expect(button).toHaveAttribute('href', `/courses/${slugify(mockCourse.title)}`)
   });
 
   it('renders "Go to Course" button when enrolled', () => {
     render(<CourseCard course={mockCourse} isEnrolled={true} aiHint="test" />)
     const button = screen.getByRole('link', { name: /Go to Course/i })
     expect(button).toBeInTheDocument()
-    expect(button).toHaveAttribute('href', `/courses/${mockCourse.id}/learn`)
+    expect(button).toHaveAttribute('href', `/courses/${slugify(mockCourse.title)}/learn`)
   });
 
   it('displays "Free" for a course with a price of 0', () => {

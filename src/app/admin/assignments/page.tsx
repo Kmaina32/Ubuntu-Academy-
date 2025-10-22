@@ -3,13 +3,13 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Footer } from "@/components/Footer";
+import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getAllSubmissions, getCourseById, getAllCourses } from '@/lib/firebase-service';
-import type { Submission, Course } from '@/lib/mock-data';
-import { ArrowLeft, Loader2, Star, CheckCircle, Edit, Briefcase, BookCopy } from 'lucide-react';
+import type { Submission, Course } from '@/lib/types';
+import { ArrowLeft, Loader2, Star, CheckCircle, Edit, Briefcase } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';

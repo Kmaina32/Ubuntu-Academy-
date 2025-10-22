@@ -15,7 +15,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { enrollUserInCourse } from '@/lib/firebase-service';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { processMpesaPayment } from '@/app/actions';
@@ -63,6 +62,7 @@ export function MpesaModal({
 
     try {
       const result = await processMpesaPayment({
+        userId: user.uid,
         phoneNumber,
         amount: 1, // Using 1 for sandbox environment
         courseId,
@@ -70,7 +70,6 @@ export function MpesaModal({
 
       if (result.success) {
         // You could poll a callback or just assume success for demo
-        await enrollUserInCourse(user.uid, courseId);
         setIsLoading(false);
         setPaymentStep('success');
         await new Promise(resolve => setTimeout(resolve, 2000));

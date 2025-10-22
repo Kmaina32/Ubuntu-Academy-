@@ -3,11 +3,11 @@ import { render, screen } from '@testing-library/react'
 import AboutPage from './page'
 
 // Mock the Header and Footer components to isolate the page content for testing
-jest.mock('@/components/Header', () => ({
+jest.mock('@/components/shared/Header', () => ({
   Header: () => <header>Mocked Header</header>,
 }))
 
-jest.mock('@/components/Footer', () => ({
+jest.mock('@/components/shared/Footer', () => ({
   Footer: () => <footer>Mocked Footer</footer>,
 }))
 
