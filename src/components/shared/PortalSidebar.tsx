@@ -14,9 +14,9 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { GitBranch, User, LogOut, Trophy, ExternalLink, Tag, Award } from 'lucide-react';
-import pkg from '../../package.json';
-import { Button } from './ui/button';
-import { Separator } from './ui/separator';
+import pkg from '../../../package.json';
+import { Button } from '../ui/button';
+import { Separator } from '../ui/separator';
 import { useAuth } from '@/hooks/use-auth';
 
 export function PortalSidebar() {

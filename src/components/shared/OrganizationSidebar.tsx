@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -17,7 +18,6 @@ import pkg from '../../../package.json';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { useAuth } from '@/hooks/use-auth';
-import Image from 'next/image';
 
 export function OrganizationSidebar() {
     const pathname = usePathname();
@@ -40,7 +40,7 @@ export function OrganizationSidebar() {
     <Sidebar>
         <SidebarHeader className="mb-4">
             <div className="flex items-center gap-2">
-                <Image src="/logo.png" alt="Manda Network Logo" width={24} height={24} className="h-6 w-6" />
+                <GitBranch className="h-6 w-6 text-yellow-500" />
                 <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">Manda Network</span>
             </div>
         </SidebarHeader>
