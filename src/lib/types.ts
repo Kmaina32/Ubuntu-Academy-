@@ -105,6 +105,18 @@ export interface Bundle {
   imageUrl: string;
 }
 
+export interface Bootcamp {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  courseIds: string[];
+  imageUrl: string;
+  duration: string;
+  startDate: string; // ISO String
+  participants?: Record<string, boolean>;
+}
+
 
 export const user = {
     name: 'Jomo Kenyatta',
@@ -320,4 +332,37 @@ export interface PayPalPaymentInput {
     itemId: string;
     itemName: string;
     amount: number;
+}
+
+export interface Hackathon {
+  id: string;
+  title: string;
+  description: string;
+  prizeMoney: number;
+  entryFee: number;
+  startDate: string; // ISO String
+  endDate: string; // ISO String
+  imageUrl: string;
+  externalUrl?: string;
+}
+
+export interface HackathonSubmission {
+  id: string;
+  hackathonId: string;
+  hackathonTitle: string;
+  userId: string;
+  userName: string;
+  projectName: string;
+  githubUrl: string;
+  liveUrl: string;
+  description: string;
+  submittedAt: string; // ISO String
+}
+
+export interface LeaderboardEntry {
+    userId: string;
+    userName: string;
+    userAvatar: string;
+    score: number;
+    hackathonCount: number;
 }

@@ -29,7 +29,6 @@ import { format } from 'date-fns';
 export default function AdminBootcampsPage() {
   const { user, isSuperAdmin } = useAuth();
   const [bootcamps, setBootcamps] = useState<Bootcamp[]>([]);
-  const [participantsMap, setParticipantsMap] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -119,7 +118,7 @@ export default function AdminBootcampsPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Title</TableHead>
-                      <TableHead>Courses</TableHead>
+                      <TableHead>Participants</TableHead>
                       <TableHead>Price</TableHead>
                       <TableHead>Duration</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -130,7 +129,7 @@ export default function AdminBootcampsPage() {
                       bootcamps.map((bootcamp) => (
                         <TableRow key={bootcamp.id}>
                           <TableCell className="font-medium">{bootcamp.title}</TableCell>
-                          <TableCell>{bootcamp.courseIds?.length || 0}</TableCell>
+                          <TableCell>{bootcamp.participants ? Object.keys(bootcamp.participants).length : 0}</TableCell>
                           <TableCell>Ksh {bootcamp.price.toLocaleString()}</TableCell>
                           <TableCell>{bootcamp.duration}</TableCell>
                           <TableCell className="text-right">

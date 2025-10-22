@@ -6,7 +6,7 @@ import { notFound, useParams } from "next/navigation";
 import Image from "next/image";
 import Link from 'next/link';
 import type { Bootcamp, Course, UserCourse } from "@/lib/mock-data";
-import { getBootcampById, getAllCourses, getUserCourses, enrollUserInCourse } from '@/lib/firebase-service';
+import { getBootcampById, getAllCourses, getUserCourses, enrollUserInCourse, registerUserForBootcamp } from '@/lib/firebase-service';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -66,7 +66,7 @@ export default function BootcampDetailPage() {
   }, [params.id, user]);
   
   const enrolledCourseIds = new Set(userCourses.map(c => c.courseId));
-  const isEnrolled = courses.length > 0 && courses.every(c => enrolledCourseIds.has(c.id));
+  const isEnrolled = bootcamp?.participants && bootcamp.participants[user?.uid || ''];
 
   const handleEnroll = async () => {
       if (!user || !bootcamp) return;
@@ -77,9 +77,16 @@ export default function BootcampDetailPage() {
                 await enrollUserInCourse(user.uid, courseId);
             }
         }
+        await registerUserForBootcamp(bootcamp.id, user.uid);
+        
         toast({ title: 'Enrolled Successfully!', description: `You are now enrolled in the ${bootcamp.title}.`});
         const fetchedUserCourses = await getUserCourses(user.uid);
         setUserCourses(fetchedUserCourses);
+
+        // Re-fetch bootcamp to get updated participant list
+        const updatedBootcamp = await getBootcampById(params.id);
+        setBootcamp(updatedBootcamp);
+
       } catch (error) {
            toast({ title: 'Enrollment Failed', description: "Could not enroll you in the bootcamp.", variant: 'destructive'});
       } finally {
