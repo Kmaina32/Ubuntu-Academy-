@@ -262,7 +262,6 @@ export interface Organization {
     subscriptionTier: 'trial' | 'basic' | 'pro';
     subscriptionExpiresAt: string | null;
     memberLimit: number;
-    members?: string[];
     logoUrl?: string;
     welcomeMessage?: string;
 }
