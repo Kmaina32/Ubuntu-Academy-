@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, ArrowRight, BookOpen, Layers, CheckCircle, Award, Calendar, Clock, Star } from "lucide-react";
-import { AppSidebar } from '@/components/Sidebar';
+import { AppSidebar } from '@/components/shared/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
