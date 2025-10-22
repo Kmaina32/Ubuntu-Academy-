@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Bundle } from "@/lib/types";
 import { getAllBundles, deleteBundle, createPermissionRequest } from '@/lib/firebase-service';
-import { FilePlus2, Pencil, Trash2, Loader2, Library, Layers } from "lucide-react";
+import { FilePlus2, Pencil, Trash2, Loader2, Layers, MoreVertical } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function AdminBundlesPage() {
   const { user, isSuperAdmin } = useAuth();
@@ -112,8 +113,14 @@ export default function AdminBundlesPage() {
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                   <p className="ml-2">Loading bundles...</p>
                 </div>
+              ) : bundles.length === 0 ? (
+                <div className="text-center py-10 text-muted-foreground">
+                    No bundles found.
+                </div>
               ) : (
-                <Table>
+                <>
+                {/* Desktop Table */}
+                <Table className="hidden md:table">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Title</TableHead>
@@ -123,8 +130,7 @@ export default function AdminBundlesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {bundles.length > 0 ? (
-                      bundles.map((bundle) => (
+                      {bundles.map((bundle) => (
                         <TableRow key={bundle.id}>
                           <TableCell className="font-medium">{bundle.title}</TableCell>
                           <TableCell>{bundle.courseIds?.length || 0}</TableCell>
@@ -161,16 +167,35 @@ export default function AdminBundlesPage() {
                             </AlertDialog>
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center py-10 text-muted-foreground">
-                          No bundles found.
-                        </TableCell>
-                      </TableRow>
-                    )}
+                      ))}
                   </TableBody>
                 </Table>
+                 {/* Mobile Card List */}
+                 <div className="md:hidden space-y-4">
+                    {bundles.map((bundle) => (
+                         <Card key={bundle.id}>
+                           <CardContent className="p-4 flex justify-between items-start">
+                              <div>
+                                <p className="font-semibold">{bundle.title}</p>
+                                <p className="text-sm text-muted-foreground">{bundle.courseIds?.length || 0} courses</p>
+                                <p className="text-sm font-medium mt-1">Ksh {bundle.price.toLocaleString()}</p>
+                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem asChild><Link href={`/admin/bundles/edit/${bundle.id}`} className="flex items-center"><Pencil className="mr-2 h-4 w-4"/> Edit</Link></DropdownMenuItem>
+                                  <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/> Delete</DropdownMenuItem>
+                                  </AlertDialogTrigger>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                           </CardContent>
+                         </Card>
+                      ))}
+                 </div>
+                </>
               )}
             </CardContent>
           </Card>

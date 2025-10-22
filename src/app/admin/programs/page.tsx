@@ -1,16 +1,15 @@
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Footer } from "@/components/Footer";
+import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Program } from "@/lib/mock-data";
 import { getAllPrograms, deleteProgram, createPermissionRequest } from '@/lib/firebase-service';
-import { FilePlus2, Pencil, Trash2, Loader2, Library } from "lucide-react";
+import { FilePlus2, Pencil, Trash2, Loader2, Library, MoreVertical } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -25,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function AdminProgramsPage() {
   const { user, isSuperAdmin } = useAuth();
@@ -113,8 +113,14 @@ export default function AdminProgramsPage() {
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                   <p className="ml-2">Loading programs...</p>
                 </div>
+              ) : programs.length === 0 ? (
+                <div className="text-center py-10 text-muted-foreground">
+                    No programs found.
+                </div>
               ) : (
-                <Table>
+                <>
+                 {/* Desktop Table */}
+                <Table className="hidden md:table">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Title</TableHead>
@@ -123,13 +129,12 @@ export default function AdminProgramsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {programs.length > 0 ? (
-                      programs.map((program) => (
+                      {programs.map((program) => (
                         <TableRow key={program.id}>
                           <TableCell className="font-medium">{program.title}</TableCell>
                           <TableCell>{program.courseIds?.length || 0}</TableCell>
                           <TableCell className="text-right">
-                            <Button asChild variant="ghost" size="icon" className="mr-2">
+                            <Button asChild variant="ghost" size="icon">
                               <Link href={`/admin/programs/edit/${program.id}`}>
                                 <Pencil className="h-4 w-4" />
                               </Link>
@@ -160,16 +165,34 @@ export default function AdminProgramsPage() {
                             </AlertDialog>
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={3} className="text-center py-10 text-muted-foreground">
-                          No programs found.
-                        </TableCell>
-                      </TableRow>
-                    )}
+                      ))}
                   </TableBody>
                 </Table>
+                {/* Mobile Card List */}
+                 <div className="md:hidden space-y-4">
+                    {programs.map((program) => (
+                         <Card key={program.id}>
+                           <CardContent className="p-4 flex justify-between items-start">
+                              <div>
+                                <p className="font-semibold">{program.title}</p>
+                                <p className="text-sm text-muted-foreground">{program.courseIds?.length || 0} courses</p>
+                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem asChild><Link href={`/admin/programs/edit/${program.id}`} className="flex items-center"><Pencil className="mr-2 h-4 w-4"/> Edit</Link></DropdownMenuItem>
+                                  <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/> Delete</DropdownMenuItem>
+                                  </AlertDialogTrigger>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                           </CardContent>
+                         </Card>
+                      ))}
+                 </div>
+                </>
               )}
             </CardContent>
           </Card>

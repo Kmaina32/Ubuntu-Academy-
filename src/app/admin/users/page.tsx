@@ -3,12 +3,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Footer } from "@/components/Footer";
+import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getAllUsers, RegisteredUser, deleteUser, saveUser } from '@/lib/firebase-service';
-import { ArrowLeft, Loader2, Trash2, Users2, ShieldCheck, Eye } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2, Users2, ShieldCheck, Eye, MoreVertical } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -27,6 +27,7 @@ import { AdminAccessManager } from '@/components/shared/AdminAccessManager';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 
 export default function AdminUsersPage() {
@@ -105,87 +106,120 @@ export default function AdminUsersPage() {
                     </CardHeader>
                     <CardContent>
                         {loadingUsers ? (
-                                <div className="flex justify-center items-center py-10">
+                            <div className="flex justify-center items-center py-10">
                                 <LoadingAnimation />
                             </div>
+                        ) : users.length === 0 ? (
+                             <div className="text-center text-muted-foreground py-10">
+                                No users found. New users will appear here after they sign up.
+                            </div>
                         ) : (
-                                <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Email</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {users.length > 0 ? (
-                                    users.map((user) => (
-                                    <TableRow key={user.uid}>
-                                        <TableCell className="font-medium">
-                                          <div className="flex items-center gap-2">
-                                            <span className={cn(
-                                                "h-2 w-2 rounded-full",
-                                                user.isOnline ? "bg-green-500" : "bg-gray-400"
-                                            )}></span>
-                                            <span>{user.displayName}</span>
-                                          </div>
-                                           {!user.isOnline && user.lastSeen && (
-                                              <p className="text-xs text-muted-foreground pl-4">
-                                                Last seen {formatDistanceToNowStrict(new Date(user.lastSeen), { addSuffix: true })}
-                                              </p>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>{user.email}</TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-col items-start gap-1">
-                                                {user.cohort && <Badge variant="secondary">{user.cohort}</Badge>}
-                                                {user.isAdmin && <Badge variant="destructive" className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">Admin</Badge>}
+                            <>
+                                {/* Desktop Table */}
+                                <Table className="hidden md:table">
+                                    <TableHeader>
+                                        <TableRow>
+                                        <TableHead>Name</TableHead>
+                                        <TableHead>Email</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {users.map((user) => (
+                                        <TableRow key={user.uid}>
+                                            <TableCell className="font-medium">
+                                            <div className="flex items-center gap-2">
+                                                <span className={cn(
+                                                    "h-2 w-2 rounded-full",
+                                                    user.isOnline ? "bg-green-500" : "bg-gray-400"
+                                                )}></span>
+                                                <span>{user.displayName}</span>
                                             </div>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                        <Button asChild variant="ghost" size="icon" title="View Enrollments">
-                                            <Link href={`/admin/users/${user.uid}`}>
-                                                <Eye className="h-4 w-4" />
-                                            </Link>
-                                        </Button>
-                                        <Button variant="ghost" size="icon" className="mr-2" title="Manage Cohort" onClick={() => handleOpenCohortManager(user)}>
-                                            <Users2 className="h-4 w-4" />
-                                        </Button>
-                                        <Button variant="ghost" size="icon" className="mr-2" title="Manage Admin Access" onClick={() => handleOpenAdminManager(user)}>
-                                            <ShieldCheck className="h-4 w-4" />
-                                        </Button>
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" title="Delete User">
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        This will delete the user record for "{user.displayName}" from the database. It does not delete their authentication account.
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleDelete(user)}>Continue</AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
-                                        </TableCell>
-                                    </TableRow>
-                                    ))) : (
-                                    <TableRow>
-                                        <TableCell colSpan={4} className="text-center text-muted-foreground py-10">
-                                            No users found. New users will appear here after they sign up.
-                                        </TableCell>
-                                    </TableRow>
-                                    )
-                                }
-                                </TableBody>
-                            </Table>
+                                            {!user.isOnline && user.lastSeen && (
+                                                <p className="text-xs text-muted-foreground pl-4">
+                                                    Last seen {formatDistanceToNowStrict(new Date(user.lastSeen), { addSuffix: true })}
+                                                </p>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>{user.email}</TableCell>
+                                            <TableCell>
+                                                <div className="flex flex-col items-start gap-1">
+                                                    {user.cohort && <Badge variant="secondary">{user.cohort}</Badge>}
+                                                    {user.isAdmin && <Badge variant="destructive" className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">Admin</Badge>}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button asChild variant="ghost" size="icon" title="View Enrollments">
+                                                    <Link href={`/admin/users/${user.uid}`}>
+                                                        <Eye className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="mr-2" title="Manage Cohort" onClick={() => handleOpenCohortManager(user)}>
+                                                    <Users2 className="h-4 w-4" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="mr-2" title="Manage Admin Access" onClick={() => handleOpenAdminManager(user)}>
+                                                    <ShieldCheck className="h-4 w-4" />
+                                                </Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" title="Delete User">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                This will delete the user record for "{user.displayName}" from the database. It does not delete their authentication account.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={() => handleDelete(user)}>Continue</AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </TableCell>
+                                        </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+
+                                {/* Mobile Card List */}
+                                <div className="md:hidden space-y-4">
+                                     {users.map((user) => (
+                                        <Card key={user.uid}>
+                                            <CardContent className="p-4 flex justify-between items-start">
+                                                <div>
+                                                    <p className="font-semibold flex items-center gap-2">
+                                                        <span className={cn("h-2 w-2 rounded-full", user.isOnline ? "bg-green-500" : "bg-gray-400")}></span>
+                                                        {user.displayName}
+                                                    </p>
+                                                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                                                    <div className="flex flex-wrap gap-1 mt-2">
+                                                        {user.cohort && <Badge variant="secondary">{user.cohort}</Badge>}
+                                                        {user.isAdmin && <Badge variant="destructive" className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">Admin</Badge>}
+                                                    </div>
+                                                </div>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4"/></Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem asChild><Link href={`/admin/users/${user.uid}`} className="flex items-center"><Eye className="mr-2 h-4 w-4"/> View</Link></DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleOpenCohortManager(user)}><Users2 className="mr-2 h-4 w-4"/> Manage Cohort</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleOpenAdminManager(user)}><ShieldCheck className="mr-2 h-4 w-4"/> Admin Access</DropdownMenuItem>
+                                                        <AlertDialogTrigger asChild>
+                                                           <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/> Delete User</DropdownMenuItem>
+                                                        </AlertDialogTrigger>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </CardContent>
+                                        </Card>
+                                     ))}
+                                </div>
+                            </>
                         )}
                     </CardContent>
                 </Card>

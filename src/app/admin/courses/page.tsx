@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Course } from "@/lib/types";
 import { getAllCourses, deleteCourse, createPermissionRequest } from '@/lib/firebase-service';
-import { FilePlus2, Pencil, Trash2, Loader2, Search, BookOpen } from "lucide-react";
+import { FilePlus2, Pencil, Trash2, Loader2, Search, BookOpen, MoreVertical } from "lucide-react";
 import Link from "next/link";
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -26,6 +26,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
 import { ArrowLeft } from 'lucide-react';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function AdminCoursesPage() {
   const { user, isSuperAdmin } = useAuth();
@@ -111,7 +112,6 @@ export default function AdminCoursesPage() {
             </Button>
         </div>
         
-
         <Card>
             <CardHeader>
                 <CardTitle>All Courses</CardTitle>
@@ -134,8 +134,14 @@ export default function AdminCoursesPage() {
                 </div>
             ) : error ? (
                 <p className="text-destructive text-center py-10">{error}</p>
+            ) : filteredCourses.length === 0 ? (
+                 <div className="text-center text-muted-foreground py-10">
+                    No courses found{searchQuery && ` for your search "${searchQuery}"`}.
+                </div>
             ) : (
-                <Table>
+              <>
+                {/* Desktop Table */}
+                <Table className="hidden md:table">
                 <TableHeader>
                     <TableRow>
                     <TableHead>Title</TableHead>
@@ -153,7 +159,7 @@ export default function AdminCoursesPage() {
                         <TableCell>{course.instructor}</TableCell>
                         <TableCell>{course.price > 0 ? `Ksh ${course.price.toLocaleString()}` : 'Free'}</TableCell>
                         <TableCell className="text-right">
-                          <Button asChild variant="ghost" size="icon" className="mr-2">
+                          <Button asChild variant="ghost" size="icon">
                               <Link href={`/admin/courses/edit/${course.id}`}>
                                 <Pencil className="h-4 w-4" />
                               </Link>
@@ -185,15 +191,34 @@ export default function AdminCoursesPage() {
                         </TableCell>
                     </TableRow>
                     ))}
-                     {filteredCourses.length === 0 && (
-                        <TableRow>
-                            <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
-                                No courses found{searchQuery && ' for your search'}.
-                            </TableCell>
-                        </TableRow>
-                     )}
                 </TableBody>
                 </Table>
+                {/* Mobile Card List */}
+                <div className="md:hidden space-y-4">
+                  {filteredCourses.map(course => (
+                     <Card key={course.id}>
+                       <CardContent className="p-4 flex justify-between items-start">
+                          <div>
+                            <p className="font-semibold">{course.title}</p>
+                            <p className="text-sm text-muted-foreground">{course.category} &bull; {course.instructor}</p>
+                            <p className="text-sm font-medium mt-1">{course.price > 0 ? `Ksh ${course.price.toLocaleString()}` : 'Free'}</p>
+                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem asChild><Link href={`/admin/courses/edit/${course.id}`} className="flex items-center"><Pencil className="mr-2 h-4 w-4"/> Edit Course</Link></DropdownMenuItem>
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/> Delete Course</DropdownMenuItem>
+                              </AlertDialogTrigger>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                       </CardContent>
+                     </Card>
+                  ))}
+                </div>
+              </>
             )}
             </CardContent>
         </Card>
