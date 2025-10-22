@@ -469,7 +469,7 @@ export default function CreateCoursePage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Prerequisite Course (Optional)</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} defaultValue={field.value || ''}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select a prerequisite..." />

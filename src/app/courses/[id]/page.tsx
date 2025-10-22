@@ -54,6 +54,7 @@ function PurchaseCard({
                   width={600}
                   height={400}
                   className="w-full h-auto object-cover rounded-t-lg"
+                  data-ai-hint="online course"
                 />
             </CardHeader>
             <CardContent className="p-4 sm:p-6">
@@ -161,7 +162,7 @@ export default function CourseDetailPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(false);
-  const [prerequisiteMet, setPrerequisiteMet] = useState(true);
+  const [prerequisiteMet, setPrerequisiteMet] = useState(false);
 
 
    useEffect(() => {
@@ -195,11 +196,11 @@ export default function CourseDetailPage() {
         if (fetchedCourse.prerequisiteCourseId) {
             const prereqCourse = allCourses.find(c => c.id === fetchedCourse.prerequisiteCourseId);
             setPrerequisite(prereqCourse || null);
-            const isPrereqMet = userCourses.some(c => c.courseId === fetchedCourse.prerequisiteCourseId && c.completed);
-            setPrerequisiteMet(isPrereqMet);
+            const userHasCompletedPrereq = userCourses.some(c => c.courseId === fetchedCourse.prerequisiteCourseId && c.completed);
+            setPrerequisiteMet(userHasCompletedPrereq);
         } else {
             setPrerequisite(null);
-            setPrerequisiteMet(true);
+            setPrerequisiteMet(true); // No prerequisite, so it's met
         }
 
         setLoading(false);

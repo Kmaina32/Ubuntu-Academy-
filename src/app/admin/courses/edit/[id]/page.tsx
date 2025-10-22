@@ -54,7 +54,7 @@ export default function EditCoursePage() {
       setIsFetching(true);
       try {
         const [fetchedCourse, allCoursesData] = await Promise.all([
-            getCourseById(params.id),
+            getCourseById(params.id as string),
             getAllCourses(),
         ]);
 
@@ -99,7 +99,7 @@ export default function EditCoursePage() {
     if (!params.id) return;
     setIsLoading(true);
     try {
-      await updateCourse(params.id, {
+      await updateCourse(params.id as string, {
           ...values,
           prerequisiteCourseId: values.prerequisiteCourseId || undefined
       });
@@ -107,7 +107,7 @@ export default function EditCoursePage() {
         title: 'Success!',
         description: `The course "${values.title}" has been updated.`,
       });
-      router.push('/admin');
+      router.push('/admin/courses');
     } catch (error) {
       console.error("Failed to update course:", error);
       toast({
@@ -153,9 +153,9 @@ export default function EditCoursePage() {
     <div className="flex flex-col min-h-screen">
       <main className="flex-grow container mx-auto px-4 md:px-6 py-12">
         <div className="max-w-3xl mx-auto">
-          <Link href="/admin" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+          <Link href="/admin/courses" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
              <ArrowLeft className="h-4 w-4" />
-             Back to Admin Dashboard
+             Back to Courses
           </Link>
           <Card>
             <CardHeader>
@@ -313,7 +313,7 @@ export default function EditCoursePage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Prerequisite Course (Optional)</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} defaultValue={field.value || ''}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select a prerequisite..." />
@@ -332,7 +332,7 @@ export default function EditCoursePage() {
                         />
                     </div>
                     <div className="flex justify-end gap-2">
-                      <Button type="button" variant="outline" onClick={() => router.push('/admin')}>
+                      <Button type="button" variant="outline" onClick={() => router.push('/admin/courses')}>
                         Cancel
                       </Button>
                       <Button type="submit" disabled={isLoading}>
