@@ -3,7 +3,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Bootcamp, PricingPlan, ProjectSubmission, Hackathon, HackathonSubmission } from './types';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser } from './types';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -14,9 +14,6 @@ export interface HeroData {
     title: string;
     subtitle: string;
     imageUrl: string;
-    programsImageUrl?: string;
-    bootcampsImageUrl?: string;
-    hackathonsImageUrl?: string;
     loginImageUrl: string;
     signupImageUrl: string;
     slideshowSpeed: number;
@@ -98,19 +95,20 @@ export async function deleteCourse(courseId: string): Promise<void> {
 
 
 // User Functions
-export async function saveUser(uid: string, userData: Partial<Omit<RegisteredUser, 'uid'>>): Promise<void> {
+export async function saveUser(userData: Partial<Omit<RegisteredUser, 'uid'>> & { uid: string }): Promise<void> {
+    const { uid, ...dataToSave } = userData;
     const userRef = ref(db, `users/${uid}`);
-    await update(userRef, userData);
+    await update(userRef, dataToSave);
 
     // Denormalize data for public profiles
-    if (userData.portfolio) {
+    if (dataToSave.portfolio) {
         const publicProfileRef = ref(db, `publicProfiles/${uid}`);
-        if (userData.portfolio.public) {
+        if (dataToSave.portfolio.public) {
             await set(publicProfileRef, {
                 uid: uid,
-                displayName: userData.displayName,
-                photoURL: userData.photoURL,
-                portfolio: userData.portfolio
+                displayName: dataToSave.displayName,
+                photoURL: dataToSave.photoURL,
+                portfolio: dataToSave.portfolio
             });
         } else {
             await remove(publicProfileRef);
@@ -210,9 +208,6 @@ export async function getHeroData(): Promise<HeroData> {
     title: 'Unlock Your Potential.', 
     subtitle: 'Quality, affordable courses designed for the Kenyan market.',
     imageUrl: 'https://placehold.co/1200x400.png',
-    programsImageUrl: 'https://picsum.photos/seed/prog/1600/400',
-    bootcampsImageUrl: 'https://picsum.photos/seed/boot/1600/400',
-    hackathonsImageUrl: 'https://picsum.photos/seed/hack/1600/400',
     loginImageUrl: 'https://placehold.co/1200x900.png',
     signupImageUrl: 'https://placehold.co/1200x900.png',
     slideshowSpeed: 5,
@@ -572,6 +567,7 @@ export async function deleteBundle(id: string): Promise<void> {
     await remove(bundleRef);
 }
 
+
 // API Key and Usage Functions
 export async function createApiKey(userId: string, keyData: Omit<ApiKey, 'id'>): Promise<string> {
     const keysRef = ref(db, `apiKeys/${userId}`);
@@ -619,28 +615,6 @@ export async function createCourseFeedback(courseId: string, feedbackData: Omit<
     });
     return newFeedbackRef.key!;
 }
-
-export async function getProjectsForCourse(courseId: string): Promise<ProjectSubmission[]> {
-    const projectsRef = ref(db, `projectSubmissions/${courseId}`);
-    const snapshot = await get(projectsRef);
-     if (snapshot.exists()) {
-        const data = snapshot.val();
-        return Object.keys(data).map(key => ({ id: key, ...data[key] }));
-    }
-    return [];
-}
-
-export async function submitProject(courseId: string, userId: string, projectData: Omit<ProjectSubmission, 'id'>): Promise<string> {
-    const projectRef = ref(db, `projectSubmissions/${courseId}/${userId}`);
-    await set(projectRef, projectData);
-    return userId;
-}
-
-export async function saveLearningGoals(userId: string, goals: Record<string, LearningGoal>): Promise<void> {
-    const goalsRef = ref(db, `users/${userId}/learningGoals`);
-    await set(goalsRef, goals);
-}
-
 
 // Super Admin Permission Requests
 export async function createPermissionRequest(requestData: Omit<PermissionRequest, 'id' | 'createdAt' | 'status'>): Promise<string> {
@@ -773,46 +747,6 @@ export async function deleteInvitation(inviteId: string): Promise<void> {
     await remove(inviteRef);
 }
 
-// Bootcamp Functions
-export async function createBootcamp(bootcampData: Omit<Bootcamp, 'id'>): Promise<string> {
-    const bootcampsRef = ref(db, 'bootcamps');
-    const newBootcampRef = push(bootcampsRef);
-    await set(newBootcampRef, bootcampData);
-    return newBootcampRef.key!;
-}
-
-export async function getAllBootcamps(): Promise<Bootcamp[]> {
-    const bootcampsRef = ref(db, 'bootcamps');
-    const snapshot = await get(bootcampsRef);
-    if (snapshot.exists()) {
-        const data = snapshot.val();
-        return Object.keys(data).map(key => ({
-            id: key,
-            ...data[key]
-        }));
-    }
-    return [];
-}
-
-export async function getBootcampById(id: string): Promise<Bootcamp | null> {
-    const bootcampRef = ref(db, `bootcamps/${id}`);
-    const snapshot = await get(bootcampRef);
-    if (snapshot.exists()) {
-        return { id, ...snapshot.val() };
-    }
-    return null;
-}
-
-export async function updateBootcamp(id: string, bootcampData: Partial<Bootcamp>): Promise<void> {
-    const bootcampRef = ref(db, `bootcamps/${id}`);
-    await update(bootcampRef, bootcampData);
-}
-
-export async function deleteBootcamp(id: string): Promise<void> {
-    const bootcampRef = ref(db, `bootcamps/${id}`);
-    await remove(bootcampRef);
-}
-
 // Pricing Plan Functions
 export async function createPlan(planData: Omit<PricingPlan, 'id'>): Promise<string> {
     const plansRef = ref(db, 'pricingPlans');
@@ -863,86 +797,4 @@ export async function getDocument(docType: string): Promise<string> {
     const docRef = ref(db, `documents/${docType}/content`);
     const snapshot = await get(docRef);
     return snapshot.exists() ? snapshot.val() : '';
-}
-
-// Hackathon Functions
-export async function createHackathon(hackathonData: Omit<Hackathon, 'id'>): Promise<string> {
-    const hackathonsRef = ref(db, 'hackathons');
-    const newHackathonRef = push(hackathonsRef);
-    await set(newHackathonRef, hackathonData);
-    return newHackathonRef.key!;
-}
-
-export async function updateHackathon(id: string, hackathonData: Partial<Hackathon>): Promise<void> {
-    const hackathonRef = ref(db, `hackathons/${id}`);
-    await update(hackathonRef, hackathonData);
-}
-
-export async function deleteHackathon(id: string): Promise<void> {
-    const hackathonRef = ref(db, `hackathons/${id}`);
-    await remove(hackathonRef);
-}
-
-export async function getAllHackathons(): Promise<Hackathon[]> {
-    const hackathonsRef = ref(db, 'hackathons');
-    const snapshot = await get(hackathonsRef);
-    if (snapshot.exists()) {
-        const data = snapshot.val();
-        return Object.keys(data).map(key => ({ id: key, ...data[key] }));
-    }
-    return [];
-}
-
-export async function getHackathonById(id: string): Promise<Hackathon | null> {
-    const hackathonRef = ref(db, `hackathons/${id}`);
-    const snapshot = await get(hackathonRef);
-    if (snapshot.exists()) {
-        return { id, ...snapshot.val() };
-    }
-    return null;
-}
-
-export async function getHackathonParticipants(hackathonId: string): Promise<RegisteredUser[]> {
-    const participantsRef = ref(db, `hackathonParticipants/${hackathonId}`);
-    const snapshot = await get(participantsRef);
-    if (snapshot.exists()) {
-        const participantIds = Object.keys(snapshot.val());
-        const participantPromises = participantIds.map(uid => getUserById(uid));
-        const participants = await Promise.all(participantPromises);
-        return participants.filter(p => p !== null) as RegisteredUser[];
-    }
-    return [];
-}
-
-export async function registerForHackathon(hackathonId: string, userId: string): Promise<void> {
-    const registrationRef = ref(db, `hackathonParticipants/${hackathonId}/${userId}`);
-    await set(registrationRef, true);
-}
-
-export async function createHackathonSubmission(submissionData: Omit<HackathonSubmission, 'id'>): Promise<string> {
-    const submissionsRef = ref(db, `hackathonSubmissions`);
-    const newSubmissionRef = push(submissionsRef);
-    await set(newSubmissionRef, submissionData);
-    return newSubmissionRef.key!;
-}
-
-export async function getHackathonSubmissions(hackathonId: string): Promise<HackathonSubmission[]> {
-    const submissionsRef = query(ref(db, 'hackathonSubmissions'), orderByChild('hackathonId'), equalTo(hackathonId));
-    const snapshot = await get(submissionsRef);
-    if (snapshot.exists()) {
-        const data = snapshot.val();
-        return Object.keys(data).map(key => ({ id: key, ...data[key] }));
-    }
-    return [];
-}
-
-export async function getHackathonSubmissionsByUser(userId: string): Promise<HackathonSubmission[]> {
-    const submissionsRef = query(ref(db, 'hackathonSubmissions'), orderByChild('userId'), equalTo(userId));
-    const snapshot = await get(submissionsRef);
-    if (snapshot.exists()) {
-        const data = snapshot.val();
-        const submissions = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-        return submissions.sort((a,b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
-    }
-    return [];
 }
