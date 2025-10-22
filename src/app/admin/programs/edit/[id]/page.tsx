@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -19,6 +20,7 @@ import { updateProgram, getAllCourses, getProgramById } from '@/lib/firebase-ser
 import type { Course, Program } from '@/lib/mock-data';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 const programFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -120,7 +122,7 @@ export default function EditProgramPage() {
             <CardContent>
               {isFetching ? (
                 <div className="flex justify-center items-center py-10">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  <LoadingAnimation />
                 </div>
               ) : (
                 <Form {...form}>
@@ -236,4 +238,3 @@ export default function EditProgramPage() {
     </div>
   );
 }
-

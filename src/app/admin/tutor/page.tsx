@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { getTutorSettings, saveTutorSettings, TutorSettings } from '@/lib/firebase-service';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 const tutorSettingsSchema = z.object({
   voice: z.string().min(1, 'Please select a voice.'),
@@ -103,8 +104,7 @@ export default function AdminTutorPage() {
                 <CardContent>
                   {isFetching ? (
                     <div className="flex justify-center items-center py-10">
-                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                      <p className="ml-2">Loading settings...</p>
+                      <LoadingAnimation />
                     </div>
                   ) : (
                     <Form {...form}>

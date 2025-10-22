@@ -3,8 +3,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Footer } from "@/components/Footer";
-import { Button } from "@/components/ui/button";
+import { Footer } from "@/components/shared/Footer";
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getPermissionRequests, updatePermissionRequestStatus, deleteCourse, deleteProgram, deleteBundle, PermissionRequest, createBootcamp } from '@/lib/firebase-service';
@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 export default function AdminApprovalsPage() {
   const { user, isSuperAdmin, loading: authLoading } = useAuth();
@@ -151,7 +152,7 @@ export default function AdminApprovalsPage() {
   }
 
   if (authLoading || !isSuperAdmin) {
-    return <div className="flex justify-center items-center h-screen"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    return <div className="flex justify-center items-center h-screen"><LoadingAnimation /></div>;
   }
 
   return (
@@ -180,10 +181,10 @@ export default function AdminApprovalsPage() {
                   </CardHeader>
                   <CardContent>
                     <TabsContent value="pending">
-                       {loading ? <div className="flex justify-center py-10"><Loader2 className="h-8 w-8 animate-spin"/></div> : renderRequestTable(pendingRequests) }
+                       {loading ? <div className="flex justify-center py-10"><LoadingAnimation /></div> : renderRequestTable(pendingRequests) }
                     </TabsContent>
                     <TabsContent value="resolved">
-                       {loading ? <div className="flex justify-center py-10"><Loader2 className="h-8 w-8 animate-spin"/></div> : renderRequestTable(resolvedRequests) }
+                       {loading ? <div className="flex justify-center py-10"><LoadingAnimation /></div> : renderRequestTable(resolvedRequests) }
                     </TabsContent>
                   </CardContent>
               </Card>

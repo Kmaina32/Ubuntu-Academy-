@@ -1,9 +1,10 @@
 
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
-import { Loader2, BookOpen } from 'lucide-react';
+import { Users, BarChart, CreditCard, Loader2, Trophy, BookOpen } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { getAllCourses, getUserCourses } from '@/lib/firebase-service';
 import type { Course, UserCourse } from '@/lib/mock-data';

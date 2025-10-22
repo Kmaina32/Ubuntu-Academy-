@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,6 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Footer } from '@/components/Footer';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 type CourseWithDetails = UserCourse & Partial<Course>;
 
@@ -64,7 +66,7 @@ export default function UserDetailPage() {
   }, [params.id]);
   
   if (loading) {
-    return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    return <div className="flex h-screen items-center justify-center"><LoadingAnimation /></div>;
   }
   
   if (!user) {

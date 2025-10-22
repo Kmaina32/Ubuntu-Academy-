@@ -25,6 +25,7 @@ import {
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 export default function AdminProgramsPage() {
   const { user, isSuperAdmin } = useAuth();
@@ -110,8 +111,7 @@ export default function AdminProgramsPage() {
             <CardContent>
               {loading ? (
                 <div className="flex justify-center items-center py-10">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                  <p className="ml-2">Loading programs...</p>
+                  <LoadingAnimation />
                 </div>
               ) : programs.length === 0 ? (
                 <div className="text-center py-10 text-muted-foreground">

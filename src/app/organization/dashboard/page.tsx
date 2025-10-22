@@ -15,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Bar, BarChart as RechartsBarChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 interface MemberProgress {
     uid: string;
@@ -140,7 +141,7 @@ export default function OrganizationDashboardPage() {
     const expiryDate = organization?.subscriptionExpiresAt ? new Date(organization.subscriptionExpiresAt) : null;
 
     if (loading) {
-        return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+        return <div className="flex justify-center items-center h-full"><LoadingAnimation /></div>
     }
 
     return (
@@ -209,7 +210,7 @@ export default function OrganizationDashboardPage() {
                     <CardContent>
                         {loadingAnalytics ? (
                             <div className="h-64 flex items-center justify-center bg-secondary rounded-md">
-                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                                <LoadingAnimation />
                             </div>
                         ) : analyticsData && analyticsData.courseProgress.length > 0 ? (
                             <ChartContainer config={chartConfig} className="min-h-[250px] w-full">
@@ -238,7 +239,7 @@ export default function OrganizationDashboardPage() {
                     <CardContent>
                         {loadingAnalytics ? (
                             <div className="h-64 flex items-center justify-center bg-secondary rounded-md">
-                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                                <LoadingAnimation />
                             </div>
                         ) : analyticsData && analyticsData.memberProgress.length > 0 ? (
                             <Table>
