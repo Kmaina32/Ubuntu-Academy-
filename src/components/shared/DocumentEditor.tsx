@@ -13,10 +13,10 @@ import { Download, FileText, Loader2, Sparkles, View, Pencil } from 'lucide-reac
 import { generateFormalDocument } from '@/app/actions';
 import { Textarea } from '@/components/ui/textarea';
 import { getDocument, saveDocument } from '@/lib/firebase-service';
-import { PITCH_DECK, FRAMEWORK, API, B2B_STRATEGY, SEO_STRATEGY, VISUAL_FRAMEWORK } from '@/lib/document-templates';
+import { PITCH_DECK, FRAMEWORK, API, B2B_STRATEGY, SEO_STRATEGY, VISUAL_FRAMEWORK, PORTFOLIO_ROADMAP } from '@/lib/document-templates';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const ALL_DOC_TYPES = ['PITCH_DECK', 'FRAMEWORK', 'API', 'B2B_STRATEGY', 'SEO_STRATEGY', 'VISUAL_FRAMEWORK'] as const;
+const ALL_DOC_TYPES = ['PITCH_DECK', 'FRAMEWORK', 'API', 'B2B_STRATEGY', 'SEO_STRATEGY', 'VISUAL_FRAMEWORK', 'PORTFOLIO_ROADMAP'] as const;
 export type DocType = (typeof ALL_DOC_TYPES)[number];
 
 const docTemplates: Record<DocType, string> = {
@@ -25,7 +25,8 @@ const docTemplates: Record<DocType, string> = {
     API: API,
     B2B_STRATEGY: B2B_STRATEGY,
     SEO_STRATEGY: SEO_STRATEGY,
-    VISUAL_FRAMEWORK: VISUAL_FRAMEWORK
+    VISUAL_FRAMEWORK: VISUAL_FRAMEWORK,
+    PORTFOLIO_ROADMAP: PORTFOLIO_ROADMAP
 };
 
 function PdfRenderer({ content, docType, forwardRef }: { content: string, docType: DocType, forwardRef: React.Ref<HTMLDivElement> }) {

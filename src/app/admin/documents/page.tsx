@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BookOpen, FileText, Loader2, Presentation, FileSignature } from 'lucide-react';
+import { ArrowLeft, BookOpen, FileText, Loader2, Presentation, FileSignature, Roadmap } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { DocumentEditor, DocType } from '@/components/shared/DocumentEditor';
 
@@ -18,7 +18,8 @@ const TABS_CONFIG = [
     { value: "API", label: "API", icon: FileText },
     { value: "B2B_STRATEGY", label: "B2B Strategy", icon: FileSignature },
     { value: "SEO_STRATEGY", label: "SEO Strategy", icon: FileSignature },
-    { value: "VISUAL_FRAMEWORK", label: "Visual Framework", icon: FileSignature }
+    { value: "VISUAL_FRAMEWORK", label: "Visual Framework", icon: FileSignature },
+    { value: "PORTFOLIO_ROADMAP", label: "Portfolio Roadmap", icon: Roadmap },
 ];
 
 export default function AdminDocumentsPage() {
@@ -52,7 +53,7 @@ export default function AdminDocumentsPage() {
                   Manage Documents
                 </CardTitle>
                 <CardDescription>View, edit, and generate formal documentation for your application.</CardDescription>
-                 <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 mt-4">
+                 <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 mt-4">
                     {TABS_CONFIG.map(tab => (
                         <TabsTrigger key={tab.value} value={tab.value}><tab.icon className="mr-2 h-4 w-4"/>{tab.label}</TabsTrigger>
                     ))}
