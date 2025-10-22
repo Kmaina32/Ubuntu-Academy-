@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray, Controller, UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, Sparkles, PlusCircle, Trash2, BookText } from 'lucide-react';
-import { createCourse } from '@/lib/firebase-service';
+import { createCourse, getAllCourses } from '@/lib/firebase-service';
 import type { Course } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/use-auth';
@@ -53,6 +53,7 @@ const courseFormSchema = z.object({
   longDescription: z.string().min(100, "A detailed description is required."),
   dripFeed: z.enum(['daily', 'weekly', 'off']),
   modules: z.array(moduleSchema).min(1, 'At least one module is required'),
+  prerequisiteCourseId: z.string().optional(),
 });
 
 type CourseFormValues = z.infer<typeof courseFormSchema>;
@@ -201,6 +202,11 @@ export default function CreateCoursePage() {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
   const [generateCourseTitle, setGenerateCourseTitle] = useState('');
+  const [allCourses, setAllCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    getAllCourses().then(setAllCourses);
+  }, []);
 
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseFormSchema),
@@ -214,6 +220,7 @@ export default function CreateCoursePage() {
       longDescription: '',
       dripFeed: 'daily',
       modules: [{ id: `module-${Date.now()}`, title: 'Module 1: Getting Started', lessons: [{ id: `lesson-${Date.now()}`, title: 'Welcome to the Course!', duration: '5 min', content: 'This is the first lesson.', youtubeLinks: [] }] }],
+      prerequisiteCourseId: '',
     },
   });
 
@@ -260,6 +267,7 @@ export default function CreateCoursePage() {
             ...values,
             imageUrl: 'https://placehold.co/600x400',
             exam: [], // Exams are now handled separately
+            prerequisiteCourseId: values.prerequisiteCourseId || undefined,
         }
         await createCourse(courseData);
         toast({
@@ -402,7 +410,7 @@ export default function CreateCoursePage() {
                     />
 
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormField 
                             control={form.control} 
                             name="price" 
@@ -430,6 +438,9 @@ export default function CreateCoursePage() {
                                 </FormItem> 
                             )}
                         />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormField
                           control={form.control}
                           name="dripFeed"
@@ -446,6 +457,29 @@ export default function CreateCoursePage() {
                                   <SelectItem value="daily">Unlock lessons daily</SelectItem>
                                   <SelectItem value="weekly">Unlock lessons weekly</SelectItem>
                                   <SelectItem value="off">Unlock all at once</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                         <FormField
+                          control={form.control}
+                          name="prerequisiteCourseId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Prerequisite Course (Optional)</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a prerequisite..." />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="">None</SelectItem>
+                                    {allCourses.map(course => (
+                                        <SelectItem key={course.id} value={course.id}>{course.title}</SelectItem>
+                                    ))}
                                 </SelectContent>
                               </Select>
                               <FormMessage />

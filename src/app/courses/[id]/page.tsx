@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
-import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen, Clock, Check } from "lucide-react";
+import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen, Clock, Check, AlertCircle } from "lucide-react";
 import { PaymentModal } from '@/components/PaymentModal';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
@@ -23,8 +23,28 @@ import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/utils';
 import Head from 'next/head';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolled }: { course: Course, onEnrollFree: () => void, onPurchase: () => void, isEnrolling: boolean, isEnrolled: boolean }) {
+function PurchaseCard({ 
+    course, 
+    onEnrollFree, 
+    onPurchase, 
+    isEnrolling, 
+    isEnrolled,
+    prerequisite,
+    prerequisiteMet
+}: { 
+    course: Course, 
+    onEnrollFree: () => void, 
+    onPurchase: () => void, 
+    isEnrolling: boolean, 
+    isEnrolled: boolean,
+    prerequisite: Course | null,
+    prerequisiteMet: boolean
+}) {
+
+    const isActionDisabled = isEnrolling || (!!prerequisite && !prerequisiteMet);
+    
     return (
         <Card className="w-full overflow-hidden">
             <CardHeader className="p-0">
@@ -52,15 +72,25 @@ function PurchaseCard({ course, onEnrollFree, onPurchase, isEnrolling, isEnrolle
                     </div>
                 ) : course.price > 0 ? (
                 <>
-                    <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground text-sm" onClick={onPurchase}>
+                    <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground text-sm" onClick={onPurchase} disabled={isActionDisabled}>
                         Purchase Course
                     </Button>
                 </>
                 ) : (
-                    <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground text-sm" onClick={onEnrollFree} disabled={isEnrolling}>
+                    <Button size="lg" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground text-sm" onClick={onEnrollFree} disabled={isActionDisabled}>
                     {isEnrolling ? <Loader2 className="mr-2 h-4 w-4 animate-spin flex-shrink-0" /> : <BookOpen className="mr-2 h-4 w-4 flex-shrink-0"/>}
                     {isEnrolling ? 'Enrolling...' : 'Enroll for Free'}
                 </Button>
+                )}
+
+                {prerequisite && !prerequisiteMet && (
+                     <Alert variant="destructive" className="mt-4">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Prerequisite Required</AlertTitle>
+                        <AlertDescription>
+                           You must complete "<Link href={`/courses/${slugify(prerequisite.title)}`} className="underline font-semibold">{prerequisite.title}</Link>" before enrolling in this course.
+                        </AlertDescription>
+                    </Alert>
                 )}
                 
                 <Separator className="my-4" />
@@ -126,10 +156,13 @@ export default function CourseDetailPage() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [course, setCourse] = useState<Course | null>(null);
+  const [prerequisite, setPrerequisite] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(false);
+  const [prerequisiteMet, setPrerequisiteMet] = useState(true);
+
 
    useEffect(() => {
     if (!authLoading && !user) {
@@ -157,6 +190,18 @@ export default function CourseDetailPage() {
         }
 
         setCourse(fetchedCourse);
+
+        // Check for prerequisite
+        if (fetchedCourse.prerequisiteCourseId) {
+            const prereqCourse = allCourses.find(c => c.id === fetchedCourse.prerequisiteCourseId);
+            setPrerequisite(prereqCourse || null);
+            const isPrereqMet = userCourses.some(c => c.courseId === fetchedCourse.prerequisiteCourseId && c.completed);
+            setPrerequisiteMet(isPrereqMet);
+        } else {
+            setPrerequisite(null);
+            setPrerequisiteMet(true);
+        }
+
         setLoading(false);
     }
     if (user) {
@@ -245,7 +290,9 @@ export default function CourseDetailPage() {
                       onEnrollFree={handleEnrollFree} 
                       onPurchase={() => setIsModalOpen(true)} 
                       isEnrolling={isEnrolling} 
-                      isEnrolled={isEnrolled} 
+                      isEnrolled={isEnrolled}
+                      prerequisite={prerequisite}
+                      prerequisiteMet={prerequisiteMet}
                     />
                 </div>
 
@@ -308,6 +355,8 @@ export default function CourseDetailPage() {
                     onPurchase={() => setIsModalOpen(true)} 
                     isEnrolling={isEnrolling} 
                     isEnrolled={isEnrolled}
+                    prerequisite={prerequisite}
+                    prerequisiteMet={prerequisiteMet}
                   />
                 </div>
               </div>

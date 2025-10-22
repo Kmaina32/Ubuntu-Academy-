@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, BookText } from 'lucide-react';
-import { getCourseById, updateCourse } from '@/lib/firebase-service';
+import { getCourseById, updateCourse, getAllCourses } from '@/lib/firebase-service';
 import type { Course } from '@/lib/types';
 import { CourseReviewModal } from '@/components/shared/CourseReviewModal';
 import { GenerateCourseContentOutput } from '@/ai/flows/generate-course-content';
@@ -31,6 +31,7 @@ const courseFormSchema = z.object({
   longDescription: z.string().min(100, 'Long description must be at least 100 characters'),
   imageUrl: z.string().url('Must be a valid image URL'),
   dripFeed: z.enum(['daily', 'weekly', 'off']),
+  prerequisiteCourseId: z.string().optional(),
 });
 
 type CourseFormValues = z.infer<typeof courseFormSchema>;
@@ -43,6 +44,7 @@ export default function EditCoursePage() {
   const [isFetching, setIsFetching] = useState(true);
   const [course, setCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [allCourses, setAllCourses] = useState<Course[]>([]);
 
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseFormSchema),
@@ -51,12 +53,17 @@ export default function EditCoursePage() {
   const fetchCourse = async () => {
       setIsFetching(true);
       try {
-        const fetchedCourse = await getCourseById(params.id);
+        const [fetchedCourse, allCoursesData] = await Promise.all([
+            getCourseById(params.id),
+            getAllCourses(),
+        ]);
+
         if (!fetchedCourse) {
           notFound();
           return;
         }
         setCourse(fetchedCourse);
+        setAllCourses(allCoursesData);
         form.reset({
             title: fetchedCourse.title || '',
             instructor: fetchedCourse.instructor || '',
@@ -67,6 +74,7 @@ export default function EditCoursePage() {
             longDescription: fetchedCourse.longDescription || '',
             imageUrl: fetchedCourse.imageUrl || '',
             dripFeed: fetchedCourse.dripFeed || 'daily',
+            prerequisiteCourseId: fetchedCourse.prerequisiteCourseId || '',
         });
       } catch (error) {
         console.error("Failed to fetch course data:", error);
@@ -91,7 +99,10 @@ export default function EditCoursePage() {
     if (!params.id) return;
     setIsLoading(true);
     try {
-      await updateCourse(params.id, values);
+      await updateCourse(params.id, {
+          ...values,
+          prerequisiteCourseId: values.prerequisiteCourseId || undefined
+      });
       toast({
         title: 'Success!',
         description: `The course "${values.title}" has been updated.`,
@@ -273,28 +284,53 @@ export default function EditCoursePage() {
                         </FormItem>
                       )}
                     />
-                    <FormField
-                    control={form.control}
-                    name="dripFeed"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Content Drip Schedule</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a schedule..." />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="daily">Unlock lessons daily</SelectItem>
-                                <SelectItem value="weekly">Unlock lessons weekly</SelectItem>
-                                <SelectItem value="off">Unlock all at once</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                        control={form.control}
+                        name="dripFeed"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Content Drip Schedule</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a schedule..." />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="daily">Unlock lessons daily</SelectItem>
+                                    <SelectItem value="weekly">Unlock lessons weekly</SelectItem>
+                                    <SelectItem value="off">Unlock all at once</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                         <FormField
+                          control={form.control}
+                          name="prerequisiteCourseId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Prerequisite Course (Optional)</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a prerequisite..." />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="">None</SelectItem>
+                                    {allCourses.filter(c => c.id !== course.id).map(c => (
+                                        <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                    </div>
                     <div className="flex justify-end gap-2">
                       <Button type="button" variant="outline" onClick={() => router.push('/admin')}>
                         Cancel
