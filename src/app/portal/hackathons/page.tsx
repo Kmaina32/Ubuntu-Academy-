@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { getAllHackathons, Hackathon, getHeroData } from '@/lib/firebase-service';
-import { Loader2, Trophy } from 'lucide-react';
+import { Loader2, Trophy, FileText, Scale, Star } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { format, isPast } from 'date-fns';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { HackathonOnboarding } from '@/components/HackathonOnboarding';
 
 function HackathonCard({ hackathon }: { hackathon: Hackathon }) {
     const hasEnded = isPast(new Date(hackathon.endDate));
@@ -61,6 +63,54 @@ function HackathonCard({ hackathon }: { hackathon: Hackathon }) {
   );
 }
 
+function HackathonGuidelines() {
+    return (
+        <section className="py-12 md:py-16 bg-background">
+            <div className="container mx-auto px-4 md:px-6 max-w-4xl">
+                 <div className="text-center mb-12">
+                    <h2 className="text-3xl font-bold font-headline">How It Works</h2>
+                    <p className="mt-2 text-muted-foreground">Key information about participating in our hackathons.</p>
+                </div>
+                <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-1">
+                        <AccordionTrigger>
+                            <div className="flex items-center gap-3">
+                                <FileText className="h-5 w-5 text-primary" />
+                                <span className="font-semibold">General Rules & Conduct</span>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                            All participants must adhere to our code of conduct. Teams can consist of 1 to 4 members. All code must be written during the hackathon period unless otherwise specified. Be respectful, be creative, and have fun!
+                        </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-2">
+                        <AccordionTrigger>
+                            <div className="flex items-center gap-3">
+                                <Star className="h-5 w-5 text-primary" />
+                                <span className="font-semibold">Judging Criteria</span>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                           Projects are judged on four main criteria: Technical Complexity, Creativity & Innovation, Design & User Experience, and Presentation/Pitch. Make sure your project addresses the hackathon theme.
+                        </AccordionContent>
+                    </AccordionItem>
+                     <AccordionItem value="item-3">
+                        <AccordionTrigger>
+                             <div className="flex items-center gap-3">
+                                <Scale className="h-5 w-5 text-primary" />
+                                <span className="font-semibold">No-Refund Policy</span>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                            Please note that all entry fees for hackathons are non-refundable. This policy helps us manage event logistics and prize pools effectively. We appreciate your understanding.
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+            </div>
+        </section>
+    )
+}
+
 export default function HackathonsPage() {
   const [hackathons, setHackathons] = useState<Hackathon[]>([]);
   const [heroData, setHeroData] = useState<{ hackathonsImageUrl?: string }>({});
@@ -105,6 +155,7 @@ export default function HackathonsPage() {
 
   return (
         <main className="flex-grow">
+          <HackathonOnboarding />
           <section className="relative bg-secondary/50 py-12 md:py-16">
             <div className="container mx-auto px-4 md:px-6">
                 <div className="relative rounded-xl overflow-hidden min-h-[400px] flex items-center justify-center text-center p-4">
@@ -148,6 +199,8 @@ export default function HackathonsPage() {
               )}
             </div>
           </section>
+
+          <HackathonGuidelines />
         </main>
   );
 }
