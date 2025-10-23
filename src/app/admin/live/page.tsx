@@ -25,7 +25,8 @@ import {
 import { ViewerList } from '@/components/ViewerList';
 import { NoLiveSession } from '@/components/NoLiveSession';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
-
+import { SessionInfo } from '@/components/SessionInfo';
+import { ClientOnly } from '@/components/ClientOnly';
 
 const ICE_SERVERS = {
     iceServers: [
@@ -127,20 +128,6 @@ function NoSessionCard({ onGoLive, onScheduleSuccess }: { onGoLive: (event: Cale
             </CardContent>
         </Card>
     );
-}
-
-function ClientOnly({ children }: { children: React.ReactNode }) {
-  const [hasMounted, setHasMounted] = useState(false);
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  if (!hasMounted) {
-    return <div className="flex h-full w-full items-center justify-center"><LoadingAnimation /></div>;
-  }
-
-  return <>{children}</>;
 }
 
 
@@ -341,6 +328,8 @@ export default function AdminLivePage() {
                                     <div className="aspect-video bg-black rounded-lg flex items-center justify-center relative shadow-lg border p-1">
                                         <video ref={videoRef} className="w-full h-full rounded-md object-cover" autoPlay muted playsInline />
                                         
+                                        {isLive && activeEvent && <SessionInfo title={activeEvent.title} description={activeEvent.description} />}
+
                                         {isLive && (
                                             <div className="absolute top-4 right-4 z-20 pointer-events-auto">
                                                 <ViewerList sessionId={sessionId} />
