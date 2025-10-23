@@ -370,7 +370,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
             <SidebarTrigger />
              {isMobile && (
                  <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
-                    <GitBranch className="h-6 w-6 text-yellow-500" />
+                    <GitBranch className="h-6 w-6 text-primary" />
                     <span>Manda Network</span>
                 </Link>
             )}
