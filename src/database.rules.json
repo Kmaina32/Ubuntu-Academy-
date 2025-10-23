@@ -49,7 +49,7 @@
       ".read": true,
       ".indexOn": "score",
       "$userId": {
-        // Allow a user to create their own entry, or an admin to write any entry.
+        // Allow a user to write their own entry, or an admin to write any entry.
         ".write": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
       }
     },
@@ -101,8 +101,8 @@
       ".indexOn": ["userId", "hackathonId"],
        "$submissionId": {
         ".read": "auth != null && (data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
-        // Allow user to write if they are the author, or if user is an admin.
-        ".write": "auth != null && (newData.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+        // Allow user to write a new submission for themselves. Admin can write anything.
+        ".write": "auth != null && ((!data.exists() && newData.child('userId').val() === auth.uid) || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
       }
     },
     "courseFeedback": {
@@ -133,7 +133,7 @@
       ".read": "auth != null",
       // Only an admin or the designated owner can write to an organization's details.
       "$orgId": {
-        ".write": "auth != null && (root.child('users').child(auth.uid).child('isAdmin').val() === true || data.child('ownerId').val() === auth.uid)"
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('isAdmin').val() === true || (data.exists() && data.child('ownerId').val() === auth.uid))"
       }
     },
     "invitations": {
