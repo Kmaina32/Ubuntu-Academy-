@@ -152,8 +152,8 @@ export function AdminAccessManager({ user, isOpen, onClose, onSuccess }: AdminAc
                 </Button>
             </div>
           )
-      }
-      return (
+      } else {
+        return (
          <Form {...form}>
             <form id="grant-form" onSubmit={form.handleSubmit(() => prepareForPin('grant'))} className="space-y-8">
                 <FormField
@@ -180,7 +180,8 @@ export function AdminAccessManager({ user, isOpen, onClose, onSuccess }: AdminAc
                 />
             </form>
         </Form>
-      )
+      );
+      }
   }
 
   const renderPinContent = () => (
