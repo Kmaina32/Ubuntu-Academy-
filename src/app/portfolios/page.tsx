@@ -11,7 +11,7 @@ import { AppSidebar } from '@/components/Sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Github, Linkedin, Loader2, Twitter, Users, Mail } from 'lucide-react';
+import { ArrowRight, Github, Linkedin, Loader2, Twitter, Users, Mail, Search, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { Icon } from '@iconify/react';
 import { useAuth } from '@/hooks/use-auth';
@@ -65,6 +65,39 @@ export default function PortfoliosPage() {
                                     </p>
                                 </div>
                             </section>
+
+                            <section className="bg-background/80 py-10">
+                                <div className="container mx-auto px-4 md:px-6">
+                                    <Card className="max-w-4xl mx-auto shadow-none border-dashed">
+                                        <CardHeader>
+                                            <CardTitle className="text-center">How to Hire Our Talent</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary font-bold text-xl">1</div>
+                                                    <Search className="h-8 w-8 text-primary" />
+                                                    <h3 className="font-semibold">Browse Profiles</h3>
+                                                    <p className="text-sm text-muted-foreground">Explore the public portfolios of our skilled graduates.</p>
+                                                </div>
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary font-bold text-xl">2</div>
+                                                    <Eye className="h-8 w-8 text-primary" />
+                                                    <h3 className="font-semibold">View Full Portfolio</h3>
+                                                    <p className="text-sm text-muted-foreground">Dive deep into their projects, skills, and achievements.</p>
+                                                </div>
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary font-bold text-xl">3</div>
+                                                    <Mail className="h-8 w-8 text-primary" />
+                                                    <h3 className="font-semibold">Initiate Contact</h3>
+                                                    <p className="text-sm text-muted-foreground">Reach out to promising candidates via our secure contact form.</p>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            </section>
+
                             <section className="container mx-auto px-4 md:px-6 py-12">
                                 {loading ? (
                                     <div className="flex justify-center items-center py-20">

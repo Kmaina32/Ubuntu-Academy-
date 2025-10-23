@@ -12,7 +12,7 @@ import { AppSidebar } from '@/components/Sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Award, Github, Linkedin, Loader2, Twitter, ExternalLink } from 'lucide-react';
+import { Award, Github, Linkedin, Loader2, Twitter, ExternalLink, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { slugify } from '@/lib/utils';
 import { Icon } from '@iconify/react';
@@ -105,6 +105,10 @@ export default function PortfolioPage() {
                 <div className="flex flex-col min-h-screen bg-secondary">
                     <main className="flex-grow container mx-auto px-4 md:px-6 py-12">
                         <div className="max-w-4xl mx-auto">
+                             <Link href="/portfolios" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+                                <ArrowLeft className="h-4 w-4" />
+                                Back to Hiring Center
+                            </Link>
                             <Card className="mb-8 p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
                                 <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-primary">
                                     <AvatarImage src={user.photoURL || ''} alt={user.displayName || ''}/>
