@@ -219,9 +219,9 @@ export default function PortfolioPage() {
                                 </Card>
                             )}
 
-                             <Card className="mb-8">
+                            <Card className="mb-8">
                                 <CardHeader>
-                                    <CardTitle>Achievements & Awards</CardTitle>
+                                    <CardTitle>Achievements &amp; Awards</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     {achievementsToDisplay.length > 0 ? (
@@ -246,7 +246,7 @@ export default function PortfolioPage() {
 
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Completed Courses & Certificates</CardTitle>
+                                    <CardTitle>Completed Courses &amp; Certificates</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     {completedCourses.length > 0 ? (
@@ -291,3 +291,5 @@ export default function PortfolioPage() {
         </>
     )
 }
+
+    
