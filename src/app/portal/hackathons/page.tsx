@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAllHackathons, Hackathon, getHeroData } from '@/lib/firebase-service';
+import { getAllHackathons, Hackathon, getHeroData, registerForHackathon } from '@/lib/firebase-service';
 import { Loader2, Trophy, FileText, Scale, Star } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
@@ -14,10 +14,46 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { HackathonOnboarding } from '@/components/HackathonOnboarding';
+import { useToast } from '@/hooks/use-toast';
+import { checkHackathonParticipantAchievement } from '@/lib/achievements';
 
 function HackathonCard({ hackathon }: { hackathon: Hackathon }) {
+    const { user } = useAuth();
+    const { toast } = useToast();
+    const [isRegistering, setIsRegistering] = useState(false);
+    const [isParticipant, setIsParticipant] = useState(false);
+    
     const hasEnded = isPast(new Date(hackathon.endDate));
     const hasStarted = isPast(new Date(hackathon.startDate));
+
+    useEffect(() => {
+        if (user && hackathon.participants) {
+            setIsParticipant(!!hackathon.participants[user.uid]);
+        }
+    }, [user, hackathon.participants]);
+
+    const handleRegister = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!user) {
+            toast({ title: 'Login Required', description: 'You must be logged in to register for a hackathon.', variant: 'destructive'});
+            return;
+        }
+
+        setIsRegistering(true);
+        try {
+            await registerForHackathon(hackathon.id, user.uid);
+            await checkHackathonParticipantAchievement(user.uid);
+            toast({ title: 'Success!', description: `You are now registered for ${hackathon.title}.` });
+            setIsParticipant(true);
+        } catch (error) {
+            toast({ title: 'Error', description: 'Could not register for the hackathon.', variant: 'destructive'});
+        } finally {
+            setIsRegistering(false);
+        }
+    };
+
 
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
@@ -55,9 +91,15 @@ function HackathonCard({ hackathon }: { hackathon: Hackathon }) {
         <p className="text-lg font-bold text-primary">
           {hackathon.entryFee > 0 ? `Ksh ${hackathon.entryFee.toLocaleString()}` : 'Free'}
         </p>
-         <Button asChild>
-            <Link href={`/portal/hackathons/${hackathon.id}`}>View Details</Link>
-        </Button>
+        {isParticipant ? (
+            <Button asChild>
+                <Link href={`/portal/hackathons/${hackathon.id}`}>View Details</Link>
+            </Button>
+        ) : (
+             <Button onClick={handleRegister} disabled={isRegistering || hasEnded}>
+                {isRegistering ? <Loader2 className="h-4 w-4 animate-spin" /> : (hasEnded ? 'Event Ended' : 'Register Now')}
+             </Button>
+        )}
       </CardFooter>
     </Card>
   );

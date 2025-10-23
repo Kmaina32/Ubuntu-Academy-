@@ -258,6 +258,14 @@ export interface LearningGoal {
     createdAt: string;
 }
 
+export interface Achievement {
+    id: string;
+    name: string;
+    description: string;
+    icon: string;
+    unlockedAt: string;
+}
+
 export interface CourseFeedback {
     id: string;
     courseId: string;
@@ -309,6 +317,7 @@ export interface RegisteredUser {
     lastSeen?: string | number;
     portfolio?: Portfolio;
     learningGoals?: Record<string, LearningGoal>;
+    achievements?: Record<string, Achievement>;
     photoURL?: string;
 }
 

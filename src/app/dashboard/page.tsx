@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Link from 'next/link';
@@ -8,7 +7,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import type { Course, UserCourse, RegisteredUser, LearningGoal, LeaderboardEntry } from "@/lib/types";
+import type { Course, UserCourse, RegisteredUser, LearningGoal, LeaderboardEntry, Achievement } from "@/lib/types";
 import { getUserCourses, getAllCourses, saveUser, getUserById, createLearningGoal, updateLearningGoal, deleteLearningGoal, getLeaderboard } from '@/lib/firebase-service';
 import { Award, BookOpen, User, Loader2, Trophy, BookCopy, ListTodo, Calendar, Briefcase, PlusCircle, Trash2, CheckCircle, Flame } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
@@ -39,6 +38,7 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import * as LucideIcons from 'lucide-react';
 
 type PurchasedCourseDetail = UserCourse & Partial<Course>;
 
@@ -198,46 +198,44 @@ function PortfolioProgressWidget({ dbUser }: { dbUser: RegisteredUser }) {
     );
 }
 
-// Recent Activity Widget
-function RecentActivityFeed({ courses }: { courses: PurchasedCourseDetail[] }) {
-    const activities = useMemo(() => {
-        return courses
-            .filter(c => c.enrollmentDate) // Ensure enrollmentDate exists
-            .map(c => ({
-                id: c.courseId,
-                text: `Enrolled in ${c.title}`,
-                time: c.enrollmentDate
-            }))
-            .sort((a,b) => new Date(b.time).getTime() - new Date(a.time).getTime())
-            .slice(0, 5);
-    }, [courses]);
+// Recent Achievements Widget
+function AchievementsWidget({ achievements }: { achievements: Achievement[] }) {
+    const recentAchievements = achievements.sort((a,b) => new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime()).slice(0, 3);
+    
+    // A helper to safely render Lucide icons by name
+    const Icon = ({ name, ...props }: { name: string } & LucideIcons.LucideProps) => {
+        const LucideIcon = (LucideIcons as any)[name];
+        if (!LucideIcon) return <Award {...props} />; // Fallback icon
+        return <LucideIcon {...props} />;
+    };
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="font-headline">Recent Activity</CardTitle>
+                <CardTitle className="font-headline">Recent Achievements</CardTitle>
+                <CardDescription>Your latest unlocked awards.</CardDescription>
             </CardHeader>
             <CardContent>
-                {activities.length > 0 ? (
+                {recentAchievements.length > 0 ? (
                     <div className="space-y-4">
-                        {activities.map((activity, index) => (
-                            <div key={activity.id + index} className="flex items-start gap-3">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary">
-                                    <BookOpen className="h-4 w-4 text-secondary-foreground"/>
+                        {recentAchievements.map(ach => (
+                            <div key={ach.id} className="flex items-center gap-4">
+                                <div className="p-3 bg-secondary rounded-full">
+                                    <Icon name={ach.icon} className="h-6 w-6 text-primary" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium">{activity.text}</p>
-                                    <p className="text-xs text-muted-foreground">{formatDistanceToNowStrict(new Date(activity.time), { addSuffix: true })}</p>
+                                    <p className="font-semibold">{ach.name}</p>
+                                    <p className="text-sm text-muted-foreground">{ach.description}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <p className="text-sm text-center py-4 text-muted-foreground">No recent activity.</p>
+                    <p className="text-sm text-muted-foreground text-center py-4">No achievements unlocked yet. Keep learning!</p>
                 )}
             </CardContent>
         </Card>
-    );
+    )
 }
 
 // Community Leaderboard Widget
@@ -395,7 +393,7 @@ export default function DashboardPage() {
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-12">
                  <div className="lg:col-span-2">
-                    <RecentActivityFeed courses={purchasedCourses} />
+                     <AchievementsWidget achievements={Object.values(dbUser.achievements || {})} />
                 </div>
                 <CommunityLeaderboard />
             </div>

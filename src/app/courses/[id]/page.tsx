@@ -24,6 +24,7 @@ import { slugify } from '@/lib/utils';
 import Head from 'next/head';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { checkFirstEnrollmentAchievement } from '@/lib/achievements';
 
 function PurchaseCard({ 
     course, 
@@ -227,7 +228,12 @@ export default function CourseDetailPage() {
     if (!user) return;
     try {
       await enrollUserInCourse(user.uid, course.id);
-      toast({ title: 'Payment Successful!', description: `You have successfully enrolled in ${course.title}.` });
+      const achievement = await checkFirstEnrollmentAchievement(user.uid);
+      if (achievement) {
+          toast({ title: "Achievement Unlocked!", description: `${achievement.name}: ${achievement.description}` });
+      } else {
+          toast({ title: 'Payment Successful!', description: `You have successfully enrolled in ${course.title}.` });
+      }
       setIsEnrolled(true);
       setIsModalOpen(false);
     } catch(error) {
@@ -244,7 +250,12 @@ export default function CourseDetailPage() {
     setIsEnrolling(true);
     try {
       await enrollUserInCourse(user.uid, course.id);
-      toast({ title: 'Enrolled!', description: `You have successfully enrolled in ${course.title}.` });
+      const achievement = await checkFirstEnrollmentAchievement(user.uid);
+       if (achievement) {
+          toast({ title: "Achievement Unlocked!", description: `${achievement.name}: ${achievement.description}` });
+      } else {
+          toast({ title: 'Enrolled!', description: `You have successfully enrolled in ${course.title}.` });
+      }
       setIsEnrolled(true);
     } catch(error) {
       console.error("Free enrollment failed", error);

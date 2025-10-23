@@ -33,6 +33,7 @@ import { DiscussionForum } from '@/components/DiscussionForum';
 import { slugify } from '@/lib/utils';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
 import { NotebookSheet } from '@/components/NotebookSheet';
+import { checkCourseCompletionAchievements } from '@/lib/achievements';
 
 
 function getYouTubeEmbedUrl(url: string | undefined): string | null {
@@ -686,6 +687,16 @@ export default function CoursePlayerPage() {
         completedLessons: Array.from(newCompleted),
         progress: Math.round(newProgress),
     });
+
+    if (newProgress === 100) {
+        const achievement = await checkCourseCompletionAchievements(user.uid, course.id);
+        if (achievement) {
+            toast({
+                title: 'Achievement Unlocked!',
+                description: `${achievement.name}: ${achievement.description}`
+            });
+        }
+    }
 
     const currentIndex = allLessons.findIndex(l => l.id === currentLesson.id);
     const nextLessonIndex = currentIndex + 1;

@@ -9,13 +9,14 @@ import { getSubmissionById, getCourseById, updateSubmission, updateUserCoursePro
 import type { Submission, Course, ExamQuestion, ShortAnswerQuestion } from '@/lib/types';
 import { gradeShortAnswerExam } from '@/app/actions';
 import type { GradeShortAnswerExamOutput } from '@/ai/flows/grade-short-answer-exam';
+import { checkTopPerformerAchievement } from '@/lib/achievements';
+import { useToast } from '@/hooks/use-toast';
 
 import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, ArrowLeft, Sparkles, CheckCircle, MessageSquare, Star, XCircle, Check } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { v4 as uuidv4 } from 'uuid';
@@ -117,11 +118,21 @@ export default function GradeSubmissionPage() {
       setIsSaving(true);
       try {
         const feedbackString = JSON.stringify(Array.from(gradeResults.values()));
-        await updateSubmission(submission.id, {
+        const submissionUpdate = {
             graded: true,
             pointsAwarded: totalPointsAwarded,
             feedback: feedbackString, // Store detailed breakdown
-        });
+        };
+        await updateSubmission(submission.id, submissionUpdate);
+
+        // Check for Top Performer achievement
+        const achievement = await checkTopPerformerAchievement(submission.userId, { ...submission, ...submissionUpdate }, totalMaxPoints);
+        if (achievement) {
+            toast({
+                title: 'Achievement Unlocked!',
+                description: `${achievement.name}: ${achievement.description}`
+            });
+        }
 
         if (finalPercentage >= CERTIFICATE_THRESHOLD_PERCENTAGE) {
             const certificateId = `${submission.userId.slice(0, 5)}-${course.id.slice(0, 5)}-${uuidv4().slice(0, 8)}`;
