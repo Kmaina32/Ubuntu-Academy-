@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Progress } from "@/components/ui/progress";
 import type { Course, UserCourse, RegisteredUser } from "@/lib/mock-data";
 import { getUserCourses, getAllCourses, saveUser, getUserById } from '@/lib/firebase-service';
-import { Award, BookOpen, User, Loader2, Trophy, BookCopy, ListTodo } from 'lucide-react';
+import { Award, BookOpen, User, Loader2, Trophy, BookCopy, ListTodo, Calendar, Briefcase } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
@@ -267,6 +267,37 @@ export default function DashboardPage() {
                          <p className="text-xs text-muted-foreground">View your achievements below.</p>
                     </CardContent>
                 </Card>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mb-12">
+                <h2 className="text-2xl font-bold mb-4 font-headline">Quick Actions</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Button asChild variant="outline" className="h-24 flex-col gap-2">
+                        <Link href="/">
+                            <BookOpen className="h-6 w-6" />
+                            <span className="text-center">Explore Courses</span>
+                        </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-24 flex-col gap-2">
+                        <Link href="/assignments">
+                            <ListTodo className="h-6 w-6" />
+                            <span className="text-center">My Exams</span>
+                        </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-24 flex-col gap-2">
+                        <Link href="/calendar">
+                            <Calendar className="h-6 w-6" />
+                            <span className="text-center">View Calendar</span>
+                        </Link>
+                    </Button>
+                     <Button asChild variant="outline" className="h-24 flex-col gap-2">
+                        <Link href="/coach">
+                            <Briefcase className="h-6 w-6" />
+                            <span className="text-center">AI Career Coach</span>
+                        </Link>
+                    </Button>
+                </div>
             </div>
 
             {/* Continue Learning Section */}
