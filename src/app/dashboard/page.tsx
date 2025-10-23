@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -201,6 +202,7 @@ function PortfolioProgressWidget({ dbUser }: { dbUser: RegisteredUser }) {
 function RecentActivityFeed({ courses }: { courses: PurchasedCourseDetail[] }) {
     const activities = useMemo(() => {
         return courses
+            .filter(c => c.enrollmentDate) // Ensure enrollmentDate exists
             .map(c => ({
                 id: c.courseId,
                 text: `Enrolled in ${c.title}`,
@@ -366,7 +368,7 @@ export default function DashboardPage() {
                 <p className="text-muted-foreground">Let's continue your learning journey.</p>
             </div>
             
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 mb-8">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Courses in Progress</CardTitle>
@@ -503,4 +505,3 @@ export default function DashboardPage() {
     </SidebarProvider>
   );
 }
-
