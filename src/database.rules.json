@@ -160,13 +160,13 @@
       ".indexOn": "score",
       ".read": "auth != null",
       "$userId": {
-        ".write": "auth != null && auth.uid === $userId"
+        ".write": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
       }
     },
     "hackathonSubmissions": {
       ".read": "auth != null",
       "$submissionId": {
-        ".write": "auth != null && newData.child('userId').val() === auth.uid"
+        ".write": "auth != null && (newData.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
       }
     }
   }
