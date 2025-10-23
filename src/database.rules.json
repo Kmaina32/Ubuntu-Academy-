@@ -165,6 +165,7 @@
     },
     "hackathonSubmissions": {
       ".read": "auth != null",
+      ".indexOn": ["userId", "hackathonId"],
       "$submissionId": {
         ".write": "auth != null && (newData.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
       }
