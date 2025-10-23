@@ -56,6 +56,41 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const createBypassUser = (): { user: User, dbUser: RegisteredUser, organization: Organization } => {
+    const bypassUID = ADMIN_UID; // Use super admin UID
+    const bypassUser = {
+        uid: bypassUID,
+        email: 'gmaina424@gmail.com',
+        displayName: 'Dev Super Admin',
+        emailVerified: true,
+        photoURL: '',
+        metadata: { creationTime: new Date().toISOString(), lastSignInTime: new Date().toISOString() },
+    } as User;
+
+    const bypassDbUser = {
+        uid: bypassUID,
+        email: 'gmaina424@gmail.com',
+        displayName: 'Dev Super Admin',
+        isAdmin: true,
+        isSuperAdmin: true,
+        isOrganizationAdmin: true,
+        organizationId: 'super-admin-org',
+    };
+
+    const bypassOrg = {
+        id: 'super-admin-org',
+        name: SUPER_ADMIN_ORG_NAME,
+        ownerId: bypassUID,
+        createdAt: new Date().toISOString(),
+        subscriptionTier: 'pro' as const,
+        subscriptionExpiresAt: null,
+        memberLimit: 999,
+    };
+
+    return { user: bypassUser, dbUser: bypassDbUser, organization: bypassOrg };
+};
+
+
 export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode; isAiConfigured: boolean }) => {
   const [user, setUser] = useState<User | null>(null);
   const [dbUser, setDbUser] = useState<RegisteredUser | null>(null);
@@ -71,6 +106,17 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
 
 
   useEffect(() => {
+    if (process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true') {
+        console.warn('%cAUTH BYPASS ACTIVE', 'color: red; font-weight: bold; font-size: 14px;');
+        const { user, dbUser, organization } = createBypassUser();
+        setUser(user);
+        setDbUser(dbUser);
+        setOrganization(organization);
+        setMembers([]);
+        setLoading(false);
+        return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
@@ -116,6 +162,8 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
   }, []);
 
   useEffect(() => {
+    if (process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true') return;
+
     if (user) {
       fetchUserData(user);
 
@@ -203,7 +251,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
         title = "Action Invalid";
         description = "Google Sign-In may not be enabled correctly in your Firebase project. Please ensure the Google provider is enabled and a project support email is set in your Firebase console.";
       } else if (error.code === 'auth/popup-closed-by-user') {
-        return; 
+        return;
       }
 
       toast({
@@ -225,6 +273,10 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
   }
 
   const logout = async () => {
+    if (process.env.NEXT_PUBLIC_DISABLE_AUTH === 'true') {
+        console.warn('Cannot log out when auth bypass is active.');
+        return Promise.resolve();
+    }
     await firebaseSignOut(auth);
     router.push('/');
   };
