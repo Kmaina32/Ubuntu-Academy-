@@ -149,7 +149,8 @@
     },
     "leaderboard": {
         ".read": "auth != null",
-        ".write": false
+        ".write": false,
+        ".indexOn": "score"
     }
   }
 }
