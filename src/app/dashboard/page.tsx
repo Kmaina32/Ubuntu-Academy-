@@ -39,6 +39,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import * as LucideIcons from 'lucide-react';
+import { achievementList } from '@/lib/achievements';
+
 
 type PurchasedCourseDetail = UserCourse & Partial<Course>;
 
@@ -279,7 +281,7 @@ function CommunityLeaderboard() {
 }
 
 export default function DashboardPage() {
-  const { user, loading: authLoading, isOrganizationAdmin, setUser: setAuthUser, isAdmin } = useAuth();
+  const { user, loading: authLoading, isOrganizationAdmin, setUser: setAuthUser, isAdmin, isSuperAdmin } = useAuth();
   const router = useRouter();
   const [purchasedCourses, setPurchasedCourses] = useState<PurchasedCourseDetail[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
@@ -329,8 +331,6 @@ export default function DashboardPage() {
   const inProgressCourses = purchasedCourses.filter(c => !(isAdmin || c.completed || c.certificateAvailable));
   const completedCourses = purchasedCourses.filter(c => isAdmin || c.completed || c.certificateAvailable);
 
-  const needsOnboarding = dbUser && (!dbUser.displayName || dbUser.displayName === 'New Member');
-
   const handleOnboardingComplete = (newDisplayName: string) => {
       if (dbUser) {
           setDbUser({ ...dbUser, displayName: newDisplayName });
@@ -358,6 +358,10 @@ export default function DashboardPage() {
             </div>
         )
     }
+
+    const achievementsToDisplay = isSuperAdmin 
+        ? Object.values(achievementList) 
+        : Object.values(dbUser.achievements || {});
 
     return (
         <div className="max-w-6xl mx-auto">
@@ -397,7 +401,7 @@ export default function DashboardPage() {
                      <LearningGoalsWidget dbUser={dbUser} onGoalUpdate={fetchDashboardData} />
                 </div>
                 <div className="lg:col-span-2">
-                     <AchievementsWidget achievements={Object.values(dbUser.achievements || {})} />
+                     <AchievementsWidget achievements={achievementsToDisplay as Achievement[]} />
                 </div>
             </div>
 
@@ -446,7 +450,7 @@ export default function DashboardPage() {
                             )}
                         </CardContent>
                     </Card>
-                 )}
+                )}
             </div>
             
              <div>
@@ -506,5 +510,3 @@ export default function DashboardPage() {
     </SidebarProvider>
   );
 }
-
-    
