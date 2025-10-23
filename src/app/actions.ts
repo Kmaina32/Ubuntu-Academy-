@@ -20,6 +20,7 @@ import type { GenerateFormalDocumentInput, GenerateFormalDocumentOutput } from '
 import type { GenerateHackathonIdeasInput, GenerateHackathonIdeasOutput } from '@/ai/flows/generate-hackathon-ideas';
 import type { TextToSpeechOutput, TextToSpeechInput } from '@/ai/flows/text-to-speech';
 import type { StudentHelpInput, StudentHelpOutput } from '@/ai/flows/student-help';
+import { createNotification } from './lib/firebase-service';
 
 // Each function dynamically imports its corresponding flow, ensuring that the AI logic
 // is only loaded on the server when the action is executed.
@@ -131,4 +132,20 @@ export async function generateFormalDocument(input: { docType: string; content: 
 export async function generateHackathonIdeas(input: GenerateHackathonIdeasInput): Promise<GenerateHackathonIdeasOutput> {
     const { generateHackathonIdeas } = await import('@/ai/flows/generate-hackathon-ideas');
     return generateHackathonIdeas(input);
+}
+
+export async function sendContactMessage(payload: {
+    studentId: string;
+    employerName: string;
+    organizationName: string;
+    message: string;
+}) {
+    const { studentId, employerName, organizationName, message } = payload;
+    
+    await createNotification({
+        userId: studentId,
+        title: `New Message from ${employerName} at ${organizationName}`,
+        body: message,
+        link: '/profile', // Or a future messages page
+    });
 }
