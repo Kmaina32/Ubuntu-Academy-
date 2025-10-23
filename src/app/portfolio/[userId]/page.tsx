@@ -18,6 +18,8 @@ import { slugify } from '@/lib/utils';
 import { Icon } from '@iconify/react';
 import Image from 'next/image';
 
+const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
+
 type CourseWithDetails = UserCourse & Partial<Course>;
 
 export default function PortfolioPage() {
@@ -30,28 +32,43 @@ export default function PortfolioPage() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const userData = await getUserById(params.userId);
+                const userData = await getUserById(params.userId as string);
                 if (!userData || !userData.portfolio?.public) {
                     notFound();
                     return;
                 }
                 setUser(userData);
 
-                const [allCourses, userCourses] = await Promise.all([
-                    getAllCourses(),
-                    getUserCourses(params.userId)
-                ]);
+                const allCourses = await getAllCourses();
 
-                const courseMap = new Map(allCourses.map(c => [c.id, c]));
-                const completed = userCourses
-                    .filter(c => c.certificateAvailable)
-                    .map(uc => ({
-                        ...uc,
-                        ...courseMap.get(uc.courseId)
-                    }))
-                    .filter(c => c.title); // Ensure the course details were found
+                let coursesToDisplay: CourseWithDetails[];
 
-                setCompletedCourses(completed);
+                // If it's the super admin, show all courses as completed
+                if (userData.uid === ADMIN_UID) {
+                    coursesToDisplay = allCourses.map(course => ({
+                        ...course,
+                        courseId: course.id,
+                        progress: 100,
+                        completed: true,
+                        certificateAvailable: true,
+                        certificateId: `admin-cert-${course.id}`,
+                        enrollmentDate: course.createdAt,
+                    }));
+                } else {
+                    // For regular users, fetch their specific completed courses
+                    const userCourses = await getUserCourses(params.userId as string);
+                    const courseMap = new Map(allCourses.map(c => [c.id, c]));
+                    
+                    coursesToDisplay = userCourses
+                        .filter(c => c.certificateAvailable)
+                        .map(uc => ({
+                            ...uc,
+                            ...courseMap.get(uc.courseId)
+                        }))
+                        .filter(c => c.title);
+                }
+
+                setCompletedCourses(coursesToDisplay);
 
             } catch (error) {
                 console.error("Failed to load portfolio data", error);
