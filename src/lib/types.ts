@@ -90,6 +90,7 @@ export interface Course {
   createdAt: string; // ISO string
   project?: PortfolioProject;
   prerequisiteCourseId?: string;
+  discussionPrompt?: string;
 }
 
 export interface Program {

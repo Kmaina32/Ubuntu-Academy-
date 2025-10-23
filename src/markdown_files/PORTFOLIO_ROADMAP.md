@@ -1,3 +1,4 @@
+
 # Manda Network - Portfolio Enhancement Roadmap
 
 This document outlines a strategic roadmap for evolving the Student Portfolio feature from a simple certificate showcase into a comprehensive career-building and job-seeking tool.
@@ -14,8 +15,8 @@ To empower Manda Network graduates by providing them with a dynamic, professiona
 
 These features focus on allowing students to present a more complete picture of their capabilities.
 
-**1. Project Showcase:**
--   **Description:** Allow students to add personal or course-related projects to their portfolio.
+**1. Project Showcase (Implemented):**
+-   **Description:** Allows students to add personal or course-related projects to their portfolio.
 -   **Fields:** Project Title, Description, Technologies Used, Image/Video Gallery, Link to Live Demo, Link to Source Code.
 
 **2. Skill Tagging:**

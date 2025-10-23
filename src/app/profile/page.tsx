@@ -4,13 +4,15 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { v4 as uuidv4 } from 'uuid';
+
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, User as UserIcon, Camera, Upload, Eye, Building, Share2 } from 'lucide-react';
+import { ArrowLeft, Loader2, User as UserIcon, Camera, Upload, Eye, Building, Share2, PlusCircle, Trash2 } from 'lucide-react';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
@@ -27,8 +29,19 @@ import { Alert, AlertTitle, AlertDescription as AlertDescriptionComponent } from
 import { auth } from '@/lib/firebase';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import type { RegisteredUser } from '@/lib/mock-data';
+import type { RegisteredUser, PortfolioProject } from '@/lib/types';
 import { Icon } from '@iconify/react';
+import { Separator } from '@/components/ui/separator';
+
+const projectSchema = z.object({
+  id: z.string(),
+  title: z.string().min(3, "Title is required."),
+  description: z.string().min(10, "Description is required."),
+  imageUrl: z.string().url("Image URL is required."),
+  liveUrl: z.string().url().optional().or(z.literal('')),
+  sourceUrl: z.string().url().optional().or(z.literal('')),
+  technologies: z.array(z.string()).min(1, "At least one technology is required."),
+});
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, 'First name is required.'),
@@ -39,6 +52,7 @@ const profileFormSchema = z.object({
   gitlab: z.string().url({ message: 'Must be a valid URL.' }).optional().or(z.literal('')),
   bitbucket: z.string().url({ message: 'Must be a valid URL.' }).optional().or(z.literal('')),
   public: z.boolean().default(false),
+  projects: z.array(projectSchema).optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -76,7 +90,13 @@ export default function ProfilePage() {
         gitlab: '',
         bitbucket: '',
         public: false,
+        projects: [],
     }
+  });
+  
+  const { fields, append, remove, update } = useFieldArray({
+      control: form.control,
+      name: "projects",
   });
 
   useEffect(() => {
@@ -97,6 +117,7 @@ export default function ProfilePage() {
             gitlab: profile.portfolio?.socialLinks?.gitlab || '',
             bitbucket: profile.portfolio?.socialLinks?.bitbucket || '',
             public: profile.portfolio?.public || false,
+            projects: profile.portfolio?.projects || [],
           });
         }
       });
@@ -156,7 +177,7 @@ export default function ProfilePage() {
     try {
         const downloadURL = await uploadImage(user.uid, file);
         await updateProfile(user, { photoURL: downloadURL });
-        await saveUser({ uid: user.uid, photoURL: downloadURL });
+        await saveUser(user.uid, { photoURL: downloadURL });
         // Force a reload of the user to get the new photoURL
         await auth.currentUser?.reload();
         setUser(auth.currentUser);
@@ -204,8 +225,7 @@ export default function ProfilePage() {
         }
 
         // Update the user record in the Realtime Database
-        await saveUser({
-            uid: user.uid,
+        await saveUser(user.uid, {
             displayName: newDisplayName,
             photoURL: user.photoURL,
             portfolio: {
@@ -216,6 +236,7 @@ export default function ProfilePage() {
                     bitbucket: values.bitbucket,
                 },
                 public: values.public,
+                projects: values.projects,
             }
         });
         
@@ -358,6 +379,8 @@ export default function ProfilePage() {
                                     />
                              </div>
                              <p className="text-xs text-muted-foreground pt-2">Please ensure this is your full, correct name as it will be used on your certificates.</p>
+                            
+                            <Separator />
 
                             <FormField
                                 control={form.control}
@@ -378,6 +401,35 @@ export default function ProfilePage() {
                                <FormField control={form.control} name="gitlab" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:gitlab" className="h-5 w-5" /> GitLab URL</div></FormLabel> <FormControl> <Input placeholder="https://gitlab.com/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
                                <FormField control={form.control} name="bitbucket" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:bitbucket" className="h-5 w-5" /> Bitbucket URL</div></FormLabel> <FormControl> <Input placeholder="https://bitbucket.org/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
                             </div>
+
+                            <Separator />
+                            
+                             <div>
+                                <h3 className="font-semibold text-lg mb-2">Featured Projects</h3>
+                                <div className="space-y-4">
+                                    {fields.map((field, index) => (
+                                        <Card key={field.id} className="p-4 relative bg-secondary/50">
+                                            <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => remove(index)}>
+                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                            </Button>
+                                            <div className="grid grid-cols-1 gap-4">
+                                                <FormField control={form.control} name={`projects.${index}.title`} render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                <FormField control={form.control} name={`projects.${index}.description`} render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                <FormField control={form.control} name={`projects.${index}.imageUrl`} render={({ field }) => (<FormItem><FormLabel>Image URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                <FormField control={form.control} name={`projects.${index}.liveUrl`} render={({ field }) => (<FormItem><FormLabel>Live URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                <FormField control={form.control} name={`projects.${index}.sourceUrl`} render={({ field }) => (<FormItem><FormLabel>Source URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                <FormField control={form.control} name={`projects.${index}.technologies`} render={({ field }) => (<FormItem><FormLabel>Technologies (comma-separated)</FormLabel><FormControl><Input {...field} onChange={(e) => field.onChange(e.target.value.split(',').map(s => s.trim()))} value={Array.isArray(field.value) ? field.value.join(', ') : ''} /></FormControl><FormMessage /></FormItem>)} />
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                                <Button type="button" variant="outline" className="mt-4" onClick={() => append({ id: uuidv4(), title: '', description: '', imageUrl: '', technologies: [] })}>
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Add Project
+                                </Button>
+                            </div>
+
+                             <Separator />
+
                             
                             <FormField
                                 control={form.control}
