@@ -12,11 +12,14 @@ import { AppSidebar } from '@/components/Sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Award, Github, Linkedin, Loader2, Twitter, ExternalLink, ArrowLeft } from 'lucide-react';
+import { Award, Github, Linkedin, Loader2, Twitter, ExternalLink, ArrowLeft, Mail, Briefcase, GraduationCap } from 'lucide-react';
 import Link from 'next/link';
 import { slugify } from '@/lib/utils';
 import { Icon } from '@iconify/react';
 import Image from 'next/image';
+import { useAuth } from '@/hooks/use-auth';
+import { ContactStudentDialog } from '@/components/ContactStudentDialog';
+import { Separator } from '@/components/ui/separator';
 
 const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
 
@@ -27,6 +30,8 @@ export default function PortfolioPage() {
     const [user, setUser] = useState<RegisteredUser | null>(null);
     const [completedCourses, setCompletedCourses] = useState<CourseWithDetails[]>([]);
     const [loading, setLoading] = useState(true);
+    const { isAdmin, isOrganizationAdmin } = useAuth();
+    const [selectedStudent, setSelectedStudent] = useState<RegisteredUser | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -84,6 +89,8 @@ export default function PortfolioPage() {
         const names = name.split(' ');
         return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}` : names[0]?.[0] || 'U';
     };
+    
+    const isEmployer = isAdmin || isOrganizationAdmin;
 
     if (loading) {
         return (
@@ -98,6 +105,7 @@ export default function PortfolioPage() {
     }
 
     return (
+        <>
         <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
@@ -117,13 +125,61 @@ export default function PortfolioPage() {
                                 <div className="flex-grow">
                                     <h1 className="text-3xl md:text-4xl font-bold font-headline">{user.displayName}</h1>
                                     <p className="text-muted-foreground mt-2">{user.portfolio?.summary || 'Lifelong learner and digital skills enthusiast.'}</p>
-                                    <div className="flex justify-center md:justify-start gap-2 mt-4">
-                                        {user.portfolio?.socialLinks?.github && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.github} target="_blank" rel="noreferrer"><Icon icon="mdi:github" className="h-5 w-5" /></a></Button>}
-                                        {user.portfolio?.socialLinks?.gitlab && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.gitlab} target="_blank" rel="noreferrer"><Icon icon="mdi:gitlab" className="h-5 w-5" /></a></Button>}
-                                        {user.portfolio?.socialLinks?.bitbucket && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.bitbucket} target="_blank" rel="noreferrer"><Icon icon="mdi:bitbucket" className="h-5 w-5" /></a></Button>}
+                                    <div className="flex items-center justify-center md:justify-start gap-4 mt-4">
+                                        <div className="flex gap-1">
+                                            {user.portfolio?.socialLinks?.github && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.github} target="_blank" rel="noreferrer"><Icon icon="mdi:github" className="h-5 w-5" /></a></Button>}
+                                            {user.portfolio?.socialLinks?.gitlab && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.gitlab} target="_blank" rel="noreferrer"><Icon icon="mdi:gitlab" className="h-5 w-5" /></a></Button>}
+                                            {user.portfolio?.socialLinks?.bitbucket && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.bitbucket} target="_blank" rel="noreferrer"><Icon icon="mdi:bitbucket" className="h-5 w-5" /></a></Button>}
+                                        </div>
+                                        {isEmployer && (
+                                            <Button onClick={() => setSelectedStudent(user)}>
+                                                <Mail className="mr-2 h-4 w-4" /> Contact
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
                             </Card>
+
+                            {user.portfolio?.workExperience && user.portfolio.workExperience.length > 0 && (
+                                <Card className="mb-8">
+                                    <CardHeader><CardTitle className="flex items-center gap-3"><Briefcase /> Work Experience</CardTitle></CardHeader>
+                                    <CardContent className="space-y-6">
+                                        {user.portfolio.workExperience.map((exp) => (
+                                            <div key={exp.id}>
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <h3 className="font-semibold">{exp.jobTitle}</h3>
+                                                        <p className="text-sm text-muted-foreground">{exp.companyName}</p>
+                                                    </div>
+                                                    <p className="text-sm text-muted-foreground">{exp.startDate} - {exp.endDate}</p>
+                                                </div>
+                                                {exp.description && <p className="text-sm mt-2">{exp.description}</p>}
+                                                <Separator className="mt-6"/>
+                                            </div>
+                                        ))}
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                             {user.portfolio?.education && user.portfolio.education.length > 0 && (
+                                <Card className="mb-8">
+                                    <CardHeader><CardTitle className="flex items-center gap-3"><GraduationCap /> Education</CardTitle></CardHeader>
+                                    <CardContent className="space-y-6">
+                                        {user.portfolio.education.map((edu) => (
+                                            <div key={edu.id}>
+                                                 <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <h3 className="font-semibold">{edu.institution}</h3>
+                                                        <p className="text-sm text-muted-foreground">{edu.degree}, {edu.fieldOfStudy}</p>
+                                                    </div>
+                                                    <p className="text-sm text-muted-foreground">{edu.graduationYear}</p>
+                                                </div>
+                                                <Separator className="mt-6"/>
+                                            </div>
+                                        ))}
+                                    </CardContent>
+                                </Card>
+                            )}
 
                              {user.portfolio?.projects && user.portfolio.projects.length > 0 && (
                                 <Card className="mb-8">
@@ -188,5 +244,13 @@ export default function PortfolioPage() {
                 </div>
             </SidebarInset>
         </SidebarProvider>
+        {selectedStudent && (
+             <ContactStudentDialog 
+                student={selectedStudent}
+                isOpen={!!selectedStudent}
+                onClose={() => setSelectedStudent(null)}
+             />
+        )}
+        </>
     )
 }
