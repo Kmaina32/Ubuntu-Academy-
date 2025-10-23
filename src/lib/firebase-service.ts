@@ -3,7 +3,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser } from './types';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Hackathon, HackathonSubmission, LeaderboardEntry, PricingPlan } from './types';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -831,4 +831,171 @@ export async function getVerifiedCertificateData(certificateId: string): Promise
     }
     
     return { isValid: false };
+}
+
+
+// Bootcamp Functions
+export async function createBootcamp(bootcampData: Omit<Bootcamp, 'id'>): Promise<string> {
+    const bootcampsRef = ref(db, 'bootcamps');
+    const newBootcampRef = push(bootcampsRef);
+    await set(newBootcampRef, bootcampData);
+    return newBootcampRef.key!;
+}
+
+export async function getAllBootcamps(): Promise<Bootcamp[]> {
+    const bootcampsRef = ref(db, 'bootcamps');
+    const snapshot = await get(bootcampsRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        return Object.keys(data).map(key => ({
+            id: key,
+            ...data[key]
+        }));
+    }
+    return [];
+}
+
+export async function getBootcampById(id: string): Promise<Bootcamp | null> {
+    const bootcampRef = ref(db, `bootcamps/${id}`);
+    const snapshot = await get(bootcampRef);
+    if (snapshot.exists()) {
+        return { id, ...snapshot.val() };
+    }
+    return null;
+}
+
+export async function updateBootcamp(id: string, bootcampData: Partial<Bootcamp>): Promise<void> {
+    const bootcampRef = ref(db, `bootcamps/${id}`);
+    await update(bootcampRef, bootcampData);
+}
+
+export async function deleteBootcamp(id: string): Promise<void> {
+    const bootcampRef = ref(db, `bootcamps/${id}`);
+    await remove(bootcampRef);
+}
+
+export async function registerUserForBootcamp(bootcampId: string, userId: string): Promise<void> {
+    const bootcampRef = ref(db, `bootcamps/${bootcampId}/participants/${userId}`);
+    await set(bootcampRef, true);
+}
+
+// Hackathon Functions
+export async function createHackathon(hackathonData: Omit<Hackathon, 'id'>): Promise<string> {
+    const refPath = ref(db, 'hackathons');
+    const newRef = push(refPath);
+    await set(newRef, hackathonData);
+    return newRef.key!;
+}
+
+export async function getAllHackathons(): Promise<Hackathon[]> {
+    const dataRef = ref(db, 'hackathons');
+    const snapshot = await get(dataRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        return Object.keys(data).map(key => ({
+            id: key,
+            ...data[key]
+        }));
+    }
+    return [];
+}
+
+export async function getHackathonById(id: string): Promise<Hackathon | null> {
+    const dataRef = ref(db, `hackathons/${id}`);
+    const snapshot = await get(dataRef);
+    if (snapshot.exists()) {
+        return { id, ...snapshot.val() };
+    }
+    return null;
+}
+
+export async function updateHackathon(id: string, hackathonData: Partial<Hackathon>): Promise<void> {
+    const dataRef = ref(db, `hackathons/${id}`);
+    await update(dataRef, hackathonData);
+}
+
+export async function deleteHackathon(id: string): Promise<void> {
+    const dataRef = ref(db, `hackathons/${id}`);
+    await remove(dataRef);
+}
+
+export async function registerForHackathon(hackathonId: string, userId: string): Promise<void> {
+    const dataRef = ref(db, `hackathons/${hackathonId}/participants/${userId}`);
+    await set(dataRef, true);
+}
+
+export async function getHackathonParticipants(hackathonId: string): Promise<RegisteredUser[]> {
+    const dataRef = ref(db, `hackathons/${hackathonId}/participants`);
+    const snapshot = await get(dataRef);
+    if (snapshot.exists()) {
+        const participantIds = Object.keys(snapshot.val());
+        const userPromises = participantIds.map(uid => getUserById(uid));
+        const users = (await Promise.all(userPromises)).filter(Boolean) as RegisteredUser[];
+        return users;
+    }
+    return [];
+}
+
+export async function createHackathonSubmission(submissionData: Omit<HackathonSubmission, 'id'>): Promise<string> {
+    const refPath = ref(db, 'hackathonSubmissions');
+    const newRef = push(refPath);
+    await set(newRef, submissionData);
+
+    // Leaderboard logic
+    const leaderboardRef = ref(db, `leaderboard/${submissionData.userId}`);
+    const leaderboardSnapshot = await get(leaderboardRef);
+    if (leaderboardSnapshot.exists()) {
+        await update(leaderboardRef, {
+            score: increment(10), // +10 points for submission
+            hackathonCount: increment(1)
+        });
+    } else {
+        const user = await getUserById(submissionData.userId);
+        await set(leaderboardRef, {
+            userId: submissionData.userId,
+            userName: user?.displayName || 'Anonymous',
+            userAvatar: user?.photoURL || '',
+            score: 10,
+            hackathonCount: 1,
+        });
+    }
+
+    return newRef.key!;
+}
+
+export async function getHackathonSubmissions(hackathonId: string): Promise<HackathonSubmission[]> {
+    const submissionsRef = query(ref(db, 'hackathonSubmissions'), orderByChild('hackathonId'), equalTo(hackathonId));
+    const snapshot = await get(submissionsRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        return Object.keys(data).map(key => ({
+            id: key,
+            ...data[key]
+        }));
+    }
+    return [];
+}
+
+export async function getHackathonSubmissionsByUser(userId: string): Promise<HackathonSubmission[]> {
+    const submissionsRef = query(ref(db, 'hackathonSubmissions'), orderByChild('userId'), equalTo(userId));
+    const snapshot = await get(submissionsRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        return Object.keys(data).map(key => ({
+            id: key,
+            ...data[key]
+        }));
+    }
+    return [];
+}
+
+export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
+    const leaderboardRef = query(ref(db, 'leaderboard'), orderByChild('score'));
+    const snapshot = await get(leaderboardRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        const entries: LeaderboardEntry[] = Object.values(data);
+        return entries.sort((a,b) => b.score - a.score);
+    }
+    return [];
 }
