@@ -1,5 +1,5 @@
 
-'use client'
+'use client';
 
 import Link from 'next/link';
 import { useState, useEffect, useMemo } from 'react';
@@ -7,9 +7,9 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import type { Course, UserCourse, RegisteredUser } from "@/lib/mock-data";
-import { getUserCourses, getAllCourses, saveUser, getUserById } from '@/lib/firebase-service';
-import { Award, BookOpen, User, Loader2, Trophy, BookCopy, ListTodo, Calendar, Briefcase } from 'lucide-react';
+import type { Course, UserCourse, RegisteredUser, LearningGoal, LeaderboardEntry } from "@/lib/types";
+import { getUserCourses, getAllCourses, saveUser, getUserById, createLearningGoal, updateLearningGoal, deleteLearningGoal, getLeaderboard } from '@/lib/firebase-service';
+import { Award, BookOpen, User, Loader2, Trophy, BookCopy, ListTodo, Calendar, Briefcase, PlusCircle, Trash2, CheckCircle, Flame } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '@/components/ui/separator';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
@@ -34,6 +34,10 @@ import { updateProfile } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
+import { formatDistanceToNowStrict } from 'date-fns';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 
 type PurchasedCourseDetail = UserCourse & Partial<Course>;
 
@@ -45,106 +49,232 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
-const splitDisplayName = (displayName: string | null | undefined): {firstName: string, middleName: string, lastName: string} => {
-    if (!displayName) return { firstName: '', middleName: '', lastName: '' };
-    const parts = displayName.split(' ');
-    const firstName = parts[0] || '';
-    const lastName = parts[parts.length - 1] || '';
-    const middleName = parts.slice(1, -1).join(' ');
-    return { firstName, middleName, lastName };
-}
+const goalFormSchema = z.object({
+    goalText: z.string().min(3, "Goal must be at least 3 characters.")
+});
+
+const getInitials = (name: string | null | undefined) => {
+    if (!name) return 'U';
+    const names = name.split(' ');
+    return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}` : names[0]?.[0] || 'U';
+};
 
 
-function OnboardingModal({ user, onComplete }: { user: RegisteredUser, onComplete: (newDisplayName: string) => void }) {
+// Learning Goals Widget
+function LearningGoalsWidget({ dbUser, onGoalUpdate }: { dbUser: RegisteredUser, onGoalUpdate: () => void }) {
     const { toast } = useToast();
-    const [isLoading, setIsLoading] = useState(false);
+    const [isAdding, setIsAdding] = useState(false);
+    const form = useForm({ resolver: zodResolver(goalFormSchema), defaultValues: { goalText: '' }});
 
-    const form = useForm<ProfileFormValues>({
-        resolver: zodResolver(profileFormSchema),
-        defaultValues: {
-            firstName: '',
-            middleName: '',
-            lastName: '',
-        }
-    });
+    const goals = useMemo(() => Object.values(dbUser.learningGoals || {}).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()), [dbUser.learningGoals]);
 
-    const onSubmit = async (values: ProfileFormValues) => {
-        setIsLoading(true);
+    const handleAddGoal = async (values: { goalText: string }) => {
+        setIsAdding(true);
         try {
-            const newDisplayName = [values.firstName, values.middleName, values.lastName].filter(Boolean).join(' ');
-            
-            if (auth.currentUser) {
-                await updateProfile(auth.currentUser, { displayName: newDisplayName });
-            }
-
-            await saveUser(user.uid, { displayName: newDisplayName });
-            
-            toast({ title: 'Success', description: 'Your profile has been updated.' });
-            onComplete(newDisplayName);
-        } catch(error) {
-            console.error(error);
-            toast({ title: 'Error', description: 'Failed to update profile.', variant: 'destructive'});
+            await createLearningGoal(dbUser.uid, values.goalText);
+            form.reset();
+            onGoalUpdate();
+        } catch (error) {
+            toast({ title: "Error", description: "Failed to add goal.", variant: "destructive" });
         } finally {
-            setIsLoading(false);
+            setIsAdding(false);
+        }
+    };
+
+    const handleToggleGoal = async (goal: LearningGoal) => {
+        try {
+            await updateLearningGoal(dbUser.uid, goal.id, { completed: !goal.completed });
+            onGoalUpdate();
+        } catch (error) {
+             toast({ title: "Error", description: "Failed to update goal.", variant: "destructive" });
         }
     };
     
+    const handleDeleteGoal = async (goalId: string) => {
+        try {
+            await deleteLearningGoal(dbUser.uid, goalId);
+            onGoalUpdate();
+        } catch (error) {
+             toast({ title: "Error", description: "Failed to delete goal.", variant: "destructive" });
+        }
+    }
+
     return (
-        <Dialog open={true}>
-            <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
-                 <DialogHeader>
-                    <DialogTitle>Complete Your Profile</DialogTitle>
-                    <DialogDescription>
-                        Please enter your full name. This will be used on your certificates.
-                    </DialogDescription>
-                </DialogHeader>
-                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="firstName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>First Name</FormLabel>
-                                        <FormControl><Input placeholder="Jomo" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                             <FormField
-                                control={form.control}
-                                name="lastName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Last Name</FormLabel>
-                                        <FormControl><Input placeholder="Kenyatta" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <FormField
-                            control={form.control}
-                            name="middleName"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Middle Name (Optional)</FormLabel>
-                                    <FormControl><Input {...field} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <DialogFooter>
-                            <Button type="submit" disabled={isLoading}>
-                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                Save and Continue
-                            </Button>
-                        </DialogFooter>
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline">My Goals</CardTitle>
+                <CardDescription>Add and track your personal learning objectives.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(handleAddGoal)} className="flex items-start gap-2 mb-4">
+                        <FormField control={form.control} name="goalText" render={({ field }) => (
+                            <FormItem className="flex-grow"><FormControl><Input placeholder="e.g., Finish React module..." {...field} /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                        <Button type="submit" size="icon" disabled={isAdding}>{isAdding ? <Loader2 className="h-4 w-4 animate-spin"/> : <PlusCircle className="h-4 w-4" />}</Button>
                     </form>
                 </Form>
-            </DialogContent>
-        </Dialog>
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+                    {goals.length > 0 ? goals.map(goal => (
+                        <div key={goal.id} className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-secondary">
+                            <div className="flex items-center gap-3">
+                                <Checkbox id={`goal-${goal.id}`} checked={goal.completed} onCheckedChange={() => handleToggleGoal(goal)} />
+                                <label htmlFor={`goal-${goal.id}`} className={`text-sm ${goal.completed ? 'line-through text-muted-foreground' : ''}`}>{goal.text}</label>
+                            </div>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4"/></Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Delete this goal?</AlertDialogTitle>
+                                        <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete(goal.id)}>Delete</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
+                    )) : <p className="text-sm text-muted-foreground text-center py-4">No goals added yet.</p>}
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
+// Portfolio Progress Widget
+function PortfolioProgressWidget({ dbUser }: { dbUser: RegisteredUser }) {
+    const score = useMemo(() => {
+        let currentScore = 0;
+        if (dbUser.displayName && dbUser.displayName !== 'New Member') currentScore += 25;
+        if (dbUser.portfolio?.summary) currentScore += 25;
+        if (dbUser.portfolio?.socialLinks?.github) currentScore += 25;
+        if (dbUser.portfolio?.public) currentScore += 25;
+        return currentScore;
+    }, [dbUser]);
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline">Portfolio Strength</CardTitle>
+                <CardDescription>Complete your profile to attract employers.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex items-center justify-center gap-4">
+                    <div className="relative h-24 w-24">
+                         <svg className="w-full h-full" viewBox="0 0 36 36">
+                            <path
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                className="stroke-current text-secondary"
+                                fill="none"
+                                strokeWidth="3"
+                            />
+                            <path
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                className="stroke-current text-primary"
+                                fill="none"
+                                strokeWidth="3"
+                                strokeDasharray={`${score}, 100`}
+                                strokeLinecap="round"
+                            />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center text-2xl font-bold">{score}%</div>
+                    </div>
+                    <ul className="text-sm space-y-2">
+                        <li className={`flex items-center gap-2 ${dbUser.displayName && dbUser.displayName !== 'New Member' ? 'text-muted-foreground line-through' : ''}`}><CheckCircle className="h-4 w-4"/>Set your full name</li>
+                        <li className={`flex items-center gap-2 ${dbUser.portfolio?.summary ? 'text-muted-foreground line-through' : ''}`}><CheckCircle className="h-4 w-4"/>Add a profile summary</li>
+                        <li className={`flex items-center gap-2 ${dbUser.portfolio?.socialLinks?.github ? 'text-muted-foreground line-through' : ''}`}><CheckCircle className="h-4 w-4"/>Link your GitHub</li>
+                        <li className={`flex items-center gap-2 ${dbUser.portfolio?.public ? 'text-muted-foreground line-through' : ''}`}><CheckCircle className="h-4 w-4"/>Make portfolio public</li>
+                    </ul>
+                </div>
+            </CardContent>
+             <CardFooter>
+                <Button asChild className="w-full" variant="outline"><Link href="/profile">Edit Profile</Link></Button>
+            </CardFooter>
+        </Card>
+    );
+}
+
+// Recent Activity Widget
+function RecentActivityFeed({ courses }: { courses: PurchasedCourseDetail[] }) {
+    const activities = useMemo(() => {
+        return courses
+            .map(c => ({
+                id: c.courseId,
+                text: `Enrolled in ${c.title}`,
+                time: c.enrollmentDate
+            }))
+            .sort((a,b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+            .slice(0, 5);
+    }, [courses]);
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline">Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+                {activities.length > 0 ? (
+                    <div className="space-y-4">
+                        {activities.map((activity, index) => (
+                            <div key={activity.id + index} className="flex items-start gap-3">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary">
+                                    <BookOpen className="h-4 w-4 text-secondary-foreground"/>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium">{activity.text}</p>
+                                    <p className="text-xs text-muted-foreground">{formatDistanceToNowStrict(new Date(activity.time), { addSuffix: true })}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-sm text-center py-4 text-muted-foreground">No recent activity.</p>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+// Community Leaderboard Widget
+function CommunityLeaderboard() {
+    const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        getLeaderboard().then(data => {
+            setLeaderboard(data.slice(0, 5));
+            setLoading(false);
+        });
+    }, []);
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline">Hackathon Leaderboard</CardTitle>
+            </CardHeader>
+            <CardContent>
+                {loading ? <div className="flex justify-center"><Loader2 className="animate-spin" /></div> : (
+                    <ul className="space-y-3">
+                        {leaderboard.map((entry, index) => (
+                            <li key={entry.userId} className="flex items-center justify-between text-sm">
+                                <div className="flex items-center gap-3">
+                                    <span className="font-bold w-4">{index + 1}.</span>
+                                    <Avatar className="h-8 w-8"><AvatarImage src={entry.userAvatar} /><AvatarFallback>{getInitials(entry.userName)}</AvatarFallback></Avatar>
+                                    <span className="font-medium">{entry.userName}</span>
+                                </div>
+                                <div className="flex items-center gap-1 font-bold text-primary">
+                                    <Flame className="h-4 w-4"/>
+                                    {entry.score}
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </CardContent>
+        </Card>
     )
 }
 
@@ -162,11 +292,7 @@ export default function DashboardPage() {
     }
   }, [authLoading, isOrganizationAdmin, isAdmin, router]);
 
-
-  useEffect(() => {
-    if (isOrganizationAdmin && !isAdmin) return; // Don't fetch student data for org admins
-
-    const fetchCourseDetails = async () => {
+  const fetchDashboardData = async () => {
       setLoadingCourses(true);
       
       if (user) {
@@ -181,10 +307,7 @@ export default function DashboardPage() {
         const courseDetailsPromises = allCoursesData.map(async (course) => {
             const userCourse = userCoursesData.find(c => c.courseId === course.id);
             if (userCourse) {
-                 return {
-                    ...userCourse,
-                    ...course,
-                 };
+                 return { ...userCourse, ...course };
             }
             return null;
         });
@@ -195,8 +318,11 @@ export default function DashboardPage() {
       setLoadingCourses(false);
     };
 
+  useEffect(() => {
+    if (isOrganizationAdmin && !isAdmin) return; // Don't fetch student data for org admins
+
     if (!authLoading) {
-      fetchCourseDetails();
+      fetchDashboardData();
     }
   }, [user, authLoading, isOrganizationAdmin, isAdmin]);
   
@@ -217,11 +343,7 @@ export default function DashboardPage() {
 
   const renderContent = () => {
     if (authLoading || (loadingCourses && user) || (isOrganizationAdmin && !isAdmin)) {
-        return (
-            <div className="flex justify-center items-center py-10 h-full">
-                <LoadingAnimation />
-            </div>
-        )
+        return <div className="flex justify-center items-center py-10 h-full"><LoadingAnimation /></div>
     }
 
     if (!user || !dbUser) {
@@ -239,14 +361,12 @@ export default function DashboardPage() {
 
     return (
         <div className="max-w-6xl mx-auto">
-            {needsOnboarding && <OnboardingModal user={dbUser} onComplete={handleOnboardingComplete} />}
             <div className="mb-8">
                 <h1 className="text-3xl font-bold mb-1 font-headline">Welcome Back, {dbUser.displayName?.split(' ')[0]}!</h1>
                 <p className="text-muted-foreground">Let's continue your learning journey.</p>
             </div>
             
-            {/* Summary Cards */}
-            <div className="grid gap-6 sm:grid-cols-2 mb-8">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Courses in Progress</CardTitle>
@@ -267,40 +387,17 @@ export default function DashboardPage() {
                          <p className="text-xs text-muted-foreground">View your achievements below.</p>
                     </CardContent>
                 </Card>
+                 <PortfolioProgressWidget dbUser={dbUser} />
+                 <LearningGoalsWidget dbUser={dbUser} onGoalUpdate={fetchDashboardData} />
             </div>
 
-            {/* Quick Actions */}
-            <div className="mb-12">
-                <h2 className="text-2xl font-bold mb-4 font-headline">Quick Actions</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <Button asChild variant="outline" className="h-24 flex-col gap-2">
-                        <Link href="/">
-                            <BookOpen className="h-6 w-6" />
-                            <span className="text-center">Explore Courses</span>
-                        </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="h-24 flex-col gap-2">
-                        <Link href="/assignments">
-                            <ListTodo className="h-6 w-6" />
-                            <span className="text-center">My Exams</span>
-                        </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="h-24 flex-col gap-2">
-                        <Link href="/calendar">
-                            <Calendar className="h-6 w-6" />
-                            <span className="text-center">View Calendar</span>
-                        </Link>
-                    </Button>
-                     <Button asChild variant="outline" className="h-24 flex-col gap-2">
-                        <Link href="/coach">
-                            <Briefcase className="h-6 w-6" />
-                            <span className="text-center">AI Career Coach</span>
-                        </Link>
-                    </Button>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-12">
+                 <div className="lg:col-span-2">
+                    <RecentActivityFeed courses={purchasedCourses} />
                 </div>
+                <CommunityLeaderboard />
             </div>
 
-            {/* Continue Learning Section */}
             <div className="mb-12">
                 <h2 className="text-2xl font-bold mb-4 font-headline">Continue Learning</h2>
                  {inProgressCourses.length > 0 ? (
@@ -349,7 +446,6 @@ export default function DashboardPage() {
                  )}
             </div>
             
-            {/* My Certificates Section */}
              <div>
                 <h2 className="text-2xl font-bold mb-4 font-headline">My Certificates</h2>
                  {completedCourses.length > 0 ? (
@@ -407,3 +503,4 @@ export default function DashboardPage() {
     </SidebarProvider>
   );
 }
+

@@ -34,6 +34,10 @@ export interface TutorSettings {
     avatarUrl?: string;
 }
 
+export interface CertificateSettings {
+    academicDirector: string;
+}
+
 // Image Upload Service
 export async function uploadImage(userId: string, file: File): Promise<string> {
     const filePath = `profile-pictures/${userId}/${file.name}`;
@@ -364,6 +368,25 @@ export async function getTutorSettings(): Promise<TutorSettings> {
     }
     return defaults;
 }
+
+// Certificate Settings Functions
+export async function saveCertificateSettings(settings: CertificateSettings): Promise<void> {
+    const settingsRef = ref(db, 'certificateSettings');
+    await set(settingsRef, settings);
+}
+
+export async function getCertificateSettings(): Promise<CertificateSettings> {
+    const settingsRef = ref(db, 'certificateSettings');
+    const snapshot = await get(settingsRef);
+    const defaults: CertificateSettings = {
+        academicDirector: 'Dr. Emily Carter',
+    };
+    if (snapshot.exists()) {
+        return { ...defaults, ...snapshot.val() };
+    }
+    return defaults;
+}
+
 
 // Remote Config Functions
 export async function getRemoteConfigValues(keys: string[]): Promise<Record<string, string>> {
@@ -1004,4 +1027,26 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
         return entries.sort((a,b) => b.score - a.score);
     }
     return [];
+}
+
+// Learning Goals
+export async function createLearningGoal(userId: string, text: string): Promise<string> {
+    const goalsRef = ref(db, `users/${userId}/learningGoals`);
+    const newGoalRef = push(goalsRef);
+    await set(newGoalRef, {
+        text,
+        completed: false,
+        createdAt: new Date().toISOString(),
+    });
+    return newGoalRef.key!;
+}
+
+export async function updateLearningGoal(userId: string, goalId: string, data: Partial<Omit<LearningGoal, 'id'>>): Promise<void> {
+    const goalRef = ref(db, `users/${userId}/learningGoals/${goalId}`);
+    await update(goalRef, data);
+}
+
+export async function deleteLearningGoal(userId: string, goalId: string): Promise<void> {
+    const goalRef = ref(db, `users/${userId}/learningGoals/${goalId}`);
+    await remove(goalRef);
 }
