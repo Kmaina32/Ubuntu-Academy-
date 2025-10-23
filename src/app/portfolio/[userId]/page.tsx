@@ -32,7 +32,7 @@ export default function PortfolioPage() {
     const [user, setUser] = useState<RegisteredUser | null>(null);
     const [completedCourses, setCompletedCourses] = useState<CourseWithDetails[]>([]);
     const [loading, setLoading] = useState(true);
-    const { isAdmin, isOrganizationAdmin } = useAuth();
+    const { user: authUser, isAdmin, isOrganizationAdmin } = useAuth();
     const [selectedStudent, setSelectedStudent] = useState<RegisteredUser | null>(null);
 
     useEffect(() => {
@@ -40,7 +40,7 @@ export default function PortfolioPage() {
             setLoading(true);
             try {
                 const userData = await getUserById(params.userId as string);
-                if (!userData || (!userData.portfolio?.public && userData.uid !== ADMIN_UID)) {
+                if (!userData || (!userData.portfolio?.public && userData.uid !== ADMIN_UID && authUser?.uid !== userData.uid && !isAdmin)) {
                     notFound();
                     return;
                 }
@@ -84,7 +84,7 @@ export default function PortfolioPage() {
             }
         };
         fetchData();
-    }, [params.userId]);
+    }, [params.userId, authUser, isAdmin]);
 
     const getInitials = (name: string | null | undefined) => {
         if (!name) return 'U';
@@ -92,7 +92,7 @@ export default function PortfolioPage() {
         return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}` : names[0]?.[0] || 'U';
     };
     
-    const isEmployer = isAdmin || isOrganizationAdmin;
+    const isEmployer = isOrganizationAdmin || isAdmin;
 
     if (loading) {
         return (
