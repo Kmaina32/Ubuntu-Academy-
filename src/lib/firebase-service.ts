@@ -1,5 +1,4 @@
 
-
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -485,6 +484,13 @@ export async function updateLiveSession(data: Partial<LiveSession>): Promise<voi
     const sessionRef = ref(db, 'liveSession');
     await update(sessionRef, data);
 }
+
+export async function sendReaction(sessionId: string, emoji: string): Promise<void> {
+    const reactionsRef = ref(db, `liveReactions/${sessionId}`);
+    const newReactionRef = push(reactionsRef);
+    await set(newReactionRef, { emoji });
+}
+
 
 // Program Functions
 export async function createProgram(programData: Omit<Program, 'id'>): Promise<string> {
