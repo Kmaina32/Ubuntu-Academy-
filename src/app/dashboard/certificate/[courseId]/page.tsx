@@ -32,7 +32,10 @@ export default function CertificatePage() {
 
   useEffect(() => {
     const fetchCourse = async () => {
-        if (!user) return;
+        if (!user) {
+          setLoading(false);
+          return;
+        };
         setLoading(true);
         const allCourses = await getAllCourses();
         const courseSlug = params.courseId;
@@ -60,10 +63,10 @@ export default function CertificatePage() {
         setAcademicDirector(certSettings.academicDirector);
         setLoading(false);
     }
-    if(user) {
+    if(!loadingAuth) {
       fetchCourse();
     }
-  }, [params.courseId, user]);
+  }, [params.courseId, user, loadingAuth]);
 
   if (loadingAuth || loading) {
     return <div className="flex justify-center items-center min-h-screen">
