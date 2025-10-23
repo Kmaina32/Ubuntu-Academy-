@@ -1,14 +1,11 @@
-
 {
   "rules": {
+    // By default, deny all reads and writes
+    ".read": false,
+    ".write": false,
+
+    // Publicly readable data that is managed by admins
     "courses": {
-      ".read": true,
-      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
-    },
-    "publicProfiles": {
-      ".read": true
-    },
-    "bundles": {
       ".read": true,
       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
@@ -16,157 +13,174 @@
       ".read": true,
       ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
-    "hero": {
+    "bundles": {
       ".read": true,
-      ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
-    "users": {
-      ".read": "auth != null",
-      ".indexOn": ["email", "portfolio/public", "organizationId"],
-      "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || (data.child('portfolio').child('public').val() === true) || (data.child('organizationId').val() != null && data.child('organizationId').val() === root.child('users').child(auth.uid).child('organizationId').val() && root.child('users').child(auth.uid).child('isOrganizationAdmin').val() === true))",
-        ".write": "auth != null && ($uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
-        "portfolio": {
-          ".write": "auth != null && $uid === auth.uid"
-        }
-      }
+    "bootcamps": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "hackathons": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "pricingPlans": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
     "calendarEvents": {
-      ".read": true,
-      ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
-    },
-    "submissions": {
       ".read": "auth != null",
-      ".write": "auth != null",
-      ".indexOn": ["userId"],
-      "$submissionId": {
-        ".read": "root.child('submissions').child($submissionId).child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true"
-      }
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "hero": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
     "tutorSettings": {
-      ".read": "auth != null",
-      ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
-    "tutorHistory": {
+     "certificateSettings": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "leaderboard": {
+      ".read": true,
+      ".indexOn": "score",
       "$userId": {
-        ".read": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+        // Allow a user to create their own entry, or an admin to write any entry.
+        ".write": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+      }
+    },
+    "publicProfiles": {
+      // Publicly readable list of users who have opted-in
+      ".read": true
+    },
+
+    // User-specific data
+    "users": {
+      ".indexOn": ["email", "organizationId", "portfolio/public"],
+      "$userId": {
+        // A user can read their own data.
+        // An admin can read any user's data.
+        // An org admin can read data of users in their organization.
+        // Anyone can read a user's data if their portfolio is public.
+        ".read": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true || (root.child('users').child(auth.uid).child('isOrganizationAdmin').val() === true && data.child('organizationId').val() === root.child('users').child(auth.uid).child('organizationId').val())) || data.child('portfolio/public').val() === true",
+        // A user can write to their own node, or an admin can write to any user's node.
+        ".write": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+      }
+    },
+
+    "userNotes": {
+      "$userId": {
+        // A user can only read/write their own notes.
+        ".read": "auth != null && auth.uid === $userId",
         ".write": "auth != null && auth.uid === $userId"
+      }
+    },
+    
+    "tutorHistory": {
+       "$userId": {
+        // A user can only read/write their own tutor chat history.
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null && auth.uid === $userId"
+       }
+    },
+
+    // Submissions and Interactions
+    "submissions": {
+      ".indexOn": "userId",
+      "$submissionId": {
+        ".read": "auth != null && (data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+        // Allow user to write if they are the author, or if user is an admin.
+        ".write": "auth != null && (newData.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+      }
+    },
+    "hackathonSubmissions": {
+      ".indexOn": ["userId", "hackathonId"],
+       "$submissionId": {
+        ".read": "auth != null && (data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+        // Allow user to write if they are the author, or if user is an admin.
+        ".write": "auth != null && (newData.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+      }
+    },
+    "courseFeedback": {
+      "$courseId": {
+        ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
+        ".write": "auth != null" // Any authenticated user can submit feedback.
       }
     },
     "discussions": {
       ".read": "auth != null",
       "threads": {
         "$courseId": {
-          ".read": "auth != null",
-          ".write": "auth != null",
-          ".indexOn": "createdAt"
+          ".indexOn": "createdAt",
+          ".write": "auth != null" // Any authenticated user can create/reply.
         }
       },
       "replies": {
         "$threadId": {
-           ".read": "auth != null",
-           ".write": "auth != null",
-           ".indexOn": "createdAt"
+          ".indexOn": "createdAt",
+          ".write": "auth != null"
         }
       }
     },
-    "userNotes": {
-      "$userId": {
-        "$courseId": {
-          ".read": "auth.uid === $userId",
-          ".write": "auth.uid === $userId"
-        }
+
+    // Organizational data
+    "organizations": {
+      ".indexOn": "ownerId",
+      ".read": "auth != null",
+      // Only an admin or the designated owner can write to an organization's details.
+      "$orgId": {
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('isAdmin').val() === true || data.child('ownerId').val() === auth.uid)"
       }
     },
-    "analytics": {
-      ".read": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
-      ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+    "invitations": {
+      ".read": "auth != null",
+      // Only admins or org admins can create/update invitations.
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('isAdmin').val() === true || root.child('users').child(auth.uid).child('isOrganizationAdmin').val() === true)"
     },
-    "apiKeys": {
-      "$userId": {
-        ".read": "auth != null && auth.uid === $userId",
-        ".write": "auth != null && auth.uid === $userId"
-      }
+
+    // Admin-only or specific-permission sections
+    "permissionRequests": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('isSuperAdmin').val() === true",
+      ".write": "auth != null" // Any admin can create, but only super admin can resolve (handled in service logic)
     },
-    "apiUsage": {
-      "$userId": {
-        ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true) && (root.child('users').child(auth.uid).child('apiCallCount').val() < root.child('users').child(auth.uid).child('apiLimit').val())",
-        ".read": "auth != null && auth.uid === $userId"
-      }
+    "notifications": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
     },
+
+    // Live session / WebRTC signaling
     "webrtc-offers": {
       ".read": "auth != null",
-      ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isOrganizationAdmin').val() === true || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('isAdmin').val() === true || root.child('users').child(auth.uid).child('isOrganizationAdmin').val() === true)"
     },
     "webrtc-answers": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      "$sessionId": {
+        "$userId": {
+          ".read": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true || root.child('users').child(auth.uid).child('isOrganizationAdmin').val() === true)",
+          ".write": "auth != null && auth.uid === $userId"
+        }
+      }
     },
     "webrtc-candidates": {
       ".read": "auth != null",
       ".write": "auth != null"
     },
     "liveChat": {
-      "$sessionId": {
-        ".read": "auth != null",
-        ".write": "auth != null"
-      }
-    },
-    "liveReactions": {
-      "$sessionId": {
-        ".read": "auth != null",
-        ".write": "auth != null"
-      }
-    },
-    "courseFeedback": {
-      "$courseId": {
-        ".read": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
-        ".write": "auth != null"
-      }
-    },
-    "permissionRequests": {
-      ".read": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
-      "$requestId": {
-        ".write": "(auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true && newData.exists() && !data.exists()) || (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' && data.exists() && newData.exists())"
-      }
-    },
-    "notifications": {
-      ".read": "auth != null",
-      ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
-    },
-    "organizations": {
-      ".indexOn": "ownerId",
       ".read": "auth != null",
       ".write": "auth != null"
     },
-    "invitations": {
-      ".read": true,
-      ".write": "auth != null",
-      "$inviteId": {
-        ".write": "auth != null && (root.child('organizations').child(newData.child('organizationId').val()).child('ownerId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true || auth.uid === newData.child('userId').val())"
-      }
-    },
-    "pricingPlans": {
-        ".read": "auth != null",
-        ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
-    },
-    "hackathons": {
-      ".read": true,
-      ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
-    },
-    "hackathonSubmissions": {
-      ".indexOn": ["userId", "hackathonId"],
+    "liveReactions": {
       ".read": "auth != null",
-      "$submissionId": {
-        ".write": "auth != null && (newData.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
-      }
+      ".write": "auth != null"
     },
-    "leaderboard": {
-      ".read": true,
-      ".indexOn": "score",
-      "$userId": {
-        ".write": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
-      }
-    }
+    
+    // Deprecated or unused
+    "apiKeys": { ".read": false, ".write": false },
+    "apiUsage": { ".read": false, ".write": false },
+    "projects": { ".read": false, ".write": false }
   }
 }
