@@ -229,18 +229,18 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/portfolios')} tooltip="Student Portfolios" onClick={onLinkClick}>
+                            <SidebarMenuButton asChild isActive={isActive('/portfolios')} tooltip="Hiring Center" onClick={onLinkClick}>
                                 <Link href="/portfolios">
                                     <PortfoliosIcon />
-                                    <span>Student Portfolios</span>
+                                    <span>Hiring Center</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/for-business')} tooltip="For Business" onClick={() => onLinkClick('/for-business')}>
+                            <SidebarMenuButton asChild isActive={isActive('/for-business')} tooltip="For Organizations" onClick={() => onLinkClick('/for-business')}>
                                 <Link href="/for-business">
                                     <Building />
-                                    <span>For Business</span>
+                                    <span>Organization</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

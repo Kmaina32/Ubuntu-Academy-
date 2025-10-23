@@ -52,7 +52,7 @@ export default function PortfoliosPage() {
                                 <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
                                     <Users className="h-10 w-10 text-primary" />
                                 </div>
-                                <h1 className="text-4xl md:text-5xl font-bold font-headline">Student Portfolios</h1>
+                                <h1 className="text-4xl md:text-5xl font-bold font-headline">Hiring Center</h1>
                                 <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">
                                     Discover talented individuals from our academy. Our students are equipped with practical, job-ready skills.
                                 </p>
