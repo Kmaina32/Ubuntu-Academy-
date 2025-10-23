@@ -20,6 +20,8 @@ import Image from 'next/image';
 import { useAuth } from '@/hooks/use-auth';
 import { ContactStudentDialog } from '@/components/ContactStudentDialog';
 import { Separator } from '@/components/ui/separator';
+import * as LucideIcons from 'lucide-react';
+import { achievementList } from '@/lib/achievements';
 
 const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
 
@@ -38,7 +40,7 @@ export default function PortfolioPage() {
             setLoading(true);
             try {
                 const userData = await getUserById(params.userId as string);
-                if (!userData || !userData.portfolio?.public) {
+                if (!userData || (!userData.portfolio?.public && userData.uid !== ADMIN_UID)) {
                     notFound();
                     return;
                 }
@@ -103,6 +105,16 @@ export default function PortfolioPage() {
     if (!user) {
         notFound();
     }
+    
+    const achievementsToDisplay = user.uid === ADMIN_UID
+        ? Object.values(achievementList)
+        : Object.values(user.achievements || {});
+
+    const IconComponent = ({ name, ...props }: { name: string } & LucideIcons.LucideProps) => {
+        const LucideIcon = (LucideIcons as any)[name];
+        if (!LucideIcon) return <Award {...props} />; // Fallback icon
+        return <LucideIcon {...props} />;
+    };
 
     return (
         <>
@@ -144,7 +156,7 @@ export default function PortfolioPage() {
                                 <Card className="mb-8">
                                     <CardHeader><CardTitle className="flex items-center gap-3"><Briefcase /> Work Experience</CardTitle></CardHeader>
                                     <CardContent className="space-y-6">
-                                        {user.portfolio.workExperience.map((exp) => (
+                                        {user.portfolio.workExperience.map((exp, index) => (
                                             <div key={exp.id}>
                                                 <div className="flex justify-between items-start">
                                                     <div>
@@ -154,7 +166,7 @@ export default function PortfolioPage() {
                                                     <p className="text-sm text-muted-foreground">{exp.startDate} - {exp.endDate}</p>
                                                 </div>
                                                 {exp.description && <p className="text-sm mt-2">{exp.description}</p>}
-                                                <Separator className="mt-6"/>
+                                                {index < user.portfolio!.workExperience!.length - 1 && <Separator className="mt-6"/>}
                                             </div>
                                         ))}
                                     </CardContent>
@@ -165,7 +177,7 @@ export default function PortfolioPage() {
                                 <Card className="mb-8">
                                     <CardHeader><CardTitle className="flex items-center gap-3"><GraduationCap /> Education</CardTitle></CardHeader>
                                     <CardContent className="space-y-6">
-                                        {user.portfolio.education.map((edu) => (
+                                        {user.portfolio.education.map((edu, index) => (
                                             <div key={edu.id}>
                                                  <div className="flex justify-between items-start">
                                                     <div>
@@ -174,7 +186,7 @@ export default function PortfolioPage() {
                                                     </div>
                                                     <p className="text-sm text-muted-foreground">{edu.graduationYear}</p>
                                                 </div>
-                                                <Separator className="mt-6"/>
+                                                 {index < user.portfolio!.education!.length - 1 && <Separator className="mt-6"/>}
                                             </div>
                                         ))}
                                     </CardContent>
@@ -207,6 +219,31 @@ export default function PortfolioPage() {
                                 </Card>
                             )}
 
+                             <Card className="mb-8">
+                                <CardHeader>
+                                    <CardTitle>Achievements & Awards</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    {achievementsToDisplay.length > 0 ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {achievementsToDisplay.map((ach: any) => (
+                                                <div key={ach.id || ach.name} className="flex items-center gap-4 p-3 rounded-lg border bg-background">
+                                                    <div className="p-2 bg-primary/10 rounded-full">
+                                                        <IconComponent name={ach.icon} className="h-6 w-6 text-primary" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-semibold">{ach.name}</p>
+                                                        <p className="text-sm text-muted-foreground">{ach.description}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-muted-foreground text-center py-8">No achievements unlocked yet.</p>
+                                    )}
+                                </CardContent>
+                            </Card>
+
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Completed Courses & Certificates</CardTitle>
@@ -215,7 +252,7 @@ export default function PortfolioPage() {
                                     {completedCourses.length > 0 ? (
                                         <div className="space-y-4">
                                             {completedCourses.map(course => (
-                                                <div key={course.courseId} className="flex items-center justify-between p-4 border rounded-lg">
+                                                <div key={course.courseId} className="flex items-center justify-between p-4 border rounded-lg bg-background">
                                                     <div className="flex items-center gap-4">
                                                         <Award className="h-8 w-8 text-primary"/>
                                                         <div>
