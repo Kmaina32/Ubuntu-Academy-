@@ -43,6 +43,23 @@ const projectSchema = z.object({
   technologies: z.array(z.string()).min(1, "At least one technology is required."),
 });
 
+const workExperienceSchema = z.object({
+    id: z.string(),
+    jobTitle: z.string().min(2, "Job title is required."),
+    companyName: z.string().min(2, "Company name is required."),
+    startDate: z.string().min(4, "Start date is required."),
+    endDate: z.string(), // Can be "Present" or a year
+    description: z.string().optional(),
+});
+
+const educationSchema = z.object({
+    id: z.string(),
+    institution: z.string().min(2, "Institution name is required."),
+    degree: z.string().min(2, "Degree or certificate is required."),
+    fieldOfStudy: z.string().min(2, "Field of study is required."),
+    graduationYear: z.string().min(4, "Graduation year is required."),
+});
+
 const profileFormSchema = z.object({
   firstName: z.string().min(1, 'First name is required.'),
   middleName: z.string().optional(),
@@ -53,6 +70,8 @@ const profileFormSchema = z.object({
   bitbucket: z.string().url({ message: 'Must be a valid URL.' }).optional().or(z.literal('')),
   public: z.boolean().default(false),
   projects: z.array(projectSchema).optional(),
+  workExperience: z.array(workExperienceSchema).optional(),
+  education: z.array(educationSchema).optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -91,13 +110,24 @@ export default function ProfilePage() {
         bitbucket: '',
         public: false,
         projects: [],
+        workExperience: [],
+        education: [],
     }
   });
   
-  const { fields, append, remove, update } = useFieldArray({
+  const { fields: projectFields, append: appendProject, remove: removeProject } = useFieldArray({
       control: form.control,
       name: "projects",
   });
+  const { fields: workFields, append: appendWork, remove: removeWork } = useFieldArray({
+      control: form.control,
+      name: "workExperience",
+  });
+  const { fields: educationFields, append: appendEducation, remove: removeEducation } = useFieldArray({
+      control: form.control,
+      name: "education",
+  });
+
 
   useEffect(() => {
     if (!loading && !user) {
@@ -118,6 +148,8 @@ export default function ProfilePage() {
             bitbucket: profile.portfolio?.socialLinks?.bitbucket || '',
             public: profile.portfolio?.public || false,
             projects: profile.portfolio?.projects || [],
+            workExperience: profile.portfolio?.workExperience || [],
+            education: profile.portfolio?.education || [],
           });
         }
       });
@@ -237,6 +269,8 @@ export default function ProfilePage() {
                 },
                 public: values.public,
                 projects: values.projects,
+                workExperience: values.workExperience,
+                education: values.education,
             }
         });
         
@@ -381,13 +415,14 @@ export default function ProfilePage() {
                              <p className="text-xs text-muted-foreground pt-2">Please ensure this is your full, correct name as it will be used on your certificates.</p>
                             
                             <Separator />
+                             <h3 className="text-lg font-semibold pt-4">Build Your Portfolio / CV</h3>
 
                             <FormField
                                 control={form.control}
                                 name="summary"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>Portfolio Summary</FormLabel>
+                                    <FormLabel>Professional Summary</FormLabel>
                                     <FormControl>
                                         <Textarea placeholder="A brief summary about your skills and career goals." {...field} />
                                     </FormControl>
@@ -395,6 +430,51 @@ export default function ProfilePage() {
                                     </FormItem>
                                 )}
                                 />
+                                
+                            {/* Work Experience Section */}
+                            <div>
+                                <h4 className="font-semibold mb-2">Work Experience</h4>
+                                <div className="space-y-4">
+                                    {workFields.map((field, index) => (
+                                        <Card key={field.id} className="p-4 bg-secondary/50">
+                                            <div className="flex justify-end mb-2">
+                                                <Button type="button" variant="ghost" size="icon" className="text-destructive h-7 w-7" onClick={() => removeWork(index)}><Trash2 className="h-4 w-4"/></Button>
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <FormField control={form.control} name={`workExperience.${index}.jobTitle`} render={({field}) => (<FormItem><FormLabel>Job Title</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)} />
+                                                <FormField control={form.control} name={`workExperience.${index}.companyName`} render={({field}) => (<FormItem><FormLabel>Company</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)} />
+                                                <FormField control={form.control} name={`workExperience.${index}.startDate`} render={({field}) => (<FormItem><FormLabel>Start Date</FormLabel><FormControl><Input placeholder="e.g., Jan 2022" {...field}/></FormControl><FormMessage/></FormItem>)} />
+                                                <FormField control={form.control} name={`workExperience.${index}.endDate`} render={({field}) => (<FormItem><FormLabel>End Date</FormLabel><FormControl><Input placeholder="Present" {...field}/></FormControl><FormMessage/></FormItem>)} />
+                                            </div>
+                                            <FormField control={form.control} name={`workExperience.${index}.description`} render={({field}) => (<FormItem className="mt-4"><FormLabel>Description</FormLabel><FormControl><Textarea {...field}/></FormControl><FormMessage/></FormItem>)} />
+                                        </Card>
+                                    ))}
+                                </div>
+                                <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendWork({ id: uuidv4(), jobTitle: '', companyName: '', startDate: '', endDate: 'Present', description: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
+                            </div>
+
+                            {/* Education Section */}
+                            <div>
+                                <h4 className="font-semibold mb-2">Education</h4>
+                                <div className="space-y-4">
+                                    {educationFields.map((field, index) => (
+                                        <Card key={field.id} className="p-4 bg-secondary/50">
+                                             <div className="flex justify-end mb-2">
+                                                <Button type="button" variant="ghost" size="icon" className="text-destructive h-7 w-7" onClick={() => removeEducation(index)}><Trash2 className="h-4 w-4"/></Button>
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <FormField control={form.control} name={`education.${index}.institution`} render={({field}) => (<FormItem><FormLabel>Institution</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)} />
+                                                <FormField control={form.control} name={`education.${index}.degree`} render={({field}) => (<FormItem><FormLabel>Degree/Certificate</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)} />
+                                                <FormField control={form.control} name={`education.${index}.fieldOfStudy`} render={({field}) => (<FormItem><FormLabel>Field of Study</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)} />
+                                                <FormField control={form.control} name={`education.${index}.graduationYear`} render={({field}) => (<FormItem><FormLabel>Graduation Year</FormLabel><FormControl><Input placeholder="e.g., 2024" {...field}/></FormControl><FormMessage/></FormItem>)} />
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                                <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendEducation({ id: uuidv4(), institution: '', degree: '', fieldOfStudy: '', graduationYear: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Education</Button>
+                            </div>
+                            
+                            <Separator/>
 
                             <div className="grid grid-cols-1 gap-4">
                                <FormField control={form.control} name="github" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:github" className="h-5 w-5" /> GitHub URL</div></FormLabel> <FormControl> <Input placeholder="https://github.com/username" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
@@ -407,9 +487,9 @@ export default function ProfilePage() {
                              <div>
                                 <h3 className="font-semibold text-lg mb-2">Featured Projects</h3>
                                 <div className="space-y-4">
-                                    {fields.map((field, index) => (
+                                    {projectFields.map((field, index) => (
                                         <Card key={field.id} className="p-4 relative bg-secondary/50">
-                                            <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => remove(index)}>
+                                            <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => removeProject(index)}>
                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                             </Button>
                                             <div className="grid grid-cols-1 gap-4">
@@ -423,7 +503,7 @@ export default function ProfilePage() {
                                         </Card>
                                     ))}
                                 </div>
-                                <Button type="button" variant="outline" className="mt-4" onClick={() => append({ id: uuidv4(), title: '', description: '', imageUrl: '', technologies: [] })}>
+                                <Button type="button" variant="outline" className="mt-4" onClick={() => appendProject({ id: uuidv4(), title: '', description: '', imageUrl: '', technologies: [] })}>
                                     <PlusCircle className="mr-2 h-4 w-4" /> Add Project
                                 </Button>
                             </div>

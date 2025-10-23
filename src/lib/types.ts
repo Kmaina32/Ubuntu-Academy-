@@ -221,6 +221,23 @@ export interface ApiKey {
     userId: string;
 }
 
+export interface WorkExperience {
+    id: string;
+    jobTitle: string;
+    companyName: string;
+    startDate: string;
+    endDate: string;
+    description?: string;
+}
+
+export interface Education {
+    id: string;
+    institution: string;
+    degree: string;
+    fieldOfStudy: string;
+    graduationYear: string;
+}
+
 export interface Portfolio {
     summary?: string;
     socialLinks?: {
@@ -230,6 +247,8 @@ export interface Portfolio {
     };
     public?: boolean;
     projects?: PortfolioProject[];
+    workExperience?: WorkExperience[];
+    education?: Education[];
 }
 
 export interface LearningGoal {
