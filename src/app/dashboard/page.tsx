@@ -366,7 +366,7 @@ export default function DashboardPage() {
                 <p className="text-muted-foreground">Let's continue your learning journey.</p>
             </div>
             
-             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 mb-8">
+             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Courses in Progress</CardTitle>
@@ -387,21 +387,24 @@ export default function DashboardPage() {
                          <p className="text-xs text-muted-foreground">View your achievements below.</p>
                     </CardContent>
                 </Card>
-                 <PortfolioProgressWidget dbUser={dbUser} />
-                 <LearningGoalsWidget dbUser={dbUser} onGoalUpdate={fetchDashboardData} />
+                <div className="sm:col-span-2 lg:col-span-2">
+                    <PortfolioProgressWidget dbUser={dbUser} />
+                </div>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-12">
-                 <div className="lg:col-span-2">
+                 <div className="lg:col-span-1">
+                     <LearningGoalsWidget dbUser={dbUser} onGoalUpdate={fetchDashboardData} />
+                </div>
+                <div className="lg:col-span-2">
                      <AchievementsWidget achievements={Object.values(dbUser.achievements || {})} />
                 </div>
-                <CommunityLeaderboard />
             </div>
 
             <div className="mb-12">
                 <h2 className="text-2xl font-bold mb-4 font-headline">Continue Learning</h2>
                  {inProgressCourses.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {inProgressCourses.map((course) => (
                             course.id && course.title && (
                             <Card key={course.id} className="flex flex-col">
@@ -503,3 +506,5 @@ export default function DashboardPage() {
     </SidebarProvider>
   );
 }
+
+    
