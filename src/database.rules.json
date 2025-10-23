@@ -46,13 +46,9 @@
       }
     },
     "users": {
-      ".indexOn": [
-        "email",
-        "organizationId",
-        "portfolio/public"
-      ],
+      ".indexOn": ["email", "organizationId", "portfolio/public"],
       "$userId": {
-        ".read": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true) || data.child('portfolio/public').val() === true",
+        ".read": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true || root.child('users').child(auth.uid).child('isOrganizationAdmin').val() === true) || data.child('portfolio/public').val() === true",
         ".write": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
       }
     },
@@ -91,10 +87,7 @@
       }
     },
     "hackathonSubmissions": {
-      ".indexOn": [
-        "userId",
-        "hackathonId"
-      ],
+      ".indexOn": ["userId", "hackathonId"],
       "$submissionId": {
         ".read": "auth != null && (data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
         ".write": "auth != null && (newData.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
@@ -127,7 +120,7 @@
     },
     "notifications": {
       ".read": "auth != null",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      ".write": "auth != null"
     },
     "webrtc-offers": {
       ".read": "auth != null",
