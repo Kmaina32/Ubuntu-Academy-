@@ -157,7 +157,7 @@
         ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
     },
     "leaderboard": {
-        ".read": true,
+        ".read": "auth != null",
         ".write": false,
         ".indexOn": "score"
     }
