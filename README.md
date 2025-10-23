@@ -1,13 +1,15 @@
 # Manda Network
 
-![Manda Network](/public/logo.png)
+![Manda Network](https://picsum.photos/seed/mandanetwork/1200/630)
 
 Manda Network is an AI-powered online learning platform designed to provide high-quality, affordable, and accessible education tailored for the Kenyan market. It leverages generative AI to create course content, assist students, and automate administrative tasks, creating a modern and scalable educational experience.
 
 ## ✨ Key Features
 
 -   **AI-Powered Content Generation**: Automatically create comprehensive courses, including modules, lessons, and exams, from a simple title or context.
+-   **AI Career Coach**: Generates a personalized learning path of courses based on a student's career goals.
 -   **AI Tutor "Gina"**: A 24/7 AI assistant available in each lesson to answer student questions, provide summaries, and offer quizzes.
+-   **Personalized Student Dashboard**: Includes quick actions, a "Learning Goals" to-do list, a portfolio strength meter, a recent activity feed, and a community leaderboard.
 -   **M-Pesa Integration**: Seamlessly handle course payments using Safaricom's M-Pesa STK Push API.
 -   **Comprehensive Admin Dashboard**: Manage courses, users, payments, site content, and view platform analytics.
 -   **User & Organization Management**: Supports both individual student accounts and B2B organization portals for team management.
