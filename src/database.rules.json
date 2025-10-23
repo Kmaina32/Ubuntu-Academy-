@@ -157,13 +157,17 @@
         ".write": "auth != null && (auth.uid === 'YlyqSWedlPfEqI9LlGzjN7zlRtC2' || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
     },
     "leaderboard": {
+      ".indexOn": "score",
       ".read": "auth != null",
-      ".write": "auth != null",
-      ".indexOn": "score"
+      "$userId": {
+        ".write": "auth != null && auth.uid === $userId"
+      }
     },
     "hackathonSubmissions": {
       ".read": "auth != null",
-      ".write": "auth != null"
+      "$submissionId": {
+        ".write": "auth != null && newData.child('userId').val() === auth.uid"
+      }
     }
   }
 }
