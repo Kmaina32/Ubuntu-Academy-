@@ -110,47 +110,53 @@ export default function StudentLivePage() {
                 setLiveSessionDetails(sessionData);
                 setIsLoading(false);
                 
-                const offerDescription = sessionData;
-                const pc = new RTCPeerConnection(ICE_SERVERS);
-                peerConnectionRef.current = pc;
+                try {
+                    const offerDescription = sessionData;
+                    const pc = new RTCPeerConnection(ICE_SERVERS);
+                    peerConnectionRef.current = pc;
 
-                pc.onicecandidate = (event) => {
-                    if (event.candidate && user) {
-                        set(ref(db, `webrtc-candidates/${sessionId}/student/${user.uid}/${Date.now()}`), event.candidate.toJSON());
-                    }
-                };
+                    pc.onicecandidate = (event) => {
+                        if (event.candidate && user) {
+                            set(ref(db, `webrtc-candidates/${sessionId}/student/${user.uid}/${Date.now()}`), event.candidate.toJSON());
+                        }
+                    };
 
-                pc.ontrack = (event) => {
-                    if (videoRef.current && event.streams[0]) {
-                        videoRef.current.srcObject = event.streams[0];
+                    pc.ontrack = (event) => {
+                        if (videoRef.current && event.streams[0]) {
+                            videoRef.current.srcObject = event.streams[0];
+                        }
+                    };
+                    
+                    pc.onconnectionstatechange = () => {
+                        if(pc.connectionState === 'connected') {
+                            connectionStateRef.current = 'connected';
+                        }
                     }
-                };
-                
-                pc.onconnectionstatechange = () => {
-                    if(pc.connectionState === 'connected') {
-                        connectionStateRef.current = 'connected';
-                    }
+                    
+                    await pc.setRemoteDescription(new RTCSessionDescription(offerDescription));
+                    const answerDescription = await pc.createAnswer();
+                    await pc.setLocalDescription(answerDescription);
+
+                    await set(ref(db, `webrtc-answers/${sessionId}/${user.uid}`), {
+                        type: answerDescription.type,
+                        sdp: answerDescription.sdp,
+                    });
+
+                    onChildAdded(ref(db, `webrtc-candidates/${sessionId}/admin/${user.uid}`), (candidateSnapshot) => {
+                        const candidate = candidateSnapshot.val();
+                        if(candidate) {
+                           try {
+                               pc.addIceCandidate(new RTCIceCandidate(candidate));
+                           } catch (e) {
+                               console.error("Error adding ICE candidate:", e);
+                           }
+                        }
+                    });
+                } catch(error) {
+                    console.error("Error setting up WebRTC connection", error);
+                    toast({title: "Connection Error", description: "Could not connect to the live session.", variant: "destructive"});
+                    connectionStateRef.current = 'failed';
                 }
-                
-                await pc.setRemoteDescription(new RTCSessionDescription(offerDescription));
-                const answerDescription = await pc.createAnswer();
-                await pc.setLocalDescription(answerDescription);
-
-                await set(ref(db, `webrtc-answers/${sessionId}/${user.uid}`), {
-                    type: answerDescription.type,
-                    sdp: answerDescription.sdp,
-                });
-
-                onChildAdded(ref(db, `webrtc-candidates/${sessionId}/admin/${user.uid}`), (candidateSnapshot) => {
-                    const candidate = candidateSnapshot.val();
-                    if(candidate) {
-                       try {
-                           pc.addIceCandidate(new RTCIceCandidate(candidate));
-                       } catch (e) {
-                           console.error("Error adding ICE candidate:", e);
-                       }
-                    }
-                });
 
             } else {
                 setLiveSessionDetails(null);
@@ -185,7 +191,7 @@ export default function StudentLivePage() {
             connectionStateRef.current = 'closed';
         };
 
-    }, [user, hasCameraPermission]);
+    }, [user, hasCameraPermission, toast]);
 
     const handleLeave = () => {
         router.push('/dashboard');
