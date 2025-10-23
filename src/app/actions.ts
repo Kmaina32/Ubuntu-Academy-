@@ -138,14 +138,22 @@ export async function sendContactMessage(payload: {
     studentId: string;
     employerName: string;
     organizationName: string;
+    email: string;
+    phone: string;
     message: string;
 }) {
-    const { studentId, employerName, organizationName, message } = payload;
+    const { studentId, employerName, organizationName, email, phone, message } = payload;
     
     await createNotification({
         userId: studentId,
-        title: `New Message from ${employerName} at ${organizationName}`,
-        body: message,
-        link: '/profile', // Or a future messages page
+        title: `New Message from ${employerName}`,
+        body: {
+            employerName,
+            organizationName,
+            email,
+            phone,
+            message,
+        },
+        link: '/messages',
     });
 }

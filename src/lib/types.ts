@@ -152,7 +152,7 @@ export type TutorMessage = {
 export interface Notification {
     id: string;
     title: string;
-    body: string;
+    body: any; // Can be a string or a structured object
     link?: string;
     createdAt: string;
     cohort?: string;

@@ -122,6 +122,11 @@ export function AppSidebar() {
                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
+                           <SidebarMenuButton asChild size="sm" isActive={isActive('/messages')} tooltip="Message Center" onClick={() => onLinkClick('/messages')}>
+                                <Link href="/messages"><Mail className="mr-2"/>Message Center</Link>
+                           </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/notebook')} tooltip="Notebook" onClick={() => onLinkClick('/notebook')}>
                                 <Link href="/notebook"><NotebookIcon className="mr-2"/>Notebook</Link>
                            </SidebarMenuButton>

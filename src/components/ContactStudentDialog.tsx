@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -21,8 +21,11 @@ import { useToast } from '@/hooks/use-toast';
 import { RegisteredUser } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
 import { sendContactMessage } from '@/app/actions';
+import { Input } from './ui/input';
 
 const contactFormSchema = z.object({
+  email: z.string().email(),
+  phone: z.string().min(10, 'Please enter a valid phone number.'),
   message: z.string().min(20, 'Message must be at least 20 characters long.'),
 });
 
@@ -42,9 +45,17 @@ export function ContactStudentDialog({ student, isOpen, onClose }: ContactStuden
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
+      email: user?.email || '',
+      phone: '',
       message: '',
     },
   });
+  
+  useEffect(() => {
+    if (user?.email) {
+      form.setValue('email', user.email);
+    }
+  }, [user, form]);
 
   const onSubmit = async (values: ContactFormValues) => {
     if (!user || !organization) return;
@@ -54,6 +65,8 @@ export function ContactStudentDialog({ student, isOpen, onClose }: ContactStuden
         studentId: student.uid,
         employerName: user.displayName || 'An Employer',
         organizationName: organization.name,
+        email: values.email,
+        phone: values.phone,
         message: values.message,
       });
 
@@ -77,15 +90,39 @@ export function ContactStudentDialog({ student, isOpen, onClose }: ContactStuden
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Contact {student.displayName}</DialogTitle>
           <DialogDescription>
-            Your message will be sent as a notification. The student's contact details will not be shared.
+            Your message will be sent as a notification. The student can view your contact details and reply directly.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Your Email</FormLabel>
+                            <FormControl><Input type="email" placeholder="you@company.com" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Your Phone Number</FormLabel>
+                            <FormControl><Input placeholder="07XX XXX XXX" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+             </div>
             <FormField
               control={form.control}
               name="message"
