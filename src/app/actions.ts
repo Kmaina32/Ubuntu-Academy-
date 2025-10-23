@@ -20,7 +20,7 @@ import type { GenerateFormalDocumentInput, GenerateFormalDocumentOutput } from '
 import type { GenerateHackathonIdeasInput, GenerateHackathonIdeasOutput } from '@/ai/flows/generate-hackathon-ideas';
 import type { TextToSpeechOutput, TextToSpeechInput } from '@/ai/flows/text-to-speech';
 import type { StudentHelpInput, StudentHelpOutput } from '@/ai/flows/student-help';
-import { createNotification } from './lib/firebase-service';
+import { createNotification } from '@/lib/firebase-service';
 
 // Each function dynamically imports its corresponding flow, ensuring that the AI logic
 // is only loaded on the server when the action is executed.
