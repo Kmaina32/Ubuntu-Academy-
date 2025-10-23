@@ -76,8 +76,8 @@ export default async function ForBusinessPage() {
               <section className="py-16 md:py-24">
                   <div className="container mx-auto px-4 md:px-6">
                       <div className="text-center mb-12">
-                          <h2 className="text-3xl font-bold font-headline">Everything you need to upskill your team</h2>
-                          <p className="mt-2 text-muted-foreground">Simple tools for a powerful learning experience.</p>
+                          <h2 className="text-3xl font-bold font-headline">A Powerful, Simple Platform for Upskilling</h2>
+                          <p className="mt-2 text-muted-foreground">Everything you need to manage your team's learning journey.</p>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                           {features.map((feature, index) => (

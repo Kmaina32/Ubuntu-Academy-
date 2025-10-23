@@ -237,10 +237,10 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/for-business')} tooltip="For Organizations" onClick={onLinkClick}>
+                            <SidebarMenuButton asChild isActive={isActive('/for-business')} tooltip="For Business" onClick={() => onLinkClick('/for-business')}>
                                 <Link href="/for-business">
                                     <Building />
-                                    <span>Organization</span>
+                                    <span>For Business</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
