@@ -109,7 +109,7 @@ export default function PortfoliosPage() {
                                             <Card key={profile.uid} className="flex flex-col">
                                                 <CardHeader className="items-center text-center">
                                                     <Avatar className="h-24 w-24 mb-4 border-2 border-primary">
-                                                        <AvatarImage src={profile.photoURL} alt={profile.displayName || ''} />
+                                                        <AvatarImage src={profile.photoURL || ''} alt={profile.displayName || ''} />
                                                         <AvatarFallback>{getInitials(profile.displayName)}</AvatarFallback>
                                                     </Avatar>
                                                     <CardTitle>{profile.displayName}</CardTitle>
@@ -122,8 +122,8 @@ export default function PortfoliosPage() {
                                                 <CardFooter className="flex flex-col gap-2">
                                                     <Button asChild className="w-full">
                                                         <Link href={`/portfolio/${profile.uid}`}>
-                                                            View Full Portfolio
-                                                            <ArrowRight className="ml-2 h-4 w-4"/>
+                                                            <Eye className="mr-2 h-4 w-4"/>
+                                                            View Portfolio
                                                         </Link>
                                                     </Button>
                                                     {isEmployer && (
