@@ -101,7 +101,7 @@ export default function EditCoursePage() {
     try {
       await updateCourse(params.id as string, {
           ...values,
-          prerequisiteCourseId: values.prerequisiteCourseId === 'none' ? undefined : values.prerequisiteCourseId
+          prerequisiteCourseId: values.prerequisiteCourseId === 'none' ? null : values.prerequisiteCourseId
       });
       toast({
         title: 'Success!',
