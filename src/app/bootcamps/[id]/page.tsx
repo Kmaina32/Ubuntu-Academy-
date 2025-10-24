@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { notFound, useParams } from "next/navigation";
 import Image from "next/image";
 import Link from 'next/link';
-import type { Bootcamp, Course, UserCourse } from "@/lib/mock-data";
+import type { Bootcamp, Course, UserCourse } from "@/lib/types";
 import { getBootcampById, getAllCourses, getUserCourses, enrollUserInCourse, registerUserForBootcamp } from '@/lib/firebase-service';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -65,23 +65,16 @@ export default function BootcampDetailPage() {
   }, [params.id, user]);
   
   const enrolledCourseIds = new Set(userCourses.map(c => c.courseId));
-  const isEnrolled = bootcamp?.participants && bootcamp.participants[user?.uid || ''];
+  const isEnrolled = bootcamp?.participants && user?.uid && bootcamp.participants[user.uid];
 
   const handleEnroll = async () => {
       if (!user || !bootcamp) return;
       setIsEnrolling(true);
       try {
-        for (const courseId of bootcamp.courseIds) {
-            if (!enrolledCourseIds.has(courseId)) {
-                await enrollUserInCourse(user.uid, courseId);
-            }
-        }
         await registerUserForBootcamp(bootcamp.id, user.uid);
         
         toast({ title: 'Enrolled Successfully!', description: `You are now enrolled in the ${bootcamp.title}.`});
-        const fetchedUserCourses = await getUserCourses(user.uid);
-        setUserCourses(fetchedUserCourses);
-
+        
         // Re-fetch bootcamp to get updated participant list
         const updatedBootcamp = await getBootcampById(params.id);
         setBootcamp(updatedBootcamp);
@@ -152,7 +145,7 @@ export default function BootcampDetailPage() {
                                 Bootcamp Curriculum
                                 </CardTitle>
                                 <CardDescription>
-                                    Complete all courses below to graduate from the bootcamp.
+                                    Completing this bootcamp grants access to all courses listed below.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -193,7 +186,7 @@ export default function BootcampDetailPage() {
                                         <Link href="/dashboard">Go to Dashboard</Link>
                                     </Button>
                                 ) : (
-                                    <Button size="lg" className="w-full" onClick={() => setIsModalOpen(true)} disabled={isEnrolling}>
+                                    <Button size="lg" className="w-full" onClick={() => bootcamp.price > 0 ? setIsModalOpen(true) : handleEnroll()} disabled={isEnrolling}>
                                         {isEnrolling ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Award className="mr-2 h-5 w-5" />}
                                         Enroll Now
                                     </Button>

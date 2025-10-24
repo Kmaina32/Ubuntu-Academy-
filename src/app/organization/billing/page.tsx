@@ -12,12 +12,12 @@ import { useState, useEffect } from 'react';
 import { PaymentModal } from '@/components/PaymentModal';
 import { useToast } from '@/hooks/use-toast';
 import type { PricingPlan } from '@/lib/types';
-import { getAllPlans } from '@/lib/firebase-service';
+import { getAllPlans, updateOrganization } from '@/lib/firebase-service';
 import PaymentIcons from '@/components/PaymentIcons';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 export default function OrganizationBillingPage() {
-    const { organization, loading: authLoading } = useAuth();
+    const { organization, loading: authLoading, fetchUserData, user } = useAuth();
     const { toast } = useToast();
     const [paymentModalState, setPaymentModalState] = useState<{isOpen: boolean, plan: PricingPlan | null}>({ isOpen: false, plan: null });
     const [plans, setPlans] = useState<PricingPlan[]>([]);
@@ -38,6 +38,22 @@ export default function OrganizationBillingPage() {
         };
         fetchPlans();
     }, [toast]);
+    
+    const handlePaymentSuccess = async () => {
+        if (!organization || !paymentModalState.plan || !user) return;
+        try {
+            await updateOrganization(organization.id, {
+                subscriptionTier: paymentModalState.plan.name.toLowerCase() as 'trial' | 'basic' | 'pro',
+                subscriptionExpiresAt: null, // Assuming permanent upgrade for now
+            });
+            await fetchUserData(user); // Re-fetch org data to update UI
+            toast({ title: 'Upgrade Successful!', description: `Your organization is now on the ${paymentModalState.plan.name} plan.`});
+        } catch (error) {
+            toast({ title: 'Error', description: 'Failed to update your subscription status.', variant: 'destructive'});
+        } finally {
+            setPaymentModalState({ isOpen: false, plan: null });
+        }
+    }
 
     const handleUpgradeClick = (plan: PricingPlan) => {
         setPaymentModalState({ isOpen: true, plan: plan });
@@ -133,13 +149,10 @@ export default function OrganizationBillingPage() {
                 <PaymentModal
                     isOpen={paymentModalState.isOpen}
                     onClose={() => setPaymentModalState({ isOpen: false, plan: null })}
-                    itemId="org-upgrade"
+                    itemId={`org-upgrade-${paymentModalState.plan.id}`}
                     itemName={`Upgrade to ${paymentModalState.plan.name} Plan`}
                     price={paymentModalState.plan.price}
-                    onPaymentSuccess={() => {
-                        toast({ title: 'Success', description: 'Your plan has been upgraded!'});
-                        setPaymentModalState({ isOpen: false, plan: null });
-                    }}
+                    onPaymentSuccess={handlePaymentSuccess}
                 />
             )}
         </div>
