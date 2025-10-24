@@ -6,7 +6,7 @@ import { notFound, useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from 'next/link';
 import type { Course, UserCourse } from "@/lib/mock-data";
-import { getCourseById, enrollUserInCourse, getUserCourses, getAllCourses } from '@/lib/firebase-service';
+import { getCourseBySlug, enrollUserInCourse, getUserCourses, getAllCourses } from '@/lib/firebase-service';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -176,16 +176,19 @@ export default function CourseDetailPage() {
     const fetchCourseAndProgress = async () => {
         if (!user) return;
         setLoading(true);
-        const allCourses = await getAllCourses();
+        
         const courseSlug = params.id;
-        const fetchedCourse = allCourses.find(c => slugify(c.title) === courseSlug);
+        const fetchedCourse = await getCourseBySlug(courseSlug);
         
         if (!fetchedCourse) {
             notFound();
             return;
         }
 
-        const userCourses = await getUserCourses(user.uid);
+        const [userCourses, allCourses] = await Promise.all([
+          getUserCourses(user.uid),
+          getAllCourses()
+        ]);
         
         if(userCourses.some(c => c.courseId === fetchedCourse.id)) {
             setIsEnrolled(true);

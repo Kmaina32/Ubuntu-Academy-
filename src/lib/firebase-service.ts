@@ -5,6 +5,7 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, PortfolioProject as Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Hackathon, HackathonSubmission, LeaderboardEntry, PricingPlan, Advertisement } from './types';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
+import { slugify } from './utils';
 
 export type { RegisteredUser } from './types';
 
@@ -74,6 +75,11 @@ export async function getCourseById(id: string): Promise<Course | null> {
         return { id, ...snapshot.val() };
     }
     return null;
+}
+
+export async function getCourseBySlug(slug: string): Promise<Course | null> {
+    const allCourses = await getAllCourses();
+    return allCourses.find(course => slugify(course.title) === slug) || null;
 }
 
 
