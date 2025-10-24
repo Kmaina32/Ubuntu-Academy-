@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { X, ArrowRight, Book, Megaphone } from 'lucide-react';
+import { X, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -35,13 +35,12 @@ export function AdPopup() {
   useEffect(() => {
     if (!settings.adsEnabled || ads.length === 0) return;
 
-    // Define pages where ads should be excluded
     const excludedPaths = [
       '/admin',
       '/organization',
       '/live',
       '/notebook',
-      '/courses/', // This will match any subpath of courses like learn, exam etc.
+      '/courses/', 
     ];
 
     const isExcluded = excludedPaths.some(path => pathname.startsWith(path));
@@ -60,13 +59,12 @@ export function AdPopup() {
 
   const handleClose = () => {
     setIsVisible(false);
-    // Cycle to the next ad for the next popup
     setCurrentAdIndex((prev) => (prev + 1) % ads.length);
   };
 
   const currentAd = ads[currentAdIndex];
 
-  if (!isVisible || !currentAd) {
+  if (!currentAd) {
     return null;
   }
 
@@ -78,7 +76,7 @@ export function AdPopup() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 50 }}
           transition={{ duration: 0.5, ease: 'easeInOut' }}
-          className="fixed bottom-4 right-4 z-50 w-full max-w-sm"
+          className="fixed bottom-0 inset-x-0 sm:inset-x-auto sm:bottom-4 sm:right-4 z-50 p-4 sm:p-0 w-full sm:max-w-sm"
         >
           <Card className="overflow-hidden shadow-2xl">
             <CardHeader className="p-0 relative">
