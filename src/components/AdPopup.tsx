@@ -76,7 +76,7 @@ export function AdPopup() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 50 }}
           transition={{ duration: 0.5, ease: 'easeInOut' }}
-          className="fixed bottom-0 inset-x-0 sm:inset-x-auto sm:bottom-4 sm:right-4 z-50 p-4 sm:p-0 w-full sm:max-w-sm"
+          className="fixed bottom-4 left-4 right-4 sm:inset-x-auto sm:right-4 z-50 w-auto sm:max-w-sm"
         >
           <Card className="overflow-hidden shadow-2xl">
             <CardHeader className="p-0 relative">
