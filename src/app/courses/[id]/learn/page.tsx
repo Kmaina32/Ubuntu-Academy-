@@ -457,91 +457,43 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
 }
 
 function LessonContent({ lesson, onComplete }: { lesson: Lesson | null; onComplete: () => void; }) {
-  const [currentPage, setCurrentPage] = useState(0);
-
-  const pages = useMemo(() => {
-    if (!lesson?.content) return [];
-    
-    const paragraphs = lesson.content.split('\n').filter(p => p.trim() !== '');
-    const MAX_WORDS_PER_PAGE = 50;
-    const finalPages: string[] = [];
-
-    paragraphs.forEach(paragraph => {
-      const words = paragraph.split(' ');
-      if (words.length <= MAX_WORDS_PER_PAGE) {
-        finalPages.push(paragraph);
-      } else {
-        for (let i = 0; i < words.length; i += MAX_WORDS_PER_PAGE) {
-          finalPages.push(words.slice(i, i + MAX_WORDS_PER_PAGE).join(' '));
-        }
-      }
-    });
-
-    return finalPages;
-  }, [lesson]);
-
-  useEffect(() => {
-    setCurrentPage(0);
-  }, [lesson]);
-  
-  const handleTTS = async () => {
-    // Add logic to call TTS flow with lesson content
-  }
-
   if (!lesson) return null;
 
-  const totalPages = pages.length;
-  const isLastPage = totalPages === 0 || currentPage === totalPages - 1;
-
   return (
-    <div>
-      <h1 className="text-3xl font-bold font-headline mb-4">{lesson.title}</h1>
-      <div className="prose max-w-none text-foreground/90 mb-6">
-        <p>{totalPages > 0 ? pages[currentPage] : lesson.content}</p>
-      </div>
+    <div className="flex flex-col h-full">
+        <div className="flex-grow overflow-y-auto">
+            <h1 className="text-3xl font-bold font-headline mb-4">{lesson.title}</h1>
+            <div className="prose max-w-none text-foreground/90 mb-6">
+                <p>{lesson.content}</p>
+            </div>
 
-       {totalPages > 1 && (
-         <div className="flex justify-between items-center mt-6">
-            <Button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 0} variant="outline">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Previous
-            </Button>
-            
-            <span className="text-sm text-muted-foreground">
-                Page {currentPage + 1} of {totalPages}
-            </span>
-            
-            <Button onClick={() => setCurrentPage(p => p + 1)} disabled={isLastPage} variant="outline">
-            Next <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            {lesson.googleDriveLinks && lesson.googleDriveLinks.length > 0 && (
+                <div className="mt-8">
+                    <Separator />
+                    <h3 className="text-lg font-semibold my-4">Lesson Resources</h3>
+                    <div className="space-y-2">
+                        {lesson.googleDriveLinks.map(link => (
+                            <a
+                                href={link.url}
+                                key={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 p-3 bg-background border rounded-md hover:bg-secondary transition-colors"
+                            >
+                                <GoogleDriveIcon className="h-6 w-6 flex-shrink-0" />
+                                <span className="text-sm font-medium text-primary">{link.title}</span>
+                            </a>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
-       )}
 
-      {isLastPage && (
-        <Button size="lg" className="bg-accent hover:bg-accent/90 mt-8 w-full" onClick={onComplete}>
-          Mark as Completed &amp; Continue
-        </Button>
-      )}
-
-      {lesson.googleDriveLinks && lesson.googleDriveLinks.length > 0 && (
-        <div className="mt-8">
-          <Separator />
-          <h3 className="text-lg font-semibold my-4">Lesson Resources</h3>
-          <div className="space-y-2">
-            {lesson.googleDriveLinks.map(link => (
-              <a
-                href={link.url}
-                key={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 bg-background border rounded-md hover:bg-secondary transition-colors"
-              >
-                <GoogleDriveIcon className="h-6 w-6 flex-shrink-0" />
-                <span className="text-sm font-medium text-primary">{link.title}</span>
-              </a>
-            ))}
-          </div>
+        <div className="pt-6 mt-auto">
+             <Button size="lg" className="w-full bg-accent hover:bg-accent/90" onClick={onComplete}>
+                Mark as Completed &amp; Continue
+             </Button>
         </div>
-      )}
     </div>
   );
 }
@@ -785,9 +737,9 @@ export default function CoursePlayerPage() {
               </aside>
             )}
 
-            <main className="flex-grow p-6 md:p-8 overflow-y-auto bg-secondary relative">
-               <Tabs defaultValue="lesson" className="w-full">
-                  <TabsList className="mb-4">
+            <main className="flex-grow p-6 md:p-8 overflow-y-auto bg-secondary relative flex flex-col">
+               <Tabs defaultValue="lesson" className="w-full flex-grow flex flex-col">
+                  <TabsList className="mb-4 flex-shrink-0">
                     <TabsTrigger value="lesson">
                         <FileText className="mr-2 h-4 w-4" />
                         Lesson
@@ -801,7 +753,7 @@ export default function CoursePlayerPage() {
                         Discussion
                     </TabsTrigger>
                   </TabsList>
-                  <TabsContent value="lesson">
+                  <TabsContent value="lesson" className="flex-grow">
                      {currentLesson ? (
                         <LessonContent lesson={currentLesson} onComplete={handleCompleteLesson} />
                     ) : (
@@ -840,6 +792,3 @@ export default function CoursePlayerPage() {
     </SidebarProvider>
   );
 }
-
-
-    
