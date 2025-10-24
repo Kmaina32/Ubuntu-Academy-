@@ -399,3 +399,13 @@ export interface LeaderboardEntry {
     score: number;
     hackathonCount: number;
 }
+
+export interface Advertisement {
+    id: string;
+    title: string;
+    description: string;
+    imageUrl: string;
+    ctaText: string;
+    ctaLink: string;
+    isActive: boolean;
+}

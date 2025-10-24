@@ -6,6 +6,7 @@ import { ThemeEffects } from '@/components/ThemeEffects';
 import { Analytics } from "@vercel/analytics/next"
 import { CookieConsent } from '@/components/shared/CookieConsent';
 import { Providers } from './providers';
+import { AdPopup } from '@/components/AdPopup';
 
 export const metadata: Metadata = {
   title: 'Manda Network',
@@ -39,6 +40,7 @@ export default async function RootLayout({
             <ThemeEffects />
             {children}
             <Analytics />
+            <AdPopup />
         </Providers>
         <Toaster />
         <CookieConsent />

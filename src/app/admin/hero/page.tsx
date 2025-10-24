@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Loader2, Shield, Rss, Palette, Building, UserCheck, Image as ImageIconLucide } from 'lucide-react';
+import { ArrowLeft, Loader2, Shield, Rss, Palette, Building, UserCheck, Image as ImageIconLucide, Megaphone } from 'lucide-react';
 import { getHeroData, saveHeroData, getRemoteConfigValues, saveRemoteConfigValues } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +37,8 @@ const heroFormSchema = z.object({
   slideshowSpeed: z.coerce.number().min(1, 'Speed must be at least 1 second.'),
   imageBrightness: z.coerce.number().min(0).max(100),
   recaptchaEnabled: z.boolean(),
+  adsEnabled: z.boolean(),
+  adInterval: z.coerce.number().min(5, 'Interval must be at least 5 seconds.'),
   theme: z.string().optional(),
   animationsEnabled: z.boolean(),
   orgHeroTitle: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -65,6 +67,8 @@ export default function AdminHeroPage() {
       slideshowSpeed: 5,
       imageBrightness: 60,
       recaptchaEnabled: true,
+      adsEnabled: false,
+      adInterval: 30,
       theme: 'default',
       animationsEnabled: true,
       orgHeroTitle: '',
@@ -100,6 +104,8 @@ export default function AdminHeroPage() {
           subtitle: remoteSubtitle,
           theme: dbData.theme || 'default',
           animationsEnabled: dbData.animationsEnabled !== false, // default to true if not set
+          adsEnabled: dbData.adsEnabled || false,
+          adInterval: dbData.adInterval || 30,
         });
 
       } catch (error) {
@@ -438,6 +444,45 @@ export default function AdminHeroPage() {
                         />
 
                         <div>
+                            <h3 className="text-lg font-semibold flex items-center gap-2"><Megaphone /> Advertisements</h3>
+                            <Separator className="mt-2" />
+                        </div>
+                        <FormField
+                          control={form.control}
+                          name="adsEnabled"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                              <div className="space-y-0.5">
+                                <FormLabel>Enable Popup Advertisements</FormLabel>
+                                <p className="text-sm text-muted-foreground">
+                                    Show promotional popups on the main course page.
+                                </p>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                         <FormField
+                              control={form.control}
+                              name="adInterval"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Ad Popup Interval (seconds)</FormLabel>
+                                  <FormControl>
+                                    <Input type="number" placeholder="e.g., 30" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                         />
+
+
+                        <div>
                             <h3 className="text-lg font-semibold flex items-center gap-2"><Shield /> Security Settings</h3>
                             <Separator className="mt-2" />
                         </div>
@@ -480,4 +525,3 @@ export default function AdminHeroPage() {
     </div>
   );
 }
-
