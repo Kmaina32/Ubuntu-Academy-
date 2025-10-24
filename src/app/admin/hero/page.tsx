@@ -118,7 +118,7 @@ export default function AdminHeroPage() {
 
   const applyTheme = (theme: string) => {
     // Remove all theme classes
-    document.documentElement.classList.remove('theme-valentines', 'theme-christmas', 'theme-new-year', 'theme-eid', 'theme-jamhuri');
+    document.documentElement.classList.remove('theme-valentines', 'theme-christmas', 'theme-new-year', 'theme-eid', 'theme-jamhuri', 'theme-diwali');
     if (theme !== 'default') {
       document.documentElement.classList.add(`theme-${theme}`);
     }
@@ -202,6 +202,7 @@ export default function AdminHeroPage() {
                                     <SelectContent>
                                         <SelectItem value="default">Default</SelectItem>
                                         <SelectItem value="jamhuri">Jamhuri (Kenyan Holiday)</SelectItem>
+                                        <SelectItem value="diwali">Diwali</SelectItem>
                                         <SelectItem value="valentines">Valentine's Day</SelectItem>
                                         <SelectItem value="christmas">Christmas</SelectItem>
                                         <SelectItem value="new-year">New Year</SelectItem>
@@ -479,3 +480,4 @@ export default function AdminHeroPage() {
     </div>
   );
 }
+

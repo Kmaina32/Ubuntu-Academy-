@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -95,6 +96,16 @@ export function ThemeEffects() {
         });
         return createElements(20, 'heart', '❤', randStyle);
     };
+    
+    const renderDiyas = () => {
+        const randStyle = () => ({
+            left: `${Math.random() * 95}%`, // Keep it from going off-screen
+            animationDuration: `${Math.random() * 8 + 6}s`, // 6 to 14 seconds
+            animationDelay: `${Math.random() * 5}s`,
+        });
+        // Using a simple flame emoji for the diya effect
+        return createElements(25, 'diya', '🪔', randStyle);
+    };
 
     const renderFireworks = () => {
         return createFireworkElements(15);
@@ -105,6 +116,7 @@ export function ThemeEffects() {
             {theme === 'theme-christmas' && <div className="snow">{renderSnow()}</div>}
             {theme === 'theme-valentines' && <div className="hearts">{renderHearts()}</div>}
             {theme === 'theme-new-year' && <div className="fireworks">{renderFireworks()}</div>}
+            {theme === 'theme-diwali' && <div className="diyas">{renderDiyas()}</div>}
         </div>
     );
 }
