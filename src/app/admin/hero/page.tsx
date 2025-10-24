@@ -13,8 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Loader2, Shield, Rss, Palette, Building, UserCheck, Image as ImageIconLucide, Megaphone } from 'lucide-react';
-import { getHeroData, saveHeroData, getRemoteConfigValues, saveRemoteConfigValues } from '@/lib/firebase-service';
+import { ArrowLeft, Loader2, Shield, Rss, Palette, Building, UserCheck, Image as ImageIconLucide, Megaphone, Activity, Trash2 } from 'lucide-react';
+import { getHeroData, saveHeroData, getRemoteConfigValues, saveRemoteConfigValues, clearActivityData } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
@@ -24,6 +24,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { fetchAndActivate, getString } from 'firebase/remote-config';
 import { remoteConfig } from '@/lib/firebase';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+
 
 const heroFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -46,6 +48,7 @@ const heroFormSchema = z.object({
   orgHeroImageUrl: z.string().url('Please enter a valid URL.'),
   orgLoginImageUrl: z.string().url('Please enter a valid URL.'),
   orgSignupImageUrl: z.string().url('Please enter a valid URL.'),
+  activityTrackingEnabled: z.boolean().default(false),
 });
 
 export default function AdminHeroPage() {
@@ -76,6 +79,7 @@ export default function AdminHeroPage() {
       orgHeroImageUrl: '',
       orgLoginImageUrl: '',
       orgSignupImageUrl: '',
+      activityTrackingEnabled: false,
     },
   });
 
@@ -106,6 +110,7 @@ export default function AdminHeroPage() {
           animationsEnabled: dbData.animationsEnabled !== false, // default to true if not set
           adsEnabled: dbData.adsEnabled || false,
           adInterval: dbData.adInterval || 30,
+          activityTrackingEnabled: dbData.activityTrackingEnabled || false,
         });
 
       } catch (error) {
@@ -129,6 +134,18 @@ export default function AdminHeroPage() {
       document.documentElement.classList.add(`theme-${theme}`);
     }
   }
+  
+  const handleClearActivity = async () => {
+    setIsLoading(true);
+    try {
+        await clearActivityData();
+        toast({ title: "Success!", description: "All user activity data has been cleared." });
+    } catch(e) {
+        toast({ title: "Error", description: "Could not clear activity data.", variant: "destructive"});
+    } finally {
+        setIsLoading(false);
+    }
+  }
 
   const onSubmit = async (values: z.infer<typeof heroFormSchema>) => {
     setIsLoading(true);
@@ -149,6 +166,7 @@ export default function AdminHeroPage() {
         applyTheme(values.theme);
       }
        localStorage.setItem('mkenya-skilled-animations', String(values.animationsEnabled));
+       localStorage.setItem('mkenya-skilled-activity-tracking', String(values.activityTrackingEnabled));
       
       toast({
         title: 'Success!',
@@ -481,6 +499,50 @@ export default function AdminHeroPage() {
                               )}
                          />
 
+                        <div>
+                            <h3 className="text-lg font-semibold flex items-center gap-2"><Activity /> Activity Tracking</h3>
+                            <Separator className="mt-2" />
+                        </div>
+                        <FormField
+                          control={form.control}
+                          name="activityTrackingEnabled"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                              <div className="space-y-0.5">
+                                <FormLabel>Enable Page Visit Tracking</FormLabel>
+                                <p className="text-sm text-muted-foreground">
+                                    Logs user page visits to the database for analytics. This may have performance and cost implications.
+                                </p>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button type="button" variant="destructive" className="w-full">
+                                    <Trash2 className="mr-2 h-4 w-4"/>
+                                    Clear All Activity Data
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete all tracked user page visit data from the database.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleClearActivity}>Yes, delete it</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
 
                         <div>
                             <h3 className="text-lg font-semibold flex items-center gap-2"><Shield /> Security Settings</h3>
@@ -525,3 +587,5 @@ export default function AdminHeroPage() {
     </div>
   );
 }
+
+    

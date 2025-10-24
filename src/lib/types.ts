@@ -1,4 +1,5 @@
 
+
 import { z } from 'zod';
 
 export interface YoutubeLink {
@@ -409,3 +410,14 @@ export interface Advertisement {
     ctaLink: string;
     isActive: boolean;
 }
+
+export interface UserActivity {
+    id: string;
+    userId: string;
+    userName: string;
+    userAvatar: string;
+    path: string;
+    timestamp: string; // ISO string
+}
+
+    

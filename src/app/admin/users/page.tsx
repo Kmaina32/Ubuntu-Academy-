@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getAllUsers, RegisteredUser, deleteUser, saveUser } from '@/lib/firebase-service';
-import { ArrowLeft, Loader2, Trash2, Users2, ShieldCheck, Eye, MoreVertical } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2, Users2, ShieldCheck, Eye, MoreVertical, UserPlus, CalendarDays } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -24,7 +24,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { CohortManager } from '@/components/shared/CohortManager';
 import { AdminAccessManager } from '@/components/shared/AdminAccessManager';
-import { formatDistanceToNowStrict } from 'date-fns';
+import { formatDistanceToNowStrict, isToday, isThisWeek } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -36,13 +36,35 @@ export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<RegisteredUser | null>(null);
   const [isCohortModalOpen, setIsCohortModalOpen] = useState(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  const [signupsToday, setSignupsToday] = useState(0);
+  const [signupsThisWeek, setSignupsThisWeek] = useState(0);
   const { toast } = useToast();
 
   const fetchUsers = async () => {
     try {
       setLoadingUsers(true);
       const fetchedUsers = await getAllUsers();
+      
+      const today = new Date();
+      let todayCount = 0;
+      let weekCount = 0;
+
+      fetchedUsers.forEach(user => {
+        if (user.createdAt) {
+          const signupDate = new Date(user.createdAt);
+          if(isToday(signupDate)) {
+            todayCount++;
+          }
+          if(isThisWeek(signupDate, { weekStartsOn: 1 })) {
+            weekCount++;
+          }
+        }
+      });
+      
       setUsers(fetchedUsers);
+      setSignupsToday(todayCount);
+      setSignupsThisWeek(weekCount);
+
     } catch (err) {
       console.error("Failed to fetch users:", err);
       toast({ title: 'Error', description: 'Failed to load users.', variant: 'destructive' });
@@ -99,10 +121,45 @@ export default function AdminUsersPage() {
                 <ArrowLeft className="h-4 w-4" />
                 Back to Admin Dashboard
                 </Link>
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold font-headline">Manage Users</h1>
+                    <p className="text-muted-foreground">View and manage all registered student accounts.</p>
+                </div>
+                
+                <div className="grid gap-4 md:grid-cols-3 mb-8">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                           <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                           <Users2 className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">{users.length}</div>
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                           <CardTitle className="text-sm font-medium">Sign-ups (Today)</CardTitle>
+                           <UserPlus className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">{signupsToday}</div>
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                           <CardTitle className="text-sm font-medium">Sign-ups (This Week)</CardTitle>
+                           <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">{signupsThisWeek}</div>
+                        </CardContent>
+                    </Card>
+                </div>
+
                 <Card>
                     <CardHeader>
-                        <CardTitle>Manage Users</CardTitle>
-                        <CardDescription>View and manage all registered student accounts.</CardDescription>
+                        <CardTitle>User List</CardTitle>
+                        <CardDescription>A list of all registered users on the platform.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {loadingUsers ? (
@@ -247,3 +304,5 @@ export default function AdminUsersPage() {
     </>
   );
 }
+
+    

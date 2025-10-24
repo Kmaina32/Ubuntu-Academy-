@@ -21,7 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Separator } from '../ui/separator';
 import { useEffect, useState, useMemo } from 'react';
 import type { Course, CalendarEvent, Notification as DbNotification } from '@/lib/types';
-import { getAllCourses, getAllCalendarEvents, getAllNotifications, getUserById, getLiveSession, saveUser, updateInvitationStatus } from '@/lib/firebase-service';
+import { getAllCourses, getAllCalendarEvents, getAllNotifications, getUserById, getLiveSession, saveUser, updateInvitationStatus, logPageVisit, getHeroData } from '@/lib/firebase-service';
 import { differenceInDays, isToday, parseISO, formatDistanceToNow } from 'date-fns';
 import { usePathname, useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
@@ -341,13 +341,32 @@ export function Header({ children }: { children?: React.ReactNode }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
-
+  const [activityTrackingEnabled, setActivityTrackingEnabled] = useState(false);
 
   useEffect(() => {
-      if (!loading && user && !user.emailVerified && pathname !== '/unverified') {
-          router.push('/unverified');
+    getHeroData().then(settings => {
+      setActivityTrackingEnabled(settings.activityTrackingEnabled || false);
+    });
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'mkenya-skilled-activity-tracking') {
+        setActivityTrackingEnabled(event.newValue === 'true');
       }
-  }, [user, loading, pathname, router]);
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  useEffect(() => {
+      if (!loading && user) {
+          if (!user.emailVerified && pathname !== '/unverified') {
+              router.push('/unverified');
+          }
+          if (activityTrackingEnabled) {
+              logPageVisit(user.uid, pathname);
+          }
+      }
+  }, [user, loading, pathname, router, activityTrackingEnabled]);
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
@@ -428,3 +447,5 @@ export function Header({ children }: { children?: React.ReactNode }) {
     </header>
   );
 }
+
+    

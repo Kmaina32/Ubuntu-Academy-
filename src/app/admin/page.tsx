@@ -6,13 +6,17 @@ import { useEffect, useState } from 'react';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, BookOpen, UserPlus, DollarSign, BarChart3, Activity, UserPlus2, BookCopy, Trophy, User, Building, Rocket } from "lucide-react";
-import type { Course, RegisteredUser, UserCourse } from '@/lib/mock-data';
-import { getAllCourses, getAllUsers, getAllOrganizations, getAllHackathons } from '@/lib/firebase-service';
+import type { Course, RegisteredUser, UserCourse, UserActivity } from '@/lib/types';
+import { getAllCourses, getAllUsers, getAllOrganizations, getAllHackathons, getActivityLogs, getHeroData } from '@/lib/firebase-service';
 import { Loader2 } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Line, ComposedChart, Legend, PieChart, Pie, Cell } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { format, subDays, parseISO, isValid, formatDistanceToNow } from 'date-fns';
 import { useAuth } from '@/hooks/use-auth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 
 type AnalyticsData = {
   totalUsers: number;
@@ -24,7 +28,7 @@ type AnalyticsData = {
   userSignups: { date: string, count: number }[];
   courseEnrollments: { title: string, enrollments: number }[];
   courseRevenue: { title: string, revenue: number }[];
-  recentActivities: { type: string, text: string, time: string }[];
+  recentActivities: UserActivity[];
 };
 
 const chartConfig = {
@@ -48,22 +52,38 @@ const chartConfig = {
 
 const PIE_CHART_COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE"];
 
+const getInitials = (name: string | null | undefined) => {
+    if (!name) return 'U';
+    const names = name.split(' ');
+    if (names.length > 1 && names[1]) {
+      return `${names[0][0]}${names[names.length - 1][0]}`;
+    }
+    return names[0]?.[0] || 'U';
+};
 
 export default function AdminDashboardPage() {
     const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
     const [loading, setLoading] = useState(true);
     const { user, isAdmin } = useAuth();
+    const [activityTrackingEnabled, setActivityTrackingEnabled] = useState(false);
 
 
     useEffect(() => {
+        const fetchSettings = async () => {
+            const settings = await getHeroData();
+            setActivityTrackingEnabled(settings.activityTrackingEnabled || false);
+        };
+        fetchSettings();
+
         const fetchAnalytics = async () => {
             setLoading(true);
             try {
-                const [users, courses, organizations, hackathons] = await Promise.all([
+                const [users, courses, organizations, hackathons, activityLogs] = await Promise.all([
                     getAllUsers(), 
                     getAllCourses(),
                     getAllOrganizations(),
                     getAllHackathons(),
+                    getActivityLogs(20) // Fetch last 20 activities
                 ]);
                 
                 let totalEnrollments = 0;
@@ -76,22 +96,16 @@ export default function AdminDashboardPage() {
                 });
         
                 const userSignupCounts: { [key: string]: number } = {};
-                const recentActivities: any[] = [];
+                const recentSignups: any[] = [];
                 const thirtyDaysAgo = subDays(new Date(), 30);
 
                  users.forEach(user => {
-                    // Ensure createdAt is a valid date string before parsing
                     const signupDateISO = user.createdAt && typeof user.createdAt === 'string' ? parseISO(user.createdAt) : new Date(0);
                     const signupDate = isValid(signupDateISO) ? signupDateISO : new Date(0);
 
-
-                     if (signupDate > thirtyDaysAgo) {
-                         recentActivities.push({ type: 'signup', text: `${user.displayName || 'A new user'} signed up`, time: signupDate.toISOString() });
-                     }
-                     
-                     if (user.lastSeen && new Date(user.lastSeen) > thirtyDaysAgo) {
-                         recentActivities.push({ type: 'lastSeen', text: `${user.displayName || 'A user'} was last seen`, time: new Date(user.lastSeen).toISOString() });
-                     }
+                    if (signupDate > thirtyDaysAgo) {
+                         recentSignups.push({ type: 'signup', text: `${user.displayName || 'A new user'} signed up`, time: signupDate.toISOString() });
+                    }
 
                     const signupDateKey = format(signupDate, 'yyyy-MM-dd');
                     userSignupCounts[signupDateKey] = (userSignupCounts[signupDateKey] || 0) + 1;
@@ -104,11 +118,6 @@ export default function AdminDashboardPage() {
                                 totalRevenue += course.price;
                                 courseEnrollmentCounts[course.id] = (courseEnrollmentCounts[course.id] || 0) + 1;
                                 courseRevenueCounts[course.id] = (courseRevenueCounts[course.id] || 0) + course.price;
-                                
-                                const enrollmentDate = new Date(user.purchasedCourses![courseId].enrollmentDate);
-                                if (enrollmentDate > thirtyDaysAgo) {
-                                    recentActivities.push({ type: 'enrollment', text: `${user.displayName} enrolled in ${course.title}`, time: enrollmentDate.toISOString() });
-                                }
                             }
                         })
                     }
@@ -129,8 +138,6 @@ export default function AdminDashboardPage() {
                     count
                 })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
                 
-                recentActivities.sort((a,b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-
 
                 setAnalyticsData({
                     totalUsers: users.length,
@@ -142,7 +149,7 @@ export default function AdminDashboardPage() {
                     courseEnrollments,
                     courseRevenue,
                     userSignups,
-                    recentActivities: recentActivities.slice(0, 5), // top 5 recent
+                    recentActivities: activityLogs,
                 });
 
             } catch (error) {
@@ -258,22 +265,26 @@ export default function AdminDashboardPage() {
                  <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Activity /> Recent Activity</CardTitle>
+                        {activityTrackingEnabled ? <CardDescription>A live feed of recent user page visits.</CardDescription> : <CardDescription>Enable Activity Tracking in Site Settings to see live user page visits.</CardDescription>}
                     </CardHeader>
                     <CardContent>
                        <div className="space-y-4">
-                           {analyticsData.recentActivities.map((activity, index) => (
-                               <div key={index} className="flex items-start gap-3">
-                                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary">
-                                    {activity.type === 'signup' ? <UserPlus2 className="h-4 w-4 text-secondary-foreground"/> :
-                                    activity.type === 'enrollment' ? <BookCopy className="h-4 w-4 text-secondary-foreground"/> :
-                                    <User className="h-4 w-4 text-secondary-foreground"/>}
-                                   </div>
+                           {analyticsData.recentActivities.length > 0 ? analyticsData.recentActivities.map((activity) => (
+                               <div key={activity.id} className="flex items-start gap-3">
+                                   <Avatar className="h-8 w-8">
+                                       <AvatarImage src={activity.userAvatar}/>
+                                       <AvatarFallback>{getInitials(activity.userName)}</AvatarFallback>
+                                   </Avatar>
                                    <div>
-                                       <p className="text-sm font-medium">{activity.text}</p>
-                                       <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(activity.time), { addSuffix: true })}</p>
+                                       <p className="text-sm">
+                                            <span className="font-semibold">{activity.userName}</span> visited <Link href={activity.path} className="text-primary hover:underline">{activity.path}</Link>
+                                       </p>
+                                       <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}</p>
                                    </div>
                                </div>
-                           ))}
+                           )) : (
+                               <p className="text-sm text-muted-foreground text-center py-4">No recent activity to display.</p>
+                           )}
                        </div>
                     </CardContent>
                  </Card>
@@ -334,3 +345,5 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+    
