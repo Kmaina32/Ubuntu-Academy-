@@ -220,7 +220,7 @@ export default function CreateCoursePage() {
       longDescription: '',
       dripFeed: 'daily',
       modules: [{ id: `module-${Date.now()}`, title: 'Module 1: Getting Started', lessons: [{ id: `lesson-${Date.now()}`, title: 'Welcome to the Course!', duration: '5 min', content: 'This is the first lesson.', youtubeLinks: [] }] }],
-      prerequisiteCourseId: '',
+      prerequisiteCourseId: 'none',
     },
   });
 
@@ -267,7 +267,7 @@ export default function CreateCoursePage() {
             ...values,
             imageUrl: 'https://placehold.co/600x400',
             exam: [], // Exams are now handled separately
-            prerequisiteCourseId: values.prerequisiteCourseId || undefined,
+            prerequisiteCourseId: values.prerequisiteCourseId === 'none' ? undefined : values.prerequisiteCourseId,
         }
         await createCourse(courseData);
         toast({
@@ -469,14 +469,14 @@ export default function CreateCoursePage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Prerequisite Course (Optional)</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value || ''}>
+                              <Select onValueChange={field.onChange} defaultValue={field.value || 'none'}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select a prerequisite..." />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    <SelectItem value="">None</SelectItem>
+                                    <SelectItem value="none">None</SelectItem>
                                     {allCourses.map(course => (
                                         <SelectItem key={course.id} value={course.id}>{course.title}</SelectItem>
                                     ))}
