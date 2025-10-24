@@ -2,7 +2,7 @@
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, PortfolioProject as Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Hackathon, HackathonSubmission, LeaderboardEntry, PricingPlan } from './types';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, PortfolioProject as Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Hackathon, HackathonSubmission, LeaderboardEntry, PricingPlan, Advertisement } from './types';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 
@@ -25,6 +25,11 @@ export interface HeroData {
     orgHeroImageUrl?: string;
     orgLoginImageUrl?: string;
     orgSignupImageUrl?: string;
+    programsImageUrl?: string;
+    bootcampsImageUrl?: string;
+    hackathonsImageUrl?: string;
+    adsEnabled?: boolean;
+    adInterval?: number;
 }
 
 export interface TutorSettings {
@@ -212,6 +217,9 @@ export async function getHeroData(): Promise<HeroData> {
     imageUrl: 'https://placehold.co/1200x400.png',
     loginImageUrl: 'https://placehold.co/1200x900.png',
     signupImageUrl: 'https://placehold.co/1200x900.png',
+    programsImageUrl: 'https://picsum.photos/1200/400',
+    bootcampsImageUrl: 'https://picsum.photos/1200/400',
+    hackathonsImageUrl: 'https://picsum.photos/1200/400',
     slideshowSpeed: 5,
     imageBrightness: 60,
     recaptchaEnabled: true,
@@ -222,12 +230,11 @@ export async function getHeroData(): Promise<HeroData> {
     orgHeroImageUrl: 'https://picsum.photos/1200/800',
     orgLoginImageUrl: 'https://picsum.photos/1200/900',
     orgSignupImageUrl: 'https://picsum.photos/1200/900',
+    adsEnabled: false,
+    adInterval: 30,
   };
 
   const dbData = snapshot.exists() ? snapshot.val() : {};
-  
-  // Remote Config is now client-only, so we don't fetch it here on the server.
-  // We can combine the DB data with client-fetched remote config in the component itself.
   
   return { ...defaults, ...dbData };
 }
@@ -1049,4 +1056,47 @@ export async function updateLearningGoal(userId: string, goalId: string, data: P
 export async function deleteLearningGoal(userId: string, goalId: string): Promise<void> {
     const goalRef = ref(db, `users/${userId}/learningGoals/${goalId}`);
     await remove(goalRef);
+}
+
+// Advertisements
+export async function createAdvertisement(adData: Omit<Advertisement, 'id'>): Promise<string> {
+    const adsRef = ref(db, 'advertisements');
+    const newAdRef = push(adsRef);
+    await set(newAdRef, adData);
+    return newAdRef.key!;
+}
+
+export async function getAllAdvertisements(): Promise<Advertisement[]> {
+    const adsRef = ref(db, 'advertisements');
+    const snapshot = await get(adsRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        return Object.keys(data).map(key => ({ id: key, ...data[key] }));
+    }
+    return [];
+}
+
+export async function getActiveAdvertisements(): Promise<Advertisement[]> {
+    const allAds = await getAllAdvertisements();
+    return allAds.filter(ad => ad.isActive);
+}
+
+
+export async function getAdvertisementById(id: string): Promise<Advertisement | null> {
+    const adRef = ref(db, `advertisements/${id}`);
+    const snapshot = await get(adRef);
+    if (snapshot.exists()) {
+        return { id, ...snapshot.val() };
+    }
+    return null;
+}
+
+export async function updateAdvertisement(id: string, adData: Partial<Advertisement>): Promise<void> {
+    const adRef = ref(db, `advertisements/${id}`);
+    await update(adRef, adData);
+}
+
+export async function deleteAdvertisement(id: string): Promise<void> {
+    const adRef = ref(db, `advertisements/${id}`);
+    await remove(adRef);
 }
