@@ -419,5 +419,3 @@ export interface UserActivity {
     path: string;
     timestamp: string; // ISO string
 }
-
-    

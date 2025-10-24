@@ -1,8 +1,9 @@
 
+
 import { db, storage } from './firebase';
-import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment } from 'firebase/database';
+import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment, limitToLast } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, PortfolioProject as Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Hackathon, HackathonSubmission, LeaderboardEntry, PricingPlan, Advertisement } from './types';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, PortfolioProject as Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Hackathon, HackathonSubmission, LeaderboardEntry, PricingPlan, Advertisement, UserActivity } from './types';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 import { slugify } from './utils';
@@ -31,6 +32,7 @@ export interface HeroData {
     hackathonsImageUrl?: string;
     adsEnabled?: boolean;
     adInterval?: number;
+    activityTrackingEnabled?: boolean;
 }
 
 export interface TutorSettings {
@@ -238,6 +240,7 @@ export async function getHeroData(): Promise<HeroData> {
     orgSignupImageUrl: 'https://picsum.photos/1200/900',
     adsEnabled: false,
     adInterval: 30,
+    activityTrackingEnabled: false,
   };
 
   const dbData = snapshot.exists() ? snapshot.val() : {};
@@ -1105,4 +1108,35 @@ export async function updateAdvertisement(id: string, adData: Partial<Advertisem
 export async function deleteAdvertisement(id: string): Promise<void> {
     const adRef = ref(db, `advertisements/${id}`);
     await remove(adRef);
+}
+
+
+// Activity Logging
+export async function logPageVisit(userId: string, path: string): Promise<void> {
+    const user = await getUserById(userId);
+    const logRef = ref(db, 'userPageVisits');
+    const newLogRef = push(logRef);
+    await set(newLogRef, {
+        userId,
+        userName: user?.displayName || 'Unknown',
+        userAvatar: user?.photoURL || '',
+        path,
+        timestamp: new Date().toISOString(),
+    });
+}
+
+export async function clearActivityData(): Promise<void> {
+    const logRef = ref(db, 'userPageVisits');
+    await remove(logRef);
+}
+
+export async function getActivityLogs(limit: number): Promise<UserActivity[]> {
+    const logRef = query(ref(db, 'userPageVisits'), limitToLast(limit));
+    const snapshot = await get(logRef);
+    if(snapshot.exists()) {
+        const data = snapshot.val();
+        const logs = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        return logs.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    }
+    return [];
 }
