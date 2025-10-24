@@ -74,7 +74,7 @@ export default function EditCoursePage() {
             longDescription: fetchedCourse.longDescription || '',
             imageUrl: fetchedCourse.imageUrl || '',
             dripFeed: fetchedCourse.dripFeed || 'daily',
-            prerequisiteCourseId: fetchedCourse.prerequisiteCourseId || '',
+            prerequisiteCourseId: fetchedCourse.prerequisiteCourseId || 'none',
         });
       } catch (error) {
         console.error("Failed to fetch course data:", error);
@@ -101,7 +101,7 @@ export default function EditCoursePage() {
     try {
       await updateCourse(params.id as string, {
           ...values,
-          prerequisiteCourseId: values.prerequisiteCourseId || undefined
+          prerequisiteCourseId: values.prerequisiteCourseId === 'none' ? undefined : values.prerequisiteCourseId
       });
       toast({
         title: 'Success!',
@@ -313,14 +313,14 @@ export default function EditCoursePage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Prerequisite Course (Optional)</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value || ''}>
+                              <Select onValueChange={field.onChange} value={field.value || 'none'}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select a prerequisite..." />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    <SelectItem value="">None</SelectItem>
+                                    <SelectItem value="none">None</SelectItem>
                                     {allCourses.filter(c => c.id !== course.id).map(c => (
                                         <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
                                     ))}
