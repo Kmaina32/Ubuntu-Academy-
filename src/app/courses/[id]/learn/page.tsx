@@ -139,24 +139,28 @@ function CourseOutline({ course, progress, completedLessons, unlockedLessonsCoun
                                 const overallLessonIndex = course.modules.slice(0, moduleIndex).reduce((acc, m) => acc + m.lessons.length, 0) + lessonIndex;
                                 const isUnlocked = overallLessonIndex < unlockedLessonsCount;
                                 const isCompleted = completedLessons.has(lesson.id);
+                                const hasVideo = lesson.youtubeLinks && lesson.youtubeLinks.length > 0;
 
                                 return (
                                 <li key={lesson.id}>
                                     <button
                                     onClick={() => onLessonClick(lesson, overallLessonIndex)}
                                     disabled={!isUnlocked && !isCompleted}
-                                    className={`w-full text-left flex items-center gap-3 p-2 rounded-md transition-colors ${
+                                    className={`w-full text-left flex items-center justify-between gap-3 p-2 rounded-md transition-colors ${
                                         currentLesson?.id === lesson.id ? 'bg-primary/10 text-primary' : 'hover:bg-primary/5'
                                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                                     >
-                                    {isCompleted ? (
-                                        <CheckCircle className="h-5 w-5 text-green-500" />
-                                    ) : isUnlocked ? (
-                                        <PlayCircle className="h-5 w-5 text-muted-foreground" />
-                                    ) : (
-                                        <Lock className="h-5 w-5 text-muted-foreground" />
-                                    )}
-                                    <span className="text-sm">{lesson.title}</span>
+                                        <div className="flex items-center gap-3">
+                                            {isCompleted ? (
+                                                <CheckCircle className="h-5 w-5 text-green-500" />
+                                            ) : isUnlocked ? (
+                                                <PlayCircle className="h-5 w-5 text-muted-foreground" />
+                                            ) : (
+                                                <Lock className="h-5 w-5 text-muted-foreground" />
+                                            )}
+                                            <span className="text-sm">{lesson.title}</span>
+                                        </div>
+                                        {hasVideo && <Youtube className="h-4 w-4 text-red-500 flex-shrink-0" />}
                                     </button>
                                 </li>
                                 )
@@ -452,16 +456,13 @@ function AiTutor({ course, lesson, settings }: { course: Course, lesson: Lesson 
     )
 }
 
-function LessonContent({ lesson, onComplete, courseTitle }: { lesson: Lesson | null; onComplete: () => void; courseTitle: string; }) {
+function LessonContent({ lesson, onComplete }: { lesson: Lesson | null; onComplete: () => void; }) {
   const [currentPage, setCurrentPage] = useState(0);
 
   const pages = useMemo(() => {
     if (!lesson?.content) return [];
     
-    // Split by newlines first
     const paragraphs = lesson.content.split('\n').filter(p => p.trim() !== '');
-    
-    // Then split long paragraphs by word count
     const MAX_WORDS_PER_PAGE = 50;
     const finalPages: string[] = [];
 
@@ -480,7 +481,6 @@ function LessonContent({ lesson, onComplete, courseTitle }: { lesson: Lesson | n
   }, [lesson]);
 
   useEffect(() => {
-    // Reset to the first page when the lesson changes
     setCurrentPage(0);
   }, [lesson]);
   
@@ -495,44 +495,21 @@ function LessonContent({ lesson, onComplete, courseTitle }: { lesson: Lesson | n
 
   return (
     <div>
-        <div className="flex justify-between items-start mb-4">
-            <h1 className="text-3xl font-bold font-headline">{lesson.title}</h1>
-            <Button variant="outline" size="sm" onClick={handleTTS}>
-                <Volume2 className="mr-2 h-4 w-4" />
-                Listen
-            </Button>
-        </div>
-      <div className="aspect-video bg-black rounded-lg mb-6">
-        {getYouTubeEmbedUrl(lesson.youtubeLinks?.[0]?.url) ? (
-          <iframe
-            className="w-full h-full rounded-lg"
-            src={getYouTubeEmbedUrl(lesson.youtubeLinks?.[0]?.url)!}
-            title={lesson.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          ></iframe>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-muted rounded-lg">
-            <Video className="h-16 w-16 text-muted-foreground/50" />
-            <p className="ml-4 text-muted-foreground">Video coming soon.</p>
-          </div>
-        )}
-      </div>
-
+      <h1 className="text-3xl font-bold font-headline mb-4">{lesson.title}</h1>
       <div className="prose max-w-none text-foreground/90 mb-6">
         <p>{totalPages > 0 ? pages[currentPage] : lesson.content}</p>
       </div>
 
-       {totalPages > 0 && (
+       {totalPages > 1 && (
          <div className="flex justify-between items-center mt-6">
             <Button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 0} variant="outline">
             <ArrowLeft className="mr-2 h-4 w-4" /> Previous
             </Button>
-            {totalPages > 1 && (
-                <span className="text-sm text-muted-foreground">
-                    Page {currentPage + 1} of {totalPages}
-                </span>
-            )}
+            
+            <span className="text-sm text-muted-foreground">
+                Page {currentPage + 1} of {totalPages}
+            </span>
+            
             <Button onClick={() => setCurrentPage(p => p + 1)} disabled={isLastPage} variant="outline">
             Next <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -586,6 +563,8 @@ export default function CoursePlayerPage() {
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
   const [unlockedLessonsCount, setUnlockedLessonsCount] = useState(0);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
 
   useEffect(() => {
      if (!authLoading) {
@@ -715,7 +694,29 @@ export default function CoursePlayerPage() {
     }
   };
 
+  const handleVideoClick = async () => {
+    const videoUrl = currentLesson?.youtubeLinks?.[0]?.url;
+    if (videoUrl && videoRef.current) {
+        if(document.pictureInPictureElement) {
+            await document.exitPictureInPicture();
+        } else {
+            videoRef.current.src = getYouTubeEmbedUrl(videoUrl) || '';
+            videoRef.current.play().catch(() => { /* Autoplay might be blocked */ });
+            // Wait for video to load before requesting PiP
+            videoRef.current.onloadedmetadata = async () => {
+                 try {
+                    await videoRef.current?.requestPictureInPicture();
+                 } catch (error) {
+                    console.error("PiP failed:", error);
+                    toast({title: "Could not open Picture-in-Picture", description: "Your browser may not support this feature.", variant: "destructive"});
+                 }
+            };
+        }
+    }
+  };
+
   const progress = allLessons.length > 0 ? (completedLessons.size / allLessons.length) * 100 : 0;
+  const hasVideo = !!currentLesson?.youtubeLinks?.[0]?.url;
 
   if (loading || authLoading) {
     return (
@@ -769,6 +770,7 @@ export default function CoursePlayerPage() {
 
         <div className="flex h-[calc(100vh-4rem)]">
           <div className="flex-grow flex flex-col md:flex-row overflow-hidden relative">
+            <video ref={videoRef} className="hidden" />
             {!isMobile && (
               <aside className="w-full md:w-80 lg:w-96 bg-background border-r flex-shrink-0 overflow-y-auto">
                  <CourseOutline 
@@ -787,8 +789,12 @@ export default function CoursePlayerPage() {
                <Tabs defaultValue="lesson" className="w-full">
                   <TabsList className="mb-4">
                     <TabsTrigger value="lesson">
-                        <Video className="mr-2 h-4 w-4" />
+                        <FileText className="mr-2 h-4 w-4" />
                         Lesson
+                    </TabsTrigger>
+                     <TabsTrigger value="video" disabled={!hasVideo} onClick={handleVideoClick}>
+                        <Video className="mr-2 h-4 w-4" />
+                        Video
                     </TabsTrigger>
                     <TabsTrigger value="discussion">
                         <MessageCircle className="mr-2 h-4 w-4" />
@@ -797,7 +803,7 @@ export default function CoursePlayerPage() {
                   </TabsList>
                   <TabsContent value="lesson">
                      {currentLesson ? (
-                        <LessonContent lesson={currentLesson} onComplete={handleCompleteLesson} courseTitle={course.title} />
+                        <LessonContent lesson={currentLesson} onComplete={handleCompleteLesson} />
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full text-center">
                             {progress >= 100 ? (
@@ -834,3 +840,6 @@ export default function CoursePlayerPage() {
     </SidebarProvider>
   );
 }
+
+
+    
