@@ -461,7 +461,8 @@ function LessonContent({ lesson, onComplete }: { lesson: Lesson | null; onComple
 
   return (
     <div className="flex flex-col h-full">
-        <div className="flex-grow overflow-y-auto">
+        <ScrollArea className="flex-grow">
+          <div className="pr-4">
             <h1 className="text-3xl font-bold font-headline mb-4">{lesson.title}</h1>
             <div className="prose max-w-none text-foreground/90 mb-6">
                 <p>{lesson.content}</p>
@@ -487,9 +488,10 @@ function LessonContent({ lesson, onComplete }: { lesson: Lesson | null; onComple
                     </div>
                 </div>
             )}
-        </div>
+          </div>
+        </ScrollArea>
 
-        <div className="pt-6 mt-auto">
+        <div className="pt-6 mt-auto flex-shrink-0">
              <Button size="lg" className="w-full bg-accent hover:bg-accent/90" onClick={onComplete}>
                 Mark as Completed &amp; Continue
              </Button>
@@ -693,7 +695,7 @@ export default function CoursePlayerPage() {
                    <ArrowLeft />
                  </button>
               </div>
-               <div className="flex-1 text-center">
+               <div className="flex-1 text-center min-w-0">
                   <h1 className="text-lg font-semibold truncate px-2">{course.title}</h1>
                </div>
                <div className="flex items-center gap-2">

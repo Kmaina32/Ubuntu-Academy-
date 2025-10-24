@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -27,6 +28,7 @@ import { db } from '@/lib/firebase';
 import { onValue, ref } from 'firebase/database';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type Notification = {
     id: string;
@@ -368,12 +370,12 @@ export function Header({ children }: { children?: React.ReactNode }) {
     <header className="flex h-16 items-center border-b bg-background px-4 md:px-6 sticky top-0 z-30">
         <div className="flex items-center gap-2">
             <SidebarTrigger />
-             {isMobile && (
+             <div className={cn("md:hidden", isMobile ? "block" : "hidden")}>
                  <Link href="/" className="flex items-center gap-2 font-bold text-lg font-headline">
-                    <GitBranch className="h-6 w-6 text-yellow-500" />
+                    <GitBranch className="h-6 w-6 text-primary" />
                     <span>Manda Network</span>
                 </Link>
-            )}
+            </div>
         </div>
       
         <div className="flex w-full items-center justify-end gap-2">
