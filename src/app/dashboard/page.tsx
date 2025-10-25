@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Link from 'next/link';
@@ -136,7 +135,7 @@ function LearningGoalsWidget({ dbUser, onGoalUpdate }: { dbUser: RegisteredUser,
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDelete(goal.id)}>Delete</AlertDialogAction>
+                                        <AlertDialogAction onClick={() => handleDeleteGoal(goal.id)}>Delete</AlertDialogAction>
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
@@ -204,10 +203,9 @@ function PortfolioProgressWidget({ dbUser }: { dbUser: RegisteredUser }) {
 // Recent Achievements Widget
 function AchievementsWidget({ achievements, isSuperAdmin }: { achievements: Achievement[], isSuperAdmin: boolean }) {
     
-    let achievementsToShow = achievements;
-    if (!isSuperAdmin) {
-        achievementsToShow = achievements.sort((a,b) => new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime()).slice(0, 3);
-    }
+    const achievementsToShow = isSuperAdmin
+        ? achievements
+        : achievements.sort((a, b) => new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime()).slice(0, 3);
     
     const Icon = ({ name, ...props }: { name: string } & LucideIcons.LucideProps) => {
         const LucideIcon = (LucideIcons as any)[name];
@@ -225,7 +223,7 @@ function AchievementsWidget({ achievements, isSuperAdmin }: { achievements: Achi
                 {achievementsToShow.length > 0 ? (
                     <div className="space-y-4">
                         {achievementsToShow.map(ach => (
-                            <div key={ach.id} className="flex items-center gap-4">
+                            <div key={ach.id || ach.name} className="flex items-center gap-4">
                                 <div className="p-3 bg-secondary rounded-full">
                                     <Icon name={ach.icon} className="h-6 w-6 text-primary" />
                                 </div>
