@@ -52,9 +52,6 @@
         ".write": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
         "purchasedCourses": {
           "$courseId": {
-            // Allow a user to write to their own purchasedCourses path ONLY IF the record does not exist yet.
-            // This allows for enrollment but prevents them from modifying progress or giving themselves a certificate.
-            // Admins can write freely.
             ".write": "auth != null && (root.child('users').child(auth.uid).child('isAdmin').val() === true || (auth.uid === $userId && !data.exists()))"
           }
         }
