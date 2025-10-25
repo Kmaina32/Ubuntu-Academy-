@@ -19,11 +19,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RegisteredUser } from '@/lib/types';
-import { useAuth } from '@/hooks/use-auth';
 import { sendContactMessage } from '@/app/actions';
 import { Input } from './ui/input';
 
 const contactFormSchema = z.object({
+  employerName: z.string().min(2, 'Please enter your name.'),
+  organizationName: z.string().min(2, 'Please enter your company name.'),
   email: z.string().email(),
   phone: z.string().min(10, 'Please enter a valid phone number.'),
   message: z.string().min(20, 'Message must be at least 20 characters long.'),
@@ -38,33 +39,27 @@ interface ContactStudentDialogProps {
 }
 
 export function ContactStudentDialog({ student, isOpen, onClose }: ContactStudentDialogProps) {
-  const { user, organization } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
-      email: user?.email || '',
+      employerName: '',
+      organizationName: '',
+      email: '',
       phone: '',
       message: '',
     },
   });
-  
-  useEffect(() => {
-    if (user?.email) {
-      form.setValue('email', user.email);
-    }
-  }, [user, form]);
 
   const onSubmit = async (values: ContactFormValues) => {
-    if (!user || !organization) return;
     setIsLoading(true);
     try {
       await sendContactMessage({
         studentId: student.uid,
-        employerName: user.displayName || 'An Employer',
-        organizationName: organization.name,
+        employerName: values.employerName,
+        organizationName: values.organizationName,
         email: values.email,
         phone: values.phone,
         message: values.message,
@@ -94,11 +89,35 @@ export function ContactStudentDialog({ student, isOpen, onClose }: ContactStuden
         <DialogHeader>
           <DialogTitle>Contact {student.displayName}</DialogTitle>
           <DialogDescription>
-            Your message will be sent as a notification. The student can view your contact details and reply directly.
+            Your message will be sent as a notification. Please provide your contact details so they can reply.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <FormField
+                    control={form.control}
+                    name="employerName"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Your Name</FormLabel>
+                            <FormControl><Input placeholder="Jomo Kenyatta" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="organizationName"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Your Company Name</FormLabel>
+                            <FormControl><Input placeholder="Acme Inc." {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                     control={form.control}
@@ -131,7 +150,7 @@ export function ContactStudentDialog({ student, isOpen, onClose }: ContactStuden
                   <FormLabel>Your Message</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder={`Hi ${student.displayName?.split(' ')[0] || ''}, I was impressed by your portfolio and would like to discuss an opportunity at ${organization?.name || 'our company'}...`}
+                      placeholder={`Hi ${student.displayName?.split(' ')[0] || ''}, I was impressed by your portfolio and would like to discuss an opportunity...`}
                       className="min-h-32"
                       {...field}
                     />
@@ -156,3 +175,5 @@ export function ContactStudentDialog({ student, isOpen, onClose }: ContactStuden
     </Dialog>
   );
 }
+
+    

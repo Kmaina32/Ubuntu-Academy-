@@ -45,10 +45,13 @@ export default function PortfolioPage() {
                 const userData = await getUserById(params.userId as string);
                 
                 if (!userData || (!userData.portfolio?.public && authUser?.uid !== userData.uid)) {
+                    // If the portfolio isn't public and the viewer is not the owner,
+                    // redirect to login, as they might be an employer who needs to log in.
                     if (!authUser && !authLoading) {
                         router.push(`/login?redirect=${pathname}`);
                         return;
                     }
+                    // If they are logged in but still not authorized, show not found.
                     if (authUser && authUser.uid !== userData.uid) {
                        notFound();
                        return;
@@ -309,6 +312,3 @@ export default function PortfolioPage() {
         </>
     )
 }
-    
-
-    

@@ -1,5 +1,4 @@
 
-
 import { z } from 'zod';
 
 export interface YoutubeLink {
@@ -240,7 +239,12 @@ export interface Education {
 }
 
 export interface Portfolio {
-    summary?: string;
+    aboutMe?: string;
+    phone?: string;
+    address?: {
+        poBox?: string;
+        country?: string;
+    };
     socialLinks?: {
         github?: string;
         gitlab?: string;
@@ -416,6 +420,9 @@ export interface UserActivity {
     userId: string;
     userName: string;
     userAvatar: string;
-    path: string;
+    type: 'signup' | 'enrollment' | 'page_visit';
+    details: any;
     timestamp: string; // ISO string
 }
+
+    
