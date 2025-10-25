@@ -169,12 +169,10 @@ export default function PortfoliosPage() {
                                                             View Portfolio
                                                         </Link>
                                                     </Button>
-                                                    {isEmployer && (
-                                                        <Button variant="outline" className="w-full" onClick={() => setSelectedStudent(profile)}>
-                                                            <Mail className="mr-2 h-4 w-4"/>
-                                                            Contact
-                                                        </Button>
-                                                    )}
+                                                    <Button variant="outline" className="w-full" onClick={() => setSelectedStudent(profile)}>
+                                                        <Mail className="mr-2 h-4 w-4"/>
+                                                        Contact
+                                                    </Button>
                                                 </CardFooter>
                                             </Card>
                                         ))}
@@ -200,3 +198,4 @@ export default function PortfoliosPage() {
         </>
     );
 }
+

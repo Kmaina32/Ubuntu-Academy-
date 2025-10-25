@@ -152,11 +152,9 @@ export default function PortfolioPage() {
                                             {user.portfolio?.socialLinks?.gitlab && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.gitlab} target="_blank" rel="noreferrer"><Icon icon="mdi:gitlab" className="h-5 w-5" /></a></Button>}
                                             {user.portfolio?.socialLinks?.bitbucket && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.bitbucket} target="_blank" rel="noreferrer"><Icon icon="mdi:bitbucket" className="h-5 w-5" /></a></Button>}
                                         </div>
-                                        {isEmployer && (
-                                            <Button onClick={() => setSelectedStudent(user)}>
-                                                <Mail className="mr-2 h-4 w-4" /> Contact
-                                            </Button>
-                                        )}
+                                        <Button onClick={() => setSelectedStudent(user)}>
+                                            <Mail className="mr-2 h-4 w-4" /> Contact
+                                        </Button>
                                     </div>
                                 </div>
                             </Card>
@@ -300,3 +298,4 @@ export default function PortfolioPage() {
         </>
     )
 }
+
