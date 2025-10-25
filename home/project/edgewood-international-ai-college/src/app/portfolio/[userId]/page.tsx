@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -36,7 +34,7 @@ export default function PortfolioPage() {
     const [user, setUser] = useState<RegisteredUser | null>(null);
     const [completedCourses, setCompletedCourses] = useState<CourseWithDetails[]>([]);
     const [loading, setLoading] = useState(true);
-    const { user: authUser, loading: authLoading, isAdmin, isOrganizationAdmin } = useAuth();
+    const { user: authUser, loading: authLoading } = useAuth();
     const [selectedStudent, setSelectedStudent] = useState<RegisteredUser | null>(null);
 
     useEffect(() => {
@@ -45,15 +43,15 @@ export default function PortfolioPage() {
             try {
                 const userData = await getUserById(params.userId as string);
                 
-                // If user doesn't exist, or their portfolio isn't public, and the viewer isn't the owner or an admin
-                if (!userData || (!userData.portfolio?.public && authUser?.uid !== userData.uid && !isAdmin)) {
-                     // If not logged in, redirect to login page with redirect param
+                if (!userData || (!userData.portfolio?.public && authUser?.uid !== userData.uid)) {
                     if (!authUser && !authLoading) {
                         router.push(`/login?redirect=${pathname}`);
                         return;
                     }
-                    notFound();
-                    return;
+                    if (authUser && authUser.uid !== userData.uid) {
+                       notFound();
+                       return;
+                    }
                 }
                 
                 setUser(userData);
@@ -92,7 +90,7 @@ export default function PortfolioPage() {
         if (!authLoading) {
             fetchData();
         }
-    }, [params.userId, authUser, authLoading, isAdmin, router, pathname]);
+    }, [params.userId, authUser, authLoading, router, pathname]);
 
     const getInitials = (name: string | null | undefined) => {
         if (!name) return 'U';
@@ -100,8 +98,6 @@ export default function PortfolioPage() {
         return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}` : names[0]?.[0] || 'U';
     };
     
-    const isEmployer = authUser && (isOrganizationAdmin || isAdmin);
-
     if (loading || authLoading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
@@ -111,7 +107,6 @@ export default function PortfolioPage() {
     }
     
     if (!user) {
-        // This case is handled by the redirect in useEffect, but as a fallback:
         return notFound();
     }
     
@@ -298,4 +293,3 @@ export default function PortfolioPage() {
         </>
     )
 }
-
