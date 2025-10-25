@@ -33,6 +33,7 @@ export interface HeroData {
     adsEnabled?: boolean;
     adInterval?: number;
     activityTrackingEnabled?: boolean;
+    aiProvider?: 'gemini' | 'openai' | 'anthropic';
 }
 
 export interface TutorSettings {
@@ -161,6 +162,16 @@ export async function enrollUserInCourse(userId: string, courseId: string): Prom
         completedLessons: [],
         enrollmentDate: new Date().toISOString(),
     });
+     const course = await getCourseById(courseId);
+    if (course) {
+        await logActivity(userId, {
+            type: 'enrollment',
+            details: {
+                courseTitle: course.title,
+                courseId: courseId
+            }
+        });
+    }
 }
 
 export async function getUserCourses(userId: string): Promise<UserCourse[]> {
@@ -241,6 +252,7 @@ export async function getHeroData(): Promise<HeroData> {
     adsEnabled: false,
     adInterval: 30,
     activityTrackingEnabled: false,
+    aiProvider: 'gemini' as const,
   };
 
   const dbData = snapshot.exists() ? snapshot.val() : {};
@@ -1112,26 +1124,26 @@ export async function deleteAdvertisement(id: string): Promise<void> {
 
 
 // Activity Logging
-export async function logPageVisit(userId: string, path: string): Promise<void> {
+export async function logActivity(userId: string, data: { type: 'signup' | 'enrollment' | 'page_visit'; details: any }): Promise<void> {
     const user = await getUserById(userId);
-    const logRef = ref(db, 'userPageVisits');
+    const logRef = ref(db, 'userActivity');
     const newLogRef = push(logRef);
     await set(newLogRef, {
         userId,
         userName: user?.displayName || 'Unknown',
         userAvatar: user?.photoURL || '',
-        path,
+        ...data,
         timestamp: new Date().toISOString(),
     });
 }
 
 export async function clearActivityData(): Promise<void> {
-    const logRef = ref(db, 'userPageVisits');
+    const logRef = ref(db, 'userActivity');
     await remove(logRef);
 }
 
 export async function getActivityLogs(limit: number): Promise<UserActivity[]> {
-    const logRef = query(ref(db, 'userPageVisits'), limitToLast(limit));
+    const logRef = query(ref(db, 'userActivity'), limitToLast(limit));
     const snapshot = await get(logRef);
     if(snapshot.exists()) {
         const data = snapshot.val();
