@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { getPublicProfiles } from '@/lib/firebase-service';
+import { getPublicProfiles, getHeroData } from '@/lib/firebase-service';
 import type { RegisteredUser } from '@/lib/types';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -47,24 +48,29 @@ const hiringFeatures = [
 
 export default function PortfoliosPage() {
     const [publicProfiles, setPublicProfiles] = useState<RegisteredUser[]>([]);
+    const [heroData, setHeroData] = useState<{ portfoliosImageUrl?: string }>({});
     const [loading, setLoading] = useState(true);
     const { isOrganizationAdmin, isAdmin } = useAuth();
     const [selectedStudent, setSelectedStudent] = useState<RegisteredUser | null>(null);
     const autoplayPlugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: true }));
 
     useEffect(() => {
-        const fetchPublicProfiles = async () => {
+        const fetchPageData = async () => {
             setLoading(true);
             try {
-                const publicUsers = await getPublicProfiles();
+                const [publicUsers, heroSettings] = await Promise.all([
+                    getPublicProfiles(),
+                    getHeroData()
+                ]);
                 setPublicProfiles(publicUsers);
+                setHeroData(heroSettings);
             } catch (error) {
-                console.error("Failed to fetch profiles:", error);
+                console.error("Failed to fetch page data:", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchPublicProfiles();
+        fetchPageData();
     }, []);
 
     const isEmployer = isOrganizationAdmin || isAdmin;
@@ -77,26 +83,30 @@ export default function PortfoliosPage() {
                     <Header />
                     <div className="flex flex-col min-h-screen bg-secondary/30">
                         <main className="flex-grow">
-                            <section className="relative bg-background py-12 md:py-16 text-center">
-                                 <div className="absolute inset-0">
-                                    <Image
-                                        src="https://picsum.photos/seed/portfolios-hero/1200/400"
-                                        alt="Hiring Center"
-                                        fill
-                                        className="object-cover"
-                                        data-ai-hint="professionals meeting"
-                                    />
-                                    <div className="absolute inset-0 bg-black/60"></div>
-                                </div>
-                                <div className="container mx-auto px-4 md:px-6 relative text-white">
-                                    <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
-                                        <Users className="h-10 w-10 text-primary" />
-                                    </div>
-                                    <h1 className="text-4xl md:text-5xl font-bold font-headline">Hiring Center</h1>
-                                    <p className="mt-4 text-lg max-w-3xl mx-auto">
-                                        Discover talented individuals from our academy. Our students are equipped with practical, job-ready skills.
-                                    </p>
-                                </div>
+                            <section className="relative bg-secondary/50 py-12 md:py-16">
+                               <div className="container mx-auto px-4 md:px-6">
+                                  <div className="relative rounded-xl overflow-hidden min-h-[400px] flex items-center justify-center text-center p-4">
+                                      {heroData.portfoliosImageUrl && (
+                                          <Image
+                                              src={heroData.portfoliosImageUrl}
+                                              alt="Hiring Center"
+                                              fill
+                                              className="object-cover"
+                                              data-ai-hint="professionals meeting"
+                                          />
+                                      )}
+                                      <div className="absolute inset-0 bg-black/60"></div>
+                                      <div className="relative z-10 text-white">
+                                          <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
+                                              <Users className="h-10 w-10 text-primary" />
+                                          </div>
+                                          <h1 className="text-4xl md:text-5xl font-bold font-headline">Hiring Center</h1>
+                                          <p className="mt-4 text-lg max-w-3xl mx-auto">
+                                              Discover talented individuals from our academy. Our students are equipped with practical, job-ready skills.
+                                          </p>
+                                      </div>
+                                  </div>
+                              </div>
                             </section>
 
                             <section className="bg-background/80 py-10">
