@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -31,7 +30,6 @@ export async function studentHelp(
 
 const prompt = ai.definePrompt({
   name: 'studentHelpPrompt',
-  model: googleAI.model('gemini-1.5-flash'),
   input: {schema: StudentHelpInputSchema},
   output: {schema: StudentHelpOutputSchema},
   prompt: `You are an AI support agent for the Manda Network online learning platform. Your tone is friendly, helpful, and professional. A student is asking you a question about how the platform works.

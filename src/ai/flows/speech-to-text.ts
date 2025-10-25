@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A flow for converting speech to text.
@@ -40,7 +39,7 @@ export const speechToText = ai.defineFlow(
           text: 'Transcribe the following audio recording. The user is asking a question for an online learning platform. Please provide only the transcribed text, with no additional commentary or conversational filler.',
         },
       ],
-      model: googleAI.model('gemini-1.5-flash'), // A model that supports audio input
+      // Let Genkit decide the best model that supports audio input.
     });
     
     return {

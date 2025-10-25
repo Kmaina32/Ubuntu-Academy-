@@ -1,6 +1,3 @@
-
-// This file is machine-generated - edit with care!
-
 'use server';
 
 /**
@@ -33,7 +30,6 @@ export async function siteHelp(
 
 const prompt = ai.definePrompt({
   name: 'siteHelpPrompt',
-  model: googleAI.model('gemini-1.5-flash'),
   input: {schema: SiteHelpInputSchema},
   output: {schema: SiteHelpOutputSchema},
   prompt: `You are Gina, an expert support agent for the Manda Network online learning platform. Your tone is friendly, helpful, and professional. An administrator is asking you a question about how the platform works.

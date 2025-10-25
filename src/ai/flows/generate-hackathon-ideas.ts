@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -40,7 +39,6 @@ The ideas should be innovative and appeal to a wide range of developers, from st
   
   const response = await ai.generate({
       prompt: prompt,
-      model: googleAI.model('gemini-1.5-pro'),
       output: {
         schema: GenerateHackathonIdeasOutputSchema,
       },

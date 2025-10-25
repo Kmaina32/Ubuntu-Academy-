@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -13,7 +12,7 @@ import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
 import { updateCourse } from '@/lib/firebase-service';
-import { Project } from '@/lib/types';
+import { PortfolioProject } from '@/lib/types';
 
 export const GenerateProjectInputSchema = z.object({
   courseTitle: z.string().describe('The title of the course.'),
@@ -40,7 +39,6 @@ export async function generateProject(
 
 const prompt = ai.definePrompt({
   name: 'generateProjectPrompt',
-  model: googleAI.model('gemini-1.5-pro'),
   input: {schema: GenerateProjectInputSchema},
   output: {schema: GenerateProjectOutputSchema},
   prompt: `You are an expert curriculum developer. Your task is to generate a final project for an online course based on its title and description.

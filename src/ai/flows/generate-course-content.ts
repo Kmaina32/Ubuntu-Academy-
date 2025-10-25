@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -13,7 +12,7 @@ import { ai } from '@/ai/genkit-instance';
 import {z} from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
 import { listCoursesTool } from '../tools/course-catalog';
-import { Project } from '@/lib/types';
+import { PortfolioProject } from '@/lib/types';
 
 const GenerateCourseContentInputSchema = z.object({
   courseTitle: z.string().describe('The title of the course to be generated.'),
@@ -70,7 +69,7 @@ const GenerateCourseContentOutputSchema = z.object({
   duration: z.string().describe("The estimated total duration of the course, e.g., '4 Weeks' or '6 Weeks'."),
   modules: z.array(ModuleSchema).length(2).describe('An array of exactly 2 modules for the course. Each module should contain at least 2000 words of content distributed across its lessons.'),
   exam: z.array(ExamQuestionSchema).length(5).describe('The final exam for the course, containing exactly five questions, with a mix of short-answer and multiple-choice questions.'),
-  project: z.custom<Project>().optional().describe("An optional final project for the course."),
+  project: z.custom<PortfolioProject>().optional().describe("An optional final project for the course."),
   discussionPrompt: z.string().optional().describe('A comprehensive discussion prompt to encourage student engagement.'),
 });
 export type GenerateCourseContentOutput = z.infer<typeof GenerateCourseContentOutputSchema>;
@@ -83,7 +82,6 @@ export async function generateCourseContent(
 
 const prompt = ai.definePrompt({
   name: 'generateCourseContentPrompt',
-  model: googleAI.model('gemini-1.5-pro'),
   tools: [listCoursesTool],
   input: {schema: GenerateCourseContentInputSchema},
   output: {schema: GenerateCourseContentOutputSchema},

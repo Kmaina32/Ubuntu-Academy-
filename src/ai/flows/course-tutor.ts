@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -45,7 +44,6 @@ export async function courseTutor(
 
 const prompt = ai.definePrompt({
   name: 'courseTutorPrompt',
-  model: googleAI.model('gemini-1.5-flash'),
   input: {schema: CourseTutorInputSchema},
   output: {schema: CourseTutorOutputSchema},
   prompt: `You are Gina, an expert AI Tutor for the Manda Network online learning platform. Your tone is encouraging, friendly, and very helpful. You are having a continuous conversation with a student.

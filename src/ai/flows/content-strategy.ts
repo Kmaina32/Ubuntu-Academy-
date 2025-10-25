@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -55,7 +54,6 @@ const runContentStrategyFlow = ai.defineFlow(
     console.log('Generating course ideas...');
     const ideasResponse = await ai.generate({
       prompt: `You are a Content Strategist for Manda Network, an online learning platform for a Kenyan audience. Your task is to brainstorm 10 highly relevant and marketable course ideas that would appeal to students looking to upskill. Provide a title, category, instructor, price, short description, and duration for each.`,
-      model: googleAI.model('gemini-1.5-pro'),
       output: {
         schema: CourseIdeasSchema,
       },
@@ -97,7 +95,6 @@ const runContentStrategyFlow = ai.defineFlow(
     console.log('Generating program suggestion...');
     const programResponse = await ai.generate({
         prompt: `Based on the following list of newly created courses, create a compelling Certificate Program that groups a logical subset of them together. The courses are: ${createdCourseTitles.join(', ')}`,
-        model: googleAI.model('gemini-1.5-pro'),
         output: {
             schema: ProgramSuggestionSchema,
         },
@@ -119,7 +116,6 @@ const runContentStrategyFlow = ai.defineFlow(
     console.log('Generating bundle suggestion...');
     const bundleResponse = await ai.generate({
         prompt: `Based on the following list of newly created courses, create a compelling Course Bundle for marketing purposes that groups a logical subset of them together. The courses are: ${createdCourseTitles.join(', ')}`,
-        model: googleAI.model('gemini-1.5-pro'),
         output: {
             schema: BundleSuggestionSchema,
         },

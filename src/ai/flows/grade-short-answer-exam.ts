@@ -1,6 +1,3 @@
-
-// This file is machine-generated - edit with care!
-
 'use server';
 
 /**
@@ -43,7 +40,6 @@ export async function gradeShortAnswerExam(
 
 const prompt = ai.definePrompt({
   name: 'gradeShortAnswerExamPrompt',
-  model: googleAI.model('gemini-1.5-flash'),
   input: {schema: GradeShortAnswerExamInputSchema},
   output: {schema: GradeShortAnswerExamOutputSchema},
   prompt: `You are an AI exam grader. Grade the following answer to the question below. Provide detailed feedback and the number of points awarded.
@@ -67,6 +63,6 @@ const gradeShortAnswerExamFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    return output!
   }
 );

@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -46,7 +45,6 @@ export async function getLearningPath(
 
 const prompt = ai.definePrompt({
   name: 'careerCoachPrompt',
-  model: googleAI.model('gemini-1.5-flash'),
   tools: [listCoursesTool],
   input: { schema: LearningPathInputSchema },
   output: { schema: LearningPathOutputSchema },
