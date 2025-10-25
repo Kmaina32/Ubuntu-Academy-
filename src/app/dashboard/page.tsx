@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -118,8 +119,8 @@ function LearningGoalsWidget({ dbUser, onGoalUpdate }: { dbUser: RegisteredUser,
                     </form>
                 </Form>
                 <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
-                    {goals.length > 0 ? goals.map(goal => (
-                        <div key={goal.id} className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-secondary">
+                    {goals.length > 0 ? goals.map((goal, index) => (
+                        <div key={`${goal.id}-${index}`} className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-secondary">
                             <div className="flex items-center gap-3">
                                 <Checkbox id={`goal-${goal.id}`} checked={goal.completed} onCheckedChange={() => handleToggleGoal(goal)} />
                                 <label htmlFor={`goal-${goal.id}`} className={`text-sm ${goal.completed ? 'line-through text-muted-foreground' : ''}`}>{goal.text}</label>
@@ -203,9 +204,12 @@ function PortfolioProgressWidget({ dbUser }: { dbUser: RegisteredUser }) {
 // Recent Achievements Widget
 function AchievementsWidget({ achievements, isSuperAdmin }: { achievements: Achievement[], isSuperAdmin: boolean }) {
     
-    const achievementsToShow = isSuperAdmin
-        ? achievements
-        : achievements.sort((a, b) => new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime()).slice(0, 3);
+    let achievementsToShow = achievements;
+    if (!isSuperAdmin) {
+        achievementsToShow = achievements
+            .sort((a, b) => new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime())
+            .slice(0, 3);
+    }
     
     const Icon = ({ name, ...props }: { name: string } & LucideIcons.LucideProps) => {
         const LucideIcon = (LucideIcons as any)[name];
@@ -361,9 +365,9 @@ export default function DashboardPage() {
         )
     }
 
-    const achievementsToDisplay = isSuperAdmin 
-        ? Object.values(achievementList) 
-        : Object.values(dbUser.achievements || {});
+    const achievementsToDisplay = isSuperAdmin
+      ? Object.values(achievementList)
+      : Object.values(dbUser.achievements || {});
 
     return (
         <div className="max-w-6xl mx-auto">
