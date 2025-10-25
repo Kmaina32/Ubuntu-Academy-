@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getPublicProfiles } from '@/lib/firebase-service';
 import type { RegisteredUser } from '@/lib/types';
 import { Header } from '@/components/Header';
@@ -16,6 +16,10 @@ import Link from 'next/link';
 import { Icon } from '@iconify/react';
 import { useAuth } from '@/hooks/use-auth';
 import { ContactStudentDialog } from '@/components/ContactStudentDialog';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import Autoplay from "embla-carousel-autoplay";
+import Image from 'next/image';
+
 
 const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
@@ -23,11 +27,30 @@ const getInitials = (name: string | null | undefined) => {
     return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}` : names[0]?.[0] || 'U';
 };
 
+const hiringFeatures = [
+    {
+        icon: <Search className="h-8 w-8 text-primary" />,
+        title: "Browse Profiles",
+        description: "Explore the public portfolios of our skilled graduates."
+    },
+    {
+        icon: <Eye className="h-8 w-8 text-primary" />,
+        title: "View Full Portfolio",
+        description: "Dive deep into their projects, skills, and achievements."
+    },
+    {
+        icon: <Mail className="h-8 w-8 text-primary" />,
+        title: "Initiate Contact",
+        description: "Reach out to promising candidates via our secure contact form."
+    }
+];
+
 export default function PortfoliosPage() {
     const [publicProfiles, setPublicProfiles] = useState<RegisteredUser[]>([]);
     const [loading, setLoading] = useState(true);
     const { isOrganizationAdmin, isAdmin } = useAuth();
     const [selectedStudent, setSelectedStudent] = useState<RegisteredUser | null>(null);
+    const autoplayPlugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: true }));
 
     useEffect(() => {
         const fetchPublicProfiles = async () => {
@@ -54,13 +77,23 @@ export default function PortfoliosPage() {
                     <Header />
                     <div className="flex flex-col min-h-screen bg-secondary/30">
                         <main className="flex-grow">
-                            <section className="py-12 md:py-16 text-center bg-background">
-                                <div className="container mx-auto px-4 md:px-6">
+                            <section className="relative bg-background py-12 md:py-16 text-center">
+                                 <div className="absolute inset-0">
+                                    <Image
+                                        src="https://picsum.photos/seed/portfolios-hero/1200/400"
+                                        alt="Hiring Center"
+                                        fill
+                                        className="object-cover"
+                                        data-ai-hint="professionals meeting"
+                                    />
+                                    <div className="absolute inset-0 bg-black/60"></div>
+                                </div>
+                                <div className="container mx-auto px-4 md:px-6 relative text-white">
                                     <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
                                         <Users className="h-10 w-10 text-primary" />
                                     </div>
                                     <h1 className="text-4xl md:text-5xl font-bold font-headline">Hiring Center</h1>
-                                    <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">
+                                    <p className="mt-4 text-lg max-w-3xl mx-auto">
                                         Discover talented individuals from our academy. Our students are equipped with practical, job-ready skills.
                                     </p>
                                 </div>
@@ -73,26 +106,26 @@ export default function PortfoliosPage() {
                                             <CardTitle className="text-center">How to Hire Our Talent</CardTitle>
                                         </CardHeader>
                                         <CardContent>
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary font-bold text-xl">1</div>
-                                                    <Search className="h-8 w-8 text-primary" />
-                                                    <h3 className="font-semibold">Browse Profiles</h3>
-                                                    <p className="text-sm text-muted-foreground">Explore the public portfolios of our skilled graduates.</p>
-                                                </div>
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary font-bold text-xl">2</div>
-                                                    <Eye className="h-8 w-8 text-primary" />
-                                                    <h3 className="font-semibold">View Full Portfolio</h3>
-                                                    <p className="text-sm text-muted-foreground">Dive deep into their projects, skills, and achievements.</p>
-                                                </div>
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary font-bold text-xl">3</div>
-                                                    <Mail className="h-8 w-8 text-primary" />
-                                                    <h3 className="font-semibold">Initiate Contact</h3>
-                                                    <p className="text-sm text-muted-foreground">Reach out to promising candidates via our secure contact form.</p>
-                                                </div>
-                                            </div>
+                                            <Carousel
+                                                plugins={[autoplayPlugin.current]}
+                                                className="w-full"
+                                                opts={{ align: "start", loop: true, }}
+                                            >
+                                                <CarouselContent>
+                                                    {hiringFeatures.map((feature, index) => (
+                                                        <CarouselItem key={index} className="md:basis-1/3">
+                                                            <div className="p-1">
+                                                                <div className="flex flex-col items-center text-center gap-2 p-4">
+                                                                    <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary font-bold text-xl">{index + 1}</div>
+                                                                    {feature.icon}
+                                                                    <h3 className="font-semibold">{feature.title}</h3>
+                                                                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                                                                </div>
+                                                            </div>
+                                                        </CarouselItem>
+                                                    ))}
+                                                </CarouselContent>
+                                            </Carousel>
                                         </CardContent>
                                     </Card>
                                 </div>
