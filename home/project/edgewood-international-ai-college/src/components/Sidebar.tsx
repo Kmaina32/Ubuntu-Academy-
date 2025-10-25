@@ -19,7 +19,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Separator } from './ui/separator';
 import pkg from '../../package.json';
 import { useEffect, useMemo, useState } from 'react';
-import type { CalendarEvent } from '@/lib/mock-data';
+import type { CalendarEvent } from '@/lib/types';
 import { getAllCalendarEvents } from '@/lib/firebase-service';
 import Image from 'next/image';
 
