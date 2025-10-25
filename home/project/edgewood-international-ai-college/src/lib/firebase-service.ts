@@ -30,9 +30,11 @@ export interface HeroData {
     programsImageUrl?: string;
     bootcampsImageUrl?: string;
     hackathonsImageUrl?: string;
+    portfoliosImageUrl?: string;
     adsEnabled?: boolean;
     adInterval?: number;
     activityTrackingEnabled?: boolean;
+    aiProvider?: 'gemini' | 'openai' | 'anthropic';
 }
 
 export interface TutorSettings {
@@ -238,6 +240,7 @@ export async function getHeroData(): Promise<HeroData> {
     programsImageUrl: 'https://picsum.photos/1200/400',
     bootcampsImageUrl: 'https://picsum.photos/1200/400',
     hackathonsImageUrl: 'https://picsum.photos/1200/400',
+    portfoliosImageUrl: 'https://picsum.photos/seed/portfolios-hero/1200/400',
     slideshowSpeed: 5,
     imageBrightness: 60,
     recaptchaEnabled: true,
@@ -251,6 +254,7 @@ export async function getHeroData(): Promise<HeroData> {
     adsEnabled: false,
     adInterval: 30,
     activityTrackingEnabled: false,
+    aiProvider: 'gemini' as const,
   };
 
   const dbData = snapshot.exists() ? snapshot.val() : {};

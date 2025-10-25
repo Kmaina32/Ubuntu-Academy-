@@ -34,6 +34,7 @@ const heroFormSchema = z.object({
   programsImageUrl: z.string().url('Please enter a valid URL.').optional(),
   bootcampsImageUrl: z.string().url('Please enter a valid URL.').optional(),
   hackathonsImageUrl: z.string().url('Please enter a valid URL.').optional(),
+  portfoliosImageUrl: z.string().url('Please enter a valid URL.').optional(),
   loginImageUrl: z.string().url('Please enter a valid URL for the login page image.'),
   signupImageUrl: z.string().url('Please enter a valid URL for the signup page image.'),
   slideshowSpeed: z.coerce.number().min(1, 'Speed must be at least 1 second.'),
@@ -66,6 +67,7 @@ export default function AdminHeroPage() {
       programsImageUrl: '',
       bootcampsImageUrl: '',
       hackathonsImageUrl: '',
+      portfoliosImageUrl: '',
       loginImageUrl: '',
       signupImageUrl: '',
       slideshowSpeed: 5,
@@ -354,6 +356,9 @@ export default function AdminHeroPage() {
                         <FormField control={form.control} name="hackathonsImageUrl" render={({ field }) => (
                             <FormItem><FormLabel>Hackathons Page Hero Image</FormLabel><FormControl><Input placeholder="https://example.com/hackathons.png" {...field} /></FormControl><FormMessage /></FormItem>
                         )}/>
+                         <FormField control={form.control} name="portfoliosImageUrl" render={({ field }) => (
+                            <FormItem><FormLabel>Portfolios Page Hero Image</FormLabel><FormControl><Input placeholder="https://example.com/portfolios.png" {...field} /></FormControl><FormMessage /></FormItem>
+                        )}/>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                            <FormField
                               control={form.control}
@@ -621,5 +626,3 @@ export default function AdminHeroPage() {
     </div>
   );
 }
-
-    
