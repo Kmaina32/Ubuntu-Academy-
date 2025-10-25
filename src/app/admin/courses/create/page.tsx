@@ -202,6 +202,7 @@ export default function CreateCoursePage() {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
   const [generateCourseTitle, setGenerateCourseTitle] = useState('');
+  const [generateCourseContext, setGenerateCourseContext] = useState('');
   const [allCourses, setAllCourses] = useState<Course[]>([]);
 
   useEffect(() => {
@@ -237,7 +238,10 @@ export default function CreateCoursePage() {
     toast({ title: "Generating Course...", description: "The AI is creating your course. This might take a moment." });
 
     try {
-        const result = await generateCourseContent({ courseTitle: generateCourseTitle });
+        const result = await generateCourseContent({ 
+            courseTitle: generateCourseTitle,
+            courseContext: generateCourseContext 
+        });
         setGeneratedContent(result);
         setIsReviewModalOpen(true);
         form.setValue('title', generateCourseTitle); // Pre-fill the main form title
@@ -247,6 +251,7 @@ export default function CreateCoursePage() {
     } finally {
         setIsGenerating(false);
         setGenerateCourseTitle('');
+        setGenerateCourseContext('');
     }
   };
   
@@ -317,17 +322,29 @@ export default function CreateCoursePage() {
                             <DialogHeader>
                                 <DialogTitle>Generate Course with AI</DialogTitle>
                                 <DialogDescription>
-                                    Enter a course title and the AI will generate the full curriculum, lessons, and descriptions for you.
+                                    Enter a course title and optionally provide a Kaggle dataset URL or other context.
                                 </DialogDescription>
                             </DialogHeader>
-                            <div className="space-y-2">
-                                <FormLabel htmlFor="course-title-ai">Course Title</FormLabel>
-                                <Input
-                                    id="course-title-ai"
-                                    value={generateCourseTitle}
-                                    onChange={(e) => setGenerateCourseTitle(e.target.value)}
-                                    placeholder="e.g., Introduction to Plumbing"
-                                />
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <FormLabel htmlFor="course-title-ai">Course Title</FormLabel>
+                                    <Input
+                                        id="course-title-ai"
+                                        value={generateCourseTitle}
+                                        onChange={(e) => setGenerateCourseTitle(e.target.value)}
+                                        placeholder="e.g., Introduction to Plumbing"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <FormLabel htmlFor="course-context-ai">Kaggle URL or Additional Context (Optional)</FormLabel>
+                                    <Textarea
+                                        id="course-context-ai"
+                                        value={generateCourseContext}
+                                        onChange={(e) => setGenerateCourseContext(e.target.value)}
+                                        placeholder="e.g., https://www.kaggle.com/datasets/example/dataset or paste a few rows of CSV data."
+                                        className="min-h-[100px]"
+                                    />
+                                </div>
                             </div>
                             <DialogFooter>
                                 <Button type="button" variant="outline" onClick={() => setIsGenerateModalOpen(false)}>Cancel</Button>
