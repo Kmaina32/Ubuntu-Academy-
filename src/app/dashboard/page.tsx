@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -201,10 +202,13 @@ function PortfolioProgressWidget({ dbUser }: { dbUser: RegisteredUser }) {
 }
 
 // Recent Achievements Widget
-function AchievementsWidget({ achievements }: { achievements: Achievement[] }) {
-    const recentAchievements = achievements.sort((a,b) => new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime()).slice(0, 3);
+function AchievementsWidget({ achievements, isSuperAdmin }: { achievements: Achievement[], isSuperAdmin: boolean }) {
     
-    // A helper to safely render Lucide icons by name
+    let achievementsToShow = achievements;
+    if (!isSuperAdmin) {
+        achievementsToShow = achievements.sort((a,b) => new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime()).slice(0, 3);
+    }
+    
     const Icon = ({ name, ...props }: { name: string } & LucideIcons.LucideProps) => {
         const LucideIcon = (LucideIcons as any)[name];
         if (!LucideIcon) return <Award {...props} />; // Fallback icon
@@ -218,9 +222,9 @@ function AchievementsWidget({ achievements }: { achievements: Achievement[] }) {
                 <CardDescription>Your latest unlocked awards.</CardDescription>
             </CardHeader>
             <CardContent>
-                {recentAchievements.length > 0 ? (
+                {achievementsToShow.length > 0 ? (
                     <div className="space-y-4">
-                        {recentAchievements.map(ach => (
+                        {achievementsToShow.map(ach => (
                             <div key={ach.id} className="flex items-center gap-4">
                                 <div className="p-3 bg-secondary rounded-full">
                                     <Icon name={ach.icon} className="h-6 w-6 text-primary" />
@@ -401,7 +405,7 @@ export default function DashboardPage() {
                      <LearningGoalsWidget dbUser={dbUser} onGoalUpdate={fetchDashboardData} />
                 </div>
                 <div className="lg:col-span-2">
-                     <AchievementsWidget achievements={achievementsToDisplay as Achievement[]} />
+                     <AchievementsWidget achievements={achievementsToDisplay as Achievement[]} isSuperAdmin={isSuperAdmin} />
                 </div>
             </div>
 
