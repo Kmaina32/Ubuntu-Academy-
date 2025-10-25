@@ -1,5 +1,4 @@
 
-
 import { z } from 'zod';
 
 export interface YoutubeLink {
@@ -269,7 +268,6 @@ export interface Achievement {
     name: string;
     description: string;
     icon: string;
-    unlockedAt: string;
     unlockedAt: string;
 }
 

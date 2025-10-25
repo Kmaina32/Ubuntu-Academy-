@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -13,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Github, Linkedin, Loader2, Twitter, Users, Mail, Search, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { Icon } from '@iconify/react';
-import { useAuth } from '@/hooks/use-auth';
 import { ContactStudentDialog } from '@/components/ContactStudentDialog';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import Autoplay from "embla-carousel-autoplay";
@@ -154,7 +154,7 @@ export default function PortfoliosPage() {
                                                 </CardHeader>
                                                 <CardContent className="flex-grow text-center">
                                                     <p className="text-muted-foreground line-clamp-3">
-                                                        {profile.portfolio?.summary || 'A passionate learner from Manda Network.'}
+                                                        {profile.portfolio?.aboutMe || 'A passionate learner from Manda Network.'}
                                                     </p>
                                                 </CardContent>
                                                 <CardFooter className="flex flex-col gap-2">

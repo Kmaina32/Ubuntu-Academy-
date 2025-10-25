@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Award, Github, Linkedin, Loader2, Twitter, ExternalLink, ArrowLeft, Mail, Briefcase, GraduationCap, Phone, MapPin, Building2 } from 'lucide-react';
+import { Award, Github, Linkedin, Loader2, Twitter, ExternalLink, ArrowLeft, Mail, Briefcase, GraduationCap, Phone, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { slugify } from '@/lib/utils';
 import { Icon } from '@iconify/react';
@@ -262,7 +262,7 @@ export default function PortfolioPage() {
                                 </CardContent>
                             </Card>
 
-                            <Card className="mb-8">
+                            <Card>
                                 <CardHeader>
                                     <CardTitle>Completed Courses &amp; Certificates</CardTitle>
                                 </CardHeader>
