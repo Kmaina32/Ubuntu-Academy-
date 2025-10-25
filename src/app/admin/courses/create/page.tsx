@@ -550,3 +550,5 @@ export default function CreateCoursePage() {
     </>
   );
 }
+
+    
