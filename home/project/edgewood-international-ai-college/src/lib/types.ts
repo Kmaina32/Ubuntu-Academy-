@@ -240,7 +240,12 @@ export interface Education {
 }
 
 export interface Portfolio {
-    summary?: string;
+    aboutMe?: string;
+    phone?: string;
+    address?: {
+        poBox?: string;
+        country?: string;
+    };
     socialLinks?: {
         github?: string;
         gitlab?: string;
@@ -264,6 +269,7 @@ export interface Achievement {
     name: string;
     description: string;
     icon: string;
+    unlockedAt: string;
     unlockedAt: string;
 }
 
@@ -420,3 +426,4 @@ export interface UserActivity {
     details: any;
     timestamp: string; // ISO string
 }
+    

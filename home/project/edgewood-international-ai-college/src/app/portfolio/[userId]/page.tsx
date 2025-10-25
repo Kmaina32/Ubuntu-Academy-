@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Award, Github, Linkedin, Loader2, Twitter, ExternalLink, ArrowLeft, Mail, Briefcase, GraduationCap } from 'lucide-react';
+import { Award, Github, Linkedin, Loader2, Twitter, ExternalLink, ArrowLeft, Mail, Briefcase, GraduationCap, Phone, MapPin, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import { slugify } from '@/lib/utils';
 import { Icon } from '@iconify/react';
@@ -133,14 +133,19 @@ export default function PortfolioPage() {
                                 <ArrowLeft className="h-4 w-4" />
                                 Back to Hiring Center
                             </Link>
-                            <Card className="mb-8 p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
-                                <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-primary">
+                            <Card className="mb-8 p-6 md:p-8">
+                               <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+                                 <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-primary">
                                     <AvatarImage src={user.photoURL || ''} alt={user.displayName || ''}/>
                                     <AvatarFallback className="text-4xl">{getInitials(user.displayName)}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-grow">
                                     <h1 className="text-3xl md:text-4xl font-bold font-headline">{user.displayName}</h1>
-                                    <p className="text-muted-foreground mt-2">{user.portfolio?.summary || 'Lifelong learner and digital skills enthusiast.'}</p>
+                                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1 text-muted-foreground mt-2 text-sm">
+                                        {user.email && <div className="flex items-center gap-2"><Mail className="h-4 w-4"/>{user.email}</div>}
+                                        {user.portfolio?.phone && <div className="flex items-center gap-2"><Phone className="h-4 w-4"/>{user.portfolio.phone}</div>}
+                                        {user.portfolio?.address?.country && <div className="flex items-center gap-2"><MapPin className="h-4 w-4"/>{user.portfolio.address.poBox}, {user.portfolio.address.country}</div>}
+                                    </div>
                                     <div className="flex items-center justify-center md:justify-start gap-4 mt-4">
                                         <div className="flex gap-1">
                                             {user.portfolio?.socialLinks?.github && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.github} target="_blank" rel="noreferrer"><Icon icon="mdi:github" className="h-5 w-5" /></a></Button>}
@@ -152,6 +157,16 @@ export default function PortfolioPage() {
                                         </Button>
                                     </div>
                                 </div>
+                               </div>
+                               {user.portfolio?.aboutMe && (
+                                   <>
+                                     <Separator className="my-6"/>
+                                     <div>
+                                        <h3 className="font-semibold text-lg mb-2">About Me</h3>
+                                        <p className="text-muted-foreground text-sm">{user.portfolio.aboutMe}</p>
+                                     </div>
+                                   </>
+                               )}
                             </Card>
 
                             {user.portfolio?.workExperience && user.portfolio.workExperience.length > 0 && (
@@ -246,7 +261,7 @@ export default function PortfolioPage() {
                                 </CardContent>
                             </Card>
 
-                            <Card>
+                            <Card className="mb-8">
                                 <CardHeader>
                                     <CardTitle>Completed Courses &amp; Certificates</CardTitle>
                                 </CardHeader>
@@ -293,3 +308,4 @@ export default function PortfolioPage() {
         </>
     )
 }
+    

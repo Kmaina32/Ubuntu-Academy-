@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -67,7 +65,10 @@ const profileFormSchema = z.object({
   firstName: z.string().min(1, 'First name is required.'),
   middleName: z.string().optional(),
   lastName: z.string().min(1, 'Last name is required.'),
-  summary: z.string().optional(),
+  aboutMe: z.string().optional(),
+  phone: z.string().optional(),
+  poBox: z.string().optional(),
+  country: z.string().optional(),
   github: z.string().url({ message: 'Must be a valid URL.' }).optional().or(z.literal('')),
   gitlab: z.string().url({ message: 'Must be a valid URL.' }).optional().or(z.literal('')),
   bitbucket: z.string().url({ message: 'Must be a valid URL.' }).optional().or(z.literal('')),
@@ -107,7 +108,10 @@ export default function ProfilePage() {
         firstName: '',
         middleName: '',
         lastName: '',
-        summary: '',
+        aboutMe: '',
+        phone: '',
+        poBox: '',
+        country: '',
         github: '',
         gitlab: '',
         bitbucket: '',
@@ -145,7 +149,10 @@ export default function ProfilePage() {
             firstName,
             middleName,
             lastName,
-            summary: profile.portfolio?.summary || '',
+            aboutMe: profile.portfolio?.aboutMe || '',
+            phone: profile.portfolio?.phone || '',
+            poBox: profile.portfolio?.address?.poBox || '',
+            country: profile.portfolio?.address?.country || '',
             github: profile.portfolio?.socialLinks?.github || '',
             gitlab: profile.portfolio?.socialLinks?.gitlab || '',
             bitbucket: profile.portfolio?.socialLinks?.bitbucket || '',
@@ -254,17 +261,20 @@ export default function ProfilePage() {
     try {
         const newDisplayName = [values.firstName, values.middleName, values.lastName].filter(Boolean).join(' ');
         
-        // Update Firebase Auth profile if the name has changed
         if (newDisplayName !== user.displayName) {
           await updateProfile(user, { displayName: newDisplayName });
         }
 
-        // Update the user record in the Realtime Database
         await saveUser(user.uid, {
             displayName: newDisplayName,
             photoURL: user.photoURL,
             portfolio: {
-                summary: values.summary,
+                aboutMe: values.aboutMe,
+                phone: values.phone,
+                address: {
+                    poBox: values.poBox,
+                    country: values.country,
+                },
                 socialLinks: {
                     github: values.github,
                     gitlab: values.gitlab,
@@ -277,7 +287,6 @@ export default function ProfilePage() {
             }
         });
         
-        // Manually reload user state to reflect changes immediately
         await auth.currentUser?.reload();
         setUser(auth.currentUser);
         
@@ -387,10 +396,19 @@ export default function ProfilePage() {
                                             <FormField control={form.control} name="middleName" render={({ field }) => ( <FormItem> <FormLabel>Middle Name (Optional)</FormLabel> <FormControl> <Input {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
                                         </div>
                                         <p className="text-xs text-muted-foreground pt-2">Please ensure this is your full, correct name as it will be used on your certificates.</p>
+                                        
+                                        <Separator />
+                                         <h3 className="text-lg font-semibold pt-4">Contact Information</h3>
+                                        <FormField control={form.control} name="phone" render={({ field }) => ( <FormItem> <FormLabel>Phone Number</FormLabel> <FormControl> <Input placeholder="e.g., +254 712 345678" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <FormField control={form.control} name="poBox" render={({ field }) => ( <FormItem> <FormLabel>P.O. Box</FormLabel> <FormControl> <Input placeholder="e.g., 12345-00100" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                            <FormField control={form.control} name="country" render={({ field }) => ( <FormItem> <FormLabel>Country</FormLabel> <FormControl> <Input placeholder="e.g., Kenya" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                        </div>
+
                                      </div>
                                 </TabsContent>
                                 <TabsContent value="portfolio" className="pt-6 space-y-6">
-                                    <FormField control={form.control} name="summary" render={({ field }) => ( <FormItem> <FormLabel>Professional Summary</FormLabel> <FormControl> <Textarea placeholder="A brief summary about your skills and career goals." {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                    <FormField control={form.control} name="aboutMe" render={({ field }) => ( <FormItem> <FormLabel>About Me / Professional Summary</FormLabel> <FormControl> <Textarea placeholder="A brief summary about your skills and career goals." {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
                                      {/* Work Experience Section */}
                                     <div>
                                         <h4 className="font-semibold mb-2">Work Experience</h4>
@@ -490,4 +508,4 @@ export default function ProfilePage() {
     </SidebarProvider>
   );
 }
-
+    
