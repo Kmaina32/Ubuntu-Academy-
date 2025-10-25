@@ -16,7 +16,7 @@
     },
     "bootcamps": {
       ".read": true,
-      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      ".write": "auth != null && (auth.uid === newData.child('participants').child(auth.uid).name() || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
     },
     "pricingPlans": {
       ".read": true,
@@ -36,7 +36,7 @@
     },
     "hackathons": {
       ".read": true,
-      ".write": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      ".write": "auth != null && (auth.uid === newData.child('participants').child(auth.uid).name() || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
     },
     "leaderboard": {
       ".read": true,
@@ -49,7 +49,15 @@
       ".indexOn": ["email", "organizationId", "portfolio/public"],
       "$userId": {
         ".read": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true || root.child('users').child(auth.uid).child('isOrganizationAdmin').val() === true) || data.child('portfolio/public').val() === true",
-        ".write": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+        ".write": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
+        "purchasedCourses": {
+          "$courseId": {
+            // Allow a user to write to their own purchasedCourses path ONLY IF the record does not exist yet.
+            // This allows for enrollment but prevents them from modifying progress or giving themselves a certificate.
+            // Admins can write freely.
+            ".write": "auth != null && (root.child('users').child(auth.uid).child('isAdmin').val() === true || (auth.uid === $userId && !data.exists()))"
+          }
+        }
       }
     },
     "calendarEvents": {
