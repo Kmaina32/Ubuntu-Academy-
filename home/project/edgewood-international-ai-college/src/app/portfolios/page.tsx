@@ -50,7 +50,7 @@ export default function PortfoliosPage() {
     const [publicProfiles, setPublicProfiles] = useState<RegisteredUser[]>([]);
     const [heroData, setHeroData] = useState<{ portfoliosImageUrl?: string }>({});
     const [loading, setLoading] = useState(true);
-    const { isOrganizationAdmin, isAdmin } = useAuth();
+    const { user, isOrganizationAdmin, isAdmin } = useAuth();
     const [selectedStudent, setSelectedStudent] = useState<RegisteredUser | null>(null);
     const autoplayPlugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: true }));
 
@@ -73,7 +73,7 @@ export default function PortfoliosPage() {
         fetchPageData();
     }, []);
 
-    const isEmployer = isOrganizationAdmin || isAdmin;
+    const isEmployer = user && (isOrganizationAdmin || isAdmin);
 
     return (
         <>
