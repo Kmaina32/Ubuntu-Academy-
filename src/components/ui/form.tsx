@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -15,14 +16,7 @@ import {
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 
-/**
- * Root Form context provider (from react-hook-form)
- */
 const Form = FormProvider
-
-// --------------------
-// Contexts
-// --------------------
 
 type FormFieldContextValue<
   TFieldValues extends FieldValues = FieldValues,
@@ -35,24 +29,17 @@ const FormFieldContext = React.createContext<FormFieldContextValue>(
   {} as FormFieldContextValue
 )
 
-const FormItemContext = React.createContext<{ id: string }>(
-  {} as { id: string }
-)
-
-// --------------------
-// Hooks
-// --------------------
-
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext)
   const itemContext = React.useContext(FormItemContext)
   const { getFieldState, formState } = useFormContext()
 
+  const fieldState = getFieldState(fieldContext.name, formState)
+
   if (!fieldContext) {
     throw new Error("useFormField should be used within <FormField>")
   }
 
-  const fieldState = getFieldState(fieldContext.name, formState)
   const { id } = itemContext
 
   return {
@@ -65,13 +52,14 @@ const useFormField = () => {
   }
 }
 
-// --------------------
-// Components
-// --------------------
+type FormItemContextValue = {
+  id: string
+}
 
-/**
- * FormField wraps Controller to provide field-level context
- */
+const FormItemContext = React.createContext<FormItemContextValue>(
+  {} as FormItemContextValue
+)
+
 const FormField = <
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
@@ -85,9 +73,6 @@ const FormField = <
   )
 }
 
-/**
- * FormItem groups a field's label, control, and message
- */
 const FormItem = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -102,9 +87,6 @@ const FormItem = React.forwardRef<
 })
 FormItem.displayName = "FormItem"
 
-/**
- * Label with error styling
- */
 const FormLabel = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
@@ -114,31 +96,27 @@ const FormLabel = React.forwardRef<
   return (
     <Label
       ref={ref}
-      htmlFor={formItemId}
       className={cn(error && "text-destructive", className)}
+      htmlFor={formItemId}
       {...props}
     />
   )
 })
 FormLabel.displayName = "FormLabel"
 
-/**
- * ✅ FIXED VERSION
- * FormControl now uses a `div` to bypass the single-child restriction of `Slot`.
- */
 const FormControl = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
+  React.ElementRef<typeof Slot>,
+  React.ComponentPropsWithoutRef<typeof Slot>
 >(({ ...props }, ref) => {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
 
   return (
-    <div
+    <Slot
       ref={ref}
       id={formItemId}
       aria-describedby={
         !error
-          ? formDescriptionId
+          ? `${formDescriptionId}`
           : `${formDescriptionId} ${formMessageId}`
       }
       aria-invalid={!!error}
@@ -148,9 +126,6 @@ const FormControl = React.forwardRef<
 })
 FormControl.displayName = "FormControl"
 
-/**
- * Description below the input
- */
 const FormDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
@@ -168,17 +143,16 @@ const FormDescription = React.forwardRef<
 })
 FormDescription.displayName = "FormDescription"
 
-/**
- * Field-level error message
- */
 const FormMessage = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, children, ...props }, ref) => {
   const { error, formMessageId } = useFormField()
-  const body = error ? String(error?.message ?? "") : children
+  const body = error ? String(error?.message) : children
 
-  if (!body) return null
+  if (!body) {
+    return null
+  }
 
   return (
     <p
@@ -193,15 +167,11 @@ const FormMessage = React.forwardRef<
 })
 FormMessage.displayName = "FormMessage"
 
-// --------------------
-// Exports
-// --------------------
-
 export {
   useFormField,
   Form,
-  FormField,
   FormItem,
+  FormField,
   FormLabel,
   FormControl,
   FormDescription,
