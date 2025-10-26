@@ -2,9 +2,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { notFound, useParams } from 'next/navigation';
+import { notFound, useParams, usePathname, useRouter } from 'next/navigation';
 import { getUserById, getUserCourses, getAllCourses } from '@/lib/firebase-service';
-import type { RegisteredUser, Course, UserCourse, PortfolioProject } from '@/lib/types';
+import type { RegisteredUser, Course, UserCourse } from '@/lib/types';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Award, Github, Linkedin, Loader2, Twitter, ExternalLink, ArrowLeft, Mail, Briefcase, GraduationCap } from 'lucide-react';
+import { Award, Github, Linkedin, Loader2, Twitter, ExternalLink, ArrowLeft, Mail, Briefcase, GraduationCap, Phone, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { slugify } from '@/lib/utils';
 import { Icon } from '@iconify/react';
@@ -23,6 +23,7 @@ import { ContactStudentDialog } from '@/components/ContactStudentDialog';
 import { Separator } from '@/components/ui/separator';
 import * as LucideIcons from 'lucide-react';
 import { achievementList } from '@/lib/achievements';
+import { OrganizationSidebar } from '@/components/OrganizationSidebar';
 
 const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
 
@@ -30,28 +31,34 @@ type CourseWithDetails = UserCourse & Partial<Course>;
 
 export default function PortfolioPage() {
     const params = useParams<{ userId: string }>();
+    const router = useRouter();
+    const pathname = usePathname();
     const [user, setUser] = useState<RegisteredUser | null>(null);
     const [completedCourses, setCompletedCourses] = useState<CourseWithDetails[]>([]);
     const [loading, setLoading] = useState(true);
-    const { user: authUser, isAdmin, isOrganizationAdmin } = useAuth();
+    const { user: authUser, loading: authLoading, isAdmin, isOrganizationAdmin } = useAuth();
     const [selectedStudent, setSelectedStudent] = useState<RegisteredUser | null>(null);
+
+    const isEmployer = isOrganizationAdmin || isAdmin;
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
                 const userData = await getUserById(params.userId as string);
-                if (!userData || (!userData.portfolio?.public && userData.uid !== ADMIN_UID && authUser?.uid !== userData.uid && !isAdmin)) {
-                    notFound();
-                    return;
+                
+                if (!userData || !userData.portfolio?.public) {
+                    if (!authUser || (!isEmployer && authUser.uid !== userData?.uid)) {
+                       notFound();
+                       return;
+                    }
                 }
+                
                 setUser(userData);
 
                 const allCourses = await getAllCourses();
-
                 let coursesToDisplay: CourseWithDetails[];
 
-                // If it's the super admin, show all courses as completed
                 if (userData.uid === ADMIN_UID) {
                     coursesToDisplay = allCourses.map(course => ({
                         ...course,
@@ -63,16 +70,12 @@ export default function PortfolioPage() {
                         enrollmentDate: course.createdAt,
                     }));
                 } else {
-                    // For regular users, fetch their specific completed courses
                     const userCourses = await getUserCourses(params.userId as string);
                     const courseMap = new Map(allCourses.map(c => [c.id, c]));
                     
                     coursesToDisplay = userCourses
                         .filter(c => c.certificateAvailable)
-                        .map(uc => ({
-                            ...uc,
-                            ...courseMap.get(uc.courseId)
-                        }))
+                        .map(uc => ({ ...uc, ...courseMap.get(uc.courseId) }))
                         .filter(c => c.title);
                 }
 
@@ -84,8 +87,10 @@ export default function PortfolioPage() {
                 setLoading(false);
             }
         };
-        fetchData();
-    }, [params.userId, authUser, isAdmin]);
+        if (!authLoading) {
+            fetchData();
+        }
+    }, [params.userId, authUser, authLoading, isEmployer]);
 
     const getInitials = (name: string | null | undefined) => {
         if (!name) return 'U';
@@ -93,9 +98,7 @@ export default function PortfolioPage() {
         return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}` : names[0]?.[0] || 'U';
     };
     
-    const isEmployer = isOrganizationAdmin || isAdmin;
-
-    if (loading) {
+    if (loading || authLoading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
                 <Loader2 className="h-8 w-8 animate-spin" />
@@ -104,7 +107,7 @@ export default function PortfolioPage() {
     }
     
     if (!user) {
-        notFound();
+        return notFound();
     }
     
     const achievementsToDisplay = user.uid === ADMIN_UID
@@ -120,7 +123,7 @@ export default function PortfolioPage() {
     return (
         <>
         <SidebarProvider>
-            <AppSidebar />
+            {isEmployer ? <OrganizationSidebar /> : <AppSidebar />}
             <SidebarInset>
                 <Header />
                 <div className="flex flex-col min-h-screen bg-secondary">
@@ -130,27 +133,40 @@ export default function PortfolioPage() {
                                 <ArrowLeft className="h-4 w-4" />
                                 Back to Hiring Center
                             </Link>
-                            <Card className="mb-8 p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
-                                <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-primary">
+                            <Card className="mb-8 p-6 md:p-8">
+                               <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+                                 <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-primary">
                                     <AvatarImage src={user.photoURL || ''} alt={user.displayName || ''}/>
                                     <AvatarFallback className="text-4xl">{getInitials(user.displayName)}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-grow">
                                     <h1 className="text-3xl md:text-4xl font-bold font-headline">{user.displayName}</h1>
-                                    <p className="text-muted-foreground mt-2">{user.portfolio?.summary || 'Lifelong learner and digital skills enthusiast.'}</p>
+                                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1 text-muted-foreground mt-2 text-sm">
+                                        {user.email && <div className="flex items-center gap-2"><Mail className="h-4 w-4"/>{user.email}</div>}
+                                        {user.portfolio?.phone && <div className="flex items-center gap-2"><Phone className="h-4 w-4"/>{user.portfolio.phone}</div>}
+                                        {user.portfolio?.address?.country && <div className="flex items-center gap-2"><MapPin className="h-4 w-4"/>{user.portfolio.address.poBox}, {user.portfolio.address.country}</div>}
+                                    </div>
                                     <div className="flex items-center justify-center md:justify-start gap-4 mt-4">
                                         <div className="flex gap-1">
                                             {user.portfolio?.socialLinks?.github && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.github} target="_blank" rel="noreferrer"><Icon icon="mdi:github" className="h-5 w-5" /></a></Button>}
                                             {user.portfolio?.socialLinks?.gitlab && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.gitlab} target="_blank" rel="noreferrer"><Icon icon="mdi:gitlab" className="h-5 w-5" /></a></Button>}
                                             {user.portfolio?.socialLinks?.bitbucket && <Button asChild variant="ghost" size="icon"><a href={user.portfolio.socialLinks.bitbucket} target="_blank" rel="noreferrer"><Icon icon="mdi:bitbucket" className="h-5 w-5" /></a></Button>}
                                         </div>
-                                        {isEmployer && (
-                                            <Button onClick={() => setSelectedStudent(user)}>
-                                                <Mail className="mr-2 h-4 w-4" /> Contact
-                                            </Button>
-                                        )}
+                                        <Button onClick={() => setSelectedStudent(user)}>
+                                            <Mail className="mr-2 h-4 w-4" /> Contact
+                                        </Button>
                                     </div>
                                 </div>
+                               </div>
+                               {user.portfolio?.aboutMe && (
+                                   <>
+                                     <Separator className="my-6"/>
+                                     <div>
+                                        <h3 className="font-semibold text-lg mb-2">About Me</h3>
+                                        <p className="text-muted-foreground text-sm">{user.portfolio.aboutMe}</p>
+                                     </div>
+                                   </>
+                               )}
                             </Card>
 
                             {user.portfolio?.workExperience && user.portfolio.workExperience.length > 0 && (
