@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -76,7 +75,7 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [toast]);
 
   const handleDelete = async (user: RegisteredUser) => {
     try {
@@ -268,9 +267,23 @@ export default function AdminUsersPage() {
                                                         <DropdownMenuItem asChild><Link href={`/admin/users/${user.uid}`} className="flex items-center"><Eye className="mr-2 h-4 w-4"/> View</Link></DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => handleOpenCohortManager(user)}><Users2 className="mr-2 h-4 w-4"/> Manage Cohort</DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => handleOpenAdminManager(user)}><ShieldCheck className="mr-2 h-4 w-4"/> Admin Access</DropdownMenuItem>
-                                                        <AlertDialogTrigger asChild>
-                                                           <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/> Delete User</DropdownMenuItem>
-                                                        </AlertDialogTrigger>
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/20 focus:text-destructive"><Trash2 className="mr-2 h-4 w-4"/> Delete User</DropdownMenuItem>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        This will delete the user record for "{user.displayName}" from the database. It does not delete their authentication account.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                    <AlertDialogAction onClick={() => handleDelete(user)}>Continue</AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </CardContent>
@@ -306,3 +319,4 @@ export default function AdminUsersPage() {
   );
 }
 
+    

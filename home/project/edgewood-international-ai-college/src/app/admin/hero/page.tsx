@@ -23,7 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { fetchAndActivate, getString } from 'firebase/remote-config';
 import { remoteConfig } from '@/lib/firebase';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription as AlertDialogDescriptionComponent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 
 const heroFormSchema = z.object({
@@ -596,9 +596,9 @@ export default function AdminHeroPage() {
                             <AlertDialogContent>
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
+                                    <AlertDialogDescriptionComponent>
                                         This action cannot be undone. This will permanently delete all tracked user page visit data from the database.
-                                    </AlertDialogDescription>
+                                    </AlertDialogDescriptionComponent>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -650,5 +650,7 @@ export default function AdminHeroPage() {
     </div>
   );
 }
+
+    
 
     
