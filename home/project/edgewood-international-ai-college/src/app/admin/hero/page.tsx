@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Loader2, Shield, Rss, Palette, Building, UserCheck, Image as ImageIconLucide, Megaphone, Activity, Trash2, Bot } from 'lucide-react';
+import { ArrowLeft, Loader2, Shield, Rss, Palette, Building, UserCheck, Image as ImageIconLucide, Megaphone, Activity, Trash2, Bot, Info } from 'lucide-react';
 import { getHeroData, saveHeroData, getRemoteConfigValues, saveRemoteConfigValues, clearActivityData } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { useToast } from '@/hooks/use-toast';
@@ -40,6 +40,7 @@ const heroFormSchema = z.object({
   slideshowSpeed: z.coerce.number().min(1, 'Speed must be at least 1 second.'),
   imageBrightness: z.coerce.number().min(0).max(100),
   recaptchaEnabled: z.boolean(),
+  onboardingEnabled: z.boolean(),
   adsEnabled: z.boolean(),
   adInterval: z.coerce.number().min(5, 'Interval must be at least 5 seconds.'),
   theme: z.string().optional(),
@@ -73,6 +74,7 @@ export default function AdminHeroPage() {
       slideshowSpeed: 5,
       imageBrightness: 60,
       recaptchaEnabled: true,
+      onboardingEnabled: true,
       adsEnabled: false,
       adInterval: 30,
       theme: 'default',
@@ -114,6 +116,7 @@ export default function AdminHeroPage() {
           animationsEnabled: dbData.animationsEnabled !== false, // default to true if not set
           adsEnabled: dbData.adsEnabled || false,
           adInterval: dbData.adInterval || 30,
+          onboardingEnabled: dbData.onboardingEnabled !== false,
           activityTrackingEnabled: dbData.activityTrackingEnabled || false,
           aiProvider: dbData.aiProvider || 'gemini',
         });
@@ -172,6 +175,8 @@ export default function AdminHeroPage() {
       }
        localStorage.setItem('mkenya-skilled-animations', String(values.animationsEnabled));
        localStorage.setItem('mkenya-skilled-activity-tracking', String(values.activityTrackingEnabled));
+       localStorage.setItem('mkenya-skilled-onboarding', String(values.onboardingEnabled));
+
       
       toast({
         title: 'Success!',
@@ -395,9 +400,29 @@ export default function AdminHeroPage() {
                          </div>
 
                         <div>
-                            <h3 className="text-lg font-semibold flex items-center gap-2"><UserCheck /> Public Auth Pages</h3>
+                            <h3 className="text-lg font-semibold flex items-center gap-2"><UserCheck /> Onboarding & Auth</h3>
                             <Separator className="mt-2" />
                         </div>
+                        <FormField
+                          control={form.control}
+                          name="onboardingEnabled"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                              <div className="space-y-0.5">
+                                <FormLabel>Enable New User Tutorial</FormLabel>
+                                 <p className="text-sm text-muted-foreground">
+                                    Show a welcome tutorial to new users upon their first login.
+                                </p>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
                          <FormField
                           control={form.control}
                           name="loginImageUrl"
@@ -626,5 +651,3 @@ export default function AdminHeroPage() {
     </div>
   );
 }
-
-    

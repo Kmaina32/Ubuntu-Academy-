@@ -35,6 +35,7 @@ export interface HeroData {
     adInterval?: number;
     activityTrackingEnabled?: boolean;
     aiProvider?: 'gemini' | 'openai' | 'anthropic';
+    onboardingEnabled?: boolean;
 }
 
 export interface TutorSettings {
@@ -231,7 +232,7 @@ export async function deleteUser(userId: string): Promise<void> {
 export async function getHeroData(): Promise<HeroData> {
   const heroRef = ref(db, 'hero');
   const snapshot = await get(heroRef);
-  const defaults = {
+  const defaults: HeroData = {
     title: 'Unlock Your Potential.', 
     subtitle: 'Quality, affordable courses designed for the Kenyan market.',
     imageUrl: 'https://placehold.co/1200x400.png',
@@ -255,6 +256,7 @@ export async function getHeroData(): Promise<HeroData> {
     adInterval: 30,
     activityTrackingEnabled: false,
     aiProvider: 'gemini' as const,
+    onboardingEnabled: true,
   };
 
   const dbData = snapshot.exists() ? snapshot.val() : {};
@@ -1134,7 +1136,8 @@ export async function logActivity(userId: string, data: { type: 'signup' | 'enro
         userId,
         userName: user?.displayName || 'Unknown',
         userAvatar: user?.photoURL || '',
-        ...data,
+        type: data.type,
+        details: data.details,
         timestamp: new Date().toISOString(),
     });
 }
