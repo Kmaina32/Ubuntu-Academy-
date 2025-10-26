@@ -48,7 +48,7 @@
     "users": {
       ".indexOn": ["email", "organizationId", "portfolio/public"],
       "$userId": {
-        ".read": "(auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true || root.child('users').child(auth.uid).child('isOrganizationAdmin').val() === true)) || data.child('portfolio/public').val() === true",
+        ".read": "data.child('portfolio/public').val() === true || (auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true || root.child('users').child(auth.uid).child('isOrganizationAdmin').val() === true))",
         ".write": "auth != null && (auth.uid === $userId || root.child('users').child(auth.uid).child('isAdmin').val() === true)",
         "purchasedCourses": {
           "$courseId": {
