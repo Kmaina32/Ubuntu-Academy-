@@ -13,7 +13,6 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { GitBranch, LayoutDashboard, Users, BookOpen, CreditCard, Settings, ExternalLink, Tag, LogOut, Home, Clapperboard, Users as PortfoliosIcon } from 'lucide-react';
-import pkg from '../../package.json';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import { useAuth } from '@/hooks/use-auth';
@@ -162,12 +161,10 @@ export function OrganizationSidebar() {
         </SidebarContent>
         <SidebarFooter>
             <div className="flex items-center gap-2 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-                <Tag className="h-3 w-3" />
-                <span>v{pkg.version}</span>
+                <Tag />
+                <span>v1.0.2</span>
             </div>
         </SidebarFooter>
     </Sidebar>
   );
 }
-
-    

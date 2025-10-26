@@ -175,5 +175,3 @@ export function ContactStudentDialog({ student, isOpen, onClose }: ContactStuden
     </Dialog>
   );
 }
-
-    

@@ -382,6 +382,7 @@ export interface Hackathon {
   endDate: string; // ISO String
   imageUrl: string;
   externalUrl?: string;
+  participants?: Record<string, boolean>;
 }
 
 export interface HackathonSubmission {
@@ -424,5 +425,3 @@ export interface UserActivity {
     details: any;
     timestamp: string; // ISO string
 }
-
-    
