@@ -15,9 +15,7 @@ export const metadata: Metadata = {
   verification: {
     google: 'qNZsueqgogEIZHV-vcsY-Kv7tkLo82P_-w7BQvJG1jY',
   },
-  icons: {
-    icon: '/favicon.svg',
-  },
+  icons: null,
 };
 
 export default async function RootLayout({
@@ -25,7 +23,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isAiConfigured = !!process.env.GEMINI_API_KEY;
+  const isAiConfigured = !!process.env.GEMINI_API_KEY || !!process.env.OPENAI_API_KEY;
 
   return (
     <html lang="en" className="dark" style={{ colorScheme: 'dark' }}>
@@ -50,3 +48,4 @@ export default async function RootLayout({
     </html>
   );
 }
+
