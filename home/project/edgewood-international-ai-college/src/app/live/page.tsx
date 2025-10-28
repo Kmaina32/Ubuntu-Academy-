@@ -24,7 +24,6 @@ export default function LivePage() {
     const [liveSessionDetails, setLiveSessionDetails] = useState<any>(null);
     const [isSessionActive, setIsSessionActive] = useState(false);
     const [checkingSession, setCheckingSession] = useState(true);
-    const isMobile = useIsMobile();
 
     useEffect(() => {
         if (!loading && !user) {
@@ -49,11 +48,34 @@ export default function LivePage() {
       return () => unsubscribe();
     }, [sessionId]);
 
+    const canHost = isAdmin || isOrganizationAdmin;
+
+    const ResponsiveLiveLayout = () => {
+        const isMobile = useIsMobile();
+        return (
+            <ResizablePanelGroup direction={isMobile ? "vertical" : "horizontal"} className="h-full">
+                <ResizablePanel defaultSize={isMobile ? 60 : 75}>
+                    <div className="flex flex-col h-full gap-4 pr-0 md:pr-4 pb-4 md:pb-0">
+                         {isSessionActive || canHost ? (
+                            canHost ? <AdminHostView sessionId={sessionId} /> : <MemberViewer sessionId={sessionId} />
+                         ) : (
+                            <MemberViewer sessionId={sessionId} />
+                         )}
+                    </div>
+                </ResizablePanel>
+                <ResizableHandle withHandle />
+                <ResizablePanel defaultSize={isMobile ? 40 : 25}>
+                    <div className="h-full flex flex-col pt-4 pl-0 md:pl-4 md:pt-0">
+                        <LiveChat sessionId={sessionId} />
+                    </div>
+                </ResizablePanel>
+            </ResizablePanelGroup>
+        )
+    }
+
     if (loading || checkingSession) {
         return <div className="flex h-screen items-center justify-center"><LoadingAnimation /></div>
     }
-    
-    const canHost = isAdmin || isOrganizationAdmin;
 
     return (
         <SidebarProvider>
@@ -63,23 +85,7 @@ export default function LivePage() {
             <div className="flex flex-col h-[calc(100vh-4rem)] bg-secondary/50">
                 <div className="max-w-7xl w-full mx-auto p-4 md:p-6 flex-grow">
                     <ClientOnly>
-                        <ResizablePanelGroup direction={isMobile ? "vertical" : "horizontal"} className="h-full">
-                            <ResizablePanel defaultSize={isMobile ? 60 : 75}>
-                                <div className="flex flex-col h-full gap-4 pr-0 md:pr-4 pb-4 md:pb-0">
-                                     {isSessionActive || canHost ? (
-                                        canHost ? <AdminHostView sessionId={sessionId} /> : <MemberViewer sessionId={sessionId} />
-                                     ) : (
-                                        <MemberViewer sessionId={sessionId} />
-                                     )}
-                                </div>
-                            </ResizablePanel>
-                            <ResizableHandle withHandle />
-                            <ResizablePanel defaultSize={isMobile ? 40 : 25}>
-                                <div className="h-full flex flex-col pt-4 pl-0 md:pl-4 md:pt-0">
-                                    <LiveChat sessionId={sessionId} />
-                                </div>
-                            </ResizablePanel>
-                        </ResizablePanelGroup>
+                        <ResponsiveLiveLayout />
                     </ClientOnly>
                 </div>
                  {liveSessionDetails && <NotebookSheet courseId={sessionId} courseTitle={liveSessionDetails?.title || 'Live Session Notes'} />}
