@@ -14,12 +14,12 @@ import {
   SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { GitBranch, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library, Briefcase, Tag, Building, Users as PortfoliosIcon, Rocket, Trophy } from 'lucide-react';
+import { GitBranch, Home, LayoutDashboard, ListTodo, Calendar, User, HelpCircle, Mail, Info, UserPlus, Book, Shield, Notebook as NotebookIcon, Clapperboard, Library, Briefcase, Tag, Building, Users as PortfoliosIcon, Rocket, Trophy, Rss } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from './ui/separator';
 import pkg from '../../package.json';
 import { useEffect, useMemo, useState } from 'react';
-import type { CalendarEvent } from '@/lib/mock-data';
+import type { CalendarEvent } from '@/lib/types';
 import { getAllCalendarEvents } from '@/lib/firebase-service';
 import Image from 'next/image';
 
@@ -154,6 +154,11 @@ export function AppSidebar() {
                         <Separator className="my-2"/>
                         <p className="text-xs font-semibold text-muted-foreground px-2 mb-2 group-data-[collapsible=icon]:hidden">Career & Support</p>
                         <SidebarMenuItem>
+                           <SidebarMenuButton asChild size="sm" isActive={isActive('/portfolios')} tooltip="Hiring Center" onClick={() => onLinkClick('/portfolios')}>
+                                <Link href="/portfolios"><PortfoliosIcon className="mr-2"/>Hiring Center</Link>
+                           </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
                              <SidebarMenuButton asChild size="sm" isActive={isActive('/coach')} tooltip="AI Career Coach" onClick={() => onLinkClick('/coach')}>
                                 <Link href="/coach"><Briefcase className="mr-2"/>Career Coach</Link>
                            </SidebarMenuButton>
@@ -161,6 +166,11 @@ export function AppSidebar() {
                         <SidebarMenuItem>
                            <SidebarMenuButton asChild size="sm" isActive={isActive('/about')} tooltip="About Us" onClick={() => onLinkClick('/about')}>
                                 <Link href="/about"><Info className="mr-2"/>About Us</Link>
+                           </SidebarMenuButton>
+                        </SidebarMenuItem>
+                         <SidebarMenuItem>
+                           <SidebarMenuButton asChild size="sm" isActive={isActive('/blog')} tooltip="Blog" onClick={() => onLinkClick('/blog')}>
+                                <Link href="/blog"><Rss className="mr-2"/>Blog</Link>
                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
@@ -248,6 +258,11 @@ export function AppSidebar() {
                                     <span>Organization</span>
                                 </Link>
                             </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                           <SidebarMenuButton asChild size="sm" isActive={isActive('/blog')} tooltip="Blog" onClick={() => onLinkClick('/blog')}>
+                                <Link href="/blog"><Rss className="mr-2"/>Blog</Link>
+                           </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild isActive={isActive('/about')} tooltip="About Us" onClick={() => onLinkClick('/about')}>
