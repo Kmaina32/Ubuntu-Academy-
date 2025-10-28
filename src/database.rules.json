@@ -125,7 +125,9 @@
     },
     "notifications": {
       ".read": "auth != null",
-      ".write": "auth != null"
+      "$notificationId": {
+        ".write": "auth != null && (newData.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true)"
+      }
     },
      "userActivity": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('isAdmin').val() === true",
