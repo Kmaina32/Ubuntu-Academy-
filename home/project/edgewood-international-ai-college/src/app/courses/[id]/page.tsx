@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
-import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen, Clock, Check, AlertCircle } from "lucide-react";
+import { PlayCircle, CheckCircle, Award, Loader2, ArrowLeft, BookOpen, Clock, Check, AlertCircle, Share2 } from "lucide-react";
 import { PaymentModal } from '@/components/PaymentModal';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
@@ -298,6 +298,31 @@ export default function CourseDetailPage() {
     }
   }
 
+  const handleShare = async () => {
+    if (!course) return;
+
+    const shareData = {
+        title: course.title,
+        text: `Check out this course on Manda Network: ${course.description}`,
+        url: window.location.href
+    };
+
+    if (navigator.share) {
+        try {
+            await navigator.share(shareData);
+        } catch (error) {
+            console.error('Error sharing:', error);
+        }
+    } else {
+        // Fallback for desktop browsers
+        navigator.clipboard.writeText(window.location.href);
+        toast({
+            title: "Link Copied!",
+            description: "The course link has been copied to your clipboard.",
+        });
+    }
+  };
+
   if (loading || authLoading) {
     return (
         <div className="flex justify-center items-center min-h-screen px-4">
@@ -323,13 +348,18 @@ export default function CourseDetailPage() {
         <Header />
         <main className="flex-grow py-8 sm:py-12 md:py-16 overflow-x-hidden">
           <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
-            <button 
-              onClick={() => router.back()} 
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4 sm:mb-6"
-            >
-              <ArrowLeft className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">Back</span>
-            </button>
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+                <button 
+                onClick={() => router.back()} 
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                <ArrowLeft className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">Back</span>
+                </button>
+                 <Button onClick={handleShare} variant="outline" size="sm">
+                    <Share2 className="mr-2 h-4 w-4" /> Share
+                </Button>
+            </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 xl:gap-12">
               <div className="lg:col-span-2 min-w-0">

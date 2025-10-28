@@ -11,7 +11,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, ArrowRight, BookOpen, Layers, CheckCircle, Award, Calendar, Clock, Star } from "lucide-react";
+import { Loader2, ArrowRight, BookOpen, Layers, CheckCircle, Award, Calendar, Clock, Star, Share2 } from "lucide-react";
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -95,6 +95,31 @@ export default function BootcampDetailPage() {
       }
   }
 
+  const handleShare = async () => {
+    if (!bootcamp) return;
+
+    const shareData = {
+        title: bootcamp.title,
+        text: `Check out this bootcamp on Manda Network: ${bootcamp.description}`,
+        url: window.location.href
+    };
+
+    if (navigator.share) {
+        try {
+            await navigator.share(shareData);
+        } catch (error) {
+            console.error('Error sharing:', error);
+        }
+    } else {
+        // Fallback for desktop browsers
+        navigator.clipboard.writeText(window.location.href);
+        toast({
+            title: "Link Copied!",
+            description: "The bootcamp link has been copied to your clipboard.",
+        });
+    }
+  };
+
 
   if (loading || authLoading) {
     return (
@@ -140,6 +165,9 @@ export default function BootcampDetailPage() {
                         <div className="flex items-center gap-2"><Clock /><span>{bootcamp.duration}</span></div>
                         <div className="flex items-center gap-2"><Calendar /><span>Starts: {format(new Date(bootcamp.startDate), 'PPP')}</span></div>
                         <div className="flex items-center gap-2"><Layers /><span>{courses.length} Courses</span></div>
+                         <Button onClick={handleShare} size="sm" variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                            <Share2 className="mr-2 h-4 w-4" /> Share
+                        </Button>
                     </div>
                 </div>
              </section>
