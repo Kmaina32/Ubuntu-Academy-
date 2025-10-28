@@ -14,6 +14,13 @@ import { SessionInfo } from '@/components/SessionInfo';
 import { NoLiveSession } from '@/components/NoLiveSession';
 import { LiveReactions } from './LiveReactions';
 import { ReactionButton } from './ReactionButton';
+import { LiveChat } from './LiveChat';
+import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 
 
 const ICE_SERVERS = {
@@ -29,6 +36,7 @@ export function MemberViewer({ sessionId }: { sessionId: string }) {
     const { user } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
+    const isMobile = useIsMobile();
     
     const [liveSessionDetails, setLiveSessionDetails] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -156,41 +164,51 @@ export function MemberViewer({ sessionId }: { sessionId: string }) {
     };
     
     return (
-        <>
-            <div ref={videoContainerRef} className="w-full h-full bg-black flex items-center justify-center relative rounded-lg border shadow-lg p-1">
-                <LiveReactions sessionId={sessionId} />
-                {liveSessionDetails ? (
-                    <>
-                        <video ref={videoRef} className="w-full h-full object-contain rounded-md" autoPlay playsInline />
-                        <SessionInfo title={liveSessionDetails?.title || 'Live Session'} description={liveSessionDetails?.description || 'Welcome to the class!'} />
-                        {sessionId && (
-                            <div className="absolute top-4 right-4 z-20">
-                                <ViewerList sessionId={sessionId} />
+       <ResizablePanelGroup direction={isMobile ? "vertical" : "horizontal"} className="h-full max-w-7xl w-full mx-auto">
+            <ResizablePanel defaultSize={isMobile ? 60 : 75}>
+                <div className="flex flex-col h-full gap-4 pr-0 md:pr-4 pb-4 md:pb-0">
+                    <div ref={videoContainerRef} className="w-full h-full bg-black flex items-center justify-center relative rounded-lg border shadow-lg p-1">
+                        <LiveReactions sessionId={sessionId} />
+                        {liveSessionDetails ? (
+                            <>
+                                <video ref={videoRef} className="w-full h-full object-contain rounded-md" autoPlay playsInline />
+                                <SessionInfo title={liveSessionDetails?.title || 'Live Session'} description={liveSessionDetails?.description || 'Welcome to the class!'} />
+                                {sessionId && (
+                                    <div className="absolute top-4 right-4 z-20">
+                                        <ViewerList sessionId={sessionId} />
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="absolute inset-0 flex items-center justify-center p-4">
+                                <NoLiveSession isLoading={isLoading} hasPermission={hasCameraPermission} />
                             </div>
                         )}
-                    </>
-                ) : (
-                    <div className="absolute inset-0 flex items-center justify-center p-4">
-                        <NoLiveSession isLoading={isLoading} hasPermission={hasCameraPermission} />
                     </div>
-                )}
-            </div>
-            
-            {liveSessionDetails && (
-                 <div className="bg-background/80 mt-4 backdrop-blur-sm text-foreground p-3 rounded-lg flex items-center justify-center gap-4 text-sm shadow-md">
-                    <ReactionButton sessionId={sessionId} />
-                    <Button size="icon" variant={handRaised ? 'default' : 'secondary'} onClick={toggleHandRaised} className="rounded-full h-12 w-12 shadow-lg">
-                        <Hand className="h-6 w-6" />
-                    </Button>
-                    <Button size="icon" variant="destructive" onClick={handleLeave} className="rounded-full h-14 w-14 shadow-lg">
-                        <PhoneOff className="h-6 w-6" />
-                    </Button>
-                    <Button size="icon" variant="secondary" onClick={handleFullScreen} className="rounded-full h-12 w-12 shadow-lg">
-                        <Maximize className="h-6 w-6" />
-                    </Button>
-                     <div className="w-12 h-12"></div>
+                    
+                    {liveSessionDetails && (
+                        <div className="bg-background/80 mt-4 backdrop-blur-sm text-foreground p-3 rounded-lg flex items-center justify-center gap-4 text-sm shadow-md">
+                            <ReactionButton sessionId={sessionId} />
+                            <Button size="icon" variant={handRaised ? 'default' : 'secondary'} onClick={toggleHandRaised} className="rounded-full h-12 w-12 shadow-lg">
+                                <Hand className="h-6 w-6" />
+                            </Button>
+                            <Button size="icon" variant="destructive" onClick={handleLeave} className="rounded-full h-14 w-14 shadow-lg">
+                                <PhoneOff className="h-6 w-6" />
+                            </Button>
+                            <Button size="icon" variant="secondary" onClick={handleFullScreen} className="rounded-full h-12 w-12 shadow-lg">
+                                <Maximize className="h-6 w-6" />
+                            </Button>
+                            <div className="w-12 h-12"></div>
+                        </div>
+                    )}
                 </div>
-            )}
-        </>
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={isMobile ? 40 : 25}>
+                <div className="h-full flex flex-col pt-4 pl-0 md:pl-4 md:pt-0">
+                    <LiveChat sessionId={sessionId} />
+                </div>
+            </ResizablePanel>
+        </ResizablePanelGroup>
     );
 }

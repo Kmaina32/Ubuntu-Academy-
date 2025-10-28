@@ -6,16 +6,13 @@ import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 import { onValue, ref } from 'firebase/database';
 import { useRouter } from 'next/navigation';
-import { LiveChat } from '@/components/LiveChat';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { NotebookSheet } from '@/components/NotebookSheet';
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { LoadingAnimation } from '@/components/LoadingAnimation';
 import { AdminHostView } from '@/components/AdminHostView';
 import { MemberViewer } from '@/components/MemberViewer';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { ClientOnly } from '@/components/ClientOnly';
 
 export default function LivePage() {
@@ -50,29 +47,6 @@ export default function LivePage() {
 
     const canHost = isAdmin || isOrganizationAdmin;
 
-    const ResponsiveLiveLayout = () => {
-        const isMobile = useIsMobile();
-        return (
-            <ResizablePanelGroup direction={isMobile ? "vertical" : "horizontal"} className="h-full">
-                <ResizablePanel defaultSize={isMobile ? 60 : 75}>
-                    <div className="flex flex-col h-full gap-4 pr-0 md:pr-4 pb-4 md:pb-0">
-                         {isSessionActive || canHost ? (
-                            canHost ? <AdminHostView sessionId={sessionId} /> : <MemberViewer sessionId={sessionId} />
-                         ) : (
-                            <MemberViewer sessionId={sessionId} />
-                         )}
-                    </div>
-                </ResizablePanel>
-                <ResizableHandle withHandle />
-                <ResizablePanel defaultSize={isMobile ? 40 : 25}>
-                    <div className="h-full flex flex-col pt-4 pl-0 md:pl-4 md:pt-0">
-                        <LiveChat sessionId={sessionId} />
-                    </div>
-                </ResizablePanel>
-            </ResizablePanelGroup>
-        )
-    }
-
     if (loading || checkingSession) {
         return <div className="flex h-screen items-center justify-center"><LoadingAnimation /></div>
     }
@@ -83,11 +57,15 @@ export default function LivePage() {
           <SidebarInset>
             <Header />
             <div className="flex flex-col h-[calc(100vh-4rem)] bg-secondary/50">
-                <div className="max-w-7xl w-full mx-auto p-4 md:p-6 flex-grow">
-                    <ClientOnly>
-                        <ResponsiveLiveLayout />
-                    </ClientOnly>
-                </div>
+                <ClientOnly>
+                    {canHost && !isSessionActive ? (
+                        <div className="flex flex-col h-full items-center justify-center p-4">
+                            <AdminHostView sessionId={sessionId} />
+                        </div>
+                    ) : (
+                        <MemberViewer sessionId={sessionId} />
+                    )}
+                </ClientOnly>
                  {liveSessionDetails && <NotebookSheet courseId={sessionId} courseTitle={liveSessionDetails?.title || 'Live Session Notes'} />}
             </div>
           </SidebarInset>
