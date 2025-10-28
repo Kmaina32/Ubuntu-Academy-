@@ -10,7 +10,7 @@ import { getHackathonById, getHackathonParticipants, registerForHackathon } from
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, Trophy, Users, ExternalLink, GitBranch } from "lucide-react";
+import { Loader2, Trophy, Users, ExternalLink, GitBranch, ArrowLeft, Share2 } from "lucide-react";
 import { useAuth } from '@/hooks/use-auth';
 import { format, isPast } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
@@ -79,6 +79,30 @@ export default function HackathonDetailPage() {
       }
   }
 
+  const handleShare = async () => {
+    if (!hackathon) return;
+
+    const shareData = {
+        title: hackathon.title,
+        text: `Check out this hackathon on Manda Network: ${hackathon.description}`,
+        url: window.location.href
+    };
+
+    if (navigator.share) {
+        try {
+            await navigator.share(shareData);
+        } catch (error) {
+            console.error('Error sharing:', error);
+        }
+    } else {
+        navigator.clipboard.writeText(window.location.href);
+        toast({
+            title: "Link Copied!",
+            description: "The hackathon link has been copied to your clipboard.",
+        });
+    }
+  };
+
 
   if (loading || authLoading) {
     return (
@@ -125,6 +149,18 @@ export default function HackathonDetailPage() {
           </div>
         </section>
         <div className="container mx-auto px-4 md:px-6 py-12 -mt-16 md:-mt-20 relative z-10">
+          <div className="flex justify-between items-center mb-4">
+            <button 
+              onClick={() => router.back()} 
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </button>
+            <Button onClick={handleShare} variant="outline" size="sm">
+                <Share2 className="mr-2 h-4 w-4" /> Share
+            </Button>
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <Card className="shadow-xl">

@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { notFound, useParams, useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from 'next/link';
-import type { Course, UserCourse, Metadata } from "@/lib/types";
+import type { Course, UserCourse } from "@/lib/types";
 import { getCourseBySlug, enrollUserInCourse, getUserCourses, getAllCourses } from '@/lib/firebase-service';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -25,38 +25,6 @@ import Head from 'next/head';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { checkFirstEnrollmentAchievement } from '@/lib/achievements';
-
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const course = await getCourseBySlug(params.id);
-
-  if (!course) {
-    return {
-      title: 'Course Not Found',
-      description: 'The course you are looking for could not be found.',
-    };
-  }
-
-  const priceQualifier = course.price > 0 ? "Affordable Certified Course" : "Free Online Course";
-  const title = `${course.title} | ${priceQualifier}`;
-  const description = `Enroll in our ${priceQualifier.toLowerCase()}, "${course.title}". ${course.description} Start learning with Manda Network today.`;
-
-  return {
-    title,
-    description,
-    openGraph: {
-      title: title,
-      description: description,
-      images: [
-        {
-          url: course.imageUrl,
-          width: 1200,
-          height: 630,
-          alt: course.title,
-        },
-      ],
-    },
-  };
-}
 
 
 function PurchaseCard({ 
