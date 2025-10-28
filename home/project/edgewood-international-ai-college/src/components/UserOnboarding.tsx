@@ -39,8 +39,22 @@ export function UserOnboarding() {
 
     useEffect(() => {
         const fetchSettings = async () => {
-            const settings = await getHeroData();
-            setIsEnabled(settings.onboardingEnabled || false);
+            try {
+                const settings = await getHeroData();
+                const enabled = settings.onboardingEnabled ?? true; // Default to true if not set
+                setIsEnabled(enabled);
+                
+                // Check if onboarding should be shown for the current user
+                if (enabled && user && pathname === '/dashboard') {
+                    const hasCompleted = localStorage.getItem(ONBOARDING_STORAGE_KEY);
+                    if (!hasCompleted) {
+                        // Add a small delay to allow the dashboard to render first
+                        setTimeout(() => setIsOpen(true), 1000);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch onboarding settings:", error);
+            }
         };
         fetchSettings();
         
@@ -51,18 +65,7 @@ export function UserOnboarding() {
         };
         window.addEventListener('storage', handleStorageChange);
         return () => window.removeEventListener('storage', handleStorageChange);
-    }, []);
-
-    useEffect(() => {
-        // Show tutorial only on the dashboard for logged-in users who haven't seen it
-        if (isEnabled && user && pathname === '/dashboard') {
-            const hasCompleted = localStorage.getItem(ONBOARDING_STORAGE_KEY);
-            if (!hasCompleted) {
-                // Add a small delay to allow the dashboard to render first
-                setTimeout(() => setIsOpen(true), 1000);
-            }
-        }
-    }, [isEnabled, user, pathname]);
+    }, [user, pathname]);
 
     const handleNext = () => {
         if (step < onboardingSteps.length - 1) {
