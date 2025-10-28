@@ -9,12 +9,13 @@ import html2canvas from 'html2canvas';
 
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/hooks/use-toast';
-import { Download, FileText, Loader2, Sparkles, View, Pencil } from 'lucide-react';
+import { Download, FileText, Loader2, Sparkles, View, Pencil, GitBranch } from 'lucide-react';
 import { generateFormalDocument } from '@/app/actions';
 import { Textarea } from '@/components/ui/textarea';
 import { getDocument, saveDocument } from '@/lib/firebase-service';
 import { PITCH_DECK, FRAMEWORK, API, B2B_STRATEGY, SEO_STRATEGY, VISUAL_FRAMEWORK, PORTFOLIO_ROADMAP } from '@/lib/document-templates';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { format } from 'date-fns';
 
 const ALL_DOC_TYPES = ['PITCH_DECK', 'FRAMEWORK', 'API', 'B2B_STRATEGY', 'SEO_STRATEGY', 'VISUAL_FRAMEWORK', 'PORTFOLIO_ROADMAP'] as const;
 export type DocType = (typeof ALL_DOC_TYPES)[number];
@@ -142,32 +143,55 @@ export function DocumentEditor({ docType }: { docType: DocType }) {
     setIsDownloading(true);
 
     const pdf = new jsPDF('p', 'pt', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const margin = 40;
+
     const elements = Array.from(pdfRef.current.children) as HTMLElement[];
     
     for (let i = 0; i < elements.length; i++) {
         if (i > 0) pdf.addPage();
         
+        // Add Header
+        pdf.setFontSize(18);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(40, 40, 40);
+        pdf.text("Manda Network", margin, margin);
+
+        // Add Footer
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(150, 150, 150);
+        const footerText = `© ${new Date().getFullYear()} Manda Network | Confidential Document`;
+        const pageNumText = `Page ${i + 1} of ${elements.length}`;
+        pdf.text(footerText, margin, pdfHeight - margin + 20);
+        pdf.text(pageNumText, pdfWidth - margin, pdfHeight - margin + 20, { align: 'right' });
+
+
         const canvas = await html2canvas(elements[i], { scale: 2, backgroundColor: '#ffffff' });
         const imgData = canvas.toDataURL('image/png');
         
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
-        const ratio = canvasHeight / canvasWidth;
+        const ratio = canvasWidth / canvasHeight;
 
-        let finalWidth = pdfWidth - 80; // with margins
-        let finalHeight = finalWidth * ratio;
-
-        if (finalHeight > pdfHeight - 80) {
-            finalHeight = pdfHeight - 80;
-            finalWidth = finalHeight / ratio;
+        let finalWidth = pdfWidth - (margin * 2);
+        let finalHeight = finalWidth / ratio;
+        
+        if (finalHeight > pdfHeight - (margin * 2) - 40) { // -40 for header/footer space
+            finalHeight = pdfHeight - (margin * 2) - 40;
+            finalWidth = finalHeight * ratio;
         }
-
+        
         const x = (pdfWidth - finalWidth) / 2;
-        const y = (pdfHeight - finalHeight) / 2;
-
-        pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
+        const y = margin + 20; // Position below header
+        
+        if (isFinite(x) && isFinite(y) && isFinite(finalWidth) && isFinite(finalHeight)) {
+            pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
+        } else {
+            console.error("Invalid coordinates or dimensions for jsPDF.addImage");
+            toast({ title: 'PDF Generation Error', description: 'Could not generate the PDF due to invalid dimensions.', variant: 'destructive' });
+        }
     }
 
     pdf.save(`${docType}.pdf`);
@@ -198,7 +222,7 @@ export function DocumentEditor({ docType }: { docType: DocType }) {
                />
             ) : (
                 <ScrollArea className="h-[50vh]">
-                    <div className="prose max-w-none p-4">
+                    <div className="prose max-w-none p-4 dark:prose-invert">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
                     </div>
                 </ScrollArea>
