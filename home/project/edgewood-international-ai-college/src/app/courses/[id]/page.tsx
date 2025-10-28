@@ -36,12 +36,16 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     };
   }
 
+  const priceQualifier = course.price > 0 ? "Affordable Certified Course" : "Free Online Course";
+  const title = `${course.title} | ${priceQualifier}`;
+  const description = `Enroll in our ${priceQualifier.toLowerCase()}, "${course.title}". ${course.description} Start learning with Manda Network today.`;
+
   return {
-    title: `Course: ${course.title}`,
-    description: course.description,
+    title,
+    description,
     openGraph: {
-      title: course.title,
-      description: course.description,
+      title: title,
+      description: description,
       images: [
         {
           url: course.imageUrl,

@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { getPublicProfiles, getHeroData } from '@/lib/firebase-service';
-import type { RegisteredUser } from '@/lib/types';
+import type { RegisteredUser, Metadata } from '@/lib/types';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
@@ -18,6 +18,19 @@ import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carouse
 import Autoplay from "embla-carousel-autoplay";
 import Image from 'next/image';
 
+export async function generateMetadata(): Promise<Metadata> {
+  const title = 'Hiring Center | Hire Tech Talent from Manda Network';
+  const description = 'Discover and hire skilled tech talent from Kenya. Browse portfolios of our graduates in web development, AI, data science, and more. Contact candidates directly.';
+  
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+    },
+  };
+}
 
 const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
