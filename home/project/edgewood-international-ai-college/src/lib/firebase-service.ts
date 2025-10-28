@@ -1,9 +1,10 @@
 
 
+
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment, limitToLast } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, PortfolioProject as Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Hackathon, HackathonSubmission, LeaderboardEntry, PricingPlan, Advertisement, UserActivity } from './types';
+import type { Course, UserCourse, CalendarEvent, Submission, TutorMessage, Notification, DiscussionThread, DiscussionReply, LiveSession, Program, Bundle, ApiKey, PortfolioProject as Project, LearningGoal, CourseFeedback, Portfolio, PermissionRequest, Organization, Invitation, RegisteredUser, Hackathon, HackathonSubmission, LeaderboardEntry, PricingPlan, Advertisement, UserActivity, BlogPost } from './types';
 import { getRemoteConfig, fetchAndActivate, getString } from 'firebase/remote-config';
 import { app } from './firebase';
 import { slugify } from './utils';
@@ -1156,4 +1157,68 @@ export async function getActivityLogs(limit: number): Promise<UserActivity[]> {
         return logs.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     }
     return [];
+}
+
+// Blog Post Functions
+export async function createBlogPost(postData: Omit<BlogPost, 'id' | 'createdAt' | 'updatedAt' | 'slug'>): Promise<string> {
+    const postsRef = ref(db, 'blogPosts');
+    const newPostRef = push(postsRef);
+    const now = new Date().toISOString();
+    const dataToSave = {
+        ...postData,
+        slug: slugify(postData.title),
+        createdAt: now,
+        updatedAt: now,
+    };
+    await set(newPostRef, dataToSave);
+    return newPostRef.key!;
+}
+
+export async function updateBlogPost(postId: string, postData: Partial<Omit<BlogPost, 'id' | 'createdAt'>>): Promise<void> {
+    const postRef = ref(db, `blogPosts/${postId}`);
+    const dataToUpdate = {
+        ...postData,
+        ...(postData.title && { slug: slugify(postData.title) }),
+        updatedAt: new Date().toISOString(),
+    };
+    await update(postRef, dataToUpdate);
+}
+
+export async function getAllBlogPosts(): Promise<BlogPost[]> {
+    const postsRef = ref(db, 'blogPosts');
+    const snapshot = await get(postsRef);
+    if (snapshot.exists()) {
+        const postsData = snapshot.val();
+        const posts = Object.keys(postsData).map(key => ({
+            id: key,
+            ...postsData[key]
+        }));
+        return posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+    return [];
+}
+
+export async function getBlogPostById(id: string): Promise<BlogPost | null> {
+    const postRef = ref(db, `blogPosts/${id}`);
+    const snapshot = await get(postRef);
+    if (snapshot.exists()) {
+        return { id, ...snapshot.val() };
+    }
+    return null;
+}
+
+export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+    const postsQuery = query(ref(db, 'blogPosts'), orderByChild('slug'), equalTo(slug));
+    const snapshot = await get(postsQuery);
+    if (snapshot.exists()) {
+        const postsData = snapshot.val();
+        const postId = Object.keys(postsData)[0];
+        return { id: postId, ...postsData[postId] };
+    }
+    return null;
+}
+
+export async function deleteBlogPost(postId: string): Promise<void> {
+    const postRef = ref(db, `blogPosts/${postId}`);
+    await remove(postRef);
 }

@@ -125,6 +125,20 @@ export interface Bootcamp {
   participants?: Record<string, boolean>;
 }
 
+export interface BlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  author: string;
+  category: string;
+  content: string;
+  isPublished: boolean;
+  createdAt: string; // ISO String
+  updatedAt: string; // ISO String
+}
+
 
 export const user = {
     name: 'Jomo Kenyatta',
