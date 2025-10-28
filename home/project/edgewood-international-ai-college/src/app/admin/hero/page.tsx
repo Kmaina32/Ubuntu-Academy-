@@ -649,5 +649,4 @@ export default function AdminHeroPage() {
       <Footer />
     </div>
   );
-
-    
+}
