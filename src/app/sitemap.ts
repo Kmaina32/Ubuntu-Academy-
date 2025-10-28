@@ -1,27 +1,21 @@
-
 import type { MetadataRoute } from 'next';
-import { getAllCourses, getAllPrograms } from '@/lib/firebase-service';
+import { getAllCourses, getAllPrograms, getAllBootcamps, getPublicProfiles } from '@/lib/firebase-service';
 import { slugify } from '@/lib/utils';
 
-const BASE_URL = 'https://mkenya-skilled.vercel.app';
+const BASE_URL = 'https://www.mandanetwork.co.ke';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Fetch dynamic data
   const courses = await getAllCourses();
   const programs = await getAllPrograms();
+  const bootcamps = await getAllBootcamps();
+  const portfolios = await getPublicProfiles();
 
-  const courseEntries: MetadataRoute.Sitemap = courses.map((course) => {
-    // Ensure createdAt is a valid date before using it
-    const lastModified = course.createdAt && !isNaN(new Date(course.createdAt).getTime())
-      ? new Date(course.createdAt)
-      : new Date();
-      
-    return {
-      url: `${BASE_URL}/courses/${slugify(course.title)}`,
-      lastModified,
-      changeFrequency: 'weekly',
-    };
-  });
+  const courseEntries: MetadataRoute.Sitemap = courses.map((course) => ({
+    url: `${BASE_URL}/courses/${slugify(course.title)}`,
+    lastModified: course.createdAt ? new Date(course.createdAt) : new Date(),
+    changeFrequency: 'weekly',
+  }));
   
   const programEntries: MetadataRoute.Sitemap = programs.map((program) => ({
     url: `${BASE_URL}/programs/${program.id}`,
@@ -29,12 +23,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: 'weekly',
   }));
 
+  const bootcampEntries: MetadataRoute.Sitemap = bootcamps.map((bootcamp) => ({
+    url: `${BASE_URL}/bootcamps/${bootcamp.id}`,
+    lastModified: new Date(bootcamp.startDate),
+    changeFrequency: 'weekly',
+  }));
+
+  const portfolioEntries: MetadataRoute.Sitemap = portfolios.map((portfolio) => ({
+    url: `${BASE_URL}/portfolio/${portfolio.uid}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily',
+  }));
+
   // Define static routes
   const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: BASE_URL,
       lastModified: new Date(),
-      changeFrequency: 'yearly',
+      changeFrequency: 'monthly',
       priority: 1,
     },
     {
@@ -47,6 +53,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: `${BASE_URL}/programs`,
         lastModified: new Date(),
         changeFrequency: 'weekly',
+        priority: 0.9,
+    },
+     {
+        url: `${BASE_URL}/bootcamps`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.9,
+    },
+     {
+        url: `${BASE_URL}/portal/hackathons`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.9,
+    },
+     {
+        url: `${BASE_URL}/portfolios`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
         priority: 0.9,
     },
     {
@@ -73,5 +97,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...staticRoutes,
     ...courseEntries,
     ...programEntries,
+    ...bootcampEntries,
+    ...portfolioEntries,
   ];
 }
