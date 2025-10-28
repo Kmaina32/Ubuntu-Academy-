@@ -15,24 +15,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${BASE_URL}/courses/${slugify(course.title)}`,
     lastModified: course.createdAt ? new Date(course.createdAt) : new Date(),
     changeFrequency: 'weekly',
+    priority: 0.8,
   }));
   
   const programEntries: MetadataRoute.Sitemap = programs.map((program) => ({
     url: `${BASE_URL}/programs/${program.id}`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
+    priority: 0.7,
   }));
 
   const bootcampEntries: MetadataRoute.Sitemap = bootcamps.map((bootcamp) => ({
     url: `${BASE_URL}/bootcamps/${bootcamp.id}`,
     lastModified: new Date(bootcamp.startDate),
     changeFrequency: 'weekly',
+    priority: 0.7,
   }));
 
   const portfolioEntries: MetadataRoute.Sitemap = portfolios.map((portfolio) => ({
     url: `${BASE_URL}/portfolio/${portfolio.uid}`,
     lastModified: new Date(),
     changeFrequency: 'daily',
+    priority: 0.6,
   }));
 
   // Define static routes
@@ -47,7 +51,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${BASE_URL}/about`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.8,
+      priority: 0.7,
     },
     {
         url: `${BASE_URL}/programs`,
@@ -65,7 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: `${BASE_URL}/portal/hackathons`,
         lastModified: new Date(),
         changeFrequency: 'weekly',
-        priority: 0.9,
+        priority: 0.8,
     },
      {
         url: `${BASE_URL}/portfolios`,
@@ -83,13 +87,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: `${BASE_URL}/help`,
         lastModified: new Date(),
         changeFrequency: 'monthly',
-        priority: 0.7,
+        priority: 0.6,
     },
     {
         url: `${BASE_URL}/for-business`,
         lastModified: new Date(),
         changeFrequency: 'monthly',
-        priority: 0.7,
+        priority: 0.8,
     }
   ];
 
