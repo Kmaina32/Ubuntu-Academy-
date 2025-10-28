@@ -7,7 +7,6 @@ import { Analytics } from "@vercel/analytics/next"
 import { CookieConsent } from '@/components/shared/CookieConsent';
 import { Providers } from './providers';
 import { AdPopup } from '@/components/AdPopup';
-import { UserOnboarding } from '@/components/UserOnboarding';
 
 const BASE_URL = 'https://www.mandanetwork.co.ke';
 
@@ -40,6 +39,9 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  icons: {
+    icon: null,
+  },
 };
 
 export default async function RootLayout({
@@ -61,7 +63,6 @@ export default async function RootLayout({
       <body className="font-body antialiased">
         <Providers isAiConfigured={isAiConfigured}>
             <ThemeEffects />
-            <UserOnboarding />
             {children}
             <Analytics />
             <AdPopup />
