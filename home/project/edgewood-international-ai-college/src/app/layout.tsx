@@ -9,13 +9,37 @@ import { Providers } from './providers';
 import { AdPopup } from '@/components/AdPopup';
 import { UserOnboarding } from '@/components/UserOnboarding';
 
+const BASE_URL = 'https://www.mandanetwork.co.ke';
+
 export const metadata: Metadata = {
-  title: 'Manda Network',
-  description: 'Online courses for Kenyans, by Kenyans.',
+  metadataBase: new URL(BASE_URL),
+  title: {
+    default: 'Manda Network | Online Courses for In-Demand Skills in Kenya',
+    template: `%s | Manda Network`,
+  },
+  description: 'Affordable, accessible online courses in AI, Data Science, and technology tailored for the Kenyan market. Start your learning journey with Manda Network today.',
   verification: {
     google: 'qNZsueqgogEIZHV-vcsY-Kv7tkLo82P_-w7BQvJG1jY',
   },
-  icons: null,
+  openGraph: {
+    title: 'Manda Network | Online Courses for In-Demand Skills in Kenya',
+    description: 'Affordable, accessible online courses in AI, Data Science, and technology tailored for the Kenyan market.',
+    url: BASE_URL,
+    siteName: 'Manda Network',
+    locale: 'en_KE',
+    type: 'website',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default async function RootLayout({

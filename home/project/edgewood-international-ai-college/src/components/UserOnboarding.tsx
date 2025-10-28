@@ -35,28 +35,32 @@ export function UserOnboarding() {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [step, setStep] = useState(0);
-    const [isEnabled, setIsEnabled] = useState(false);
+    const [isEnabled, setIsEnabled] = useState(true); // Default to true client-side
 
     useEffect(() => {
-        const fetchSettings = async () => {
+        // Fetch settings from DB and check local storage
+        const initializeOnboarding = async () => {
             try {
                 const settings = await getHeroData();
-                const enabled = settings.onboardingEnabled ?? true; // Default to true if not set
-                setIsEnabled(enabled);
+                const enabledFromDb = settings.onboardingEnabled ?? true;
+                setIsEnabled(enabledFromDb);
+
+                const hasCompletedLocally = localStorage.getItem(ONBOARDING_STORAGE_KEY);
                 
-                // Check if onboarding should be shown for the current user
-                if (enabled && user && pathname === '/dashboard') {
-                    const hasCompleted = localStorage.getItem(ONBOARDING_STORAGE_KEY);
-                    if (!hasCompleted) {
-                        // Add a small delay to allow the dashboard to render first
-                        setTimeout(() => setIsOpen(true), 1000);
-                    }
+                if (enabledFromDb && user && pathname === '/dashboard' && !hasCompletedLocally) {
+                    setTimeout(() => setIsOpen(true), 1000);
                 }
             } catch (error) {
                 console.error("Failed to fetch onboarding settings:", error);
+                // Fallback to local storage check if DB fails
+                const hasCompletedLocally = localStorage.getItem(ONBOARDING_STORAGE_KEY);
+                 if (user && pathname === '/dashboard' && !hasCompletedLocally) {
+                    setTimeout(() => setIsOpen(true), 1000);
+                }
             }
         };
-        fetchSettings();
+
+        initializeOnboarding();
         
         const handleStorageChange = (event: StorageEvent) => {
             if (event.key === 'mkenya-skilled-onboarding') {
@@ -65,6 +69,7 @@ export function UserOnboarding() {
         };
         window.addEventListener('storage', handleStorageChange);
         return () => window.removeEventListener('storage', handleStorageChange);
+
     }, [user, pathname]);
 
     const handleNext = () => {
@@ -77,7 +82,7 @@ export function UserOnboarding() {
 
     const handlePrev = () => {
         if (step > 0) {
-            setStep(prev => prev - 1);
+            setStep(prev => prev + 1);
         }
     };
 
@@ -86,7 +91,7 @@ export function UserOnboarding() {
         setIsOpen(false);
     };
     
-    if (!isOpen) {
+    if (!isOpen || !isEnabled) {
         return null;
     }
 
