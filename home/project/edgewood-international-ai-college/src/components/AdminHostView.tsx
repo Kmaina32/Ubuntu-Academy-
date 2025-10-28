@@ -22,7 +22,7 @@ const ICE_SERVERS = {
 };
 
 export function AdminHostView({ sessionId }: { sessionId: string }) {
-    const { organization } = useAuth();
+    const { user, organization } = useAuth();
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -68,7 +68,7 @@ export function AdminHostView({ sessionId }: { sessionId: string }) {
     }, []);
 
      const handleGoLive = async () => {
-        if (!localStreamRef.current) {
+        if (!localStreamRef.current || !user) {
              toast({
                 variant: 'destructive',
                 title: 'Camera Access Denied',
@@ -79,21 +79,26 @@ export function AdminHostView({ sessionId }: { sessionId: string }) {
 
         setIsLoading(true);
 
-        const notificationPayload = {
-            title: `🔴 Live Now: ${organization?.name || 'Manda Network'} Session`,
-            body: `A live session has started. Join now!`,
-            link: '/live',
-            ...(organization && { cohort: organization.id }), // Target org members if applicable
-        };
-        await createNotification(notificationPayload);
-        toast({ title: 'Notifications Sent!', description: 'Your organization members have been notified.'});
+        const sessionTitle = `${user.displayName}'s Live Session`;
+        
+        if (organization) {
+            const notificationPayload = {
+                title: `🔴 Live Now: ${sessionTitle}`,
+                body: `${user.displayName} has started a live session. Join now!`,
+                link: '/live',
+                cohort: organization.id,
+            };
+            await createNotification(notificationPayload);
+            toast({ title: 'Notifications Sent!', description: 'Your organization members have been notified.'});
+        }
+
 
         const singlePc = new RTCPeerConnection(ICE_SERVERS);
         localStreamRef.current.getTracks().forEach(track => singlePc.addTrack(track, localStreamRef.current!));
         const offer = await singlePc.createOffer();
         await singlePc.setLocalDescription(offer);
 
-        await set(offerRef, { sdp: offer.sdp, type: offer.type, title: `${organization?.name || 'Manda Network'} Live Session` });
+        await set(offerRef, { sdp: offer.sdp, type: offer.type, title: sessionTitle });
         singlePc.close();
         
         setIsLive(true);

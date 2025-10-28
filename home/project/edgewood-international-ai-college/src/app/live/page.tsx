@@ -1,58 +1,29 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { LiveChat } from '@/components/LiveChat';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
-import { createNotification, getAllCalendarEvents } from '@/lib/firebase-service';
-import type { CalendarEvent } from '@/lib/types';
-import { Hand, Loader2, PhoneOff, Users, Maximize, Calendar, Smile } from 'lucide-react';
+import { onValue, ref } from 'firebase/database';
 import { useRouter } from 'next/navigation';
-import { onValue, ref, onChildAdded, set, remove, query } from 'firebase/database';
+import { LiveChat } from '@/components/LiveChat';
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { NotebookSheet } from '@/components/NotebookSheet';
-import { isPast, format } from 'date-fns';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { useToast } from '@/hooks/use-toast';
-import {
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizableHandle,
-} from "@/components/ui/resizable";
-import { ViewerList } from '@/components/ViewerList';
-import { SessionInfo } from '@/components/SessionInfo';
-import { NoLiveSession } from '@/components/NoLiveSession';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { LoadingAnimation } from '@/components/LoadingAnimation';
 import { AdminHostView } from '@/components/AdminHostView';
 import { MemberViewer } from '@/components/MemberViewer';
-import { LiveReactions } from '@/components/LiveReactions';
-import { ReactionButton } from '@/components/ReactionButton';
 import { useIsMobile } from '@/hooks/use-mobile';
-
-function ClientOnly({ children }: { children: React.ReactNode }) {
-  const [hasMounted, setHasMounted] = useState(false);
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  if (!hasMounted) {
-    return <div className="flex h-full w-full items-center justify-center"><LoadingAnimation /></div>;
-  }
-
-  return <>{children}</>;
-}
-
+import { ClientOnly } from '@/components/ClientOnly';
 
 export default function LivePage() {
     const { user, loading, isAdmin, isOrganizationAdmin, organization } = useAuth();
     const router = useRouter();
     const [liveSessionDetails, setLiveSessionDetails] = useState<any>(null);
+    const [isSessionActive, setIsSessionActive] = useState(false);
+    const [checkingSession, setCheckingSession] = useState(true);
     const isMobile = useIsMobile();
 
     useEffect(() => {
@@ -70,14 +41,19 @@ export default function LivePage() {
     useEffect(() => {
       const offerRef = ref(db, `webrtc-offers/${sessionId}`);
       const unsubscribe = onValue(offerRef, (snapshot) => {
-        setLiveSessionDetails(snapshot.exists() ? snapshot.val() : null);
+        const sessionExists = snapshot.exists();
+        setIsSessionActive(sessionExists);
+        setLiveSessionDetails(sessionExists ? snapshot.val() : null);
+        setCheckingSession(false);
       });
       return () => unsubscribe();
     }, [sessionId]);
 
-    if (loading) {
+    if (loading || checkingSession) {
         return <div className="flex h-screen items-center justify-center"><LoadingAnimation /></div>
     }
+    
+    const canHost = isAdmin || isOrganizationAdmin;
 
     return (
         <SidebarProvider>
@@ -90,10 +66,10 @@ export default function LivePage() {
                         <ResizablePanelGroup direction={isMobile ? "vertical" : "horizontal"} className="h-full">
                             <ResizablePanel defaultSize={isMobile ? 60 : 75}>
                                 <div className="flex flex-col h-full gap-4 pr-4 md:pr-0 md:pb-4">
-                                     {(isAdmin || isOrganizationAdmin) ? (
-                                        <AdminHostView sessionId={sessionId} />
-                                     ) : (
+                                     {isSessionActive ? (
                                         <MemberViewer sessionId={sessionId} />
+                                     ) : (
+                                        <AdminHostView sessionId={sessionId} />
                                      )}
                                 </div>
                             </ResizablePanel>
