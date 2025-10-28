@@ -37,8 +37,20 @@ function PdfRenderer({ content, docType, forwardRef }: { content: string, docTyp
   return (
     <div ref={forwardRef} className="pdf-render-area">
       {slides.map((slideContent, index) => (
-        <div key={index} className={isPitchDeck ? 'pdf-slide' : 'pdf-general'}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{slideContent}</ReactMarkdown>
+        <div key={index} className="pdf-page">
+            <div className="pdf-header">
+                <div className="pdf-logo">
+                    <GitBranch className="h-8 w-8 text-primary" />
+                    <span className="font-bold text-xl font-headline">Manda Network</span>
+                </div>
+            </div>
+            <div className={isPitchDeck ? 'pdf-slide-content' : 'pdf-general-content'}>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{slideContent}</ReactMarkdown>
+            </div>
+            <div className="pdf-footer">
+                <span>&copy; {new Date().getFullYear()} Manda Network | Confidential</span>
+                <span>Page {index + 1}</span>
+            </div>
         </div>
       ))}
        <style jsx global>{`
@@ -51,18 +63,44 @@ function PdfRenderer({ content, docType, forwardRef }: { content: string, docTyp
                 color: black;
                 font-family: 'PT Sans', sans-serif;
             }
-            .pdf-general, .pdf-slide {
+            .pdf-page {
                 width: 595pt;
+                height: 842pt;
                 padding: 40pt;
                 box-sizing: border-box;
-                font-size: 11pt;
-                line-height: 1.5;
-            }
-            .pdf-slide {
-                height: 842pt; /* A4 landscape height */
                 display: flex;
                 flex-direction: column;
                 page-break-after: always;
+            }
+            .pdf-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 2px solid #333;
+                padding-bottom: 16px;
+                margin-bottom: 16px;
+            }
+            .pdf-logo {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .pdf-logo .font-headline {
+                 font-family: 'MuseoModerno', sans-serif;
+            }
+            .pdf-slide-content, .pdf-general-content {
+                flex-grow: 1;
+                font-size: 11pt;
+                line-height: 1.5;
+            }
+            .pdf-footer {
+                border-top: 1px solid #ccc;
+                padding-top: 8px;
+                margin-top: auto;
+                font-size: 8pt;
+                color: #666;
+                display: flex;
+                justify-content: space-between;
             }
             .pdf-render-area h1, .pdf-render-area h2, .pdf-render-area h3, .pdf-render-area h4, .pdf-render-area h5, .pdf-render-area h6 {
                 font-family: 'PT Sans', sans-serif;
@@ -141,61 +179,48 @@ export function DocumentEditor({ docType }: { docType: DocType }) {
   const handleDownload = async () => {
     if (!pdfRef.current) return;
     setIsDownloading(true);
+    toast({ title: 'Generating PDF...', description: 'This may take a moment.' });
 
     const pdf = new jsPDF('p', 'pt', 'a4');
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
-    const margin = 40;
-
     const elements = Array.from(pdfRef.current.children) as HTMLElement[];
     
-    for (let i = 0; i < elements.length; i++) {
-        if (i > 0) pdf.addPage();
-        
-        // Add Header
-        pdf.setFontSize(18);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(40, 40, 40);
-        pdf.text("Manda Network", margin, margin);
+    try {
+        for (let i = 0; i < elements.length; i++) {
+            if (i > 0) pdf.addPage();
+            
+            const canvas = await html2canvas(elements[i], { scale: 2, backgroundColor: '#ffffff' });
+            const imgData = canvas.toDataURL('image/png');
+            
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            const ratio = canvasWidth / canvasHeight;
 
-        // Add Footer
-        pdf.setFontSize(8);
-        pdf.setFont('helvetica', 'normal');
-        pdf.setTextColor(150, 150, 150);
-        const footerText = `© ${new Date().getFullYear()} Manda Network | Confidential Document`;
-        const pageNumText = `Page ${i + 1} of ${elements.length}`;
-        pdf.text(footerText, margin, pdfHeight - margin + 20);
-        pdf.text(pageNumText, pdfWidth - margin, pdfHeight - margin + 20, { align: 'right' });
+            let finalWidth = pdfWidth;
+            let finalHeight = pdfWidth / ratio;
+            
+            if (finalHeight > pdfHeight) {
+                finalHeight = pdfHeight;
+                finalWidth = finalHeight * ratio;
+            }
+            
+            const x = (pdfWidth - finalWidth) / 2;
+            const y = (pdfHeight - finalHeight) / 2;
 
-
-        const canvas = await html2canvas(elements[i], { scale: 2, backgroundColor: '#ffffff' });
-        const imgData = canvas.toDataURL('image/png');
-        
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        const ratio = canvasWidth / canvasHeight;
-
-        let finalWidth = pdfWidth - (margin * 2);
-        let finalHeight = finalWidth / ratio;
-        
-        if (finalHeight > pdfHeight - (margin * 2) - 40) { // -40 for header/footer space
-            finalHeight = pdfHeight - (margin * 2) - 40;
-            finalWidth = finalHeight * ratio;
+            if (isFinite(x) && isFinite(y) && isFinite(finalWidth) && isFinite(finalHeight)) {
+                pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
+            } else {
+                throw new Error("Invalid dimensions for PDF generation.");
+            }
         }
-        
-        const x = (pdfWidth - finalWidth) / 2;
-        const y = margin + 20; // Position below header
-        
-        if (isFinite(x) && isFinite(y) && isFinite(finalWidth) && isFinite(finalHeight)) {
-            pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
-        } else {
-            console.error("Invalid coordinates or dimensions for jsPDF.addImage");
-            toast({ title: 'PDF Generation Error', description: 'Could not generate the PDF due to invalid dimensions.', variant: 'destructive' });
-        }
+        pdf.save(`${docType}.pdf`);
+    } catch (error) {
+        console.error("PDF generation failed:", error);
+        toast({ title: 'PDF Generation Error', description: 'Could not generate the PDF.', variant: 'destructive' });
+    } finally {
+        setIsDownloading(false);
     }
-
-    pdf.save(`${docType}.pdf`);
-    setIsDownloading(false);
   };
   
   return (
