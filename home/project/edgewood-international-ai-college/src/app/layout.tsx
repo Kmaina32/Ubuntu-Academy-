@@ -14,16 +14,16 @@ const BASE_URL = 'https://www.mandanetwork.co.ke';
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: 'Manda Network | The Official Site for Online Courses in Kenya',
+    default: 'Manda Network | High-Quality Online Courses for Kenya',
     template: `%s | Manda Network`,
   },
-  description: 'The official Manda Network. We provide affordable, accessible online courses in AI, Data Science, and technology tailored for the Kenyan market. Start your learning journey today.',
+  description: 'Join Manda Network for affordable, accessible online courses in AI, Data Science, and technology, tailored for the Kenyan market. Start your learning journey today.',
   verification: {
     google: 'qNZsueqgogEIZHV-vcsY-Kv7tkLo82P_-w7BQvJG1jY',
   },
   openGraph: {
-    title: 'Manda Network | The Official Site for Online Courses in Kenya',
-    description: 'The official Manda Network. We provide affordable, accessible online courses in AI, Data Science, and technology tailored for the Kenyan market.',
+    title: 'Manda Network | High-Quality Online Courses for Kenya',
+    description: 'Join Manda Network for affordable, accessible online courses in AI, Data Science, and technology, tailored for the Kenyan market.',
     url: BASE_URL,
     siteName: 'Manda Network',
     locale: 'en_KE',
@@ -94,6 +94,7 @@ export default async function RootLayout({
             {children}
             <Analytics />
             <AdPopup />
+            <UserOnboarding />
         </Providers>
         <Toaster />
         <CookieConsent />
