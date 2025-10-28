@@ -39,9 +39,6 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  icons: {
-    icon: null,
-  },
 };
 
 export default async function RootLayout({
