@@ -1,5 +1,8 @@
 
 import { z } from 'zod';
+import type { Metadata as NextMetadata } from 'next';
+
+export type Metadata = NextMetadata;
 
 export interface YoutubeLink {
   title: string;
