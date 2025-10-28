@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BookOpen, FileSignature, FileText, Loader2, Presentation } from 'lucide-react';
+import { ArrowLeft, BookOpen, FileSignature, FileText, Loader2, Presentation, Milestone } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { DocumentEditor, DocType } from '@/components/shared/DocumentEditor';
 
@@ -19,7 +19,7 @@ const TABS_CONFIG = [
     { value: "B2B_STRATEGY", label: "B2B Strategy", icon: FileSignature },
     { value: "SEO_STRATEGY", label: "SEO Strategy", icon: FileSignature },
     { value: "VISUAL_FRAMEWORK", label: "Visual Framework", icon: FileSignature },
-    { value: "PORTFOLIO_ROADMAP", label: "Portfolio Roadmap", icon: FileText },
+    { value: "PORTFOLIO_ROADMAP", label: "Portfolio Roadmap", icon: Milestone },
 ];
 
 export default function AdminDocumentsPage() {
@@ -54,9 +54,12 @@ export default function AdminDocumentsPage() {
                 </CardTitle>
                 <CardDescription>View, edit, and generate formal documentation for your application.</CardDescription>
                  <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 mt-4">
-                    {TABS_CONFIG.map(tab => (
-                        <TabsTrigger key={tab.value} value={tab.value}><tab.icon className="mr-2 h-4 w-4"/>{tab.label}</TabsTrigger>
-                    ))}
+                    {TABS_CONFIG.map(tab => {
+                        const Icon = tab.icon;
+                        return (
+                            <TabsTrigger key={tab.value} value={tab.value}><Icon className="mr-2 h-4 w-4"/>{tab.label}</TabsTrigger>
+                        )
+                    })}
                  </TabsList>
               </CardHeader>
               <CardContent className="flex-grow flex flex-col">
