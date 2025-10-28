@@ -82,7 +82,7 @@ export function UserOnboarding() {
 
     const handlePrev = () => {
         if (step > 0) {
-            setStep(prev => prev + 1);
+            setStep(prev => prev - 1);
         }
     };
 
