@@ -11,7 +11,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, ArrowRight, BookOpen, Layers, CheckCircle, Award, Calendar, Clock, Star, Share2 } from "lucide-react";
+import { Loader2, ArrowRight, BookOpen, Layers, CheckCircle, Award, Calendar, Clock, Star, Share2, ArrowLeft } from "lucide-react";
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -165,13 +165,22 @@ export default function BootcampDetailPage() {
                         <div className="flex items-center gap-2"><Clock /><span>{bootcamp.duration}</span></div>
                         <div className="flex items-center gap-2"><Calendar /><span>Starts: {format(new Date(bootcamp.startDate), 'PPP')}</span></div>
                         <div className="flex items-center gap-2"><Layers /><span>{courses.length} Courses</span></div>
-                         <Button onClick={handleShare} size="sm" variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
-                            <Share2 className="mr-2 h-4 w-4" /> Share
-                        </Button>
                     </div>
                 </div>
              </section>
              <div className="container mx-auto px-4 md:px-6 py-12 -mt-16 md:-mt-20 relative z-10">
+                <div className="flex justify-between items-center mb-4">
+                    <button 
+                    onClick={() => router.back()} 
+                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                    >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back
+                    </button>
+                    <Button onClick={handleShare} variant="outline" size="sm">
+                        <Share2 className="mr-2 h-4 w-4" /> Share
+                    </Button>
+                </div>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2">
                         <Card className="shadow-xl">

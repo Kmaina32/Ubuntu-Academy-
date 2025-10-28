@@ -11,7 +11,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, ArrowRight, BookOpen, Layers, CheckCircle, Award, Share2 } from "lucide-react";
+import { Loader2, ArrowRight, BookOpen, Layers, CheckCircle, Award, Share2, ArrowLeft } from "lucide-react";
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function ProgramDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
 
@@ -129,12 +130,21 @@ export default function ProgramDetailPage() {
                     <p className="text-lg md:text-xl max-w-3xl mx-auto">
                         {program.description}
                     </p>
-                     <Button onClick={handleShare} size="sm" variant="outline" className="mt-6 bg-white/10 text-white border-white/20 hover:bg-white/20">
-                        <Share2 className="mr-2 h-4 w-4" /> Share Program
-                    </Button>
                 </div>
              </section>
              <div className="container mx-auto px-4 md:px-6 py-12 -mt-16 md:-mt-20 relative z-10">
+                <div className="flex justify-between items-center mb-4">
+                    <button 
+                    onClick={() => router.back()} 
+                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                    >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back
+                    </button>
+                    <Button onClick={handleShare} variant="outline" size="sm">
+                        <Share2 className="mr-2 h-4 w-4" /> Share Program
+                    </Button>
+                </div>
                 <Card className="max-w-4xl mx-auto shadow-xl">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
