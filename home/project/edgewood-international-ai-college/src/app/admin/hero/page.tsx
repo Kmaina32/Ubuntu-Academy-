@@ -30,10 +30,10 @@ const heroFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
   subtitle: z.string().min(20, 'Subtitle must be at least 20 characters.'),
   imageUrl: z.string().url('Please enter a valid URL.'),
-  programsImageUrl: z.string().url('Please enter a valid URL.').optional(),
-  bootcampsImageUrl: z.string().url('Please enter a valid URL.').optional(),
-  hackathonsImageUrl: z.string().url('Please enter a valid URL.').optional(),
-  portfoliosImageUrl: z.string().url('Please enter a valid URL.').optional(),
+  programsImageUrl: z.string().url('Please enter a valid URL.').optional().default(''),
+  bootcampsImageUrl: z.string().url('Please enter a valid URL.').optional().default(''),
+  hackathonsImageUrl: z.string().url('Please enter a valid URL.').optional().default(''),
+  portfoliosImageUrl: z.string().url('Please enter a valid URL.').optional().default(''),
   loginImageUrl: z.string().url('Please enter a valid URL for the login page image.'),
   signupImageUrl: z.string().url('Please enter a valid URL for the signup page image.'),
   slideshowSpeed: z.coerce.number().min(1, 'Speed must be at least 1 second.'),
@@ -650,3 +650,5 @@ export default function AdminHeroPage() {
     </div>
   );
 }
+
+    
