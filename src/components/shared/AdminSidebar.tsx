@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Link from 'next/link';
@@ -14,12 +13,12 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { GitBranch, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library, Layers, BarChart3, Tag, ShieldCheck, Building, FileText, Rocket, ChevronRight, BookCopy, Contact, Users2, Speaker, LineChart, Book, Trophy, Briefcase, Award } from 'lucide-react';
-import pkg from '../../../package.json';
+import { GitBranch, Home, LayoutDashboard, ListTodo, Calendar, Users, ImageIcon, CreditCard, Cog, HelpCircle, ExternalLink, Bot, Bell, Clapperboard, Library, Layers, BarChart3, Tag, ShieldCheck, Building, FileText, Rocket, ChevronRight, BookCopy, Contact, Users2, Speaker, LineChart, Book, Trophy, Briefcase, Award, Megaphone, Rss } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
+import pkg from '../../../package.json';
 
 export function AdminSidebar() {
     const pathname = usePathname();
@@ -58,6 +57,11 @@ export function AdminSidebar() {
                  <SidebarMenuItem>
                      <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/courses')} tooltip="Courses">
                         <Link href="/admin/courses"><BookCopy className="h-4 w-4 mr-2"/>Courses</Link>
+                    </SidebarMenuButton>
+                 </SidebarMenuItem>
+                 <SidebarMenuItem>
+                     <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/blog')} tooltip="Blog">
+                        <Link href="/admin/blog"><Rss className="h-4 w-4 mr-2"/>Blog</Link>
                     </SidebarMenuButton>
                  </SidebarMenuItem>
                  <SidebarMenuItem>
@@ -139,6 +143,11 @@ export function AdminSidebar() {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
+                    <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/advertisements')} tooltip="Advertisements">
+                        <Link href="/admin/advertisements"><Megaphone className="h-4 w-4 mr-2"/>Advertisements</Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
                     <SidebarMenuButton asChild size="sm" isActive={isActive('/admin/payments')} tooltip="Payments">
                         <Link href="/admin/payments"><CreditCard className="h-4 w-4 mr-2"/>Payments</Link>
                     </SidebarMenuButton>
@@ -180,9 +189,11 @@ export function AdminSidebar() {
         <SidebarFooter>
             <div className="flex items-center gap-2 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
                 <Tag className="h-3 w-3" />
-                <span>v{pkg.version}</span>
+                <span>v1.0.2</span>
             </div>
         </SidebarFooter>
     </Sidebar>
   );
 }
+
+    
