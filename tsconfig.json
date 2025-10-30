@@ -1,3 +1,4 @@
+
 {
   "compilerOptions": {
     "target": "ES2017",
@@ -33,6 +34,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
+    "electron/**/*.ts",
     "jest.config.ts",
     ".next/dev/types/**/*.ts"
   ],
