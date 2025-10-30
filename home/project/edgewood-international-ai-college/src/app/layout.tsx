@@ -7,7 +7,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { CookieConsent } from '@/components/shared/CookieConsent';
 import { Providers } from './providers';
 import { AdPopup } from '@/components/AdPopup';
-import { UserOnboarding } from '@/components/UserOnboarding';
+import { UserOnboarding } from '@/components/shared/UserOnboarding';
 
 const BASE_URL = 'https://www.mandanetwork.co.ke';
 
@@ -68,6 +68,21 @@ const organizationSchema = {
   "description": "The official Manda Network, an online learning platform providing high-quality, affordable, and accessible education tailored for the Kenyan market in AI, Data Science, and technology."
 };
 
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "url": BASE_URL,
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${BASE_URL}/?q={search_term_string}`
+    },
+    "query-input": "required name=search_term_string"
+  }
+};
+
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -86,6 +101,10 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
       <body className="font-body antialiased">

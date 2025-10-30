@@ -14,16 +14,16 @@ const BASE_URL = 'https://www.mandanetwork.co.ke';
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: 'Manda Network | The Official Site for Online Courses in Kenya',
+    default: 'Manda Network | High-Quality Online Courses for Kenya',
     template: `%s | Manda Network`,
   },
-  description: 'The official Manda Network. We provide affordable, accessible online courses in AI, Data Science, and technology tailored for the Kenyan market. Start your learning journey today.',
+  description: 'Join Manda Network for affordable, accessible online courses in AI, Data Science, and technology, tailored for the Kenyan market. Start your learning journey today.',
   verification: {
     google: 'qNZsueqgogEIZHV-vcsY-Kv7tkLo82P_-w7BQvJG1jY',
   },
   openGraph: {
-    title: 'Manda Network | The Official Site for Online Courses in Kenya',
-    description: 'The official Manda Network. We provide affordable, accessible online courses in AI, Data Science, and technology tailored for the Kenyan market.',
+    title: 'Manda Network | High-Quality Online Courses for Kenya',
+    description: 'Join Manda Network for affordable, accessible online courses in AI, Data Science, and technology, tailored for the Kenyan market.',
     url: BASE_URL,
     siteName: 'Manda Network',
     locale: 'en_KE',
@@ -68,6 +68,21 @@ const organizationSchema = {
   "description": "The official Manda Network, an online learning platform providing high-quality, affordable, and accessible education tailored for the Kenyan market in AI, Data Science, and technology."
 };
 
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "url": BASE_URL,
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${BASE_URL}/?q={search_term_string}`
+    },
+    "query-input": "required name=search_term_string"
+  }
+};
+
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -87,6 +102,10 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
       </head>
       <body className="font-body antialiased">
         <Providers isAiConfigured={isAiConfigured}>
@@ -94,6 +113,7 @@ export default async function RootLayout({
             {children}
             <Analytics />
             <AdPopup />
+            <UserOnboarding />
         </Providers>
         <Toaster />
         <CookieConsent />
