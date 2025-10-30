@@ -1232,3 +1232,4 @@ export async function deleteBlogPost(postId: string): Promise<void> {
     const postRef = ref(db, `blogPosts/${postId}`);
     await remove(postRef);
 }
+
