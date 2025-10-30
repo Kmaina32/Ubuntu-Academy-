@@ -91,7 +91,7 @@ export default function BlogPage() {
             </div>
           ) : latestPost ? (
             <>
-              <section className="relative w-full py-20 px-4 md:px-6 lg:px-8 bg-secondary/30">
+              <section className="relative w-full py-12 px-4 md:px-6 lg:px-8 bg-secondary/30">
                 <div className="relative container mx-auto rounded-xl overflow-hidden p-8 md:p-16 flex items-center min-h-[400px]">
                    <Image
                       src={latestPost.imageUrl}
