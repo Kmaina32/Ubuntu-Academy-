@@ -25,8 +25,6 @@ export function AdminSidebar() {
     const { isSuperAdmin } = useAuth();
 
     const isActive = (path: string) => {
-        if (path === '/admin' && pathname === '/admin') return true;
-        // Don't mark /admin as active if we are on a sub-page like /admin/courses
         if (path === '/admin' && pathname !== '/admin') return false;
         return pathname.startsWith(path);
     }
@@ -45,7 +43,7 @@ export function AdminSidebar() {
             </div>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/admin')} tooltip="Dashboard">
+                    <SidebarMenuButton asChild isActive={pathname === '/admin'} tooltip="Dashboard">
                         <Link href="/admin">
                             <LayoutDashboard />
                             <span>Dashboard</span>
@@ -189,9 +187,11 @@ export function AdminSidebar() {
         <SidebarFooter>
             <div className="flex items-center gap-2 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
                 <Tag className="h-3 w-3" />
-                <span>v{pkg.version}</span>
+                <span>v1.0.2</span>
             </div>
         </SidebarFooter>
     </Sidebar>
   );
 }
+
+    
