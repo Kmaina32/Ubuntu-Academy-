@@ -271,7 +271,7 @@ export default function CourseDetailPage() {
 
     const shareData = {
         title: course.title,
-        text: `Check out this course on Manda Network: ${course.description}`,
+        text: course.description,
         url: window.location.href
     };
 

@@ -67,7 +67,7 @@ export default function ProgramDetailPage() {
 
     const shareData = {
         title: program.title,
-        text: `Check out this program on Manda Network: ${program.description}`,
+        text: program.description,
         url: window.location.href
     };
 
