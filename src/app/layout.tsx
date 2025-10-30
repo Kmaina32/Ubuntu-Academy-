@@ -7,7 +7,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { CookieConsent } from '@/components/shared/CookieConsent';
 import { Providers } from './providers';
 import { AdPopup } from '@/components/AdPopup';
-import { UserOnboarding } from '@/components/UserOnboarding';
+import { UserOnboarding } from '@/components/shared/UserOnboarding';
 
 const BASE_URL = 'https://www.mandanetwork.co.ke';
 
