@@ -1,6 +1,5 @@
 
 
-
 import { db, storage } from './firebase';
 import { ref, get, set, push, update, remove, query, orderByChild, equalTo, increment, limitToLast } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -1164,9 +1163,11 @@ export async function createBlogPost(postData: Omit<BlogPost, 'id' | 'createdAt'
     const postsRef = ref(db, 'blogPosts');
     const newPostRef = push(postsRef);
     const now = new Date().toISOString();
+    const uniqueId = newPostRef.key!.slice(-6); // Get last 6 chars for a short unique ID
+
     const dataToSave = {
         ...postData,
-        slug: slugify(postData.title),
+        slug: `${slugify(postData.title)}-${uniqueId}`,
         createdAt: now,
         updatedAt: now,
     };
@@ -1176,9 +1177,18 @@ export async function createBlogPost(postData: Omit<BlogPost, 'id' | 'createdAt'
 
 export async function updateBlogPost(postId: string, postData: Partial<Omit<BlogPost, 'id' | 'createdAt'>>): Promise<void> {
     const postRef = ref(db, `blogPosts/${postId}`);
+    const existingPostSnap = await get(postRef);
+    const existingPost = existingPostSnap.val();
+
+    let newSlug = existingPost.slug;
+    if (postData.title && slugify(postData.title) !== slugify(existingPost.title)) {
+        const uniqueId = existingPost.slug.split('-').pop();
+        newSlug = `${slugify(postData.title)}-${uniqueId}`;
+    }
+
     const dataToUpdate = {
         ...postData,
-        ...(postData.title && { slug: slugify(postData.title) }),
+        slug: newSlug,
         updatedAt: new Date().toISOString(),
     };
     await update(postRef, dataToUpdate);
