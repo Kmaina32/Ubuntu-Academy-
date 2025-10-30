@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, Rss } from 'lucide-react';
-import { getBlogPostById, updateBlogPost, BlogPost } from '@/lib/firebase-service';
+import { getBlogPostById, updateBlogPost } from '@/lib/firebase-service';
 import { Switch } from '@/components/ui/switch';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
 
