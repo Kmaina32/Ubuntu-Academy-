@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -206,7 +207,7 @@ export function AppSidebar() {
                 ) : (
                     <>
                          <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/')} tooltip="Courses" onClick={onLinkClick}>
+                            <SidebarMenuButton asChild isActive={isActive('/')} tooltip="Courses" onClick={() => onLinkClick('/')}>
                                 <Link href="/">
                                     <Home />
                                     <span>Courses</span>
@@ -214,7 +215,7 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                          <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/programs')} tooltip="Certificate Programs" onClick={onLinkClick}>
+                            <SidebarMenuButton asChild isActive={isActive('/programs')} tooltip="Certificate Programs" onClick={() => onLinkClick('/programs')}>
                                 <Link href="/programs">
                                     <Library />
                                     <span>Programs</span>
@@ -222,7 +223,7 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/bootcamps')} tooltip="Bootcamps" onClick={onLinkClick}>
+                            <SidebarMenuButton asChild isActive={isActive('/bootcamps')} tooltip="Bootcamps" onClick={() => onLinkClick('/bootcamps')}>
                                 <Link href="/bootcamps">
                                     <Rocket />
                                     <span>Bootcamps</span>
@@ -230,7 +231,7 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/portal/hackathons')} tooltip="Hackathons" onClick={onLinkClick}>
+                            <SidebarMenuButton asChild isActive={isActive('/portal/hackathons')} tooltip="Hackathons" onClick={() => onLinkClick('/portal/hackathons')}>
                                 <Link href="/portal/hackathons">
                                     <Trophy />
                                     <span>Hackathons</span>
@@ -238,7 +239,7 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/portfolios')} tooltip="Hiring Center" onClick={onLinkClick}>
+                            <SidebarMenuButton asChild isActive={isActive('/portfolios')} tooltip="Hiring Center" onClick={() => onLinkClick('/portfolios')}>
                                 <Link href="/portfolios">
                                     <PortfoliosIcon />
                                     <span>Hiring Center</span>
@@ -246,7 +247,7 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/for-business')} tooltip="For Organizations" onClick={onLinkClick}>
+                            <SidebarMenuButton asChild isActive={isActive('/for-business')} tooltip="For Organizations" onClick={() => onLinkClick('/for-business')}>
                                 <Link href="/for-business">
                                     <Building />
                                     <span>Organization</span>
@@ -254,7 +255,12 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/about')} tooltip="About Us" onClick={onLinkClick}>
+                           <SidebarMenuButton asChild size="sm" isActive={isActive('/blog')} tooltip="Blog" onClick={() => onLinkClick('/blog')}>
+                                <Link href="/blog"><Rss className="mr-2"/>Blog</Link>
+                           </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild isActive={isActive('/about')} tooltip="About Us" onClick={() => onLinkClick('/about')}>
                                 <Link href="/about">
                                     <Info />
                                     <span>About Us</span>
@@ -262,7 +268,7 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/help')} tooltip="Help" onClick={onLinkClick}>
+                            <SidebarMenuButton asChild isActive={isActive('/help')} tooltip="Help" onClick={() => onLinkClick('/help')}>
                                 <Link href="/help">
                                     <HelpCircle />
                                     <span>Help</span>
@@ -270,7 +276,7 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton asChild isActive={isActive('/contact')} tooltip="Contact Us" onClick={onLinkClick}>
+                            <SidebarMenuButton asChild isActive={isActive('/contact')} tooltip="Contact Us" onClick={() => onLinkClick('/contact')}>
                                 <Link href="/contact">
                                     <Mail />
                                     <span>Contact</span>
@@ -290,4 +296,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
