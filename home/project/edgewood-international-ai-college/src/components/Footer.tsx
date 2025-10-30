@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { GitBranch, Twitter, Facebook, Linkedin, Instagram } from 'lucide-react';
+import { GitBranch, Twitter, Facebook, Linkedin, Rss } from 'lucide-react';
 import { Button } from './ui/button';
 
 export function Footer() {
@@ -34,7 +34,7 @@ export function Footer() {
              </Button>
              <Button asChild variant="ghost" size="icon">
                 <Link href="https://www.instagram.com/manda.networkhub/" target="_blank" rel="noopener noreferrer">
-                    <Instagram className="h-4 w-4" />
+                    <Rss className="h-4 w-4" />
                      <span className="sr-only">Instagram</span>
                 </Link>
              </Button>
