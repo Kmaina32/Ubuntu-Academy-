@@ -7,7 +7,7 @@ import { Footer } from "@/components/Footer";
 import { AppSidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { Loader2, ArrowLeft, Calendar, User, Share2 } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Share2 } from 'lucide-react';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -111,7 +111,7 @@ export default function BlogPostPage() {
                          <div className="flex items-center gap-4 mt-6">
                             <div className="flex items-center gap-2">
                                 <Avatar className="h-10 w-10 border-2 border-primary">
-                                    <AvatarImage src={''} alt={post.author} />
+                                    {/* Assuming author doesn't have a specific avatar. Using initials. */}
                                     <AvatarFallback>{getInitials(post.author)}</AvatarFallback>
                                 </Avatar>
                                 <span className="font-semibold">{post.author}</span>

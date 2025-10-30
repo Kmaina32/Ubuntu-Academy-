@@ -6,8 +6,8 @@ import { Footer } from "@/components/Footer";
 import { AppSidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { Loader2, Rss, ArrowRight } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Rss, ArrowRight } from 'lucide-react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { LoadingAnimation } from '@/components/LoadingAnimation';
 import { getAllBlogPosts } from '@/lib/firebase-service';
 import type { BlogPost } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { slugify } from '@/lib/utils';
 
 function BlogPostCard({ post }: { post: BlogPost }) {
   return (
