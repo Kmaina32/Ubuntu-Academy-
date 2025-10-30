@@ -14,16 +14,16 @@ const BASE_URL = 'https://www.mandanetwork.co.ke';
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: 'Manda Network | High-Quality Online Courses for Kenya',
+    default: 'Manda Network: Online Courses for the Kenyan Market',
     template: `%s | Manda Network`,
   },
-  description: 'Join Manda Network for affordable, accessible online courses in AI, Data Science, and technology, tailored for the Kenyan market. Start your learning journey today.',
+  description: 'Find your next course at Manda Network. We offer quality, affordable online courses in AI, Data Science, and more, designed specifically for Kenya.',
   verification: {
     google: 'qNZsueqgogEIZHV-vcsY-Kv7tkLo82P_-w7BQvJG1jY',
   },
   openGraph: {
-    title: 'Manda Network | High-Quality Online Courses for Kenya',
-    description: 'Join Manda Network for affordable, accessible online courses in AI, Data Science, and technology, tailored for the Kenyan market.',
+    title: 'Manda Network: Online Courses for the Kenyan Market',
+    description: 'Find your next course at Manda Network. We offer quality, affordable online courses in AI, Data Science, and more, designed specifically for Kenya.',
     url: BASE_URL,
     siteName: 'Manda Network',
     locale: 'en_KE',
@@ -71,6 +71,7 @@ const organizationSchema = {
 const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
+  "name": "Manda Network",
   "url": BASE_URL,
   "potentialAction": {
     "@type": "SearchAction",
@@ -81,6 +82,19 @@ const websiteSchema = {
     "query-input": "required name=search_term_string"
   }
 };
+
+const navigationSchema = {
+    "@context": "https://schema.org",
+    "@type": "SiteNavigationElement",
+    "name": [ "Courses", "Login", "Sign Up", "About Us", "Contact" ],
+    "url": [
+        `${BASE_URL}/`,
+        `${BASE_URL}/login`,
+        `${BASE_URL}/signup`,
+        `${BASE_URL}/about`,
+        `${BASE_URL}/contact`
+    ]
+}
 
 
 export default async function RootLayout({
@@ -105,6 +119,10 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(navigationSchema) }}
         />
       </head>
       <body className="font-body antialiased">
