@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -14,15 +13,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription, AlertTitle, AlertTriangle } from '@/components/ui/alert';
-import { Loader2, GitBranch, ArrowLeft, Shield } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Loader2, GitBranch, ArrowLeft, Shield, AlertTriangle } from 'lucide-react';
 import { getHeroData, getInvitation, deleteInvitation } from '@/lib/firebase-service';
 import type { HeroData } from '@/lib/firebase-service';
 import { Separator } from '@/components/ui/separator';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { auth } from '@/lib/firebase';
 import { RecaptchaVerifier } from 'firebase/auth';
-import { Invitation } from '@/lib/mock-data';
+import type { Invitation } from '@/lib/types';
 
 const formSchema = z.object({
   firstName: z.string().min(1, { message: 'First name is required.' }),
@@ -49,7 +48,7 @@ const GoogleIcon = () => (
 export default function SignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signup, signInWithGoogle, user, loading, isBypassEnabled } = useAuth();
+  const { signup, signInWithGoogle, user, loading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -69,7 +68,7 @@ export default function SignupPage() {
         const inviteId = searchParams.get('invite');
         if (inviteId) {
             const inviteData = await getInvitation(inviteId);
-            if (inviteData) {
+            if (inviteData && inviteData.status === 'pending') {
                 setInvitation(inviteData);
                 form.setValue('email', inviteData.email);
             } else {
@@ -78,7 +77,7 @@ export default function SignupPage() {
         }
     }
     fetchInviteData();
-  }, [searchParams]);
+  }, [searchParams, toast]);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -89,7 +88,7 @@ export default function SignupPage() {
   }, []);
 
   useEffect(() => {
-    if (recaptchaRef.current) {
+    if (recaptchaRef.current && siteSettings?.recaptchaEnabled) {
         // @ts-ignore
         auth.recaptchaVerifier = new RecaptchaVerifier(auth, recaptchaRef.current, {
             'size': 'invisible'
@@ -112,8 +111,6 @@ export default function SignupPage() {
       const orgId = invitation ? invitation.organizationId : undefined;
       
       await signup(values.email, values.password, displayName, undefined, orgId);
-      
-      // The cloud function will handle deleting the invitation now
       
       toast({
         title: 'Account Created!',
@@ -154,7 +151,7 @@ export default function SignupPage() {
             </Button>
            <div className="grid gap-2 text-center">
               <Link href="/" className="flex items-center justify-center gap-2 font-bold text-2xl font-headline">
-                  <GitBranch className="h-7 w-7 text-yellow-500" />
+                  <GitBranch className="h-7 w-7 text-primary" />
                   <span>Manda Network</span>
               </Link>
           </div>
@@ -254,7 +251,7 @@ export default function SignupPage() {
                        {siteSettings?.recaptchaEnabled && (
                             <ReCAPTCHA
                                 ref={recaptchaRef}
-                                sitekey='6LfuW60rAAAAAOcEjJnu9RjystAt0-9V_enKNkhw'
+                                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
                                 size="invisible"
                             />
                        )}

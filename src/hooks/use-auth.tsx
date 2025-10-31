@@ -24,11 +24,12 @@ import {
   sendEmailVerification,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { RegisteredUser, saveUser, getUserById, createOrganization, getOrganizationByOwnerId, Organization, getOrganizationMembers } from '@/lib/firebase-service';
+import { RegisteredUser, saveUser, getUserById, createOrganization, getOrganizationByOwnerId, Organization, getOrganizationMembers, logActivity } from '@/lib/firebase-service';
 import { ref, onValue, onDisconnect, set, serverTimestamp, update, get } from 'firebase/database';
 import { useToast } from './use-toast';
 import { add } from 'date-fns';
 import { useRouter } from 'next/navigation';
+import { slugify } from '@/lib/utils';
 
 const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
 const SUPER_ADMIN_ORG_NAME = "Manda Network";
@@ -67,17 +68,17 @@ const createBypassUser = (): { user: User, dbUser: RegisteredUser, organization:
         metadata: { creationTime: new Date().toISOString(), lastSignInTime: new Date().toISOString() },
     } as User;
 
-    const bypassDbUser = {
+    const bypassDbUser: RegisteredUser = {
         uid: bypassUID,
         email: 'gmaina424@gmail.com',
         displayName: 'Dev Super Admin',
+        slug: 'dev-super-admin',
         isAdmin: true,
-        isSuperAdmin: true,
         isOrganizationAdmin: true,
         organizationId: 'super-admin-org',
     };
 
-    const bypassOrg = {
+    const bypassOrg: Organization = {
         id: 'super-admin-org',
         name: SUPER_ADMIN_ORG_NAME,
         ownerId: bypassUID,
@@ -203,8 +204,10 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
       displayName: displayName,
     });
     
-    // This is the single source of truth for org/invite logic on signup.
-    // The onUserCreate function is now only for basic record creation.
+    const userSlug = slugify(displayName);
+    await saveUser(userCredential.user.uid, { slug: userSlug });
+    await logActivity(userCredential.user.uid, { type: 'signup', details: {} });
+    
     if (organizationName && !inviteOrgId) {
         const trialExpiry = add(new Date(), { days: 30 }).toISOString();
         const newOrgId = await createOrganization({
@@ -216,7 +219,6 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
             memberLimit: 5,
         });
 
-        // Set the creating user as the organization admin in their user record.
         await saveUser(userCredential.user.uid, { 
             isOrganizationAdmin: true,
             organizationId: newOrgId,
@@ -225,7 +227,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
     } else if (inviteOrgId) {
         await saveUser(userCredential.user.uid, {
             organizationId: inviteOrgId,
-            isOrganizationAdmin: false, // Invited members are not admins by default
+            isOrganizationAdmin: false,
         });
     }
 
