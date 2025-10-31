@@ -390,26 +390,26 @@ export default function ProfilePage() {
                                             <Input id='email' value={user.email || ''} readOnly disabled />
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                                            <FormField control={form.control} name="firstName" render={({ field }) => ( <FormItem> <FormLabel>First Name</FormLabel> <FormControl><div><Input placeholder="Jomo" {...field} /></div> </FormControl> <FormMessage /> </FormItem> )}/>
-                                            <FormField control={form.control} name="lastName" render={({ field }) => ( <FormItem> <FormLabel>Last Name</FormLabel> <FormControl><div><Input placeholder="Kenyatta" {...field} /></div> </FormControl> <FormMessage /> </FormItem> )}/>
+                                            <FormField control={form.control} name="firstName" render={({ field }) => ( <FormItem> <FormLabel>First Name</FormLabel> <FormControl><div><Input placeholder="Jomo" {...field} /></div></FormControl> <FormMessage /> </FormItem> )}/>
+                                            <FormField control={form.control} name="lastName" render={({ field }) => ( <FormItem> <FormLabel>Last Name</FormLabel> <FormControl><div><Input placeholder="Kenyatta" {...field} /></div></FormControl> <FormMessage /> </FormItem> )}/>
                                         </div>
                                         <div>
-                                            <FormField control={form.control} name="middleName" render={({ field }) => ( <FormItem> <FormLabel>Middle Name (Optional)</FormLabel> <FormControl><div><Input {...field} /></div> </FormControl> <FormMessage /> </FormItem> )}/>
+                                            <FormField control={form.control} name="middleName" render={({ field }) => ( <FormItem> <FormLabel>Middle Name (Optional)</FormLabel> <FormControl><div><Input {...field} /></div></FormControl> <FormMessage /> </FormItem> )}/>
                                         </div>
                                         <p className="text-xs text-muted-foreground pt-2">Please ensure this is your full, correct name as it will be used on your certificates.</p>
                                         
                                         <Separator />
                                          <h3 className="text-lg font-semibold pt-4">Contact Information</h3>
-                                        <FormField control={form.control} name="phone" render={({ field }) => ( <FormItem> <FormLabel>Phone Number</FormLabel> <FormControl><div><Input placeholder="e.g., +254 712 345678" {...field} /></div> </FormControl> <FormMessage /> </FormItem> )}/>
+                                        <FormField control={form.control} name="phone" render={({ field }) => ( <FormItem> <FormLabel>Phone Number</FormLabel> <FormControl><div><Input placeholder="e.g., +254 712 345678" {...field} /></div></FormControl> <FormMessage /> </FormItem> )}/>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <FormField control={form.control} name="poBox" render={({ field }) => ( <FormItem> <FormLabel>P.O. Box</FormLabel> <FormControl><div><Input placeholder="e.g., 12345-00100" {...field} /></div> </FormControl> <FormMessage /> </FormItem> )}/>
-                                            <FormField control={form.control} name="country" render={({ field }) => ( <FormItem> <FormLabel>Country</FormLabel> <FormControl><div><Input placeholder="e.g., Kenya" {...field} /></div> </FormControl> <FormMessage /> </FormItem> )}/>
+                                            <FormField control={form.control} name="poBox" render={({ field }) => ( <FormItem> <FormLabel>P.O. Box</FormLabel> <FormControl><div><Input placeholder="e.g., 12345-00100" {...field} /></div></FormControl> <FormMessage /> </FormItem> )}/>
+                                            <FormField control={form.control} name="country" render={({ field }) => ( <FormItem> <FormLabel>Country</FormLabel> <FormControl><div><Input placeholder="e.g., Kenya" {...field} /></div></FormControl> <FormMessage /> </FormItem> )}/>
                                         </div>
 
                                      </div>
                                 </TabsContent>
                                 <TabsContent value="portfolio" className="pt-6 space-y-6">
-                                    <FormField control={form.control} name="aboutMe" render={({ field }) => ( <FormItem> <FormLabel>About Me / Professional Summary</FormLabel> <FormControl><div><Textarea placeholder="A brief summary about your skills and career goals." {...field} /></div> </FormControl> <FormMessage /> </FormItem> )}/>
+                                    <FormField control={form.control} name="aboutMe" render={({ field }) => ( <FormItem> <FormLabel>About Me / Professional Summary</FormLabel> <FormControl><div><Textarea placeholder="A brief summary about your skills and career goals." {...field} /></div></FormControl> <FormMessage /> </FormItem> )}/>
                                      {/* Work Experience Section */}
                                     <div>
                                         <h4 className="font-semibold mb-2">Work Experience</h4>
@@ -452,9 +452,9 @@ export default function ProfilePage() {
                                     <Separator/>
 
                                     <div className="grid grid-cols-1 gap-4">
-                                    <FormField control={form.control} name="github" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:github" className="h-5 w-5" /> GitHub URL</div></FormLabel> <FormControl><div><Input placeholder="https://github.com/username" {...field} /></div> </FormControl> <FormMessage /> </FormItem> )} />
-                                    <FormField control={form.control} name="gitlab" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:gitlab" className="h-5 w-5" /> GitLab URL</div></FormLabel> <FormControl><div><Input placeholder="https://gitlab.com/username" {...field} /></div> </FormControl> <FormMessage /> </FormItem> )} />
-                                    <FormField control={form.control} name="bitbucket" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:bitbucket" className="h-5 w-5" /> Bitbucket URL</div></FormLabel> <FormControl><div><Input placeholder="https://bitbucket.org/username" {...field} /></div> </FormControl> <FormMessage /> </FormItem> )} />
+                                    <FormField control={form.control} name="github" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:github" className="h-5 w-5" /> GitHub URL</div></FormLabel> <FormControl><div><Input placeholder="https://github.com/username" {...field} /></div></FormControl> <FormMessage /> </FormItem> )} />
+                                    <FormField control={form.control} name="gitlab" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:gitlab" className="h-5 w-5" /> GitLab URL</div></FormLabel> <FormControl><div><Input placeholder="https://gitlab.com/username" {...field} /></div></FormControl> <FormMessage /> </FormItem> )} />
+                                    <FormField control={form.control} name="bitbucket" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:bitbucket" className="h-5 w-5" /> Bitbucket URL</div></FormLabel> <FormControl><div><Input placeholder="https://bitbucket.org/username" {...field} /></div></FormControl> <FormMessage /> </FormItem> )} />
                                     </div>
                                     
                                      <div>
@@ -493,7 +493,7 @@ export default function ProfilePage() {
                                     </div>
 
                                     <Separator />
-                                    <FormField control={form.control} name="public" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"> <div className="space-y-0.5"> <FormLabel className="text-base">Make Portfolio Public</FormLabel> <FormDescription> Allow employers and peers to view your completed courses and profile. </FormDescription> </div> <FormControl><div><Switch checked={field.value} onCheckedChange={field.onChange} /></div> </FormControl> </FormItem> )}/>
+                                    <FormField control={form.control} name="public" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"> <div className="space-y-0.5"> <FormLabel className="text-base">Make Portfolio Public</FormLabel> <FormDescription> Allow employers and peers to view your completed courses and profile. </FormDescription> </div> <FormControl><div><Switch checked={field.value} onCheckedChange={field.onChange} /></div></FormControl> </FormItem> )}/>
 
                                 </TabsContent>
                             </Tabs>
