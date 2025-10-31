@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -469,7 +470,22 @@ export default function ProfilePage() {
                                                         <FormField control={form.control} name={`projects.${index}.imageUrl`} render={({ field }) => (<FormItem><FormLabel>Image URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name={`projects.${index}.liveUrl`} render={({ field }) => (<FormItem><FormLabel>Live URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name={`projects.${index}.sourceUrl`} render={({ field }) => (<FormItem><FormLabel>Source URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                                        <FormField control={form.control} name={`projects.${index}.technologies`} render={({ field }) => (<FormItem><FormLabel>Technologies (comma-separated)</FormLabel><FormControl><Input {...field} onChange={(e) => field.onChange(e.target.value.split(',').map(s => s.trim()))} value={Array.isArray(field.value) ? field.value.join(', ') : ''} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField
+                                                            control={form.control}
+                                                            name={`projects.${index}.technologies`}
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel>Technologies</FormLabel>
+                                                                    <FormControl>
+                                                                        <Input {...field} onChange={(e) => field.onChange(e.target.value.split(',').map(s => s.trim()))} value={Array.isArray(field.value) ? field.value.join(', ') : ''} />
+                                                                    </FormControl>
+                                                                    <FormDescription>
+                                                                        Enter technologies separated by a comma (e.g., React, Next.js, Firebase).
+                                                                    </FormDescription>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
                                                     </div>
                                                 </Card>
                                             ))}
@@ -509,3 +525,5 @@ export default function ProfilePage() {
     </SidebarProvider>
   );
 }
+
+    
