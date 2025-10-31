@@ -409,7 +409,7 @@ export default function ProfilePage() {
                                      </div>
                                 </TabsContent>
                                 <TabsContent value="portfolio" className="pt-6 space-y-6">
-                                    <FormField control={form.control} name="aboutMe" render={({ field }) => ( <FormItem> <FormLabel>About Me / Professional Summary</FormLabel> <FormControl> <Textarea placeholder="A brief summary about your skills and career goals." {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                    <FormField control={form.control} name="aboutMe" render={({ field }) => ( <FormItem> <FormLabel>About Me / Professional Summary</FormLabel> <FormControl><Textarea placeholder="A brief summary about your skills and career goals." {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                                      {/* Work Experience Section */}
                                     <div>
                                         <h4 className="font-semibold mb-2">Work Experience</h4>
@@ -524,5 +524,3 @@ export default function ProfilePage() {
     </SidebarProvider>
   );
 }
-
-    
