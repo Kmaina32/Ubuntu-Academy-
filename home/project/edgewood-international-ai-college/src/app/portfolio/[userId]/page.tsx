@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { notFound, useParams, usePathname, useRouter } from 'next/navigation';
-import { getUserById, getUserCourses, getAllCourses } from '@/lib/firebase-service';
+import { getUserBySlug, getUserCourses, getAllCourses } from '@/lib/firebase-service';
 import type { RegisteredUser, Course, UserCourse, PortfolioProject } from '@/lib/types';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -23,36 +23,37 @@ import { ContactStudentDialog } from '@/components/ContactStudentDialog';
 import { Separator } from '@/components/ui/separator';
 import * as LucideIcons from 'lucide-react';
 import { achievementList } from '@/lib/achievements';
+import { OrganizationSidebar } from '@/components/OrganizationSidebar';
 
 const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
 
 type CourseWithDetails = UserCourse & Partial<Course>;
 
 export default function PortfolioPage() {
-    const params = useParams<{ userId: string }>();
+    const params = useParams<{ slug: string }>();
     const router = useRouter();
     const pathname = usePathname();
     const [user, setUser] = useState<RegisteredUser | null>(null);
     const [completedCourses, setCompletedCourses] = useState<CourseWithDetails[]>([]);
     const [loading, setLoading] = useState(true);
-    const { user: authUser, loading: authLoading } = useAuth();
+    const { user: authUser, loading: authLoading, isAdmin, isOrganizationAdmin } = useAuth();
     const [selectedStudent, setSelectedStudent] = useState<RegisteredUser | null>(null);
+
+    const isEmployer = isOrganizationAdmin || isAdmin;
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const userData = await getUserById(params.userId as string);
+                const userSlug = params.slug as string;
+                const userData = await getUserBySlug(userSlug);
                 
                 if (!userData || (!userData.portfolio?.public && authUser?.uid !== userData.uid)) {
-                    // If the portfolio isn't public and the viewer is not the owner,
-                    // redirect to login, as they might be an employer who needs to log in.
                     if (!authUser && !authLoading) {
                         router.push(`/login?redirect=${pathname}`);
                         return;
                     }
-                    // If they are logged in but still not authorized, show not found.
-                    if (authUser && authUser.uid !== userData.uid) {
+                    if (authUser && authUser.uid !== userData?.uid) {
                        notFound();
                        return;
                     }
@@ -60,30 +61,31 @@ export default function PortfolioPage() {
                 
                 setUser(userData);
 
-                const allCourses = await getAllCourses();
-                let coursesToDisplay: CourseWithDetails[];
+                if (userData) {
+                  const allCourses = await getAllCourses();
+                  let coursesToDisplay: CourseWithDetails[];
 
-                if (userData.uid === ADMIN_UID) {
-                    coursesToDisplay = allCourses.map(course => ({
-                        ...course,
-                        courseId: course.id,
-                        progress: 100,
-                        completed: true,
-                        certificateAvailable: true,
-                        certificateId: `admin-cert-${course.id}`,
-                        enrollmentDate: course.createdAt,
-                    }));
-                } else {
-                    const userCourses = await getUserCourses(params.userId as string);
-                    const courseMap = new Map(allCourses.map(c => [c.id, c]));
-                    
-                    coursesToDisplay = userCourses
-                        .filter(c => c.certificateAvailable)
-                        .map(uc => ({ ...uc, ...courseMap.get(uc.courseId) }))
-                        .filter(c => c.title);
+                  if (userData.uid === ADMIN_UID) {
+                      coursesToDisplay = allCourses.map(course => ({
+                          ...course,
+                          courseId: course.id,
+                          progress: 100,
+                          completed: true,
+                          certificateAvailable: true,
+                          certificateId: `admin-cert-${course.id}`,
+                          enrollmentDate: course.createdAt,
+                      }));
+                  } else {
+                      const userCourses = await getUserCourses(userData.uid);
+                      const courseMap = new Map(allCourses.map(c => [c.id, c]));
+                      
+                      coursesToDisplay = userCourses
+                          .filter(c => c.certificateAvailable)
+                          .map(uc => ({ ...uc, ...courseMap.get(uc.courseId) }))
+                          .filter(c => c.title);
+                  }
+                   setCompletedCourses(coursesToDisplay);
                 }
-
-                setCompletedCourses(coursesToDisplay);
 
             } catch (error) {
                 console.error("Failed to load portfolio data", error);
@@ -94,7 +96,7 @@ export default function PortfolioPage() {
         if (!authLoading) {
             fetchData();
         }
-    }, [params.userId, authUser, authLoading, router, pathname]);
+    }, [params.slug, authUser, authLoading, isEmployer, router, pathname]);
 
     const getInitials = (name: string | null | undefined) => {
         if (!name) return 'U';
@@ -127,7 +129,7 @@ export default function PortfolioPage() {
     return (
         <>
         <SidebarProvider>
-            <AppSidebar />
+            {isEmployer ? <OrganizationSidebar /> : <AppSidebar />}
             <SidebarInset>
                 <Header />
                 <div className="flex flex-col min-h-screen bg-secondary">

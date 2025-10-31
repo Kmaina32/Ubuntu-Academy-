@@ -20,8 +20,7 @@ import {
   updateProfile,
   sendPasswordResetEmail,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   sendEmailVerification,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
@@ -30,6 +29,7 @@ import { ref, onValue, onDisconnect, set, serverTimestamp, update, get } from 'f
 import { useToast } from './use-toast';
 import { add } from 'date-fns';
 import { useRouter } from 'next/navigation';
+import { slugify } from '@/lib/utils';
 
 const ADMIN_UID = 'YlyqSWedlPfEqI9LlGzjN7zlRtC2';
 const SUPER_ADMIN_ORG_NAME = "Manda Network";
@@ -72,6 +72,7 @@ const createBypassUser = (): { user: User, dbUser: RegisteredUser, organization:
         uid: bypassUID,
         email: 'gmaina424@gmail.com',
         displayName: 'Dev Super Admin',
+        slug: 'dev-super-admin',
         isAdmin: true,
         isSuperAdmin: true,
         isOrganizationAdmin: true,
@@ -120,30 +121,8 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      if (!user) {
-        setLoading(false);
-      }
+      setLoading(false);
     });
-
-     getRedirectResult(auth)
-      .then(async (result) => {
-        if (result) {
-          // This is the signed-in user
-          const user = result.user;
-          setUser(user);
-          await logActivity(user.uid, { type: 'signup', details: { provider: 'google' } });
-        }
-      }).catch((error) => {
-        console.error("Google Redirect Sign-In Error", error);
-        toast({
-            title: "Google Sign-In Error",
-            description: "Could not sign in with Google. Please try again.",
-            variant: "destructive",
-        });
-      }).finally(() => {
-        setLoading(false);
-      });
-
     return () => unsubscribe();
   }, []);
 
@@ -226,11 +205,10 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
       displayName: displayName,
     });
     
-    // Log the signup event
+    const userSlug = slugify(displayName);
+    await saveUser(userCredential.user.uid, { slug: userSlug });
     await logActivity(userCredential.user.uid, { type: 'signup', details: {} });
     
-    // This is the single source of truth for org/invite logic on signup.
-    // The onUserCreate function is now only for basic record creation.
     if (organizationName && !inviteOrgId) {
         const trialExpiry = add(new Date(), { days: 30 }).toISOString();
         const newOrgId = await createOrganization({
@@ -242,7 +220,6 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
             memberLimit: 5,
         });
 
-        // Set the creating user as the organization admin in their user record.
         await saveUser(userCredential.user.uid, { 
             isOrganizationAdmin: true,
             organizationId: newOrgId,
@@ -251,7 +228,7 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
     } else if (inviteOrgId) {
         await saveUser(userCredential.user.uid, {
             organizationId: inviteOrgId,
-            isOrganizationAdmin: false, // Invited members are not admins by default
+            isOrganizationAdmin: false,
         });
     }
 
@@ -266,14 +243,27 @@ export const AuthProvider = ({ children, isAiConfigured }: { children: ReactNode
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithRedirect(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      setUser(result.user);
     } catch (error: any) {
       console.error("Google Sign-In Error", error);
+      let title = "Google Sign-In Error";
+      let description = "Could not sign in with Google. Please try again.";
+
+      if (error.code === 'auth/operation-not-allowed' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-action') {
+        title = "Action Invalid";
+        description = "Google Sign-In may not be enabled correctly in your Firebase project. Please ensure the Google provider is enabled and a project support email is set in your Firebase console.";
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        return;
+      }
+
       toast({
-          title: "Google Sign-In Error",
-          description: "Could not sign in with Google. Please try again.",
+          title: title,
+          description: description,
           variant: "destructive",
+          duration: 10000,
       });
+      throw error;
     }
   };
   

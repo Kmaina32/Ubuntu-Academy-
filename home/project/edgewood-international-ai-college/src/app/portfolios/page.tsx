@@ -171,7 +171,7 @@ export default function PortfoliosPage() {
                                                 </CardContent>
                                                 <CardFooter className="flex flex-col gap-2">
                                                     <Button asChild className="w-full">
-                                                        <Link href={`/portfolio/${profile.uid}`}>
+                                                        <Link href={`/portfolio/${profile.slug}`}>
                                                             <Eye className="mr-2 h-4 w-4"/>
                                                             View Portfolio
                                                         </Link>
