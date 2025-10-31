@@ -390,26 +390,26 @@ export default function ProfilePage() {
                                             <Input id='email' value={user.email || ''} readOnly disabled />
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                                            <FormField control={form.control} name="firstName" render={({ field }) => ( <FormItem> <FormLabel>First Name</FormLabel> <FormControl>&lt;div&gt;<Input placeholder="Jomo" {...field} />&lt;/div&gt;</FormControl> <FormMessage /> </FormItem> )}/>
-                                            <FormField control={form.control} name="lastName" render={({ field }) => ( <FormItem> <FormLabel>Last Name</FormLabel> <FormControl>&lt;div&gt;<Input placeholder="Kenyatta" {...field} />&lt;/div&gt;</FormControl> <FormMessage /> </FormItem> )}/>
+                                            <FormField control={form.control} name="firstName" render={({ field }) => ( <FormItem> <FormLabel>First Name</FormLabel> <FormControl><div><Input placeholder="Jomo" {...field} /></div></FormControl> <FormMessage /> </FormItem> )}/>
+                                            <FormField control={form.control} name="lastName" render={({ field }) => ( <FormItem> <FormLabel>Last Name</FormLabel> <FormControl><div><Input placeholder="Kenyatta" {...field} /></div></FormControl> <FormMessage /> </FormItem> )}/>
                                         </div>
                                         <div>
-                                            <FormField control={form.control} name="middleName" render={({ field }) => ( <FormItem> <FormLabel>Middle Name (Optional)</FormLabel> <FormControl>&lt;div&gt;<Input {...field} />&lt;/div&gt;</FormControl> <FormMessage /> </FormItem> )}/>
+                                            <FormField control={form.control} name="middleName" render={({ field }) => ( <FormItem> <FormLabel>Middle Name (Optional)</FormLabel> <FormControl><div><Input {...field} /></div></FormControl> <FormMessage /> </FormItem> )}/>
                                         </div>
                                         <p className="text-xs text-muted-foreground pt-2">Please ensure this is your full, correct name as it will be used on your certificates.</p>
                                         
                                         <Separator />
                                          <h3 className="text-lg font-semibold pt-4">Contact Information</h3>
-                                        <FormField control={form.control} name="phone" render={({ field }) => ( <FormItem> <FormLabel>Phone Number</FormLabel> <FormControl>&lt;div&gt;<Input placeholder="e.g., +254 712 345678" {...field} />&lt;/div&gt;</FormControl> <FormMessage /> </FormItem> )}/>
+                                        <FormField control={form.control} name="phone" render={({ field }) => ( <FormItem> <FormLabel>Phone Number</FormLabel> <FormControl><div><Input placeholder="e.g., +254 712 345678" {...field} /></div></FormControl> <FormMessage /> </FormItem> )}/>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <FormField control={form.control} name="poBox" render={({ field }) => ( <FormItem> <FormLabel>P.O. Box</FormLabel> <FormControl>&lt;div&gt;<Input placeholder="e.g., 12345-00100" {...field} />&lt;/div&gt;</FormControl> <FormMessage /> </FormItem> )}/>
-                                            <FormField control={form.control} name="country" render={({ field }) => ( <FormItem> <FormLabel>Country</FormLabel> <FormControl>&lt;div&gt;<Input placeholder="e.g., Kenya" {...field} />&lt;/div&gt;</FormControl> <FormMessage /> </FormItem> )}/>
+                                            <FormField control={form.control} name="poBox" render={({ field }) => ( <FormItem> <FormLabel>P.O. Box</FormLabel> <FormControl><div><Input placeholder="e.g., 12345-00100" {...field} /></div></FormControl> <FormMessage /> </FormItem> )}/>
+                                            <FormField control={form.control} name="country" render={({ field }) => ( <FormItem> <FormLabel>Country</FormLabel> <FormControl><div><Input placeholder="e.g., Kenya" {...field} /></div></FormControl> <FormMessage /> </FormItem> )}/>
                                         </div>
 
                                      </div>
                                 </TabsContent>
                                 <TabsContent value="portfolio" className="pt-6 space-y-6">
-                                    <FormField control={form.control} name="aboutMe" render={({ field }) => ( <FormItem> <FormLabel>About Me / Professional Summary</FormLabel> <FormControl>&lt;div&gt;<Textarea placeholder="A brief summary about your skills and career goals." {...field} />&lt;/div&gt;</FormControl> <FormMessage /> </FormItem> )}/>
+                                    <FormField control={form.control} name="aboutMe" render={({ field }) => ( <FormItem> <FormLabel>About Me / Professional Summary</FormLabel> <FormControl> <Textarea placeholder="A brief summary about your skills and career goals." {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
                                      {/* Work Experience Section */}
                                     <div>
                                         <h4 className="font-semibold mb-2">Work Experience</h4>
@@ -418,12 +418,12 @@ export default function ProfilePage() {
                                                 <Card key={field.id} className="p-4 bg-secondary/50">
                                                     <div className="flex justify-end mb-2"> <Button type="button" variant="ghost" size="icon" className="text-destructive h-7 w-7" onClick={() => removeWork(index)}><Trash2 className="h-4 w-4"/></Button> </div>
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                        <FormField control={form.control} name={`workExperience.${index}.jobTitle`} render={({field}) => (&lt;FormItem&gt;&lt;FormLabel&gt;Job Title&lt;/FormLabel&gt;&lt;FormControl&gt;&lt;div&gt;&lt;Input {...field}/&gt;&lt;/div&gt;&lt;/FormControl&gt;&lt;FormMessage/&gt;&lt;/FormItem&gt;)} />
-                                                        <FormField control={form.control} name={`workExperience.${index}.companyName`} render={({field}) => (&lt;FormItem&gt;&lt;FormLabel&gt;Company&lt;/FormLabel&gt;&lt;FormControl&gt;&lt;div&gt;&lt;Input {...field}/&gt;&lt;/div&gt;&lt;/FormControl&gt;&lt;FormMessage/&gt;&lt;/FormItem&gt;)} />
-                                                        <FormField control={form.control} name={`workExperience.${index}.startDate`} render={({field}) => (&lt;FormItem&gt;&lt;FormLabel&gt;Start Date&lt;/FormLabel&gt;&lt;FormControl&gt;&lt;div&gt;&lt;Input placeholder="e.g., Jan 2022" {...field}/&gt;&lt;/div&gt;&lt;/FormControl&gt;&lt;FormMessage/&gt;&lt;/FormItem&gt;)} />
-                                                        <FormField control={form.control} name={`workExperience.${index}.endDate`} render={({field}) => (&lt;FormItem&gt;&lt;FormLabel&gt;End Date&lt;/FormLabel&gt;&lt;FormControl&gt;&lt;div&gt;&lt;Input placeholder="Present" {...field}/&gt;&lt;/div&gt;&lt;/FormControl&gt;&lt;FormMessage/&gt;&lt;/FormItem&gt;)} />
+                                                        <FormField control={form.control} name={`workExperience.${index}.jobTitle`} render={({field}) => (<FormItem><FormLabel>Job Title</FormLabel><FormControl><div><Input {...field}/></div></FormControl><FormMessage/></FormItem>)} />
+                                                        <FormField control={form.control} name={`workExperience.${index}.companyName`} render={({field}) => (<FormItem><FormLabel>Company</FormLabel><FormControl><div><Input {...field}/></div></FormControl><FormMessage/></FormItem>)} />
+                                                        <FormField control={form.control} name={`workExperience.${index}.startDate`} render={({field}) => (<FormItem><FormLabel>Start Date</FormLabel><FormControl><div><Input placeholder="e.g., Jan 2022" {...field}/></div></FormControl><FormMessage/></FormItem>)} />
+                                                        <FormField control={form.control} name={`workExperience.${index}.endDate`} render={({field}) => (<FormItem><FormLabel>End Date</FormLabel><FormControl><div><Input placeholder="Present" {...field}/></div></FormControl><FormMessage/></FormItem>)} />
                                                     </div>
-                                                    <FormField control={form.control} name={`workExperience.${index}.description`} render={({field}) => (&lt;FormItem className="mt-4"&gt;&lt;FormLabel&gt;Description&lt;/FormLabel&gt;&lt;FormControl&gt;&lt;div&gt;&lt;Textarea {...field}/&gt;&lt;/div&gt;&lt;/FormControl&gt;&lt;FormMessage/&gt;&lt;/FormItem&gt;)} />
+                                                    <FormField control={form.control} name={`workExperience.${index}.description`} render={({field}) => (<FormItem className="mt-4"><FormLabel>Description</FormLabel><FormControl><Textarea {...field}/></FormControl><FormMessage/></FormItem>)} />
                                                 </Card>
                                             ))}
                                         </div>
@@ -438,10 +438,10 @@ export default function ProfilePage() {
                                                 <Card key={field.id} className="p-4 bg-secondary/50">
                                                     <div className="flex justify-end mb-2"> <Button type="button" variant="ghost" size="icon" className="text-destructive h-7 w-7" onClick={() => removeEducation(index)}><Trash2 className="h-4 w-4"/></Button> </div>
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                        <FormField control={form.control} name={`education.${index}.institution`} render={({field}) => (&lt;FormItem&gt;&lt;FormLabel&gt;Institution&lt;/FormLabel&gt;&lt;FormControl&gt;&lt;div&gt;&lt;Input {...field}/&gt;&lt;/div&gt;&lt;/FormControl&gt;&lt;FormMessage/&gt;&lt;/FormItem&gt;)} />
-                                                        <FormField control={form.control} name={`education.${index}.degree`} render={({field}) => (&lt;FormItem&gt;&lt;FormLabel&gt;Degree/Certificate&lt;/FormLabel&gt;&lt;FormControl&gt;&lt;div&gt;&lt;Input {...field}/&gt;&lt;/div&gt;&lt;/FormControl&gt;&lt;FormMessage/&gt;&lt;/FormItem&gt;)} />
-                                                        <FormField control={form.control} name={`education.${index}.fieldOfStudy`} render={({field}) => (&lt;FormItem&gt;&lt;FormLabel&gt;Field of Study&lt;/FormLabel&gt;&lt;FormControl&gt;&lt;div&gt;&lt;Input {...field}/&gt;&lt;/div&gt;&lt;/FormControl&gt;&lt;FormMessage/&gt;&lt;/FormItem&gt;)} />
-                                                        <FormField control={form.control} name={`education.${index}.graduationYear`} render={({field}) => (&lt;FormItem&gt;&lt;FormLabel&gt;Graduation Year&lt;/FormLabel&gt;&lt;FormControl&gt;&lt;div&gt;&lt;Input placeholder="e.g., 2024" {...field}/&gt;&lt;/div&gt;&lt;/FormControl&gt;&lt;FormMessage/&gt;&lt;/FormItem&gt;)} />
+                                                        <FormField control={form.control} name={`education.${index}.institution`} render={({field}) => (<FormItem><FormLabel>Institution</FormLabel><FormControl><div><Input {...field}/></div></FormControl><FormMessage/></FormItem>)} />
+                                                        <FormField control={form.control} name={`education.${index}.degree`} render={({field}) => (<FormItem><FormLabel>Degree/Certificate</FormLabel><FormControl><div><Input {...field}/></div></FormControl><FormMessage/></FormItem>)} />
+                                                        <FormField control={form.control} name={`education.${index}.fieldOfStudy`} render={({field}) => (<FormItem><FormLabel>Field of Study</FormLabel><FormControl><div><Input {...field}/></div></FormControl><FormMessage/></FormItem>)} />
+                                                        <FormField control={form.control} name={`education.${index}.graduationYear`} render={({field}) => (<FormItem><FormLabel>Graduation Year</FormLabel><FormControl><div><Input placeholder="e.g., 2024" {...field}/></div></FormControl><FormMessage/></FormItem>)} />
                                                     </div>
                                                 </Card>
                                             ))}
@@ -452,75 +452,77 @@ export default function ProfilePage() {
                                     <Separator/>
 
                                     <div className="grid grid-cols-1 gap-4">
-                                    <FormField control={form.control} name="github" render={({ field }) => ( &lt;FormItem&gt; &lt;FormLabel&gt;&lt;div className="flex items-center gap-2"&gt;&lt;Icon icon="mdi:github" className="h-5 w-5" /&gt; GitHub URL&lt;/div&gt;&lt;/FormLabel&gt; &lt;FormControl&gt;&lt;div&gt;&lt;Input placeholder="https://github.com/username" {...field} /&gt;&lt;/div&gt;&lt;/FormControl&gt; &lt;FormMessage /&gt; &lt;/FormItem&gt; )} />
-                                    <FormField control={form.control} name="gitlab" render={({ field }) => ( &lt;FormItem&gt; &lt;FormLabel&gt;&lt;div className="flex items-center gap-2"&gt;&lt;Icon icon="mdi:gitlab" className="h-5 w-5" /&gt; GitLab URL&lt;/div&gt;&lt;/FormLabel&gt; &lt;FormControl&gt;&lt;div&gt;&lt;Input placeholder="https://gitlab.com/username" {...field} /&gt;&lt;/div&gt;&lt;/FormControl&gt; &lt;FormMessage /&gt; &lt;/FormItem&gt; )} />
-                                    <FormField control={form.control} name="bitbucket" render={({ field }) => ( &lt;FormItem&gt; &lt;FormLabel&gt;&lt;div className="flex items-center gap-2"&gt;&lt;Icon icon="mdi:bitbucket" className="h-5 w-5" /&gt; Bitbucket URL&lt;/div&gt;&lt;/FormLabel&gt; &lt;FormControl&gt;&lt;div&gt;&lt;Input placeholder="https://bitbucket.org/username" {...field} /&gt;&lt;/div&gt;&lt;/FormControl&gt; &lt;FormMessage /&gt; &lt;/FormItem&gt; )} />
+                                    <FormField control={form.control} name="github" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:github" className="h-5 w-5" /> GitHub URL</div></FormLabel> <FormControl><div><Input placeholder="https://github.com/username" {...field} /></div></FormControl> <FormMessage /> </FormItem> )} />
+                                    <FormField control={form.control} name="gitlab" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:gitlab" className="h-5 w-5" /> GitLab URL</div></FormLabel> <FormControl><div><Input placeholder="https://gitlab.com/username" {...field} /></div></FormControl> <FormMessage /> </FormItem> )} />
+                                    <FormField control={form.control} name="bitbucket" render={({ field }) => ( <FormItem> <FormLabel><div className="flex items-center gap-2"><Icon icon="mdi:bitbucket" className="h-5 w-5" /> Bitbucket URL</div></FormLabel> <FormControl><div><Input placeholder="https://bitbucket.org/username" {...field} /></div></FormControl> <FormMessage /> </FormItem> )} />
                                     </div>
                                     
-                                     &lt;div&gt;
-                                        &lt;h3 className="font-semibold text-lg mb-2"&gt;Featured Projects&lt;/h3&gt;
-                                        &lt;div className="space-y-4"&gt;
+                                     <div>
+                                        <h3 className="font-semibold text-lg mb-2">Featured Projects</h3>
+                                        <div className="space-y-4">
                                             {projectFields.map((field, index) => (
-                                                &lt;Card key={field.id} className="p-4 relative bg-secondary/50"&gt;
-                                                    &lt;Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => removeProject(index)}&gt; &lt;Trash2 className="h-4 w-4 text-destructive" /&gt; &lt;/Button&gt;
-                                                    &lt;div className="grid grid-cols-1 gap-4"&gt;
-                                                        &lt;FormField control={form.control} name={`projects.${index}.title`} render={({ field }) => (&lt;FormItem&gt;&lt;FormLabel&gt;Title&lt;/FormLabel&gt;&lt;FormControl&gt;&lt;div&gt;&lt;Input {...field} /&gt;&lt;/div&gt;&lt;/FormControl&gt;&lt;FormMessage /&gt;&lt;/FormItem&gt;)} /&gt;
-                                                        &lt;FormField control={form.control} name={`projects.${index}.description`} render={({ field }) => (&lt;FormItem&gt;&lt;FormLabel&gt;Description&lt;/FormLabel&gt;&lt;FormControl&gt;&lt;div&gt;&lt;Textarea {...field} /&gt;&lt;/div&gt;&lt;/FormControl&gt;&lt;FormMessage /&gt;&lt;/FormItem&gt;)} /&gt;
-                                                        &lt;FormField control={form.control} name={`projects.${index}.imageUrl`} render={({ field }) => (&lt;FormItem&gt;&lt;FormLabel&gt;Image URL&lt;/FormLabel&gt;&lt;FormControl&gt;&lt;div&gt;&lt;Input {...field} /&gt;&lt;/div&gt;&lt;/FormControl&gt;&lt;FormMessage /&gt;&lt;/FormItem&gt;)} /&gt;
-                                                        &lt;FormField control={form.control} name={`projects.${index}.liveUrl`} render={({ field }) => (&lt;FormItem&gt;&lt;FormLabel&gt;Live URL&lt;/FormLabel&gt;&lt;FormControl&gt;&lt;div&gt;&lt;Input {...field} /&gt;&lt;/div&gt;&lt;/FormControl&gt;&lt;FormMessage /&gt;&lt;/FormItem&gt;)} /&gt;
-                                                        &lt;FormField control={form.control} name={`projects.${index}.sourceUrl`} render={({ field }) => (&lt;FormItem&gt;&lt;FormLabel&gt;Source URL&lt;/FormLabel&gt;&lt;FormControl&gt;&lt;div&gt;&lt;Input {...field} /&gt;&lt;/div&gt;&lt;/FormControl&gt;&lt;FormMessage /&gt;&lt;/FormItem&gt;)} /&gt;
-                                                        &lt;FormField
+                                                <Card key={field.id} className="p-4 relative bg-secondary/50">
+                                                    <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => removeProject(index)}> <Trash2 className="h-4 w-4 text-destructive" /> </Button>
+                                                    <div className="grid grid-cols-1 gap-4">
+                                                        <FormField control={form.control} name={`projects.${index}.title`} render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><div><Input {...field} /></div></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name={`projects.${index}.description`} render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name={`projects.${index}.imageUrl`} render={({ field }) => (<FormItem><FormLabel>Image URL</FormLabel><FormControl><div><Input {...field} /></div></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name={`projects.${index}.liveUrl`} render={({ field }) => (<FormItem><FormLabel>Live URL</FormLabel><FormControl><div><Input {...field} /></div></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name={`projects.${index}.sourceUrl`} render={({ field }) => (<FormItem><FormLabel>Source URL</FormLabel><FormControl><div><Input {...field} /></div></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField
                                                             control={form.control}
                                                             name={`projects.${index}.technologies`}
                                                             render={({ field }) => (
-                                                                &lt;FormItem&gt;
-                                                                    &lt;FormLabel&gt;Technologies&lt;/FormLabel&gt;
-                                                                    &lt;FormControl&gt;&lt;div&gt;
-                                                                        &lt;Input {...field} onChange={(e) => field.onChange(e.target.value.split(',').map(s => s.trim()))} value={Array.isArray(field.value) ? field.value.join(', ') : ''} /&gt;
-                                                                    &lt;/div&gt;&lt;/FormControl&gt;
-                                                                    &lt;FormDescription&gt;
+                                                                <FormItem>
+                                                                    <FormLabel>Technologies</FormLabel>
+                                                                    <FormControl><div>
+                                                                        <Input {...field} onChange={(e) => field.onChange(e.target.value.split(',').map(s => s.trim()))} value={Array.isArray(field.value) ? field.value.join(', ') : ''} />
+                                                                    </div></FormControl>
+                                                                    <FormDescription>
                                                                         Enter technologies separated by a comma (e.g., React, Next.js, Firebase).
-                                                                    &lt;/FormDescription&gt;
-                                                                    &lt;FormMessage /&gt;
-                                                                &lt;/FormItem&gt;
+                                                                    </FormDescription>
+                                                                    <FormMessage />
+                                                                </FormItem>
                                                             )}
-                                                        /&gt;
-                                                    &lt;/div&gt;
-                                                &lt;/Card&gt;
+                                                        />
+                                                    </div>
+                                                </Card>
                                             ))}
-                                        &lt;/div&gt;
-                                        &lt;Button type="button" variant="outline" className="mt-4" onClick={() => appendProject({ id: uuidv4(), title: '', description: '', imageUrl: 'https://picsum.photos/seed/project/400/250', technologies: [] })}&gt; &lt;PlusCircle className="mr-2 h-4 w-4" /&gt; Add Project &lt;/Button&gt;
-                                    &lt;/div&gt;
+                                        </div>
+                                        <Button type="button" variant="outline" className="mt-4" onClick={() => appendProject({ id: uuidv4(), title: '', description: '', imageUrl: 'https://picsum.photos/seed/project/400/250', liveUrl: '', sourceUrl: '', technologies: [] })}> <PlusCircle className="mr-2 h-4 w-4" /> Add Project </Button>
+                                    </div>
 
-                                    &lt;Separator /&gt;
-                                    &lt;FormField control={form.control} name="public" render={({ field }) => ( &lt;FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"&gt; &lt;div className="space-y-0.5"&gt; &lt;FormLabel className="text-base"&gt;Make Portfolio Public&lt;/FormLabel&gt; &lt;FormDescription&gt; Allow employers and peers to view your completed courses and profile. &lt;/FormDescription&gt; &lt;/div&gt; &lt;FormControl&gt; &lt;div&gt;&lt;Switch checked={field.value} onCheckedChange={field.onChange} /&gt;&lt;/div&gt;&lt;/FormControl&gt; &lt;/FormItem&gt; )}/&gt;
+                                    <Separator />
+                                    <FormField control={form.control} name="public" render={({ field }) => ( <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4"> <div className="space-y-0.5"> <FormLabel className="text-base">Make Portfolio Public</FormLabel> <FormDescription> Allow employers and peers to view your completed courses and profile. </FormDescription> </div> <FormControl> <Switch checked={field.value} onCheckedChange={field.onChange} /> </FormControl> </FormItem> )}/>
 
-                                &lt;/TabsContent&gt;
-                            &lt;/Tabs&gt;
-                        &lt;/CardContent&gt;
-                         &lt;CardFooter className="flex flex-col sm:flex-row justify-between px-6 pt-6"&gt;
-                            &lt;Button variant="outline" onClick={handleLogout}&gt;Logout&lt;/Button&gt;
-                            &lt;div className="flex gap-2 mt-4 sm:mt-0"&gt;
-                                &lt;Button asChild variant="secondary"&gt;
-                                    &lt;Link href={`/portfolio/${user.uid}`}&gt;
-                                        &lt;Eye className="mr-2 h-4 w-4" /&gt;
+                                </TabsContent>
+                            </Tabs>
+                        </CardContent>
+                         <CardFooter className="flex flex-col sm:flex-row justify-between px-6 pt-6">
+                            <Button variant="outline" onClick={handleLogout}>Logout</Button>
+                            <div className="flex gap-2 mt-4 sm:mt-0">
+                                <Button asChild variant="secondary">
+                                    <Link href={`/portfolio/${user.uid}`}>
+                                        <Eye className="mr-2 h-4 w-4" />
                                         View My Public Portfolio
-                                    &lt;/Link&gt;
-                                &lt;/Button&gt;
-                                &lt;Button type="submit" disabled={isLoading}&gt;
-                                    {isLoading ? &lt;Loader2 className="mr-2 h-4 w-4 animate-spin" /&gt; : null}
+                                    </Link>
+                                </Button>
+                                <Button type="submit" disabled={isLoading}>
+                                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                                     Save Changes
-                                &lt;/Button&gt;
-                            &lt;/div&gt;
-                        &lt;/CardFooter&gt;
-                    &lt;/Card&gt;
-                &lt;/form&gt;
-              &lt;/Form&gt;
-            &lt;/div&gt;
-          &lt;/main&gt;
-          &lt;Footer /&gt;
-        &lt;/div&gt;
-      &lt;/SidebarInset&gt;
-    &lt;/SidebarProvider&gt;
+                                </Button>
+                            </div>
+                        </CardFooter>
+                    </Card>
+                </form>
+              </Form>
+            </div>
+          </main>
+          <Footer />
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
+
+    
