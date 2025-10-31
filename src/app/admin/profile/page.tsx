@@ -288,7 +288,7 @@ export default function ProfilePage() {
                             />
                             <FormField
                             control={form.control}
-                            name="Mzalendo"
+                            name="lastName"
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>Last Name</FormLabel>

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -476,9 +475,9 @@ export default function ProfilePage() {
                                                             render={({ field }) => (
                                                                 <FormItem>
                                                                     <FormLabel>Technologies</FormLabel>
-                                                                    <FormControl>
-                                                                        <div><Input {...field} onChange={(e) => field.onChange(e.target.value.split(',').map(s => s.trim()))} value={Array.isArray(field.value) ? field.value.join(', ') : ''} /></div>
-                                                                    </FormControl>
+                                                                    <FormControl><div>
+                                                                        <Input {...field} onChange={(e) => field.onChange(e.target.value.split(',').map(s => s.trim()))} value={Array.isArray(field.value) ? field.value.join(', ') : ''} />
+                                                                    </div></FormControl>
                                                                     <FormDescription>
                                                                         Enter technologies separated by a comma (e.g., React, Next.js, Firebase).
                                                                     </FormDescription>
