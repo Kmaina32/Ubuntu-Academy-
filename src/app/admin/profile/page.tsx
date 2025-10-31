@@ -280,7 +280,7 @@ export default function ProfilePage() {
                                 <FormItem>
                                 <FormLabel>First Name</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Jomo" {...field} />
+                                    <Input placeholder="Mwafirka" {...field} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -288,7 +288,7 @@ export default function ProfilePage() {
                             />
                             <FormField
                             control={form.control}
-                            name="lastName"
+                            name=""
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>Last Name</FormLabel>
