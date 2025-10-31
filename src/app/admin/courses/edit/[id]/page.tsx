@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -20,6 +21,7 @@ import type { Course } from '@/lib/types';
 import { CourseReviewModal } from '@/components/shared/CourseReviewModal';
 import { GenerateCourseContentOutput } from '@/ai/flows/generate-course-content';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 const courseFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -101,7 +103,7 @@ export default function EditCoursePage() {
     try {
       await updateCourse(params.id as string, {
           ...values,
-          prerequisiteCourseId: values.prerequisiteCourseId === 'none' ? null : values.prerequisiteCourseId
+          prerequisiteCourseId: values.prerequisiteCourseId === 'none' ? undefined : values.prerequisiteCourseId
       });
       toast({
         title: 'Success!',
@@ -173,7 +175,7 @@ export default function EditCoursePage() {
             <CardContent>
               {isFetching ? (
                 <div className="flex justify-center items-center py-10">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  <LoadingAnimation />
                 </div>
               ) : course ? (
                 <Form {...form}>
@@ -293,16 +295,16 @@ export default function EditCoursePage() {
                             <FormLabel>Content Drip Schedule</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
-                                <SelectTrigger>
+                                  <SelectTrigger>
                                     <SelectValue placeholder="Select a schedule..." />
-                                </SelectTrigger>
+                                  </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    <SelectItem value="daily">Unlock lessons daily</SelectItem>
-                                    <SelectItem value="weekly">Unlock lessons weekly</SelectItem>
-                                    <SelectItem value="off">Unlock all at once</SelectItem>
+                                  <SelectItem value="daily">Unlock lessons daily</SelectItem>
+                                  <SelectItem value="weekly">Unlock lessons weekly</SelectItem>
+                                  <SelectItem value="off">Unlock all at once</SelectItem>
                                 </SelectContent>
-                            </Select>
+                              </Select>
                             <FormMessage />
                             </FormItem>
                         )}

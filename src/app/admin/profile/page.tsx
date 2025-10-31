@@ -270,7 +270,7 @@ export default function ProfilePage() {
                         <FormItem>
                           <FormLabel>First Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Mwafirka" {...field} />
+                            <div><Input placeholder="Mwafirka" {...field} /></div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -284,7 +284,7 @@ export default function ProfilePage() {
                         <FormItem>
                           <FormLabel>Last Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Kenyatta" {...field} />
+                            <div><Input placeholder="Kenyatta" {...field} /></div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -299,7 +299,7 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>Middle Name (Optional)</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <div><Input {...field} /></div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>

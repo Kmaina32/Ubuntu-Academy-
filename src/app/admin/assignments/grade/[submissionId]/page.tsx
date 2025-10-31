@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -20,6 +21,7 @@ import { Loader2, ArrowLeft, Sparkles, CheckCircle, MessageSquare, Star, XCircle
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { v4 as uuidv4 } from 'uuid';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 const CERTIFICATE_THRESHOLD_PERCENTAGE = 80;
 
@@ -130,7 +132,7 @@ export default function GradeSubmissionPage() {
         if (achievement) {
             toast({
                 title: 'Achievement Unlocked!',
-                description: `${achievement.name}: ${achievement.description}`
+                description: `${'achievement.name'}: ${'achievement.description'}`
             });
         }
 
@@ -155,7 +157,7 @@ export default function GradeSubmissionPage() {
   }
 
   if (loading || authLoading) {
-    return <div className="flex justify-center items-center h-screen"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    return <div className="flex justify-center items-center h-screen"><LoadingAnimation /></div>;
   }
   
   if (!user) {

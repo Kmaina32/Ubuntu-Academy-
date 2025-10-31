@@ -1,25 +1,31 @@
+
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { notFound, useParams } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from 'next/link';
-import type { Program, Course, UserCourse } from "@/lib/mock-data";
+import type { Program, Course, UserCourse } from "@/lib/types";
 import { getProgramById, getAllCourses, getUserCourses } from '@/lib/firebase-service';
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, ArrowRight, BookOpen, Layers, CheckCircle, Award } from "lucide-react";
+import { Loader2, ArrowRight, BookOpen, Layers, CheckCircle, Award, Share2, ArrowLeft } from "lucide-react";
 import { AppSidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/use-auth';
 import { slugify } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+import { LoadingAnimation } from '@/components/LoadingAnimation';
 
 export default function ProgramDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
 
   const [program, setProgram] = useState<Program | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -57,6 +63,31 @@ export default function ProgramDetailPage() {
     }
     fetchProgramDetails();
   }, [params.id, user]);
+  
+  const handleShare = async () => {
+    if (!program) return;
+
+    const shareData = {
+        title: program.title,
+        text: program.description,
+        url: window.location.href
+    };
+
+    if (navigator.share) {
+        try {
+            await navigator.share(shareData);
+        } catch (error) {
+            console.error('Error sharing:', error);
+        }
+    } else {
+        // Fallback for desktop browsers
+        navigator.clipboard.writeText(window.location.href);
+        toast({
+            title: "Link Copied!",
+            description: "The program link has been copied to your clipboard.",
+        });
+    }
+  };
 
   const completedCourseIds = new Set(userCourses.filter(c => c.completed || c.certificateAvailable).map(c => c.courseId));
   const allProgramCoursesCompleted = courses.length > 0 && courses.every(c => completedCourseIds.has(c.id));
@@ -64,10 +95,7 @@ export default function ProgramDetailPage() {
   if (loading || authLoading) {
     return (
         <div className="flex justify-center items-center min-h-screen px-4">
-            <div className="flex items-center">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                <p className="ml-2 text-sm sm:text-base">Loading program details...</p>
-            </div>
+            <LoadingAnimation />
         </div>
     )
   }
@@ -104,6 +132,18 @@ export default function ProgramDetailPage() {
                 </div>
              </section>
              <div className="container mx-auto px-4 md:px-6 py-12 -mt-16 md:-mt-20 relative z-10">
+                <div className="flex justify-between items-center mb-4">
+                    <button 
+                    onClick={() => router.back()} 
+                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                    >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back
+                    </button>
+                    <Button onClick={handleShare} variant="outline" size="sm">
+                        <Share2 className="mr-2 h-4 w-4" /> Share Program
+                    </Button>
+                </div>
                 <Card className="max-w-4xl mx-auto shadow-xl">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
