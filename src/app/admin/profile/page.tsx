@@ -1,16 +1,15 @@
-
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, User as UserIcon, Camera, Upload, Eye, Building } from 'lucide-react';
+import { ArrowLeft, Loader2, Camera, Upload } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
@@ -32,14 +31,13 @@ const profileFormSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 const splitDisplayName = (displayName: string | null | undefined): {firstName: string, middleName: string, lastName: string} => {
-    if (!displayName) return { firstName: '', middleName: '', lastName: '' };
-    const parts = displayName.split(' ');
-    const firstName = parts[0] || '';
-    const lastName = parts[parts.length - 1] || '';
-    const middleName = parts.slice(1, -1).join(' ');
-    return { firstName, middleName, lastName };
-}
-
+  if (!displayName) return { firstName: '', middleName: '', lastName: '' };
+  const parts = displayName.split(' ');
+  const firstName = parts[0] || '';
+  const lastName = parts[parts.length - 1] || '';
+  const middleName = parts.slice(1, -1).join(' ');
+  return { firstName, middleName, lastName };
+};
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -55,10 +53,10 @@ export default function ProfilePage() {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-        firstName: '',
-        middleName: '',
-        lastName: '',
-    }
+      firstName: '',
+      middleName: '',
+      lastName: '',
+    },
   });
 
   useEffect(() => {
@@ -79,12 +77,9 @@ export default function ProfilePage() {
     const getCameraPermission = async () => {
       if (!isCameraDialogOpen) return;
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({video: true});
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         setHasCameraPermission(true);
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
+        if (videoRef.current) videoRef.current.srcObject = stream;
       } catch (error) {
         console.error('Error accessing camera:', error);
         setHasCameraPermission(false);
@@ -95,18 +90,16 @@ export default function ProfilePage() {
         });
       }
     };
-    
+
     getCameraPermission();
 
-    // Cleanup function to stop video stream
     return () => {
-        if (videoRef.current && videoRef.current.srcObject) {
-            const stream = videoRef.current.srcObject as MediaStream;
-            stream.getTracks().forEach(track => track.stop());
-        }
-    }
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
   }, [isCameraDialogOpen, toast]);
-  
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
@@ -120,34 +113,30 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     await logout();
     router.push('/');
-  }
+  };
 
   const handleProfilePictureChange = async (file: File) => {
     if (!user) return;
     setIsUploading(true);
     try {
-        const downloadURL = await uploadImage(user.uid, file);
-        await updateProfile(user, { photoURL: downloadURL });
-        // Force a reload of the user to get the new photoURL
-        await auth.currentUser?.reload();
-        setUser(auth.currentUser);
-
-        toast({ title: 'Success', description: 'Your profile picture has been updated.' });
-    } catch(error) {
-        console.error(error);
-        toast({ title: 'Upload Failed', description: 'Could not update your profile picture.', variant: 'destructive'});
+      const downloadURL = await uploadImage(user.uid, file);
+      await updateProfile(user, { photoURL: downloadURL });
+      await auth.currentUser?.reload();
+      setUser(auth.currentUser);
+      toast({ title: 'Success', description: 'Your profile picture has been updated.' });
+    } catch (error) {
+      console.error(error);
+      toast({ title: 'Upload Failed', description: 'Could not update your profile picture.', variant: 'destructive' });
     } finally {
-        setIsUploading(false);
+      setIsUploading(false);
     }
-  }
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      handleProfilePictureChange(file);
-    }
-  }
-  
+    if (file) handleProfilePictureChange(file);
+  };
+
   const handleCapture = async () => {
     if (!videoRef.current) return;
     const canvas = document.createElement('canvas');
@@ -155,181 +144,188 @@ export default function ProfilePage() {
     canvas.height = videoRef.current.videoHeight;
     canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0);
     canvas.toBlob(async (blob) => {
-        if (blob) {
-            const file = new File([blob], 'capture.png', { type: 'image/png' });
-            await handleProfilePictureChange(file);
-            setIsCameraDialogOpen(false); // Close dialog on success
-        }
+      if (blob) {
+        const file = new File([blob], 'capture.png', { type: 'image/png' });
+        await handleProfilePictureChange(file);
+        setIsCameraDialogOpen(false);
+      }
     }, 'image/png');
-  }
+  };
 
   const onSubmit = async (values: ProfileFormValues) => {
     if (!user) return;
     setIsLoading(true);
     try {
-        const newDisplayName = [values.firstName, values.middleName, values.lastName].filter(Boolean).join(' ');
-        
-        // Update Firebase Auth profile
-        await updateProfile(user, {
-            displayName: newDisplayName
-        });
-
-        // Update the user record in the Realtime Database
-        await saveUser(user.uid, {
-            email: user.email,
-            displayName: newDisplayName,
-            createdAt: user.metadata.creationTime, // Preserve creation time
-        });
-        
-        // Manually reload user state to reflect changes immediately
-        await auth.currentUser?.reload();
-        setUser(auth.currentUser);
-        
-        toast({ title: 'Success', description: 'Your profile has been updated.' });
-    } catch(error) {
-        console.error(error);
-        toast({ title: 'Error', description: 'Failed to update profile.', variant: 'destructive'});
+      const newDisplayName = [values.firstName, values.middleName, values.lastName].filter(Boolean).join(' ');
+      await updateProfile(user, { displayName: newDisplayName });
+      await saveUser(user.uid, {
+        email: user.email,
+        displayName: newDisplayName,
+        createdAt: user.metadata.creationTime,
+      });
+      await auth.currentUser?.reload();
+      setUser(auth.currentUser);
+      toast({ title: 'Success', description: 'Your profile has been updated.' });
+    } catch (error) {
+      console.error(error);
+      toast({ title: 'Error', description: 'Failed to update profile.', variant: 'destructive' });
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
-  }
+  };
 
   if (loading || !user) {
-     return (
-        <div className="flex justify-center items-center min-h-screen">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-    )
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   return (
     <div className="flex flex-col min-h-screen">
-        <main className="flex-grow container mx-auto px-4 md:px-6 py-12">
+      <main className="flex-grow container mx-auto px-4 md:px-6 py-12">
         <div className="max-w-2xl mx-auto">
-            <button onClick={() => router.back()} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4"
+          >
             <ArrowLeft className="h-4 w-4" />
             Back
-            </button>
-            <Card>
-            <CardHeader className="items-center text-center">
-                <div className="relative group">
-                    <Avatar className="h-24 w-24 mb-4">
-                        <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'User'}/>
-                        <AvatarFallback className="text-3xl">{getInitials(user?.displayName)}</AvatarFallback>
-                    </Avatar>
-                    <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        {isUploading ? <Loader2 className="h-8 w-8 animate-spin text-white" /> : <Camera className="h-8 w-8 text-white" />}
-                    </div>
-                </div>
-                <CardTitle className="text-2xl font-headline">My Profile</CardTitle>
-                <CardDescription>View and manage your account details.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden"/>
-                <div className="grid grid-cols-2 gap-4">
-                    <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload Image
-                    </Button>
-                    <Dialog open={isCameraDialogOpen} onOpenChange={setIsCameraDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button variant="outline" disabled={isUploading}>
-                                <Camera className="mr-2 h-4 w-4" />
-                                Take Photo
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Take a Profile Photo</DialogTitle>
-                                <DialogDescription>
-                                    Center your face in the frame and click capture.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div className="flex justify-center items-center my-4">
-                                <video ref={videoRef} className="w-full aspect-video rounded-md bg-muted" autoPlay muted />
-                            </div>
-                            {hasCameraPermission === false && (
-                                    <Alert variant="destructive">
-                                    <AlertTitle>Camera Access Required</AlertTitle>
-                                    <AlertDescription>
-                                        Please allow camera access in your browser to use this feature.
-                                    </AlertDescription>
-                                </Alert>
-                            )}
-                            <DialogFooter>
-                                <DialogClose asChild>
-                                    <Button variant="outline">Cancel</Button>
-                                </DialogClose>
-                                <Button onClick={handleCapture} disabled={!hasCameraPermission}>Capture</Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
-                </div>
+          </button>
 
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)}>
-                            <div className='space-y-2 mt-6'>
-                            <Label htmlFor='email'>Email Address</Label>
-                            <Input id='email' value={user.email || ''} readOnly disabled />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <FormField
-                            control={form.control}
-                            name="firstName"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>First Name</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Mwafirka" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                            />
-                            <FormField
-                            control={form.control}
-                            name="lastName"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Last Name</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Kenyatta" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                            />
-                        </div>
-                            <div className="mt-4">
-                            <FormField
-                                control={form.control}
-                                name="middleName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Middle Name (Optional)</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                                />
-                            </div>
-                            <p className="text-xs text-muted-foreground pt-2">Please ensure this is your full, correct name as it will be used on your certificates.</p>
-                            <CardFooter className="flex justify-between px-0 pt-6">
-                            <Button variant="outline" onClick={handleLogout}>Logout</Button>
-                            <Button type="submit" disabled={isLoading}>
-                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                Save Changes
-                            </Button>
-                        </CardFooter>
-                    </form>
-                </Form>
+          <Card>
+            <CardHeader className="items-center text-center">
+              <div className="relative group">
+                <Avatar className="h-24 w-24 mb-4">
+                  <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'User'} />
+                  <AvatarFallback className="text-3xl">{getInitials(user?.displayName)}</AvatarFallback>
+                </Avatar>
+                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  {isUploading ? <Loader2 className="h-8 w-8 animate-spin text-white" /> : <Camera className="h-8 w-8 text-white" />}
+                </div>
+              </div>
+              <CardTitle className="text-2xl font-headline">My Profile</CardTitle>
+              <CardDescription>View and manage your account details.</CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+
+              <div className="grid grid-cols-2 gap-4">
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Image
+                </Button>
+
+                <Dialog open={isCameraDialogOpen} onOpenChange={setIsCameraDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" disabled={isUploading}>
+                      <Camera className="mr-2 h-4 w-4" />
+                      Take Photo
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Take a Profile Photo</DialogTitle>
+                      <DialogDescription>
+                        Center your face in the frame and click capture.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex justify-center items-center my-4">
+                      <video ref={videoRef} className="w-full aspect-video rounded-md bg-muted" autoPlay muted />
+                    </div>
+                    {hasCameraPermission === false && (
+                      <Alert variant="destructive">
+                        <AlertTitle>Camera Access Required</AlertTitle>
+                        <AlertDescription>
+                          Please allow camera access in your browser to use this feature.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button onClick={handleCapture} disabled={!hasCameraPermission}>
+                        Capture
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input id="email" value={user.email || ''} readOnly disabled />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>First Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Mwafirka" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Last Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Kenyatta" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="middleName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Middle Name (Optional)</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <p className="text-xs text-muted-foreground pt-2">
+                    Please ensure this is your full, correct name as it will be used on your certificates.
+                  </p>
+
+                  <CardFooter className="flex justify-between px-0 pt-6">
+                    <Button variant="outline" onClick={handleLogout}>
+                      Logout
+                    </Button>
+                    <Button type="submit" disabled={isLoading}>
+                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Save Changes
+                    </Button>
+                  </CardFooter>
+                </form>
+              </Form>
             </CardContent>
-            </Card>
+          </Card>
         </div>
-        </main>
-        <Footer />
+      </main>
+      <Footer />
     </div>
   );
 }

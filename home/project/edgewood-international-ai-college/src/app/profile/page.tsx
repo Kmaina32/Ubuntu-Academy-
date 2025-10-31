@@ -409,7 +409,7 @@ export default function ProfilePage() {
                                      </div>
                                 </TabsContent>
                                 <TabsContent value="portfolio" className="pt-6 space-y-6">
-                                    <FormField control={form.control} name="aboutMe" render={({ field }) => ( <FormItem> <FormLabel>About Me / Professional Summary</FormLabel> <FormControl><Textarea placeholder="A brief summary about your skills and career goals." {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+                                    <FormField control={form.control} name="aboutMe" render={({ field }) => ( <FormItem> <FormLabel>About Me / Professional Summary</FormLabel> <FormControl><div><Textarea placeholder="A brief summary about your skills and career goals." {...field} /></div></FormControl> <FormMessage /> </FormItem> )}/>
                                      {/* Work Experience Section */}
                                     <div>
                                         <h4 className="font-semibold mb-2">Work Experience</h4>
@@ -423,7 +423,7 @@ export default function ProfilePage() {
                                                         <FormField control={form.control} name={`workExperience.${index}.startDate`} render={({field}) => (<FormItem><FormLabel>Start Date</FormLabel><FormControl><div><Input placeholder="e.g., Jan 2022" {...field}/></div></FormControl><FormMessage/></FormItem>)} />
                                                         <FormField control={form.control} name={`workExperience.${index}.endDate`} render={({field}) => (<FormItem><FormLabel>End Date</FormLabel><FormControl><div><Input placeholder="Present" {...field}/></div></FormControl><FormMessage/></FormItem>)} />
                                                     </div>
-                                                    <FormField control={form.control} name={`workExperience.${index}.description`} render={({field}) => (<FormItem className="mt-4"><FormLabel>Description</FormLabel><FormControl><Textarea {...field}/></FormControl><FormMessage/></FormItem>)} />
+                                                    <FormField control={form.control} name={`workExperience.${index}.description`} render={({field}) => (<FormItem className="mt-4"><FormLabel>Description</FormLabel><FormControl><div><Textarea {...field}/></div></FormControl><FormMessage/></FormItem>)} />
                                                 </Card>
                                             ))}
                                         </div>
@@ -465,7 +465,7 @@ export default function ProfilePage() {
                                                     <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => removeProject(index)}> <Trash2 className="h-4 w-4 text-destructive" /> </Button>
                                                     <div className="grid grid-cols-1 gap-4">
                                                         <FormField control={form.control} name={`projects.${index}.title`} render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><div><Input {...field} /></div></FormControl><FormMessage /></FormItem>)} />
-                                                        <FormField control={form.control} name={`projects.${index}.description`} render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                                        <FormField control={form.control} name={`projects.${index}.description`} render={({ field }) => (<FormItem><FormLabel>Description</FormLabel><FormControl><div><Textarea {...field} /></div></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name={`projects.${index}.imageUrl`} render={({ field }) => (<FormItem><FormLabel>Image URL</FormLabel><FormControl><div><Input {...field} /></div></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name={`projects.${index}.liveUrl`} render={({ field }) => (<FormItem><FormLabel>Live URL</FormLabel><FormControl><div><Input {...field} /></div></FormControl><FormMessage /></FormItem>)} />
                                                         <FormField control={form.control} name={`projects.${index}.sourceUrl`} render={({ field }) => (<FormItem><FormLabel>Source URL</FormLabel><FormControl><div><Input {...field} /></div></FormControl><FormMessage /></FormItem>)} />
@@ -524,3 +524,5 @@ export default function ProfilePage() {
     </SidebarProvider>
   );
 }
+
+    
