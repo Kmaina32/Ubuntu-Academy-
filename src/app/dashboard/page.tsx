@@ -205,8 +205,9 @@ function PortfolioProgressWidget({ dbUser }: { dbUser: RegisteredUser }) {
 function AchievementsWidget({ achievements, isSuperAdmin }: { achievements: Achievement[], isSuperAdmin: boolean }) {
     
     let achievementsToShow = achievements;
-    if (!isSuperAdmin) {
-        achievementsToShow = achievements
+
+    if (!isSuperAdmin && achievements) {
+        achievementsToShow = [...achievements] // Create a shallow copy to avoid mutating the original prop
             .sort((a, b) => new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime())
             .slice(0, 3);
     }
@@ -456,7 +457,7 @@ export default function DashboardPage() {
                             )}
                         </CardContent>
                     </Card>
-                )}
+                 )}
             </div>
             
              <div>
