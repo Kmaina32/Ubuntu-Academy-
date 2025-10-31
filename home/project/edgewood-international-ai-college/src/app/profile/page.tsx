@@ -33,6 +33,7 @@ import type { RegisteredUser, PortfolioProject } from '@/lib/types';
 import { Icon } from '@iconify/react';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { slugify } from '@/lib/utils';
 
 
 const projectSchema = z.object({
@@ -204,7 +205,7 @@ export default function ProfilePage() {
     if (!name) return 'U';
     const names = name.split(' ');
     if (names.length > 1 && names[1]) {
-      return `${'names[0][0]'}${names[names.length - 1][0]}`;
+      return `${names[0][0]}${names[names.length - 1][0]}`;
     }
     return names[0]?.[0] || 'U';
   };
@@ -268,6 +269,7 @@ export default function ProfilePage() {
 
         await saveUser(user.uid, {
             displayName: newDisplayName,
+            slug: slugify(newDisplayName),
             photoURL: user.photoURL,
             portfolio: {
                 aboutMe: values.aboutMe,
@@ -300,7 +302,7 @@ export default function ProfilePage() {
     }
   }
 
-  if (loading || !user) {
+  if (loading || !user || !dbUser) {
      return (
         <div className="flex justify-center items-center min-h-screen">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -502,7 +504,7 @@ export default function ProfilePage() {
                             <Button variant="outline" onClick={handleLogout}>Logout</Button>
                             <div className="flex gap-2 mt-4 sm:mt-0">
                                 <Button asChild variant="secondary">
-                                    <Link href={`/portfolio/${user.uid}`}>
+                                    <Link href={`/portfolio/${dbUser.slug}`}>
                                         <Eye className="mr-2 h-4 w-4" />
                                         View My Public Portfolio
                                     </Link>
@@ -524,5 +526,3 @@ export default function ProfilePage() {
     </SidebarProvider>
   );
 }
-
-    
